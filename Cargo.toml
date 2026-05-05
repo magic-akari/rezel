@@ -1,16 +1,5 @@
-[package]
-name = "rezel"
-version.workspace = true
-edition.workspace = true
-publish = false
-
-[dependencies]
-
-[lints]
-workspace = true
-
 [workspace]
-members = []
+members = ["crates/rezel-common"]
 resolver = "3"
 
 [workspace.package]
@@ -20,6 +9,9 @@ edition = "2024"
 homepage = "https://github.com/magic-akari/rezel"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/magic-akari/rezel"
+
+[workspace.dependencies]
+text-size = "1.1.1"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
