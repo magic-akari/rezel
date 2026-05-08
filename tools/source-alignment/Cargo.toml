@@ -1,0 +1,18 @@
+[package]
+name = "rezel-source-alignment"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+description = "Source-alignment traceability verifier for Rezel"
+
+[dependencies]
+quote.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+syn = { workspace = true, features = ["full"] }
+toml.workspace = true
+
+[lints]
+workspace = true

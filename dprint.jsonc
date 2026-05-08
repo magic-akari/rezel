@@ -1,18 +1,20 @@
 {
-  "indentWidth": 4,
-  "lineWidth": 120,
-  "newLineKind": "lf",
-  "useTabs": true,
+	"indentWidth": 4,
+	"lineWidth": 120,
+	"newLineKind": "lf",
+	"useTabs": true,
 
-  "markdown": {},
-  "toml": {},
-  "yaml": {},
+	"biome": {},
+	"markdown": {},
+	"toml": {},
+	"yaml": {},
 
-  "excludes": [],
+	"excludes": ["**/package-lock.json", "alignment/upstream/**/*.json"],
 
-  "plugins": [
-    "https://plugins.dprint.dev/markdown-0.21.1.wasm",
-    "https://plugins.dprint.dev/toml-0.7.0.wasm",
-    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.6.0.wasm"
-  ]
+	"plugins": [
+		"https://plugins.dprint.dev/biome-0.12.10.wasm",
+		"https://plugins.dprint.dev/markdown-0.21.1.wasm",
+		"https://plugins.dprint.dev/toml-0.7.0.wasm",
+		"https://plugins.dprint.dev/g-plane/pretty_yaml-v0.6.0.wasm"
+	]
 }

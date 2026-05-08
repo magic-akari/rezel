@@ -1,2 +1,40 @@
 [tools]
 dprint = "0.54.0"
+node = "26.1.0"
+
+[hooks]
+postinstall = 'npm ci --prefix "{{config_root}}/tools/source-alignment"'
+
+[tasks.alignment]
+description = "Verify source-alignment traceability"
+run = "cargo alignment verify"
+
+[tasks.docs]
+description = "Build Rust API documentation"
+env = { RUSTDOCFLAGS = "-D warnings" }
+run = "cargo doc-all"
+
+[tasks."format:check"]
+description = "Check repository formatting"
+run = [
+	"dprint check --incremental=false",
+	"cargo fmt --all --check",
+]
+
+[tasks.lint]
+description = "Run Rust lints"
+run = [
+	"npm --prefix tools/source-alignment run check",
+	"cargo lint-all",
+]
+
+[tasks.test]
+description = "Run Rust tests"
+run = [
+	"cargo test-all",
+	"cargo test-doc",
+]
+
+[tasks.verify]
+description = "Run the repository verification suite"
+depends = ["format:check", "test", "lint", "docs", "alignment"]
