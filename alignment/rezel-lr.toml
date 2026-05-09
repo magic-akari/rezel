@@ -1,0 +1,182 @@
+schema_version = 1
+
+[component]
+name = "rezel-lr"
+source_root = "crates/rezel-lr/src"
+
+[upstream]
+repository = "https://github.com/lezer-parser/lr"
+commit = "cc19ad7661e6c8ff8c038fb0f592f4dc005dd261"
+
+[[snapshot]]
+source = "src/constants.ts"
+path = "alignment/upstream/lr/constants.json"
+
+[[snapshot]]
+source = "src/decode.ts"
+path = "alignment/upstream/lr/decode.json"
+
+[[snapshot]]
+source = "src/parse.ts"
+path = "alignment/upstream/lr/parse.json"
+
+[[snapshot]]
+source = "src/stack.ts"
+path = "alignment/upstream/lr/stack.json"
+
+[[snapshot]]
+source = "src/token.ts"
+path = "alignment/upstream/lr/token.json"
+
+[[scope]]
+rust_file = "lib.rs"
+classification = "rezel-owned"
+invariant = "The crate root exposes the supported static-table LR runtime as one coherent API for generated parser crates."
+representation = "Rust crate and module packaging is Rezel-owned; provenance for re-exported declarations is recorded against the files that define them."
+
+[[scope]]
+rust_file = "constants.rs"
+classification = "adapted"
+upstream_file = "src/constants.ts"
+upstream_symbols = ["Action", "StateFlag", "ParseState", "Seq", "Term"]
+invariant = "Generated action bit fields, state-record offsets, sequence sentinels, flags, and the reserved error term retain the pinned runtime's numeric ABI."
+representation = "Rust uses transparent newtypes and repr enums with const accessors while generated tables remain raw u16 and u32 slices."
+
+[[scope]]
+rust_file = "decode.rs"
+classification = "adapted"
+upstream_file = "src/parse.ts"
+upstream_symbols = ["pair"]
+invariant = "Two compact little-endian words reconstruct the exact unsigned action emitted by the generator."
+representation = "Static Rust slices replace JavaScript typed arrays and encoded parser strings."
+
+[[scope]]
+rust_file = "parse.rs"
+classification = "adapted"
+upstream_file = "src/parse.ts"
+upstream_symbols = [
+	"Dialect",
+	"ContextTracker",
+	"TokenCache",
+	"Rec",
+	"Parse",
+	"LRParser",
+	"LRParser.configure",
+	"findFinished",
+	"pushStackDedup",
+]
+invariant = "State-driven tokenization, LR and bounded GLR actions, dynamic precedence, deterministic pruning, recovery, and completion produce the selected top rule's concrete syntax tree."
+representation = "Generated data is held in a construction-validated static Language with term-indexed metadata and unchecked hot reads; the validated maximum node id and first repeat term are cached in ParserCore for shift, reduction, recovery, and tree classification, while selected-top fields and strict mode share one compact internal record; TokenCache borrows full per-tokenizer cache records while retaining only start, value, and end in its observable main-token snapshot; parser configuration is owned, input positions use UTF-8 TextSize values, failures use Result, and incremental fragments are excluded."
+evidence_files = ["crates/rezel-lr/tests/validation.rs"]
+
+[[scope]]
+rust_file = "stack.rs"
+classification = "adapted"
+upstream_file = "src/stack.ts"
+upstream_symbols = [
+	"Recover",
+	"Stack",
+	"Stack.reduce",
+	"Stack.shift",
+	"Stack.split",
+	"Stack.recoverByDelete",
+	"Stack.recoverByInsert",
+	"Stack.forceReduce",
+	"Stack.canShift",
+	"SimulatedStack",
+	"StackBufferCursor",
+]
+invariant = "Shift, reduce, bounded branch splitting, recovery scoring, forced reductions, stack equivalence, and context transitions preserve the pinned runtime's action semantics."
+representation = "Rust stores typed frames, shares immutable postfix-prefix chunks across branches, retains only a branch-local mutable suffix, and exposes a backward cursor that feeds tree construction directly; can-shift simulations borrow the live frame prefix and materialize it only when a zero-depth reduction must append a frame; parser failures are explicit and reused-node records are absent."
+
+[[scope]]
+rust_file = "token.rs"
+classification = "adapted"
+upstream_file = "src/token.ts"
+upstream_symbols = [
+	"InputStream",
+	"Tokenizer",
+	"TokenGroup",
+	"LocalTokenGroup",
+	"ExternalTokenizer",
+	"readToken",
+	"overrides",
+]
+invariant = "Only tokenizers enabled by the current state run, with longest-match, precedence, fallback, extend, local-token, dialect, specialization, and external-token semantics."
+representation = "Tokenizer code observes UTF-16 code units over cached shared input chunks while public positions remain UTF-8 byte offsets; reads may borrow contiguous text, selected ranges bound every visible chunk, and Rust externals are static fallible function pointers."
+
+[[override_item]]
+rust_item = "rezel_lr::parse::ParseLimits"
+classification = "rezel-owned"
+invariant = "Explicit budgets bound parser work and turn exhausted resources into typed failures."
+representation = "Rezel exposes configurable action, stack, buffer, and recovery limits that are not part of the JavaScript runtime API."
+
+[[excluded]]
+upstream_file = "src/decode.ts"
+upstream_symbol = "decodeArray"
+reason = "Generated Rust embeds static typed arrays and does not deserialize encoded parser strings at runtime."
+
+[[excluded]]
+upstream_file = "src/constants.ts"
+upstream_symbol = "Encode"
+reason = "The encoded JavaScript parser-string format is absent from static Rust output."
+
+[[excluded]]
+upstream_file = "src/constants.ts"
+upstream_symbol = "File"
+reason = "Static Rust tables do not carry a serialized parser-image version."
+
+[[excluded]]
+upstream_file = "src/parse.ts"
+upstream_symbol = "cutAt"
+reason = "Safe fragment-boundary calculation only supports incremental reuse."
+
+[[excluded]]
+upstream_file = "src/parse.ts"
+upstream_symbol = "FragmentCursor"
+reason = "Fragment cursors only locate reusable nodes from previous parses."
+
+[[excluded]]
+upstream_file = "src/parse.ts"
+upstream_symbol = "Parse.fragments"
+reason = "Cross-parse fragments are outside the supported runtime boundary."
+
+[[excluded]]
+upstream_file = "src/parse.ts"
+upstream_symbol = "Parse.reused"
+reason = "Reused tree nodes only exist during incremental fragment parsing."
+
+[[excluded]]
+upstream_file = "src/parse.ts"
+upstream_symbol = "LRParser.deserialize"
+reason = "Generated Rust supplies static Language values instead of serialized JavaScript parser images."
+
+[[excluded]]
+upstream_file = "src/parse.ts"
+upstream_symbol = "ContextTracker.reuse"
+reason = "Context reuse is invoked only when an incremental tree node is reused."
+
+[[excluded]]
+upstream_file = "src/parse.ts"
+upstream_symbol = "ContextTracker.strict"
+reason = "Strict context hashes guard incremental node reuse."
+
+[[excluded]]
+upstream_file = "src/stack.ts"
+upstream_symbol = "Stack.useNode"
+reason = "The action inserts a tree node reused from a previous incremental parse."
+
+[[excluded]]
+upstream_file = "src/stack.ts"
+upstream_symbol = "Lookahead"
+reason = "Look-ahead metadata exists to invalidate incremental fragments."
+
+[[excluded]]
+upstream_file = "src/stack.ts"
+upstream_symbol = "Stack.emitLookAhead"
+reason = "Look-ahead tree records exist only for incremental invalidation."
+
+[[excluded]]
+upstream_file = "src/stack.ts"
+upstream_symbol = "Stack.emitContext"
+reason = "Per-node context records exist to validate incremental node reuse."

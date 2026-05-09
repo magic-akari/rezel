@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/lezer-parser/lr",
+  "commit": "cc19ad7661e6c8ff8c038fb0f592f4dc005dd261",
+  "source": "src/decode.ts",
+  "blob_oid": "eff5be1a618f470ac332ac9f6430b62d080717d1",
+  "symbols": [
+    "decodeArray"
+  ]
+}

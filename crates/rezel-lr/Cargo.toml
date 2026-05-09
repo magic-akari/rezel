@@ -1,0 +1,15 @@
+[package]
+name = "rezel-lr"
+version.workspace = true
+categories = ["parsing"]
+edition.workspace = true
+keywords = ["parser", "lr", "glr", "error-recovery"]
+license.workspace = true
+repository.workspace = true
+description = "LR runtime for Rezel-generated parsers"
+
+[dependencies]
+rezel-common.workspace = true
+
+[lints]
+workspace = true
