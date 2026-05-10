@@ -1,0 +1,9 @@
+@top Doc { (Dir | Content | Block)* }
+
+Dir { "{{" Word "}}" }
+Block { "{%" BlockContent { (Dir | Content)* } "%}" }
+
+@tokens {
+  Content { ![{%]+ }
+  Word { $[a-z]+ }
+}

@@ -1,0 +1,5 @@
+@top Script { any }
+
+@tokens {
+  any { ![]+ }
+}

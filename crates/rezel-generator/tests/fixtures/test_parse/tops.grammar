@@ -1,0 +1,6 @@
+@top X { FOO C }
+@top Y { B C }
+
+FOO { B }
+B { "b" }
+C { "c" }

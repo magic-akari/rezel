@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/lezer-parser/generator",
+  "commit": "5ebf7e208f3c77f05f11ba6719ad819ab78f241c",
+  "source": "src/log.ts",
+  "blob_oid": "8234ce01d9f55203edb5ad150e7cd9e6c7ce15e5",
+  "symbols": [
+    "time",
+    "timing",
+    "verbose"
+  ]
+}

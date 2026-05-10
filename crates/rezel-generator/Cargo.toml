@@ -1,0 +1,29 @@
+[package]
+name = "rezel-generator"
+version.workspace = true
+categories = ["parsing", "development-tools::build-utils"]
+edition.workspace = true
+keywords = ["parser-generator", "grammar", "lr", "glr"]
+license.workspace = true
+repository.workspace = true
+description = "Grammar compiler and Rust code generator for Rezel parsers"
+
+[dependencies]
+prettyplease.workspace = true
+proc-macro2.workspace = true
+quote.workspace = true
+rezel-common.workspace = true
+rezel-lr.workspace = true
+syn = { workspace = true, features = ["full"] }
+
+[dev-dependencies]
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "rezel"
+path = "src/main.rs"
+doc = false

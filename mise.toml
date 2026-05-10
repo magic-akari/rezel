@@ -9,6 +9,14 @@ postinstall = 'npm ci --prefix "{{config_root}}/tools/source-alignment"'
 description = "Verify source-alignment traceability"
 run = "cargo alignment verify"
 
+[tasks."codegen:rezel:fixtures"]
+description = "Verify checked-in rezel-generator test fixtures"
+run = "cargo run --locked --package rezel-codegen -- fixtures --check"
+
+[tasks."codegen:rezel:fixtures:update"]
+description = "Regenerate checked-in rezel-generator test fixtures"
+run = "cargo run --locked --package rezel-codegen -- fixtures --update"
+
 [tasks.docs]
 description = "Build Rust API documentation"
 env = { RUSTDOCFLAGS = "-D warnings" }
@@ -37,4 +45,11 @@ run = [
 
 [tasks.verify]
 description = "Run the repository verification suite"
-depends = ["format:check", "test", "lint", "docs", "alignment"]
+depends = [
+	"format:check",
+	"test",
+	"lint",
+	"docs",
+	"alignment",
+	"codegen:rezel:fixtures",
+]

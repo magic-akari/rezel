@@ -1,0 +1,10 @@
+@top T { Tag* }
+
+Tag { Open Content Close }
+Open { "<" name ">" }
+Close { "</" name ">" }
+
+@tokens {
+  name { @asciiLetter+ }
+  Content { ![<]+ }
+}

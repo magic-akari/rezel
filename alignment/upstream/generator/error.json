@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/lezer-parser/generator",
+  "commit": "5ebf7e208f3c77f05f11ba6719ad819ab78f241c",
+  "source": "src/error.ts",
+  "blob_oid": "300ba3eea1f6e2bfc5e64ea9043943de406e322d",
+  "symbols": [
+    "GenError"
+  ]
+}

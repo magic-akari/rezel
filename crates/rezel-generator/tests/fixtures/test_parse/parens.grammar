@@ -1,0 +1,7 @@
+@top T { (Text | Group)* }
+
+Group { "(" (Text | Group)* ")" }
+
+@tokens {
+  Text { ![()]+ }
+}

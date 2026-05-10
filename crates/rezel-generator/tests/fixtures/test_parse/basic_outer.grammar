@@ -1,0 +1,9 @@
+@top O { expr+ }
+
+expr { "[[" NestContent "]]" | Bang { "!" } }
+
+@tokens {
+  NestContent[@export] { ![\]]+ }
+  "[["[@name=Start]
+  "]]"[@name=End]
+}

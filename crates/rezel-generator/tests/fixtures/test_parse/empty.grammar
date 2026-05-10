@@ -1,0 +1,5 @@
+@top E { tok? }
+
+@tokens {
+  tok { " "+ }
+}

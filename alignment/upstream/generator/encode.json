@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/lezer-parser/generator",
+  "commit": "5ebf7e208f3c77f05f11ba6719ad819ab78f241c",
+  "source": "src/encode.ts",
+  "blob_oid": "c1dc7d8d1aebdc39cacce8b3de278b81a92fa1e8",
+  "symbols": [
+    "digitToChar",
+    "encode",
+    "encodeArray"
+  ]
+}

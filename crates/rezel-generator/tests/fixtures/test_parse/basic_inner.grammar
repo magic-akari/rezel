@@ -1,0 +1,6 @@
+@top I { expr+ }
+
+expr {
+  B { Open { "(" } expr+ Close { ")" } } |
+  Dot { "." }
+}

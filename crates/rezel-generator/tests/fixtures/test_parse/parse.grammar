@@ -1,0 +1,17 @@
+@precedence { call }
+@top T { statement* }
+statement { Cond | Loop | Block | expression ";" }
+Cond { kw<"if"> expression statement }
+Block { "{" statement* "}" }
+Loop { kw<"while"> expression statement }
+expression { Call | Num | Var | "!" expression }
+Call { expression !call "(" expression* ")" }
+kw<value> { @specialize<Var, value> }
+
+@tokens {
+  Num { @digit+ }
+  Var { @asciiLetter+ }
+  whitespace { @whitespace+ }
+}
+
+@skip { whitespace }

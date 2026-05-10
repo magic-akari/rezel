@@ -1,0 +1,21 @@
+@top T { expression* }
+
+expression {
+  Name |
+  Number |
+  String |
+  Array |
+  Paren
+}
+
+Array { "[" expression* "]" }
+Paren { "(" expression* ")" }
+
+@tokens {
+  Name { @asciiLetter+ }
+  Number { @digit+ }
+  String { "'" ![']* "'" }
+  whitespace { @whitespace+ }
+}
+
+@skip { whitespace }

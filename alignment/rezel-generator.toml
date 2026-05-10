@@ -1,0 +1,403 @@
+schema_version = 1
+
+[component]
+name = "rezel-generator"
+source_root = "crates/rezel-generator/src"
+
+[upstream]
+repository = "https://github.com/lezer-parser/generator"
+commit = "5ebf7e208f3c77f05f11ba6719ad819ab78f241c"
+
+[[snapshot]]
+source = "src/automaton.ts"
+path = "alignment/upstream/generator/automaton.json"
+
+[[snapshot]]
+source = "src/build.ts"
+path = "alignment/upstream/generator/build.json"
+
+[[snapshot]]
+source = "src/encode.ts"
+path = "alignment/upstream/generator/encode.json"
+
+[[snapshot]]
+source = "src/error.ts"
+path = "alignment/upstream/generator/error.json"
+
+[[snapshot]]
+source = "src/grammar.ts"
+path = "alignment/upstream/generator/grammar.json"
+
+[[snapshot]]
+source = "src/hash.ts"
+path = "alignment/upstream/generator/hash.json"
+
+[[snapshot]]
+source = "src/log.ts"
+path = "alignment/upstream/generator/log.json"
+
+[[snapshot]]
+source = "src/node.ts"
+path = "alignment/upstream/generator/node.json"
+
+[[snapshot]]
+source = "src/parse.ts"
+path = "alignment/upstream/generator/parse.json"
+
+[[snapshot]]
+source = "src/token.ts"
+path = "alignment/upstream/generator/token.json"
+
+[[scope]]
+rust_file = "lib.rs"
+classification = "rezel-owned"
+invariant = "The crate root exposes grammar parsing, compilation, diagnostics, and deterministic Rust emission as one downstream-facing API."
+representation = "Rust crate and module packaging is Rezel-owned; provenance for the implementation is recorded against the files that define it."
+
+[[scope]]
+rust_file = "automaton.rs"
+classification = "adapted"
+upstream_file = "src/automaton.ts"
+upstream_symbols = [
+	"Pos",
+	"Shift",
+	"Reduce",
+	"State",
+	"computeFirstSets",
+	"buildFullAutomaton",
+	"finishAutomaton",
+	"closure",
+	"termsAhead",
+	"applyCut",
+	"canMerge",
+	"mergeStates",
+	"collapseAutomaton",
+	"mergeIdentical",
+]
+invariant = "Canonical LR(1) closure and actions are built first, compatible same-core states collapse conservatively, and behavior-identical states merge deterministically."
+representation = "Sorted Rust vectors and stable indices replace JavaScript object identity and comparison helpers without introducing IELR partitioning."
+evidence_files = ["crates/rezel-generator/tests/cases.rs"]
+
+[[scope]]
+rust_file = "build.rs"
+classification = "adapted"
+upstream_file = "src/build.ts"
+upstream_symbols = [
+	"BuildOptions",
+	"Builder",
+	"Builder.prepareParser",
+	"Parts",
+	"BuiltRule",
+	"DataBuilder",
+	"TokenSet",
+	"TokenGroup",
+	"LocalTokenSet",
+	"MainTokenSet",
+	"ExternalTokenSet",
+	"ExternalSpecializer",
+	"FinishStateContext",
+	"inlineRules",
+	"mergeRules",
+	"simplifyRules",
+	"computeGotoTable",
+	"reduceAction",
+	"rangeEdges",
+	"buildSpecializeTable",
+	"buildTokenMasks",
+	"findSkipStates",
+	"isLiteralToken",
+]
+invariant = "Grammar normalization, skip scopes, specialization, token conflicts, parser tables, dialects, node properties, and runtime metadata preserve the pinned generator's observable parse behavior."
+representation = "One Rust builder produces typed metadata for a static Rust backend; warnings are returned as structured diagnostics and external declarations remain symbolic until emission."
+evidence_files = [
+	"crates/rezel-generator/tests/cases.rs",
+	"crates/rezel-generator/tests/parse.rs",
+	"tools/codegen/src/main.rs",
+]
+
+[[scope]]
+rust_file = "emit.rs"
+classification = "rezel-owned"
+invariant = "A compiled grammar deterministically emits valid static Rust tables, node metadata, term identifiers, and direct external symbol references."
+representation = "quote and proc-macro2 generate Rust syntax, syn validates it, prettyplease formats it, and a sequential writer emits large numeric arrays."
+evidence_files = [
+	"crates/rezel-generator/tests/cases.rs",
+	"tools/codegen/src/main.rs",
+]
+
+[[scope]]
+rust_file = "source.rs"
+classification = "rezel-owned"
+invariant = "Every generated Rust source carries a stable generator marker without allowing Rust parsing or formatting to discard it."
+representation = "Generated bodies are parsed and formatted first, then the plain-text ownership marker is prepended outside the token and syntax-tree pipeline."
+evidence_files = [
+	"crates/rezel-generator/src/source.rs",
+	"tools/codegen/src/main.rs",
+]
+
+[[scope]]
+rust_file = "error.rs"
+classification = "adapted"
+upstream_file = "src/error.ts"
+upstream_symbols = ["GenError"]
+invariant = "Fatal grammar failures remain ordinary generator errors with a stable human-readable message."
+representation = "An owned Rust Error adds an optional UTF-8 byte position to the upstream exception role."
+evidence_files = ["crates/rezel-generator/tests/cases.rs"]
+
+[[scope]]
+rust_file = "grammar.rs"
+classification = "adapted"
+upstream_file = "src/grammar.ts"
+upstream_symbols = [
+	"TermFlag",
+	"Term",
+	"TermSet",
+	"Conflicts",
+	"Rule",
+	"hasProps",
+	"cmpSet",
+	"union",
+]
+invariant = "Term flags, output numbering, conflict joins, rule comparison, repeat wrappers, preservation, and inline eligibility follow the pinned grammar model."
+representation = "Stable vector indices replace object identity, and checked u16 conversion enforces the static runtime table ABI."
+evidence_files = ["crates/rezel-generator/tests/cases.rs"]
+
+[[scope]]
+rust_file = "main.rs"
+classification = "rezel-owned"
+invariant = "The CLI checks one grammar and writes deterministic parser or term source while reporting structured warnings."
+representation = "A dependency-light Rust binary provides check, generate, and terms subcommands for the static Rust backend."
+
+[[scope]]
+rust_file = "node.rs"
+classification = "adapted"
+upstream_file = "src/node.ts"
+upstream_symbols = [
+	"Node",
+	"GrammarDeclaration",
+	"RuleDeclaration",
+	"PrecDeclaration",
+	"TokenPrecDeclaration",
+	"TokenConflictDeclaration",
+	"TokenDeclaration",
+	"LocalTokenDeclaration",
+	"LiteralDeclaration",
+	"ContextDeclaration",
+	"ExternalTokenDeclaration",
+	"ExternalSpecializeDeclaration",
+	"ExternalPropSourceDeclaration",
+	"ExternalPropDeclaration",
+	"Identifier",
+	"Expression",
+	"NameExpression",
+	"SpecializeExpression",
+	"InlineRuleExpression",
+	"ChoiceExpression",
+	"SequenceExpression",
+	"ConflictMarker",
+	"RepeatExpression",
+	"LiteralExpression",
+	"SetExpression",
+	"AnyExpression",
+	"CharClasses",
+	"CharClass",
+	"Prop",
+	"PropPart",
+	"exprEq",
+	"exprsEq",
+]
+invariant = "The grammar AST retains declaration identity, semantic source positions, expression precedence, structural equality, properties, token references, and built-in character classes."
+representation = "Rust structs and algebraic enums replace the upstream class hierarchy; positions are UTF-8 byte offsets rather than UTF-16 code-unit offsets."
+evidence_files = ["crates/rezel-generator/tests/cases.rs"]
+
+[[scope]]
+rust_file = "parse.rs"
+classification = "adapted"
+upstream_file = "src/parse.ts"
+upstream_symbols = [
+	"Input",
+	"parseGrammar",
+	"parseRule",
+	"parseProps",
+	"parseProp",
+	"parseBracedExpr",
+	"parseExprInner",
+	"parseArgs",
+	"parseExprSuffix",
+	"parseExprSequence",
+	"parseExprChoice",
+	"parseIdent",
+	"parsePrecedence",
+	"parseTokens",
+	"parseLocalTokens",
+	"parseTokenPrecedence",
+	"parseTokenConflict",
+	"parseExternalTokenSet",
+	"parseExternalTokens",
+	"parseExternalSpecialize",
+	"parseExternalPropSource",
+	"parseExternalProp",
+	"readString",
+]
+invariant = "Pinned grammar constructs accepted over Unicode-scalar source produce the corresponding AST and semantic source locations, with matching accept-or-reject behavior for the upstream conformance cases."
+representation = "A safe UTF-8 cursor and Rust enums replace the mutable JavaScript token object; diagnostics and all exposed positions use UTF-8 byte offsets and Rust strings cannot contain isolated UTF-16 surrogates."
+evidence_files = ["crates/rezel-generator/tests/cases.rs"]
+
+[[scope]]
+rust_file = "token.rs"
+classification = "adapted"
+upstream_file = "src/token.ts"
+upstream_symbols = [
+	"MAX_CHAR",
+	"Edge",
+	"State",
+	"State.compile",
+	"State.closure",
+	"State.findConflicts",
+	"State.cycleTerms",
+	"State.reachable",
+	"State.toArray",
+	"State.stateMask",
+	"Conflict",
+	"MergedEdge",
+	"minimize",
+	"isEquivalent",
+	"applyMinimization",
+	"mergeEdges",
+]
+invariant = "Token expressions compile through epsilon closure, deterministic range partitioning, accepting-term-preserving minimization, conflict discovery, and the pinned compact tokenizer encoding."
+representation = "Arena indices replace linked State object references; exclusive UTF-16 range ends use the runtime's u16 sentinel representation."
+evidence_files = ["crates/rezel-generator/tests/cases.rs"]
+
+[[override_item]]
+rust_item = "rezel_generator::error::GeneratorWarning"
+classification = "adapted"
+upstream_file = "src/build.ts"
+upstream_symbols = ["BuildOptions.warn", "Builder.warn"]
+invariant = "Non-fatal generator diagnostics remain distinguishable from fatal compilation errors."
+representation = "An owned Rust warning value replaces the upstream warning callback argument."
+evidence_files = ["crates/rezel-generator/tests/cases.rs"]
+
+[[override_item]]
+rust_item = "rezel_generator::error::GeneratorWarning::new"
+classification = "adapted"
+upstream_file = "src/build.ts"
+upstream_symbols = ["Builder.warn"]
+invariant = "One non-fatal diagnostic records its message and semantic source position."
+representation = "Rust constructs a value for later return instead of invoking a callback immediately."
+
+[[override_item]]
+rust_item = "rezel_generator::error::GeneratorWarning::message"
+classification = "adapted"
+upstream_file = "src/build.ts"
+upstream_symbols = ["BuildOptions.warn"]
+invariant = "The warning's human-readable detail remains available to callers."
+representation = "The callback argument is exposed through an immutable Rust accessor."
+
+[[override_item]]
+rust_item = "rezel_generator::error::GeneratorWarning::position"
+classification = "adapted"
+upstream_file = "src/build.ts"
+upstream_symbols = ["Builder.warn"]
+invariant = "The warning exposes the grammar location associated with the diagnostic."
+representation = "Rust reports a UTF-8 byte offset instead of an upstream UTF-16 code-unit position."
+
+[[excluded]]
+upstream_file = "src/encode.ts"
+upstream_symbol = "digitToChar"
+reason = "Static Rust arrays do not use the JavaScript parser-string alphabet."
+
+[[excluded]]
+upstream_file = "src/encode.ts"
+upstream_symbol = "encode"
+reason = "Static Rust arrays replace JavaScript string encoding."
+
+[[excluded]]
+upstream_file = "src/encode.ts"
+upstream_symbol = "encodeArray"
+reason = "Static Rust arrays replace JavaScript string encoding."
+
+[[excluded]]
+upstream_file = "src/hash.ts"
+upstream_symbol = "hash"
+reason = "Rust uses structural equality, stable indices, and ordered collections instead of JavaScript hash buckets."
+
+[[excluded]]
+upstream_file = "src/hash.ts"
+upstream_symbol = "hashString"
+reason = "Rust uses structural equality, stable indices, and ordered collections instead of JavaScript string hashes."
+
+[[excluded]]
+upstream_file = "src/log.ts"
+upstream_symbol = "verbose"
+reason = "The library does not expose the package's environment-controlled debug logging."
+
+[[excluded]]
+upstream_file = "src/log.ts"
+upstream_symbol = "timing"
+reason = "The library does not expose the package's environment-controlled timing mode."
+
+[[excluded]]
+upstream_file = "src/log.ts"
+upstream_symbol = "time"
+reason = "The library does not print generator phase timings."
+
+[[excluded]]
+upstream_file = "src/build.ts"
+upstream_symbol = "buildParser"
+reason = "The Rust generator emits static Language data instead of constructing an in-process JavaScript LRParser."
+
+[[excluded]]
+upstream_file = "src/build.ts"
+upstream_symbol = "Builder.getParser"
+reason = "The Rust generator emits static Language data instead of constructing an in-process JavaScript LRParser."
+
+[[excluded]]
+upstream_file = "src/build.ts"
+upstream_symbol = "buildParserFile"
+reason = "JavaScript and TypeScript module emission is replaced by the Rezel-owned static Rust emitter."
+
+[[excluded]]
+upstream_file = "src/build.ts"
+upstream_symbol = "Builder.getParserFile"
+reason = "JavaScript and TypeScript module emission is replaced by the Rezel-owned static Rust emitter."
+
+[[excluded]]
+upstream_file = "src/build.ts"
+upstream_symbol = "BuildOptions.exportName"
+reason = "The static Rust backend has a fixed Language export shape."
+
+[[excluded]]
+upstream_file = "src/build.ts"
+upstream_symbol = "BuildOptions.moduleStyle"
+reason = "JavaScript module-style selection is not part of Rust emission."
+
+[[excluded]]
+upstream_file = "src/build.ts"
+upstream_symbol = "BuildOptions.typeScript"
+reason = "The Rust backend always emits Rust source rather than JavaScript or TypeScript."
+
+[[excluded]]
+upstream_file = "src/build.ts"
+upstream_symbol = "KEYWORDS"
+reason = "Rust identifiers are emitted through syn and do not reuse the JavaScript keyword escape table."
+
+[[excluded]]
+upstream_file = "src/automaton.ts"
+upstream_symbol = "Pos.trail"
+reason = "Rust diagnostics do not retain the upstream conflict-origin linked trail."
+
+[[excluded]]
+upstream_file = "src/automaton.ts"
+upstream_symbol = "findConflictOrigin"
+reason = "Rust reports the conflict without reconstructing the upstream origin chain."
+
+[[excluded]]
+upstream_file = "src/automaton.ts"
+upstream_symbol = "findConflictShiftSource"
+reason = "Rust reports the conflict without reconstructing the upstream shift witness."
+
+[[excluded]]
+upstream_file = "src/token.ts"
+upstream_symbol = "exampleFromEdges"
+reason = "Rust reports token overlap without constructing the upstream example string."

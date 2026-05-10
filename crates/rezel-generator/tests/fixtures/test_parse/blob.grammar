@@ -1,0 +1,5 @@
+@top Blob { ch* }
+
+@tokens {
+  ch { _ }
+}
