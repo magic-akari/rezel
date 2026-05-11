@@ -1,0 +1,16 @@
+[package]
+name = "rezel-highlight"
+version.workspace = true
+categories = ["development-tools", "text-editors"]
+edition.workspace = true
+keywords = ["syntax-highlighting", "syntax-tree", "highlighting"]
+license.workspace = true
+repository.workspace = true
+description = "Syntactic highlighting for Rezel syntax trees"
+
+[dependencies]
+rezel-common.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

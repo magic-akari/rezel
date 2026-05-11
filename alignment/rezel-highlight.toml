@@ -1,0 +1,79 @@
+schema_version = 1
+
+[component]
+name = "rezel-highlight"
+source_root = "crates/rezel-highlight/src"
+
+[upstream]
+repository = "https://github.com/lezer-parser/highlight"
+commit = "37e3eef517edd8e8dc8790419d04b61a7ac28420"
+
+[[snapshot]]
+source = "src/highlight.ts"
+path = "alignment/upstream/highlight/highlight.json"
+
+[[scope]]
+rust_file = "lib.rs"
+classification = "rezel-owned"
+invariant = "The crate root exposes syntactic tags, selector construction, and mount-aware highlighting as one downstream-facing API."
+representation = "Rust crate and module packaging is Rezel-owned; provenance for the implementation is recorded against the files that define it."
+
+[[scope]]
+rust_file = "tag.rs"
+classification = "adapted"
+upstream_file = "src/highlight.ts"
+upstream_symbols = [
+	"Tag",
+	"Tag.define",
+	"Tag.defineModifier",
+	"Tag.toString",
+	"Modifier",
+	"Modifier.get",
+	"powerSet",
+	"sameArray",
+]
+invariant = "Tag derivation, modifier idempotence and commutativity, subset fallback order, display nesting, and the official tag vocabulary match the pinned package."
+representation = "Copyable process-local Rust IDs index a synchronized registry; immutable TagSet values replace JavaScript Tag arrays while preserving identity and order."
+
+[[scope]]
+rust_file = "style.rs"
+classification = "adapted"
+upstream_file = "src/highlight.ts"
+upstream_symbols = [
+	"Mode",
+	"Rule",
+	"Rule.depth",
+	"Rule.inherit",
+	"Rule.opaque",
+	"Rule.sort",
+	"Highlighter",
+	"Highlighter.scope",
+	"Highlighter.style",
+	"getStyleTags",
+	"highlightTags",
+	"styleTags",
+	"tagHighlighter",
+]
+invariant = "Selector parsing, parent contexts, wildcard depth, inheritance, opaque nodes, rule combination, tag fallback, scope filtering, and stable classes match the pinned package."
+representation = "Fallible Rust construction replaces JavaScript RangeError, NodeProp stores immutable rule vectors instead of linked rules, and trait objects replace structural Highlighter objects."
+
+[[scope]]
+rust_file = "highlight.rs"
+classification = "adapted"
+upstream_file = "src/highlight.ts"
+upstream_symbols = [
+	"HighlightBuilder",
+	"HighlightBuilder.flush",
+	"HighlightBuilder.highlightRange",
+	"HighlightBuilder.startSpan",
+	"highlightCode",
+	"highlightTree",
+]
+invariant = "Tree traversal emits ordered non-overlapping ranges, preserves innermost and inherited styles, skips opaque children, scopes highlighters per top node, and traverses replacement and overlay mounts exactly once."
+representation = "UTF-8 TextRange coordinates replace JavaScript UTF-16 positions, and a shared tag-span traversal feeds both direct TagSet projection and downstream class emission."
+
+[[override_item]]
+rust_item = "rezel_highlight::highlight::highlight_spans"
+classification = "rezel-owned"
+invariant = "Downstream consumers can receive abstract tag ranges without first mapping them to CSS classes."
+representation = "Owned TagSet spans provide a Rust-native projection while leaving source-aligned highlight_tree behavior unchanged."

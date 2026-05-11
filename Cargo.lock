@@ -93,6 +93,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rezel-highlight"
+version = "0.0.0"
+dependencies = [
+ "rezel-common",
+ "serde_json",
+]
+
+[[package]]
 name = "rezel-lr"
 version = "0.0.0"
 dependencies = [
