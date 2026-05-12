@@ -1,6 +1,6 @@
 [alias]
 alignment = "run --package rezel-source-alignment --"
-doc-all = "doc --locked --workspace --no-deps"
-lint-all = "clippy --locked --workspace --all-targets -- -D warnings"
-test-all = "test --locked --workspace --all-targets"
-test-doc = "test --locked --workspace --doc"
+doc-all = "doc --locked --workspace --all-features --no-deps"
+lint-all = "clippy --locked --workspace --all-targets --all-features -- -D warnings"
+test-all = "test --locked --workspace --all-targets --all-features"
+test-doc = "test --locked --workspace --all-features --doc"

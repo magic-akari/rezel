@@ -9,6 +9,14 @@ postinstall = 'npm ci --prefix "{{config_root}}/tools/source-alignment"'
 description = "Verify source-alignment traceability"
 run = "cargo alignment verify"
 
+[tasks."codegen:rezel:json"]
+description = "Verify checked-in JSON parser sources"
+run = "cargo run --locked --package rezel-codegen -- json --check"
+
+[tasks."codegen:rezel:json:update"]
+description = "Regenerate checked-in JSON parser sources"
+run = "cargo run --locked --package rezel-codegen -- json --update"
+
 [tasks."codegen:rezel:fixtures"]
 description = "Verify checked-in rezel-generator test fixtures"
 run = "cargo run --locked --package rezel-codegen -- fixtures --check"
@@ -51,5 +59,6 @@ depends = [
 	"lint",
 	"docs",
 	"alignment",
+	"codegen:rezel:json",
 	"codegen:rezel:fixtures",
 ]

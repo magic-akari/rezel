@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/lezer-parser/json",
+  "commit": "a48f95d0d403b8b13f14d466216bf017dacd7a34",
+  "source": "src/highlight.js",
+  "blob_oid": "19032312379dca56422586c60dc6ee294c0a6cde",
+  "symbols": [
+    "jsonHighlighting"
+  ]
+}

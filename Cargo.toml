@@ -4,6 +4,7 @@ members = [
 	"crates/rezel-generator",
 	"crates/rezel-highlight",
 	"crates/rezel-lr",
+	"languages/json",
 	"tools/codegen",
 	"tools/source-alignment",
 ]

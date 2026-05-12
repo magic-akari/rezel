@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use rezel_generator::{BuildOptions, CompiledGrammar, RustBindings, compile_grammar, emit_rust};
 
-const USAGE: &str = "Usage: rezel-codegen fixtures (--check | --update)";
+const USAGE: &str = "Usage: rezel-codegen (json | fixtures) (--check | --update)";
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
@@ -30,13 +30,47 @@ fn run(arguments: &[String]) -> Result<()> {
     let mode = Mode::parse(mode).ok_or(USAGE)?;
     let regeneration_command = scope.regeneration_command();
     let root = workspace_root()?;
-    let mut outputs = Outputs::new(&root, mode, regeneration_command);
+    let mut outputs = Outputs::new(&root, mode, &regeneration_command);
     match scope {
+        Scope::Language(language) => {
+            generate_language(&root, language, &regeneration_command, &mut outputs)?;
+        }
         Scope::Fixtures => {
-            generate_fixtures(&root, regeneration_command, &mut outputs)?;
+            generate_fixtures(&root, &regeneration_command, &mut outputs)?;
         }
     }
     outputs.finish()
+}
+
+fn generate_language(
+    root: &Path,
+    language: &str,
+    regeneration_command: &str,
+    outputs: &mut Outputs<'_>,
+) -> Result<()> {
+    let language_root = root.join("languages").join(language);
+    let grammar_path = language_root
+        .join("grammar")
+        .join(format!("{language}.grammar"));
+    let grammar_source = fs::read_to_string(&grammar_path)?;
+    let source_name = relative_name(root, &grammar_path);
+    let grammar = compile_grammar(
+        &grammar_source,
+        Some(&source_name),
+        BuildOptions {
+            include_names: true,
+        },
+    )?;
+    reject_warnings(language, &grammar)?;
+    let bindings = language_bindings(language);
+    let generated = emit_rust(&grammar, &bindings)?;
+    let source_root = language_root.join("src");
+    outputs.manage_scoped_source_directory(&source_root, regeneration_command);
+    let parser = annotated(&generated.parser, regeneration_command)?;
+    outputs.emit(&source_root.join("generated.rs"), &parser)?;
+    let terms = annotated(&generated.terms, regeneration_command)?;
+    outputs.emit(&source_root.join("terms.rs"), &terms)?;
+    Ok(())
 }
 
 fn workspace_root() -> Result<PathBuf> {
@@ -185,6 +219,13 @@ fn utf8_file_stem(path: &Path) -> Result<&str> {
         .ok_or_else(|| format!("path has no UTF-8 file stem: {}", path.display()).into())
 }
 
+fn relative_name(root: &Path, path: &Path) -> String {
+    path.strip_prefix(root)
+        .unwrap_or(path)
+        .to_string_lossy()
+        .into_owned()
+}
+
 fn snake_case(name: &str) -> String {
     let mut output = String::new();
     for character in name.chars() {
@@ -213,6 +254,17 @@ fn case_bindings(name: &str) -> RustBindings {
         "ExternalProp" => {
             RustBindings::default().with("./script", "tag", "crate::support::externals::tag")
         }
+        _ => RustBindings::default(),
+    }
+}
+
+fn language_bindings(language: &str) -> RustBindings {
+    match language {
+        "json" => RustBindings::default().with(
+            "./highlight",
+            "jsonHighlighting",
+            "crate::json_highlighting",
+        ),
         _ => RustBindings::default(),
     }
 }
@@ -258,21 +310,28 @@ generated_cases! {
 
 #[derive(Clone, Copy)]
 enum Scope {
+    Language(&'static str),
     Fixtures,
 }
 
 impl Scope {
     fn parse(value: &str) -> Option<Self> {
         match value {
+            "json" => Some(Self::Language("json")),
             "fixtures" => Some(Self::Fixtures),
             _ => None,
         }
     }
 
-    fn regeneration_command(self) -> &'static str {
+    fn name(self) -> &'static str {
         match self {
-            Self::Fixtures => "mise run codegen:rezel:fixtures:update",
+            Self::Language(language) => language,
+            Self::Fixtures => "fixtures",
         }
+    }
+
+    fn regeneration_command(self) -> String {
+        format!("mise run codegen:rezel:{}:update", self.name())
     }
 }
 
@@ -298,6 +357,7 @@ struct Outputs<'a> {
     regeneration_command: &'a str,
     expected: BTreeMap<PathBuf, Vec<u8>>,
     managed_directories: BTreeSet<PathBuf>,
+    scoped_source_directories: BTreeMap<PathBuf, String>,
 }
 
 impl<'a> Outputs<'a> {
@@ -308,11 +368,17 @@ impl<'a> Outputs<'a> {
             regeneration_command,
             expected: BTreeMap::new(),
             managed_directories: BTreeSet::new(),
+            scoped_source_directories: BTreeMap::new(),
         }
     }
 
     fn manage_generated_directory(&mut self, path: &Path) {
         self.managed_directories.insert(path.to_path_buf());
+    }
+
+    fn manage_scoped_source_directory(&mut self, path: &Path, regeneration_command: &str) {
+        self.scoped_source_directories
+            .insert(path.to_path_buf(), regeneration_command.to_owned());
     }
 
     fn emit(&mut self, path: &Path, source: &str) -> Result<()> {
@@ -344,23 +410,39 @@ impl<'a> Outputs<'a> {
     fn orphaned_outputs(&self) -> Result<Vec<PathBuf>> {
         let mut orphans = BTreeSet::new();
         for directory in &self.managed_directories {
-            let entries = match fs::read_dir(directory) {
-                Ok(entries) => entries,
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
-                Err(error) => return Err(error.into()),
-            };
-            for entry in entries {
-                let entry = entry?;
-                if !entry.file_type()?.is_file() {
-                    continue;
-                }
-                let path = entry.path();
-                if !self.expected.contains_key(&path) {
-                    orphans.insert(path);
-                }
-            }
+            self.collect_orphans(directory, &mut orphans, |_| Ok(true))?;
+        }
+        for (directory, command) in &self.scoped_source_directories {
+            self.collect_orphans(directory, &mut orphans, |path| {
+                source_belongs_to_command(path, command)
+            })?;
         }
         Ok(orphans.into_iter().collect())
+    }
+
+    fn collect_orphans(
+        &self,
+        directory: &Path,
+        orphans: &mut BTreeSet<PathBuf>,
+        belongs_to_scope: impl Fn(&Path) -> Result<bool>,
+    ) -> Result<()> {
+        let entries = match fs::read_dir(directory) {
+            Ok(entries) => entries,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(error) => return Err(error.into()),
+        };
+        for entry in entries {
+            let entry = entry?;
+            if !entry.file_type()?.is_file() {
+                continue;
+            }
+            let path = entry.path();
+            if self.expected.contains_key(&path) || !belongs_to_scope(&path)? {
+                continue;
+            }
+            orphans.insert(path);
+        }
+        Ok(())
     }
 
     fn stale_error(&self, changed: &[PathBuf], orphans: &[PathBuf]) -> Box<dyn Error> {
@@ -427,6 +509,18 @@ impl<'a> Outputs<'a> {
             }
         }
     }
+}
+
+fn source_belongs_to_command(path: &Path, regeneration_command: &str) -> Result<bool> {
+    if path.extension().is_none_or(|extension| extension != "rs") {
+        return Ok(false);
+    }
+    let source = fs::read_to_string(path)?;
+    let mut lines = source.lines();
+    let marker = lines.next().unwrap_or_default();
+    let command = lines.next().unwrap_or_default();
+    let expected_command = format!("// Regenerate with: {regeneration_command}");
+    Ok(marker.starts_with("// @generated by ") && command == expected_command)
 }
 
 struct StagedOutput {
@@ -590,5 +684,45 @@ mod tests {
         assert_eq!(fs::read_to_string(&output).unwrap(), "old");
         committed.finish().unwrap();
         assert_eq!(fs::read_to_string(&output).unwrap(), "new");
+    }
+
+    #[test]
+    fn scoped_directories_reconcile_only_their_own_generated_sources() {
+        let temporary = TemporaryDirectory::new();
+        let source_root = temporary.0.join("src");
+        fs::create_dir(&source_root).unwrap();
+        let command = "mise run codegen:rezel:json:update";
+        let owned = source_root.join("obsolete.rs");
+        let foreign = source_root.join("foreign.rs");
+        let handwritten = source_root.join("handwritten.rs");
+        fs::write(
+            &owned,
+            format!(
+                "// @generated by rezel-generator. Do not edit manually.\n\
+                 // Regenerate with: {command}\n"
+            ),
+        )
+        .unwrap();
+        fs::write(
+            &foreign,
+            "// @generated by another-generator. Do not edit manually.\n\
+             // Regenerate with: mise run codegen:another:update\n",
+        )
+        .unwrap();
+        fs::write(&handwritten, "fn handwritten() {}\n").unwrap();
+
+        let mut check = Outputs::new(&temporary.0, Mode::Check, command);
+        check.manage_scoped_source_directory(&source_root, command);
+        let error = check.finish().unwrap_err().to_string();
+        assert!(error.contains("src/obsolete.rs"));
+        assert!(!error.contains("src/foreign.rs"));
+        assert!(!error.contains("src/handwritten.rs"));
+
+        let mut update = Outputs::new(&temporary.0, Mode::Update, command);
+        update.manage_scoped_source_directory(&source_root, command);
+        update.finish().unwrap();
+        assert!(!owned.exists());
+        assert!(foreign.exists());
+        assert!(handwritten.exists());
     }
 }
