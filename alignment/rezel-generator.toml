@@ -269,6 +269,27 @@ invariant = "Token expressions compile through epsilon closure, deterministic ra
 representation = "Arena indices replace linked State object references; exclusive UTF-16 range ends use the runtime's u16 sentinel representation."
 evidence_files = ["crates/rezel-generator/tests/cases.rs"]
 
+[[scope]]
+rust_file = "typed.rs"
+classification = "rezel-owned"
+invariant = "A declarative schema is validated against visible grammar kinds and normalized productions before deterministic zero-copy Rust wrappers are emitted."
+representation = "TOML schemas, Rust type identity, and generated enums provide a language-specific typed CST layer absent from the JavaScript generator."
+evidence_files = ["crates/rezel-generator/tests/typed_syntax.rs"]
+
+[[override_item]]
+rust_item = "rezel_generator::build::ProductionMetadata"
+classification = "rezel-owned"
+invariant = "Normalized productions remain available for typed-schema cardinality validation."
+representation = "Emitted term identifiers and vectors expose the already-lowered Rust grammar structure."
+evidence_files = ["crates/rezel-generator/tests/typed_syntax.rs"]
+
+[[override_item]]
+rust_item = "rezel_generator::build::SyntaxMetadata"
+classification = "rezel-owned"
+invariant = "Visible terms and normalized productions remain available for typed-schema validation."
+representation = "A Rust-only metadata projection supplements the source-aligned parser tables."
+evidence_files = ["crates/rezel-generator/tests/typed_syntax.rs"]
+
 [[override_item]]
 rust_item = "rezel_generator::error::GeneratorWarning"
 classification = "adapted"

@@ -14,10 +14,11 @@ proc-macro2.workspace = true
 quote.workspace = true
 rezel-common.workspace = true
 rezel-lr.workspace = true
+serde.workspace = true
 syn = { workspace = true, features = ["full"] }
+toml.workspace = true
 
 [dev-dependencies]
-serde.workspace = true
 serde_json.workspace = true
 
 [lints]

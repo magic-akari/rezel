@@ -6,7 +6,9 @@ use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use rezel_generator::{BuildOptions, RustBindings, compile_grammar, emit_rust, emit_terms};
+use rezel_generator::{
+    BuildOptions, RustBindings, compile_grammar, emit_rust, emit_terms, emit_typed_syntax,
+};
 
 fn main() {
     let arguments = env::args_os().skip(1).collect::<Vec<_>>();
@@ -52,6 +54,8 @@ fn generate(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
     let mut terms_output = None;
     let mut include_names = false;
     let mut bindings = RustBindings::default();
+    let mut typed_path = None;
+    let mut typed_output = None;
     let mut index = 0;
     while index < arguments.len() {
         let argument = arguments[index]
@@ -75,6 +79,14 @@ fn generate(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
                     .ok_or("--binding requires SOURCE:NAME=RUST_PATH")?;
                 bindings = parse_binding(bindings, value)?;
             }
+            "--typed" => {
+                index += 1;
+                typed_path = Some(path_value(arguments, index, argument)?);
+            }
+            "--typed-output" => {
+                index += 1;
+                typed_output = Some(path_value(arguments, index, argument)?);
+            }
             value if value.starts_with('-') => {
                 return Err(format!("unknown generate option {value:?}").into());
             }
@@ -87,12 +99,20 @@ fn generate(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
     }
     let grammar_path = grammar_path.ok_or("generate requires a grammar path")?;
     let output = output.ok_or("generate requires --output PATH")?;
+    if typed_path.is_some() != typed_output.is_some() {
+        return Err("generate requires --typed and --typed-output together".into());
+    }
     let grammar = read_grammar_with_options(&grammar_path, include_names)?;
     print_warnings(&grammar);
     let generated = emit_rust(&grammar, &bindings)?;
     fs::write(&output, generated.parser)?;
     if let Some(terms_output) = terms_output {
         fs::write(terms_output, generated.terms)?;
+    }
+    if let Some((typed_path, typed_output)) = typed_path.zip(typed_output) {
+        let schema = fs::read_to_string(typed_path)?;
+        let typed = emit_typed_syntax(&grammar, &schema)?;
+        fs::write(typed_output, typed)?;
     }
     Ok(())
 }
@@ -188,5 +208,6 @@ fn usage() -> &'static str {
      \x20 rezel check GRAMMAR\n\
      \x20 rezel generate GRAMMAR --output PARSER.rs [--terms TERMS.rs]\n\
      \x20       [--include-names] [--binding SOURCE:NAME=RUST_PATH]...\n\
+     \x20       [--typed SCHEMA.toml --typed-output TYPED.rs]\n\
      \x20 rezel terms GRAMMAR [--output TERMS.rs]"
 }

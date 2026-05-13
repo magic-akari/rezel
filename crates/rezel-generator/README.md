@@ -29,6 +29,13 @@ rezel terms grammar.grammar --output terms.rs
 context trackers, and node properties are linked with repeated
 `--binding SOURCE:NAME=RUST_PATH` options.
 
+Zero-copy typed syntax wrappers can be generated from a separate schema:
+
+```console
+rezel generate language.grammar --output generated.rs \
+  --typed language.typed.toml --typed-output typed.rs
+```
+
 ## Library interface
 
 The same pipeline is available without spawning the CLI:

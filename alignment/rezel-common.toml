@@ -84,6 +84,13 @@ upstream_symbols = ["NestedParse", "parseMixed", "MixedParse", "checkRanges", "p
 invariant = "Mixed parsing completes the outer parse, parses selected nested ranges, and mounts replacement or overlay trees."
 representation = "Incremental fragment and reuse paths are excluded, and packed targets are materialized before mounting."
 
+[[scope]]
+rust_file = "typed.rs"
+classification = "rezel-owned"
+invariant = "Typed wrappers preserve concrete language identity, retain the original node on failed downcasts, and lazily project direct children."
+representation = "Rust traits and generic iterators add a zero-copy language-specific view over the source-aligned generic CST."
+evidence_files = ["crates/rezel-common/tests/typed.rs"]
+
 [[override_item]]
 rust_item = "rezel_common::parse::ParseRequest::map_input"
 classification = "rezel-owned"

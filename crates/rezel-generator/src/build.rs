@@ -110,6 +110,22 @@ pub struct TopRuleMetadata {
     pub term: u16,
 }
 
+/// One normalized grammar production expressed in emitted term ids.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProductionMetadata {
+    pub lhs: u16,
+    pub rhs: Vec<u16>,
+}
+
+/// Grammar structure retained only for typed-syntax schema validation.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SyntaxMetadata {
+    /// Node terms that remain visible through the default CST traversal.
+    pub visible_terms: Vec<u16>,
+    /// Productions after EBNF lowering, inlining, and equivalent-rule merge.
+    pub productions: Vec<ProductionMetadata>,
+}
+
 /// Static parser data produced from a grammar.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CompiledGrammar {
@@ -131,6 +147,7 @@ pub struct CompiledGrammar {
     pub specializers: Vec<SpecializerMetadata>,
     pub term_names: Vec<(u16, String)>,
     pub terms: BTreeMap<String, u16>,
+    pub syntax: SyntaxMetadata,
     pub warnings: Vec<GeneratorWarning>,
 }
 
@@ -474,6 +491,7 @@ impl Builder {
         let state_data = data.finish();
         let goto = compute_goto_table(&table, &self.terms)?;
         let node_types = self.gather_node_metadata(&finished);
+        let syntax = self.gather_syntax_metadata(&finished);
         let top_rules = self.gather_top_rules(&table)?;
         let dialects = self.gather_dialects();
         let dynamic_precedences = self
@@ -512,6 +530,7 @@ impl Builder {
             specializers,
             term_names,
             terms: term_table,
+            syntax,
             warnings: self.warnings,
         })
     }
@@ -892,6 +911,35 @@ impl Builder {
             .collect::<Vec<_>>();
         result.sort_by_key(|node| node.id);
         result
+    }
+
+    fn gather_syntax_metadata(&self, finished: &FinishedTerms) -> SyntaxMetadata {
+        let visible_terms = finished
+            .node_types
+            .iter()
+            .copied()
+            .filter(|term| {
+                let term = &self.terms.terms[*term];
+                !term.repeated() && term.node_name.is_some()
+            })
+            .map(|term| self.terms.output_id(term))
+            .collect();
+        let productions = self
+            .rules
+            .iter()
+            .map(|rule| ProductionMetadata {
+                lhs: self.terms.output_id(rule.name),
+                rhs: rule
+                    .parts
+                    .iter()
+                    .map(|part| self.terms.output_id(*part))
+                    .collect(),
+            })
+            .collect();
+        SyntaxMetadata {
+            visible_terms,
+            productions,
+        }
     }
 
     fn gather_non_skipped_nodes(&self) -> BTreeSet<TermId> {

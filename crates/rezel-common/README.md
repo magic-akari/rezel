@@ -10,6 +10,7 @@ direct dependency on `rezel-common` when your code needs to:
 
 - inspect generic `Tree`, `SyntaxNode`, `TreeCursor`, or `NodeType` values;
 - implement an `Input`, `Parser`, or `PartialParse` adapter;
+- implement language-specific typed CST wrappers;
 - define or consume node properties;
 - integrate mounted trees, overlays, or mixed-language parsing.
 

@@ -5,6 +5,7 @@ mod mix;
 mod parse;
 mod prop;
 mod tree;
+mod typed;
 
 pub use text_size::{TextRange, TextSize};
 
@@ -22,3 +23,4 @@ pub use tree::{
     PostfixBuffer, PostfixCursor, SyntaxChildren, SyntaxNode, Tree, TreeBuffer, TreeBuild,
     TreeChild, TreeCursor,
 };
+pub use typed::{SyntaxLanguage, TypedChildren, TypedNode};
