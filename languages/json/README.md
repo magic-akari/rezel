@@ -18,6 +18,11 @@ assert_eq!(recovered.to_string(), strict.to_string());
 # }
 ```
 
-The default feature set contains only parsing. Enable the optional `highlight`
-feature to attach the upstream `jsonHighlighting` property source and use
-`rezel-highlight` to project syntactic tags.
+The generic Rezel CST is always available. The crate also exposes zero-copy
+typed syntax wrappers such as `JsonRoot`, `JsonObject`, `JsonArray`, and
+`JsonValue`. Import the re-exported `TypedNode` trait to use `downcast_from`,
+`syntax`, `into_syntax`, and `text`.
+
+Typed syntax is a view over the same CST rather than an owned semantic JSON
+model. It does not depend on the optional `highlight` feature, which attaches
+the upstream `jsonHighlighting` property source for use with `rezel-highlight`.

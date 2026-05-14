@@ -26,11 +26,12 @@ evidence_files = [
 [[scope]]
 rust_file = "lib.rs"
 classification = "rezel-owned"
-invariant = "Downstream users receive one cheaply cloned recovering JSON parser with optional syntactic highlighting."
-representation = "A Rust crate facade and feature gate package the generated language without changing its grammar."
+invariant = "Downstream users receive one cheaply cloned recovering JSON parser, zero-copy typed CST wrappers, and optional syntactic highlighting."
+representation = "A Rust crate facade re-exports the generated parser, terms, and typed syntax while a feature gate selects JSON highlighting."
 evidence_files = [
 	"languages/json/tests/contract.rs",
 	"languages/json/tests/parse.rs",
+	"languages/json/tests/typed.rs",
 ]
 
 [[scope]]
@@ -39,6 +40,17 @@ classification = "rezel-owned"
 invariant = "Named JSON grammar terms are exposed as deterministic Rust constants with the generated parser's term identifiers."
 representation = "Rezel's Rust backend emits constants from the unchanged pinned grammar."
 evidence_files = ["tools/codegen/src/main.rs"]
+
+[[scope]]
+rust_file = "typed.rs"
+classification = "rezel-owned"
+invariant = "The complete JSON typed schema exposes zero-copy, identity-safe wrappers and lazy direct-child accessors over the generic CST."
+representation = "Checked generated Rust implements Rezel's TypedNode API from grammar/json.typed.toml without constructing a semantic JSON model."
+evidence_files = [
+	"languages/json/grammar/json.typed.toml",
+	"tools/codegen/src/main.rs",
+	"languages/json/tests/typed.rs",
+]
 
 [[override_item]]
 rust_item = "rezel_json::json_highlighting"

@@ -8,7 +8,9 @@ use std::fs::{self, OpenOptions};
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
-use rezel_generator::{BuildOptions, CompiledGrammar, RustBindings, compile_grammar, emit_rust};
+use rezel_generator::{
+    BuildOptions, CompiledGrammar, RustBindings, compile_grammar, emit_rust, emit_typed_syntax,
+};
 
 const USAGE: &str = "Usage: rezel-codegen (json | fixtures) (--check | --update)";
 
@@ -52,6 +54,9 @@ fn generate_language(
     let grammar_path = language_root
         .join("grammar")
         .join(format!("{language}.grammar"));
+    let typed_path = language_root
+        .join("grammar")
+        .join(format!("{language}.typed.toml"));
     let grammar_source = fs::read_to_string(&grammar_path)?;
     let source_name = relative_name(root, &grammar_path);
     let grammar = compile_grammar(
@@ -70,6 +75,11 @@ fn generate_language(
     outputs.emit(&source_root.join("generated.rs"), &parser)?;
     let terms = annotated(&generated.terms, regeneration_command)?;
     outputs.emit(&source_root.join("terms.rs"), &terms)?;
+
+    let typed_schema = fs::read_to_string(typed_path)?;
+    let typed = emit_typed_syntax(&grammar, &typed_schema)?;
+    let typed = annotated(&typed, regeneration_command)?;
+    outputs.emit(&source_root.join("typed.rs"), &typed)?;
     Ok(())
 }
 

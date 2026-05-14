@@ -1,0 +1,128 @@
+language = "JsonLanguage"
+kind = "JsonKind"
+language_path = "crate::generated::LANGUAGE"
+coverage = "complete"
+ignore = ["⚠", "{", "}", "[", "]", ":", ","]
+
+[kind_names]
+"⚠" = "Error"
+"{" = "LeftBrace"
+"}" = "RightBrace"
+"[" = "LeftBracket"
+"]" = "RightBracket"
+":" = "Colon"
+"," = "Comma"
+
+[[node]]
+name = "JsonRoot"
+kind = "JsonText"
+
+[[node.field]]
+name = "value"
+type = "JsonValue"
+cardinality = "one"
+selector = { union = "JsonValue" }
+
+[[node]]
+name = "JsonObject"
+kind = "Object"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "properties"
+type = "JsonProperty"
+cardinality = "many"
+selector = { node = "Property" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "JsonArray"
+kind = "Array"
+
+[[node.field]]
+name = "left_bracket_token"
+cardinality = "one"
+selector = { token = "[" }
+
+[[node.field]]
+name = "values"
+type = "JsonValue"
+cardinality = "many"
+selector = { union = "JsonValue" }
+
+[[node.field]]
+name = "right_bracket_token"
+cardinality = "one"
+selector = { token = "]" }
+
+[[node]]
+name = "JsonProperty"
+kind = "Property"
+
+[[node.field]]
+name = "name"
+type = "JsonPropertyName"
+cardinality = "one"
+selector = { node = "PropertyName" }
+
+[[node.field]]
+name = "colon_token"
+cardinality = "one"
+selector = { token = ":" }
+
+[[node.field]]
+name = "value"
+type = "JsonValue"
+cardinality = "one"
+selector = { union = "JsonValue" }
+
+[[node]]
+name = "JsonPropertyName"
+kind = "PropertyName"
+
+[[node]]
+name = "JsonString"
+kind = "String"
+
+[[node]]
+name = "JsonNumber"
+kind = "Number"
+
+[[node]]
+name = "JsonTrue"
+kind = "True"
+
+[[node]]
+name = "JsonFalse"
+kind = "False"
+
+[[node]]
+name = "JsonNull"
+kind = "Null"
+
+[[union]]
+name = "JsonBoolean"
+variants = [
+	{ name = "True", type = "JsonTrue" },
+	{ name = "False", type = "JsonFalse" },
+]
+
+[[union]]
+name = "JsonValue"
+variants = [
+	{ name = "True", type = "JsonTrue" },
+	{ name = "False", type = "JsonFalse" },
+	{ name = "Null", type = "JsonNull" },
+	{ name = "Number", type = "JsonNumber" },
+	{ name = "String", type = "JsonString" },
+	{ name = "Object", type = "JsonObject" },
+	{ name = "Array", type = "JsonArray" },
+]

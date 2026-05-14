@@ -8,9 +8,17 @@ use rezel_lr::LRParser;
 
 #[rustfmt::skip]
 mod generated;
+#[rustfmt::skip]
+mod typed;
 
 /// Named grammar terms emitted by `rezel-generator`.
 pub mod terms;
+
+pub use rezel_common::TypedNode;
+pub use typed::{
+    JsonArray, JsonBoolean, JsonFalse, JsonKind, JsonLanguage, JsonNull, JsonNumber, JsonObject,
+    JsonProperty, JsonPropertyName, JsonRoot, JsonString, JsonTrue, JsonValue,
+};
 
 /// Return a cheaply cloned recovering JSON parser.
 #[must_use]
