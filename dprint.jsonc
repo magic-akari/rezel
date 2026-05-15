@@ -9,7 +9,12 @@
 	"toml": {},
 	"yaml": {},
 
-	"excludes": ["**/package-lock.json", "alignment/upstream/**/*.json"],
+	"excludes": [
+		"**/package-lock.json",
+		"**/tests/conformance/**",
+		"**/tests/upstream/**",
+		"alignment/upstream/**/*.json"
+	],
 
 	"plugins": [
 		"https://plugins.dprint.dev/biome-0.12.10.wasm",

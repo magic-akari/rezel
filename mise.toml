@@ -51,6 +51,10 @@ run = [
 	"cargo test-doc",
 ]
 
+[tasks."test:full"]
+description = "Run extended test coverage"
+run = "cargo test-json-full"
+
 [tasks.verify]
 description = "Run the repository verification suite"
 depends = [
@@ -62,3 +66,7 @@ depends = [
 	"codegen:rezel:json",
 	"codegen:rezel:fixtures",
 ]
+
+[tasks."verify:full"]
+description = "Run the full repository verification suite"
+depends = ["verify", "test:full"]

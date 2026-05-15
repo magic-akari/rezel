@@ -1,1 +1,2 @@
 crates/rezel-generator/tests/upstream/cases/** -whitespace
+languages/json/tests/conformance/json-test-suite/** -whitespace
