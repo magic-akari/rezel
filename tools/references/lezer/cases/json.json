@@ -1,0 +1,43 @@
+{
+	"schema": "rezel.lezer-json-reference-cases.v1",
+	"strict": [
+		{
+			"id": "scalars",
+			"source": "[null,true,false,-12.5e+2,\"text\"]"
+		},
+		{
+			"id": "string-escapes",
+			"source": "[\"quote: \\\"\",\"slash: \\\\\",\"unicode: \\u4f60\\u597d\"]"
+		},
+		{
+			"id": "nested-utf8",
+			"source": " { \"你好\": [true, \"值\", null, {\"emoji\":\"😀\"}] } "
+		},
+		{
+			"id": "empty-containers",
+			"source": "{\"object\":{},\"array\":[]}"
+		}
+	],
+	"recovering": [
+		{
+			"id": "empty-document",
+			"source": ""
+		},
+		{
+			"id": "unterminated-object",
+			"source": "{"
+		},
+		{
+			"id": "missing-property-value",
+			"source": "{\"a\":}"
+		},
+		{
+			"id": "trailing-array-comma",
+			"source": "[1,]"
+		},
+		{
+			"id": "missing-array-comma",
+			"source": "[1 2]"
+		}
+	]
+}

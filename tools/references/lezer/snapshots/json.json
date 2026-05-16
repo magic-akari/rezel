@@ -1,0 +1,543 @@
+{
+	"schema": "rezel.lezer-json-reference-snapshot.v1",
+	"reference": {
+		"name": "@lezer/json",
+		"version": "1.0.3",
+		"integrity": "sha512-BP9KzdF9Y35PDpv04r0VeSTKDeox5vVr3efE7eBbx3r4s3oNLfunchejZhjArmeieBH+nVOpgIiBJpEAv8ilqQ=="
+	},
+	"strict": [
+		{
+			"id": "scalars",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 33,
+				"children": [
+					{
+						"name": "Array",
+						"from": 0,
+						"to": 33,
+						"children": [
+							{
+								"name": "[",
+								"from": 0,
+								"to": 1
+							},
+							{
+								"name": "Null",
+								"from": 1,
+								"to": 5
+							},
+							{
+								"name": ",",
+								"from": 5,
+								"to": 6
+							},
+							{
+								"name": "True",
+								"from": 6,
+								"to": 10
+							},
+							{
+								"name": ",",
+								"from": 10,
+								"to": 11
+							},
+							{
+								"name": "False",
+								"from": 11,
+								"to": 16
+							},
+							{
+								"name": ",",
+								"from": 16,
+								"to": 17
+							},
+							{
+								"name": "Number",
+								"from": 17,
+								"to": 25
+							},
+							{
+								"name": ",",
+								"from": 25,
+								"to": 26
+							},
+							{
+								"name": "String",
+								"from": 26,
+								"to": 32
+							},
+							{
+								"name": "]",
+								"from": 32,
+								"to": 33
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "string-escapes",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 49,
+				"children": [
+					{
+						"name": "Array",
+						"from": 0,
+						"to": 49,
+						"children": [
+							{
+								"name": "[",
+								"from": 0,
+								"to": 1
+							},
+							{
+								"name": "String",
+								"from": 1,
+								"to": 12
+							},
+							{
+								"name": ",",
+								"from": 12,
+								"to": 13
+							},
+							{
+								"name": "String",
+								"from": 13,
+								"to": 24
+							},
+							{
+								"name": ",",
+								"from": 24,
+								"to": 25
+							},
+							{
+								"name": "String",
+								"from": 25,
+								"to": 48
+							},
+							{
+								"name": "]",
+								"from": 48,
+								"to": 49
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "nested-utf8",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 53,
+				"children": [
+					{
+						"name": "Object",
+						"from": 1,
+						"to": 52,
+						"children": [
+							{
+								"name": "{",
+								"from": 1,
+								"to": 2
+							},
+							{
+								"name": "Property",
+								"from": 3,
+								"to": 50,
+								"children": [
+									{
+										"name": "PropertyName",
+										"from": 3,
+										"to": 11
+									},
+									{
+										"name": ":",
+										"from": 11,
+										"to": 12
+									},
+									{
+										"name": "Array",
+										"from": 13,
+										"to": 50,
+										"children": [
+											{
+												"name": "[",
+												"from": 13,
+												"to": 14
+											},
+											{
+												"name": "True",
+												"from": 14,
+												"to": 18
+											},
+											{
+												"name": ",",
+												"from": 18,
+												"to": 19
+											},
+											{
+												"name": "String",
+												"from": 20,
+												"to": 25
+											},
+											{
+												"name": ",",
+												"from": 25,
+												"to": 26
+											},
+											{
+												"name": "Null",
+												"from": 27,
+												"to": 31
+											},
+											{
+												"name": ",",
+												"from": 31,
+												"to": 32
+											},
+											{
+												"name": "Object",
+												"from": 33,
+												"to": 49,
+												"children": [
+													{
+														"name": "{",
+														"from": 33,
+														"to": 34
+													},
+													{
+														"name": "Property",
+														"from": 34,
+														"to": 48,
+														"children": [
+															{
+																"name": "PropertyName",
+																"from": 34,
+																"to": 41
+															},
+															{
+																"name": ":",
+																"from": 41,
+																"to": 42
+															},
+															{
+																"name": "String",
+																"from": 42,
+																"to": 48
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 48,
+														"to": 49
+													}
+												]
+											},
+											{
+												"name": "]",
+												"from": 49,
+												"to": 50
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "}",
+								"from": 51,
+								"to": 52
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "empty-containers",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 24,
+				"children": [
+					{
+						"name": "Object",
+						"from": 0,
+						"to": 24,
+						"children": [
+							{
+								"name": "{",
+								"from": 0,
+								"to": 1
+							},
+							{
+								"name": "Property",
+								"from": 1,
+								"to": 12,
+								"children": [
+									{
+										"name": "PropertyName",
+										"from": 1,
+										"to": 9
+									},
+									{
+										"name": ":",
+										"from": 9,
+										"to": 10
+									},
+									{
+										"name": "Object",
+										"from": 10,
+										"to": 12,
+										"children": [
+											{
+												"name": "{",
+												"from": 10,
+												"to": 11
+											},
+											{
+												"name": "}",
+												"from": 11,
+												"to": 12
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": ",",
+								"from": 12,
+								"to": 13
+							},
+							{
+								"name": "Property",
+								"from": 13,
+								"to": 23,
+								"children": [
+									{
+										"name": "PropertyName",
+										"from": 13,
+										"to": 20
+									},
+									{
+										"name": ":",
+										"from": 20,
+										"to": 21
+									},
+									{
+										"name": "Array",
+										"from": 21,
+										"to": 23,
+										"children": [
+											{
+												"name": "[",
+												"from": 21,
+												"to": 22
+											},
+											{
+												"name": "]",
+												"from": 22,
+												"to": 23
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "}",
+								"from": 23,
+								"to": 24
+							}
+						]
+					}
+				]
+			}
+		}
+	],
+	"recovering": [
+		{
+			"id": "empty-document",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 0,
+				"children": [
+					{
+						"name": "⚠",
+						"from": 0,
+						"to": 0
+					}
+				]
+			}
+		},
+		{
+			"id": "unterminated-object",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 1,
+				"children": [
+					{
+						"name": "Object",
+						"from": 0,
+						"to": 1,
+						"children": [
+							{
+								"name": "{",
+								"from": 0,
+								"to": 1
+							},
+							{
+								"name": "⚠",
+								"from": 1,
+								"to": 1
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "missing-property-value",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 6,
+				"children": [
+					{
+						"name": "Object",
+						"from": 0,
+						"to": 6,
+						"children": [
+							{
+								"name": "{",
+								"from": 0,
+								"to": 1
+							},
+							{
+								"name": "Property",
+								"from": 1,
+								"to": 5,
+								"children": [
+									{
+										"name": "PropertyName",
+										"from": 1,
+										"to": 4
+									},
+									{
+										"name": ":",
+										"from": 4,
+										"to": 5
+									},
+									{
+										"name": "⚠",
+										"from": 5,
+										"to": 5
+									}
+								]
+							},
+							{
+								"name": "}",
+								"from": 5,
+								"to": 6
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "trailing-array-comma",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 4,
+				"children": [
+					{
+						"name": "Array",
+						"from": 0,
+						"to": 4,
+						"children": [
+							{
+								"name": "[",
+								"from": 0,
+								"to": 1
+							},
+							{
+								"name": "Number",
+								"from": 1,
+								"to": 2
+							},
+							{
+								"name": ",",
+								"from": 2,
+								"to": 3
+							},
+							{
+								"name": "⚠",
+								"from": 3,
+								"to": 3
+							},
+							{
+								"name": "]",
+								"from": 3,
+								"to": 4
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "missing-array-comma",
+			"tree": {
+				"name": "JsonText",
+				"from": 0,
+				"to": 5,
+				"children": [
+					{
+						"name": "Array",
+						"from": 0,
+						"to": 5,
+						"children": [
+							{
+								"name": "[",
+								"from": 0,
+								"to": 1
+							},
+							{
+								"name": "Number",
+								"from": 1,
+								"to": 2
+							},
+							{
+								"name": "⚠",
+								"from": 3,
+								"to": 4,
+								"children": [
+									{
+										"name": "Number",
+										"from": 3,
+										"to": 4
+									}
+								]
+							},
+							{
+								"name": "]",
+								"from": 4,
+								"to": 5
+							}
+						]
+					}
+				]
+			}
+		}
+	]
+}

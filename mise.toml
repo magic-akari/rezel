@@ -3,7 +3,10 @@ dprint = "0.54.0"
 node = "26.1.0"
 
 [hooks]
-postinstall = 'npm ci --prefix "{{config_root}}/tools/source-alignment"'
+postinstall = [
+	'npm ci --prefix "{{config_root}}/tools/source-alignment"',
+	'npm ci --prefix "{{config_root}}/tools/references/lezer"',
+]
 
 [tasks.alignment]
 description = "Verify source-alignment traceability"
@@ -41,8 +44,17 @@ run = [
 description = "Run Rust lints"
 run = [
 	"npm --prefix tools/source-alignment run check",
+	"npm --prefix tools/references/lezer run typecheck",
 	"cargo lint-all",
 ]
+
+[tasks."reference:lezer"]
+description = "Verify snapshots from the pinned Lezer reference"
+run = "npm --prefix tools/references/lezer run check"
+
+[tasks."reference:lezer:update"]
+description = "Regenerate snapshots from the pinned Lezer reference"
+run = "npm --prefix tools/references/lezer run update"
 
 [tasks.test]
 description = "Run Rust tests"
@@ -69,4 +81,4 @@ depends = [
 
 [tasks."verify:full"]
 description = "Run the full repository verification suite"
-depends = ["verify", "test:full"]
+depends = ["verify", "test:full", "reference:lezer"]

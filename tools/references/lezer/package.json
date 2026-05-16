@@ -1,0 +1,16 @@
+{
+	"name": "rezel-lezer-reference",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"check": "npm run typecheck && node src/json.ts",
+		"typecheck": "tsc --project tsconfig.json",
+		"update": "npm run typecheck && node src/json.ts --update"
+	},
+	"devDependencies": {
+		"@lezer/common": "1.5.2",
+		"@lezer/json": "1.0.3",
+		"@types/node": "25.8.0",
+		"typescript": "6.0.3"
+	}
+}

@@ -13,7 +13,8 @@
 		"**/package-lock.json",
 		"**/tests/conformance/**",
 		"**/tests/upstream/**",
-		"alignment/upstream/**/*.json"
+		"alignment/upstream/**/*.json",
+		"tools/references/**/snapshots/**/*.json"
 	],
 
 	"plugins": [
