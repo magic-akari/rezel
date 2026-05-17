@@ -26,8 +26,17 @@ rezel terms grammar.grammar --output terms.rs
 
 `generate` emits deterministic Rust source containing static LR tables and a
 `rezel_lr::Language`. Grammar-declared external tokenizers, specializers,
-context trackers, and node properties are linked with repeated
-`--binding SOURCE:NAME=RUST_PATH` options.
+context trackers, and node properties are linked through a checked manifest:
+
+```toml
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "tokens"
+rust_path = "crate::TOKENS"
+```
+
+Pass it to `generate` with `--bindings language.bindings.toml`.
 
 Zero-copy typed syntax wrappers can be generated from a separate schema:
 

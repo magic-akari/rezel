@@ -1,0 +1,5 @@
+[[binding]]
+kind = "external-specializer"
+source = "./something"
+name = "spec1"
+rust_path = "crate::support::externals::spec1"

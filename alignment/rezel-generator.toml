@@ -79,6 +79,17 @@ representation = "Sorted Rust vectors and stable indices replace JavaScript obje
 evidence_files = ["crates/rezel-generator/tests/cases.rs"]
 
 [[scope]]
+rust_file = "binding.rs"
+classification = "rezel-owned"
+invariant = "Every grammar-declared external resolves to exactly one statically linked Rust path with the same semantic role, source module, and exported name."
+representation = "A strict TOML manifest and typed binding keys validate the boundary between JavaScript grammar declarations and generated Rust symbols."
+evidence_files = [
+	"crates/rezel-generator/tests/cases.rs",
+	"languages/json/grammar/json.bindings.toml",
+	"tools/codegen/src/main.rs",
+]
+
+[[scope]]
 rust_file = "build.rs"
 classification = "adapted"
 upstream_file = "src/build.ts"

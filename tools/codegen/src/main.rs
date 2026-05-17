@@ -54,6 +54,9 @@ fn generate_language(
     let grammar_path = language_root
         .join("grammar")
         .join(format!("{language}.grammar"));
+    let bindings_path = language_root
+        .join("grammar")
+        .join(format!("{language}.bindings.toml"));
     let typed_path = language_root
         .join("grammar")
         .join(format!("{language}.typed.toml"));
@@ -67,7 +70,8 @@ fn generate_language(
         },
     )?;
     reject_warnings(language, &grammar)?;
-    let bindings = language_bindings(language);
+    let bindings_source = fs::read_to_string(bindings_path)?;
+    let bindings = RustBindings::from_toml_str(&bindings_source)?;
     let generated = emit_rust(&grammar, &bindings)?;
     let source_root = language_root.join("src");
     outputs.manage_scoped_source_directory(&source_root, regeneration_command);
@@ -120,7 +124,7 @@ fn generate_upstream_cases(
         let grammar = compile_grammar(grammar_source, Some(name), BuildOptions::default())?;
         reject_warnings(name, &grammar)?;
         let stem = snake_case(name);
-        let bindings = case_bindings(name);
+        let bindings = case_bindings(&path)?;
         let generated = emit_rust(&grammar, &bindings)?;
         let parser = annotated(&generated.parser, regeneration_command)?;
         outputs.emit(&output_root.join(format!("{stem}.rs")), &parser)?;
@@ -251,32 +255,16 @@ fn snake_case(name: &str) -> String {
     output
 }
 
-fn case_bindings(name: &str) -> RustBindings {
-    match name {
-        "ExternalTokens" => RustBindings::default().with(
-            "./external_tokens.js",
-            "ext1",
-            "crate::support::externals::EXT1",
-        ),
-        "ExternalSpecializer" => {
-            RustBindings::default().with("./something", "spec1", "crate::support::externals::spec1")
+fn case_bindings(case_path: &Path) -> Result<RustBindings> {
+    let bindings_path = case_path.with_extension("bindings.toml");
+    let manifest = match fs::read_to_string(&bindings_path) {
+        Ok(manifest) => manifest,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return Ok(RustBindings::default());
         }
-        "ExternalProp" => {
-            RustBindings::default().with("./script", "tag", "crate::support::externals::tag")
-        }
-        _ => RustBindings::default(),
-    }
-}
-
-fn language_bindings(language: &str) -> RustBindings {
-    match language {
-        "json" => RustBindings::default().with(
-            "./highlight",
-            "jsonHighlighting",
-            "crate::json_highlighting",
-        ),
-        _ => RustBindings::default(),
-    }
+        Err(error) => return Err(error.into()),
+    };
+    Ok(RustBindings::from_toml_str(&manifest)?)
 }
 
 fn case_registry_source(cases: &[(String, String)], regeneration_command: &str) -> Result<String> {

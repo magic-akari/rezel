@@ -1,0 +1,5 @@
+[[binding]]
+kind = "property-source"
+source = "./highlight"
+name = "jsonHighlighting"
+rust_path = "crate::json_highlighting"

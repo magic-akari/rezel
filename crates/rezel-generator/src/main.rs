@@ -53,7 +53,7 @@ fn generate(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
     let mut output = None;
     let mut terms_output = None;
     let mut include_names = false;
-    let mut bindings = RustBindings::default();
+    let mut bindings_path = None;
     let mut typed_path = None;
     let mut typed_output = None;
     let mut index = 0;
@@ -71,13 +71,9 @@ fn generate(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
                 terms_output = Some(path_value(arguments, index, argument)?);
             }
             "--include-names" => include_names = true,
-            "--binding" => {
+            "--bindings" => {
                 index += 1;
-                let value = arguments
-                    .get(index)
-                    .and_then(|value| value.to_str())
-                    .ok_or("--binding requires SOURCE:NAME=RUST_PATH")?;
-                bindings = parse_binding(bindings, value)?;
+                bindings_path = Some(path_value(arguments, index, argument)?);
             }
             "--typed" => {
                 index += 1;
@@ -102,6 +98,11 @@ fn generate(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
     if typed_path.is_some() != typed_output.is_some() {
         return Err("generate requires --typed and --typed-output together".into());
     }
+    let bindings = if let Some(path) = bindings_path {
+        RustBindings::from_toml_str(&fs::read_to_string(path)?)?
+    } else {
+        RustBindings::default()
+    };
     let grammar = read_grammar_with_options(&grammar_path, include_names)?;
     print_warnings(&grammar);
     let generated = emit_rust(&grammar, &bindings)?;
@@ -193,21 +194,11 @@ fn read_grammar_with_options(
     Ok(grammar)
 }
 
-fn parse_binding(bindings: RustBindings, value: &str) -> Result<RustBindings, Box<dyn Error>> {
-    let (external, rust_path) = value
-        .split_once('=')
-        .ok_or("--binding requires SOURCE:NAME=RUST_PATH")?;
-    let (source, name) = external
-        .rsplit_once(':')
-        .ok_or("--binding requires SOURCE:NAME=RUST_PATH")?;
-    Ok(bindings.with(source, name, rust_path))
-}
-
 fn usage() -> &'static str {
     "Usage:\n\
      \x20 rezel check GRAMMAR\n\
      \x20 rezel generate GRAMMAR --output PARSER.rs [--terms TERMS.rs]\n\
-     \x20       [--include-names] [--binding SOURCE:NAME=RUST_PATH]...\n\
+     \x20       [--include-names] [--bindings BINDINGS.toml]\n\
      \x20       [--typed SCHEMA.toml --typed-output TYPED.rs]\n\
      \x20 rezel terms GRAMMAR [--output TERMS.rs]"
 }

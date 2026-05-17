@@ -3,49 +3,13 @@ use std::fmt::Write as _;
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{LitStr, Path};
+use syn::LitStr;
 
 use crate::source::format_generated_rust;
-use crate::{CompiledGrammar, GeneratorError, SpecializerMetadata, TokenizerMetadata};
-
-/// Static Rust symbols used for grammar-declared externals.
-///
-/// A binding key is the exact `(source, exported name)` pair from the grammar.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct RustBindings {
-    symbols: BTreeMap<(String, String), String>,
-}
-
-impl RustBindings {
-    /// Add one external Rust item path.
-    #[must_use]
-    pub fn with(
-        mut self,
-        source: impl Into<String>,
-        name: impl Into<String>,
-        rust_path: impl Into<String>,
-    ) -> Self {
-        self.symbols
-            .insert((source.into(), name.into()), rust_path.into());
-        self
-    }
-
-    fn resolve(&self, source: &str, name: &str) -> Result<Path, GeneratorError> {
-        let key = (source.to_owned(), name.to_owned());
-        let Some(path) = self.symbols.get(&key) else {
-            return Err(GeneratorError::new(
-                format!("Missing Rust binding for external {name:?} from {source:?}"),
-                None,
-            ));
-        };
-        syn::parse_str(path).map_err(|error| {
-            GeneratorError::new(
-                format!("Invalid Rust path for external {name:?}: {error}"),
-                None,
-            )
-        })
-    }
-}
+use crate::{
+    CompiledGrammar, GeneratorError, RustBindingKind, RustBindings, SpecializerMetadata,
+    TokenizerMetadata,
+};
 
 /// Generated parser and term modules.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -63,6 +27,7 @@ pub fn emit_rust(
     grammar: &CompiledGrammar,
     bindings: &RustBindings,
 ) -> Result<GeneratedRust, GeneratorError> {
+    bindings.validate(grammar)?;
     let terms = emit_terms(grammar)?;
     let parser = emit_parser(grammar, bindings)?;
     Ok(GeneratedRust { parser, terms })
@@ -169,7 +134,11 @@ fn emit_tokenizers(
                         }
                     }
                     TokenizerMetadata::External { binding, source } => {
-                        let path = bindings.resolve(source, binding)?;
+                        let path = bindings.resolve(
+                            RustBindingKind::ExternalTokenizer,
+                            source,
+                            binding,
+                        )?;
                         quote!(rezel_lr::Tokenizer::External(&#path))
                     }
                 })
@@ -240,7 +209,11 @@ fn emit_language_definition(
     let (specializer_functions, specializer_values) = emit_specializers(grammar, bindings)?;
     let node_set = emit_node_set(grammar, bindings)?;
     let context = if let Some(context) = &grammar.context {
-        let path = bindings.resolve(&context.source, &context.binding)?;
+        let path = bindings.resolve(
+            RustBindingKind::ContextTracker,
+            &context.source,
+            &context.binding,
+        )?;
         quote!(Some(&#path))
     } else {
         quote!(None)
@@ -333,7 +306,8 @@ fn emit_specializers(
                 source,
                 extend,
             } => {
-                let path = bindings.resolve(source, binding)?;
+                let path =
+                    bindings.resolve(RustBindingKind::ExternalSpecializer, source, binding)?;
                 let kind = specialize_kind(*extend);
                 let function = Ident::new(&format!("specialize_{index}"), Span::call_site());
                 functions.extend(quote! {
@@ -368,7 +342,11 @@ fn emit_node_set(
         .map(|property| {
             Ok((
                 property.name.as_str(),
-                bindings.resolve(&property.source, &property.binding)?,
+                bindings.resolve(
+                    RustBindingKind::NodeProperty,
+                    &property.source,
+                    &property.binding,
+                )?,
             ))
         })
         .collect::<Result<BTreeMap<_, _>, GeneratorError>>()?;
@@ -410,7 +388,13 @@ fn emit_node_set(
     let sources = grammar
         .property_sources
         .iter()
-        .map(|source| bindings.resolve(&source.source, &source.binding))
+        .map(|source| {
+            bindings.resolve(
+                RustBindingKind::PropertySource,
+                &source.source,
+                &source.binding,
+            )
+        })
         .collect::<Result<Vec<_>, _>>()?;
     let finish = if sources.is_empty() {
         quote!(rezel_common::NodeSet::new(nodes))

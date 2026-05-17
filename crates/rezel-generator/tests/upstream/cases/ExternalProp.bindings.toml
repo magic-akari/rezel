@@ -1,0 +1,5 @@
+[[binding]]
+kind = "node-property"
+source = "./script"
+name = "tag"
+rust_path = "crate::support::externals::tag"

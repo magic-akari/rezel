@@ -1,0 +1,5 @@
+[[binding]]
+kind = "external-tokenizer"
+source = "./external_tokens.js"
+name = "ext1"
+rust_path = "crate::support::externals::EXT1"
