@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/lezer-parser/java",
+  "commit": "63e9e5f056651ca149e936782d0f81afd9bcdfa9",
+  "source": "src/highlight.js",
+  "blob_oid": "4287a9a75122233957cdb84de2890916154f0b6b",
+  "symbols": [
+    "javaHighlighting"
+  ]
+}

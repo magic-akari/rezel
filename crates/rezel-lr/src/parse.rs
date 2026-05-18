@@ -548,7 +548,10 @@ impl ParserCore {
 pub struct LRParser {
     core: Arc<ParserCore>,
     wrappers: Arc<[ParseWrapper]>,
+    custom_create_parse: Option<CreateParse>,
 }
+
+type CreateParse = fn(&LRParser, ParseRequest) -> Result<Box<dyn PartialParse>, ParseError>;
 
 impl fmt::Debug for LRParser {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -556,6 +559,7 @@ impl fmt::Debug for LRParser {
             .debug_struct("LRParser")
             .field("core", &self.core)
             .field("wrapper_count", &self.wrappers.len())
+            .field("has_custom_parse", &self.custom_create_parse.is_some())
             .finish()
     }
 }
@@ -610,6 +614,7 @@ impl LRParser {
         Ok(Self {
             core: Arc::new(core),
             wrappers: Arc::from([]),
+            custom_create_parse: None,
         })
     }
 
@@ -736,6 +741,36 @@ impl LRParser {
         self.with_core(|core| core.limits = limits)
     }
 
+    /// Use a language-owned parse constructor.
+    ///
+    /// The function may prepare a lexical input or wrap the partial parse for
+    /// strict validation. It must call [`Self::create_lr_parse`] to enter the
+    /// LR engine after any request preparation.
+    #[doc(hidden)]
+    #[must_use]
+    pub fn with_create_parse(mut self, create_parse: CreateParse) -> Self {
+        self.custom_create_parse = Some(create_parse);
+        self
+    }
+
+    /// Create the ordinary LR partial parse after language input preparation.
+    ///
+    /// # Errors
+    ///
+    /// Returns an input error when the request is invalid.
+    #[doc(hidden)]
+    pub fn create_lr_parse(
+        &self,
+        request: &ParseRequest,
+    ) -> Result<Box<dyn PartialParse>, ParseError> {
+        let mut parse: Box<dyn PartialParse> =
+            Box::new(Parse::new(Arc::clone(&self.core), request.clone()));
+        for wrapper in &*self.wrappers {
+            parse = wrapper(parse, request.clone());
+        }
+        Ok(parse)
+    }
+
     /// Whether this parser has mixed-parse or other wrappers.
     #[must_use]
     pub fn has_wrappers(&self) -> bool {
@@ -771,12 +806,10 @@ impl LRParser {
 
 impl Parser for LRParser {
     fn create_parse(&self, request: ParseRequest) -> Result<Box<dyn PartialParse>, ParseError> {
-        let mut parse: Box<dyn PartialParse> =
-            Box::new(Parse::new(Arc::clone(&self.core), request.clone()));
-        for wrapper in &*self.wrappers {
-            parse = wrapper(parse, request.clone());
+        if let Some(create_parse) = self.custom_create_parse {
+            return create_parse(self, request);
         }
-        Ok(parse)
+        self.create_lr_parse(&request)
     }
 }
 

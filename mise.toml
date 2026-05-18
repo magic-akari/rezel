@@ -1,5 +1,6 @@
 [tools]
 dprint = "0.54.0"
+java = "26.0.1"
 node = "26.1.0"
 
 [hooks]
@@ -20,6 +21,14 @@ run = "cargo run --locked --package rezel-codegen -- json --check"
 description = "Regenerate checked-in JSON parser sources"
 run = "cargo run --locked --package rezel-codegen -- json --update"
 
+[tasks."codegen:rezel:java"]
+description = "Verify checked-in Java parser sources"
+run = "cargo run --locked --package rezel-codegen -- java --check"
+
+[tasks."codegen:rezel:java:update"]
+description = "Regenerate checked-in Java parser sources"
+run = "cargo run --locked --package rezel-codegen -- java --update"
+
 [tasks."codegen:rezel:fixtures"]
 description = "Verify checked-in rezel-generator test fixtures"
 run = "cargo run --locked --package rezel-codegen -- fixtures --check"
@@ -27,6 +36,14 @@ run = "cargo run --locked --package rezel-codegen -- fixtures --check"
 [tasks."codegen:rezel:fixtures:update"]
 description = "Regenerate checked-in rezel-generator test fixtures"
 run = "cargo run --locked --package rezel-codegen -- fixtures --update"
+
+[tasks."codegen:java-identifiers"]
+description = "Verify Java identifier tables"
+run = "java tools/references/javac/java/JdkIdentifierTables.java --check languages/java/src/unicode17.rs"
+
+[tasks."codegen:java-identifiers:update"]
+description = "Regenerate Java identifier tables"
+run = "java tools/references/javac/java/JdkIdentifierTables.java --write languages/java/src/unicode17.rs"
 
 [tasks.docs]
 description = "Build Rust API documentation"
@@ -76,7 +93,9 @@ depends = [
 	"docs",
 	"alignment",
 	"codegen:rezel:json",
+	"codegen:rezel:java",
 	"codegen:rezel:fixtures",
+	"codegen:java-identifiers",
 ]
 
 [tasks."verify:full"]

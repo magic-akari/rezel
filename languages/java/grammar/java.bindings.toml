@@ -1,0 +1,11 @@
+[[binding]]
+kind = "external-tokenizer"
+source = "./identifier"
+name = "javaIdentifiers"
+rust_path = "crate::identifier::TOKENIZER"
+
+[[binding]]
+kind = "property-source"
+source = "./highlight"
+name = "javaHighlighting"
+rust_path = "crate::java_highlighting"

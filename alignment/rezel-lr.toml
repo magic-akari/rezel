@@ -111,6 +111,18 @@ classification = "rezel-owned"
 invariant = "Explicit budgets bound parser work and turn exhausted resources into typed failures."
 representation = "Rezel exposes configurable action, stack, buffer, and recovery limits that are not part of the JavaScript runtime API."
 
+[[override_item]]
+rust_item = "rezel_lr::parse::LRParser::with_create_parse"
+classification = "rezel-owned"
+invariant = "A language package may translate the lexical input or wrap a partial parse without replacing or narrowing the common LRParser facade."
+representation = "A hidden static Rust function prepares each request and re-enters the same LR engine exactly once after language-owned setup."
+
+[[override_item]]
+rust_item = "rezel_lr::parse::LRParser::create_lr_parse"
+classification = "rezel-owned"
+invariant = "A prepared language request enters the ordinary LR engine exactly once and retains every configured parse wrapper."
+representation = "The hidden Rust method separates language-owned request preparation from the shared LR parse constructor."
+
 [[excluded]]
 upstream_file = "src/decode.ts"
 upstream_symbol = "decodeArray"
