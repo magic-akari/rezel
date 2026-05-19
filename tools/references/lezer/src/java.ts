@@ -1,0 +1,182 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { IterMode, type Tree, type TreeCursor } from "@lezer/common";
+
+import { buildJavaParser, translateJavaInput } from "./java-support.ts";
+
+interface ReferenceCase {
+	id: string;
+	source: string;
+	top?: string;
+}
+
+interface CaseManifest {
+	schema: string;
+	strict: ReferenceCase[];
+	recovering: ReferenceCase[];
+}
+
+interface ReferenceNode {
+	name: string;
+	from: number;
+	to: number;
+	children?: ReferenceNode[];
+}
+
+interface PackageManifest {
+	devDependencies: Record<string, string>;
+}
+
+interface PackageLock {
+	packages: Record<string, LockedPackage>;
+}
+
+interface LockedPackage {
+	version?: string;
+	integrity?: string;
+}
+
+const CASE_SCHEMA = "rezel.lezer-java-reference-cases.v1";
+const SNAPSHOT_SCHEMA = "rezel.lezer-java-reference-snapshot.v1";
+const REFERENCE_PACKAGES = ["@lezer/common", "@lezer/generator", "@lezer/lr"] as const;
+
+const toolDirectory = join(dirname(fileURLToPath(import.meta.url)), "..");
+const repository = join(toolDirectory, "..", "..", "..");
+const casesPath = join(toolDirectory, "cases", "java.json");
+const snapshotPath = join(toolDirectory, "snapshots", "java.json");
+const grammarPath = join(repository, "languages", "java", "grammar", "java.grammar");
+const identifierTablesPath = join(repository, "languages", "java", "src", "unicode17.rs");
+const cases = JSON.parse(readFileSync(casesPath, "utf8")) as CaseManifest;
+
+assert.equal(cases.schema, CASE_SCHEMA);
+assertUniqueIds([...cases.strict, ...cases.recovering]);
+
+const grammar = readFileSync(grammarPath, "utf8");
+const identifierTables = readFileSync(identifierTablesPath, "utf8");
+const warnings: string[] = [];
+const parser = buildJavaParser({
+	grammar,
+	grammarPath,
+	identifierTables,
+	warnings,
+});
+assert.deepEqual(warnings, [], "the maintained Java grammar produces reference-generator warnings");
+
+const strictParser = parser.configure({ strict: true });
+const recoveringParser = parser.configure({ strict: false });
+const snapshot = {
+	schema: SNAPSHOT_SCHEMA,
+	reference: {
+		packages: Object.fromEntries(REFERENCE_PACKAGES.map((name) => [name, packageIdentity(name)])),
+		artifacts: {
+			grammar: inputIdentity("languages/java/grammar/java.grammar", grammar),
+			identifierTables: inputIdentity("languages/java/src/unicode17.rs", identifierTables),
+		},
+	},
+	coordinates: "raw-utf8-bytes",
+	strict: cases.strict.map((testCase) => {
+		const strict = parseCase(strictParser, testCase);
+		const recovering = parseCase(recoveringParser, testCase);
+		assert.deepEqual(recovering, strict, `${testCase.id} recovered despite being valid`);
+		return { id: testCase.id, tree: strict };
+	}),
+	recovering: cases.recovering.map((testCase) => {
+		assert.throws(() => parseCase(strictParser, testCase), `${testCase.id} unexpectedly passed strict parsing`);
+		const first = parseCase(recoveringParser, testCase);
+		const second = parseCase(recoveringParser, testCase);
+		assert.deepEqual(first, second, `${testCase.id} produced a non-deterministic reference tree`);
+		return { id: testCase.id, tree: first };
+	}),
+};
+const encoded = `${JSON.stringify(snapshot, null, "\t")}\n`;
+
+if (process.argv.includes("--update")) {
+	mkdirSync(dirname(snapshotPath), { recursive: true });
+	writeFileSync(snapshotPath, encoded);
+	process.stderr.write(`updated ${snapshotPath}\n`);
+} else {
+	assert.equal(
+		readFileSync(snapshotPath, "utf8"),
+		encoded,
+		"the pinned Lezer Java reference snapshot drifted; inspect the grammar or pin before updating",
+	);
+}
+
+function parseCase(activeParser: ReturnType<typeof parser.configure>, testCase: ReferenceCase): ReferenceNode {
+	const translated = translateJavaInput(testCase.source);
+	const configured = testCase.top === undefined ? activeParser : activeParser.configure({ top: testCase.top });
+	const tree = configured.parse(translated.text);
+	assert.equal(tree.length, translated.text.length);
+	return project(tree, translated.rawOffsets);
+}
+
+function project(tree: Tree, rawOffsets: number[]): ReferenceNode {
+	const cursor = tree.cursor(IterMode.IncludeAnonymous);
+	return projectCursor(cursor, rawOffsets);
+}
+
+function projectCursor(cursor: TreeCursor, rawOffsets: number[]): ReferenceNode {
+	const children: ReferenceNode[] = [];
+	if (cursor.firstChild()) {
+		do {
+			children.push(projectCursor(cursor, rawOffsets));
+		} while (cursor.nextSibling());
+		assert.equal(cursor.parent(), true);
+	}
+	const node: ReferenceNode = {
+		name: cursor.name,
+		from: rawOffsets[cursor.from],
+		to: rawOffsets[cursor.to],
+	};
+	if (children.length > 0) {
+		node.children = children;
+	}
+	return node;
+}
+
+function inputIdentity(path: string, contents: string): { path: string; sha256: string } {
+	return {
+		path,
+		sha256: createHash("sha256").update(contents).digest("hex"),
+	};
+}
+
+function assertUniqueIds(referenceCases: ReferenceCase[]): void {
+	const ids = new Set<string>();
+	for (const testCase of referenceCases) {
+		assert.notEqual(testCase.id, "");
+		assert.equal(ids.has(testCase.id), false, `duplicate reference case ${testCase.id}`);
+		ids.add(testCase.id);
+	}
+}
+
+function packageIdentity(name: (typeof REFERENCE_PACKAGES)[number]): {
+	version: string;
+	integrity: string;
+} {
+	const manifest = JSON.parse(readFileSync(join(toolDirectory, "package.json"), "utf8")) as PackageManifest;
+	const expectedVersion = manifest.devDependencies[name];
+	assert.notEqual(expectedVersion, undefined, `${name} is not pinned`);
+
+	const installed = JSON.parse(readFileSync(join(toolDirectory, "node_modules", name, "package.json"), "utf8")) as {
+		name: string;
+		version: string;
+	};
+	assert.equal(installed.name, name);
+	assert.equal(installed.version, expectedVersion);
+
+	const lock = JSON.parse(readFileSync(join(toolDirectory, "package-lock.json"), "utf8")) as PackageLock;
+	const locked = lock.packages[`node_modules/${name}`];
+	assert.notEqual(locked, undefined, `package-lock is missing ${name}`);
+	assert.equal(locked.version, expectedVersion);
+	const integrity = locked.integrity;
+	if (integrity === undefined) {
+		throw new Error(`${name} lock entry has no integrity`);
+	}
+	assert.ok(integrity.startsWith("sha512-"));
+	return { version: expectedVersion, integrity };
+}

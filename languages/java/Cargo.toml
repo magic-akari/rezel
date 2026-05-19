@@ -26,5 +26,9 @@ rezel-common.workspace = true
 rezel-highlight = { workspace = true, optional = true }
 rezel-lr.workspace = true
 
+[dev-dependencies]
+serde.workspace = true
+serde_json.workspace = true
+
 [lints]
 workspace = true

@@ -21,6 +21,7 @@ evidence_files = [
 	"languages/java/grammar/java.grammar",
 	"languages/java/grammar/java.bindings.toml",
 	"tools/codegen/src/main.rs",
+	"languages/java/tests/reference/lezer.rs",
 ]
 
 [[scope]]
@@ -28,21 +29,30 @@ rust_file = "identifier.rs"
 classification = "standard-algorithm"
 invariant = "External Java identifier tokenization follows Java 26 Character identifier properties and removes identifier-ignorable code points only when deriving cooked names."
 representation = "Generated Unicode 17 scalar ranges, a Latin-1 equivalent fast path, and a UTF-16 code-point scanner replace calls into the Java Character API."
-evidence_files = ["languages/java/tests/contract.rs"]
+evidence_files = [
+	"languages/java/tests/contract.rs",
+	"languages/java/tests/reference/lezer.rs",
+]
 
 [[scope]]
 rust_file = "input.rs"
 classification = "standard-algorithm"
 invariant = "JLS Unicode escapes are translated before tokenization while every observable source range remains an original UTF-8 byte range."
 representation = "A sorted escape index projects logical UTF-16 units and shared identity chunks without materializing a translated source string."
-evidence_files = ["languages/java/tests/contract.rs"]
+evidence_files = [
+	"languages/java/tests/contract.rs",
+	"languages/java/tests/reference/lezer.rs",
+]
 
 [[scope]]
 rust_file = "lib.rs"
 classification = "rezel-owned"
 invariant = "The Java facade cheaply clones immutable generated language data, applies Java lexical translation exactly once, and remains composable through the common Parser interface."
 representation = "JavaParser delegates configuration and parsing to LRParser while mapping arbitrary immutable Input values through the Java logical view."
-evidence_files = ["languages/java/tests/contract.rs"]
+evidence_files = [
+	"languages/java/tests/contract.rs",
+	"languages/java/tests/reference/lezer.rs",
+]
 
 [[scope]]
 rust_file = "terms.rs"

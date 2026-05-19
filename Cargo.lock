@@ -108,6 +108,8 @@ dependencies = [
  "rezel-common",
  "rezel-highlight",
  "rezel-lr",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

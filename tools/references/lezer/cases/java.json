@@ -1,0 +1,64 @@
+{
+	"schema": "rezel.lezer-java-reference-cases.v1",
+	"strict": [
+		{
+			"id": "declarations",
+			"source": "package sample; import java.util.List; @Deprecated public sealed class Box<T extends Number> permits Child { private final T value; Box(T value) { this.value = value; } public T value() { return value; } } final class Child extends Box<Integer> { Child() { super(1); } } record Pair(int left, int right) {} interface Named { String name(); } enum Mode { ON, OFF }"
+		},
+		{
+			"id": "statements-and-expressions",
+			"source": "class Flow { int run(Object input, int[] values) { int total = 0; outer: for (int value : values) { if (value < 0) continue outer; total += value; } try (var stream = java.util.stream.Stream.of(input)) { return switch (input) { case String text when !text.isEmpty() -> text.length(); case Integer number -> number.intValue(); default -> total; }; } catch (RuntimeException error) { throw error; } finally { total++; } } java.util.function.IntUnaryOperator op() { return value -> value * 2; } }"
+		},
+		{
+			"id": "unicode-translation",
+			"source": "cl\\u0061ss Café { String value = \"raw\"; \\u0069nt 变量 = 1; \\u002f\\u002f translated comment\\u000a int next = 2; }"
+		},
+		{
+			"id": "module",
+			"source": "open module sample.core { requires transitive java.base; exports sample.api to sample.friend; opens sample.internal; uses sample.Service; provides sample.Service with sample.ServiceImpl; }"
+		},
+		{
+			"id": "compact-compilation-unit",
+			"source": "int twice(int value) { return value * 2; } void main() { System.out.println(twice(21)); }"
+		},
+		{
+			"id": "lexical-surface",
+			"source": "class Lexical { /* block */ long bits = 0xff_ffL; double hex = 0x1.fp2; char quote = '\\''; String text = \"\"\"\nline one\nline two\n\"\"\"; // line\n }"
+		},
+		{
+			"id": "types-and-qualified-super",
+			"source": "class Parent { int value; String name() { return \"parent\"; } } class Outer<T extends Number & Comparable<T>> extends Parent { class Inner { int read() { return Outer.super.value; } java.util.function.Supplier<String> name() { return Outer.super::name; } } <R> R map(java.util.function.Function<? super T, ? extends R> fn, T[] values) throws Exception { int[][] matrix = new int[1][]; Class<?> type = int[][].class; return fn.apply(values[0]); } }"
+		},
+		{
+			"id": "contextual-and-supplementary-identifiers",
+			"source": "class Contextual { int requires, exports, opens, uses, provides, to, with, transitive; int record = 1; int 𐐀value = record; void yield() { var sealed = 𐐀value; } }"
+		},
+		{
+			"id": "class-content-top",
+			"top": "ClassContent",
+			"source": "private int value; void set(int next) { value = next; } class Nested {}"
+		},
+		{
+			"id": "isolated-surrogate-escape",
+			"source": "class Surrogate { String value = \"\\uD800\"; }"
+		}
+	],
+	"recovering": [
+		{
+			"id": "missing-initializer",
+			"source": "class Broken { int value = ; }"
+		},
+		{
+			"id": "truncated-declaration",
+			"source": "record Broken(int value"
+		},
+		{
+			"id": "incomplete-switch-rule",
+			"source": "class Broken { int value(Object input) { return switch (input) { default -> }; } }"
+		},
+		{
+			"id": "invalid-statement-expression",
+			"source": "class Broken { void method() { 1 + 2; } }"
+		}
+	]
+}
