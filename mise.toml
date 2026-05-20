@@ -65,6 +65,14 @@ run = [
 	"cargo lint-all",
 ]
 
+[tasks."reference:javac"]
+description = "Verify Java parse acceptance and compiler-tree snapshots"
+run = "java tools/references/javac/java/JavacReference.java --check"
+
+[tasks."reference:javac:update"]
+description = "Regenerate Java compiler-tree snapshots"
+run = "java tools/references/javac/java/JavacReference.java --update"
+
 [tasks."reference:lezer"]
 description = "Verify snapshots from the pinned Lezer reference"
 run = "npm --prefix tools/references/lezer run check"
@@ -72,6 +80,14 @@ run = "npm --prefix tools/references/lezer run check"
 [tasks."reference:lezer:update"]
 description = "Regenerate snapshots from the pinned Lezer reference"
 run = "npm --prefix tools/references/lezer run update"
+
+[tasks."reference:stdlib:java"]
+description = "Verify Java standard-library source acceptance and lowering"
+run = "cargo run --locked --package rezel-java-stdlib-reference"
+
+[tasks."reference:stdlib:java:ast"]
+description = "Compare all Java standard-library ASTs with javac"
+run = "cargo run --locked --package rezel-java-stdlib-reference -- --ast-oracle"
 
 [tasks.test]
 description = "Run Rust tests"
@@ -100,4 +116,10 @@ depends = [
 
 [tasks."verify:full"]
 description = "Run the full repository verification suite"
-depends = ["verify", "test:full", "reference:lezer"]
+depends = [
+	"verify",
+	"test:full",
+	"reference:javac",
+	"reference:lezer",
+	"reference:stdlib:java",
+]

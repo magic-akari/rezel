@@ -7,6 +7,7 @@ members = [
 	"languages/java",
 	"languages/json",
 	"tools/codegen",
+	"tools/references/javac/stdlib",
 	"tools/source-alignment",
 ]
 resolver = "3"

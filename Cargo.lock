@@ -102,6 +102,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rezel-java-stdlib-reference"
+version = "0.0.0"
+dependencies = [
+ "rezel-lang-java",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rezel-lang-java"
 version = "0.0.0"
 dependencies = [

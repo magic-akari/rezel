@@ -31,6 +31,7 @@ invariant = "External Java identifier tokenization follows Java 26 Character ide
 representation = "Generated Unicode 17 scalar ranges, a Latin-1 equivalent fast path, and a UTF-16 code-point scanner replace calls into the Java Character API."
 evidence_files = [
 	"languages/java/tests/contract.rs",
+	"languages/java/tests/reference/javac.rs",
 	"languages/java/tests/reference/lezer.rs",
 ]
 
@@ -41,6 +42,7 @@ invariant = "JLS Unicode escapes are translated before tokenization while every 
 representation = "A sorted escape index projects logical UTF-16 units and shared identity chunks without materializing a translated source string."
 evidence_files = [
 	"languages/java/tests/contract.rs",
+	"languages/java/tests/reference/javac.rs",
 	"languages/java/tests/reference/lezer.rs",
 ]
 
@@ -52,6 +54,7 @@ representation = "JavaParser delegates configuration and parsing to LRParser whi
 evidence_files = [
 	"languages/java/tests/contract.rs",
 	"languages/java/tests/reference/lezer.rs",
+	"tools/references/javac/stdlib/src/main.rs",
 ]
 
 [[scope]]
@@ -69,6 +72,7 @@ representation = "Checked Rust wrappers implement Rezel's TypedNode API from the
 evidence_files = [
 	"languages/java/grammar/java.typed.toml",
 	"tools/codegen/src/main.rs",
+	"languages/java/tests/reference/javac.rs",
 	"languages/java/tests/typed.rs",
 ]
 
@@ -133,21 +137,31 @@ rust_file = "ast/mod.rs"
 classification = "rezel-owned"
 invariant = "The public Java AST module exposes only the stable owned model and its lowering errors."
 representation = "A narrow Rust module facade hides lowering internals while re-exporting durable arena identifiers, nodes, fields, properties, and source ranges."
-evidence_files = ["languages/java/tests/lowering.rs"]
+evidence_files = [
+	"languages/java/tests/lowering.rs",
+	"languages/java/tests/reference/javac.rs",
+	"tools/references/javac/stdlib/src/main.rs",
+]
 
 [[scope]]
 rust_file = "ast/lower.rs"
 classification = "rezel-owned"
 invariant = "Strict Java typed syntax lowers in one traversal to an owned tree model whose public kinds, fields, properties, and ranges correspond to the Java 26 compiler-tree surface."
 representation = "A checked traversal over typed CST nodes builds stable node, edge, property, and interned-string arenas without retaining source-backed temporary structures."
-evidence_files = ["languages/java/tests/lowering.rs"]
+evidence_files = [
+	"languages/java/tests/lowering.rs",
+	"languages/java/tests/reference/javac.rs",
+]
 
 [[scope]]
 rust_file = "ast/model.rs"
 classification = "rezel-owned"
 invariant = "The owned Java AST exposes stable node identifiers, compiler-tree-aligned kinds and fields, source ranges, properties, and interned cooked strings."
 representation = "Contiguous node, edge, property, and string arenas replace implementation-specific javac object identities."
-evidence_files = ["languages/java/tests/lowering.rs"]
+evidence_files = [
+	"languages/java/tests/lowering.rs",
+	"languages/java/tests/reference/javac.rs",
+]
 
 [[override_item]]
 rust_item = "rezel_java::java_highlighting"
