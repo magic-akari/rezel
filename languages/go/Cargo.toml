@@ -1,0 +1,30 @@
+[package]
+name = "rezel-lang-go"
+version.workspace = true
+categories = ["parser-implementations"]
+edition.workspace = true
+include = [
+	"/grammar/**",
+	"/src/**",
+	"/Cargo.toml",
+	"/README.md",
+	"/THIRD_PARTY_NOTICES.md",
+	"/LICENSE-APACHE",
+	"/LICENSE-MIT",
+]
+keywords = ["go", "parser", "syntax-tree", "cst"]
+license.workspace = true
+repository.workspace = true
+description = "Go 1.26 parser, typed syntax, and owned AST for Rezel"
+
+[features]
+default = []
+highlight = ["dep:rezel-highlight"]
+
+[dependencies]
+rezel-common.workspace = true
+rezel-highlight = { workspace = true, optional = true }
+rezel-lr.workspace = true
+
+[lints]
+workspace = true

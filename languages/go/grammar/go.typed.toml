@@ -1,0 +1,1776 @@
+language = "GoLanguage"
+kind = "GoKind"
+language_path = "crate::generated::LANGUAGE"
+coverage = "complete"
+ignore = [
+	"⚠",
+	";",
+	".",
+	",",
+	":",
+	"...",
+	"=",
+	":=",
+	"(",
+	")",
+	"[",
+	"]",
+	"{",
+	"}",
+	"<-",
+	"~",
+	"*",
+	"package",
+	"import",
+	"struct",
+	"func",
+	"interface",
+	"chan",
+	"map",
+	"make",
+	"new",
+	"const",
+	"type",
+	"var",
+	"if",
+	"else",
+	"switch",
+	"case",
+	"default",
+	"for",
+	"range",
+	"go",
+	"select",
+	"return",
+	"break",
+	"continue",
+	"goto",
+	"fallthrough",
+	"defer",
+]
+
+[kind_names]
+"⚠" = "Error"
+";" = "Semicolon"
+"." = "Dot"
+"," = "Comma"
+":" = "Colon"
+"..." = "Ellipsis"
+"=" = "Equals"
+":=" = "Define"
+"(" = "LeftParen"
+")" = "RightParen"
+"[" = "LeftBracket"
+"]" = "RightBracket"
+"{" = "LeftBrace"
+"}" = "RightBrace"
+"<-" = "ChannelArrow"
+"~" = "Tilde"
+"*" = "Asterisk"
+"case" = "CaseKeyword"
+
+[[node]]
+name = "GoLineComment"
+kind = "LineComment"
+
+[[node]]
+name = "GoBlockComment"
+kind = "BlockComment"
+
+[[node]]
+name = "GoSourceFile"
+kind = "SourceFile"
+
+[[node.field]]
+name = "package_clause"
+type = "GoPackageClause"
+cardinality = "optional"
+selector = { node = "PackageClause" }
+
+[[node.field]]
+name = "imports"
+type = "GoImportDecl"
+cardinality = "many"
+selector = { node = "ImportDecl" }
+
+[[node.field]]
+name = "declarations"
+type = "GoDeclaration"
+cardinality = "many"
+selector = { union = "GoDeclaration" }
+
+[[node]]
+name = "GoPackageClause"
+kind = "PackageClause"
+
+[[node.field]]
+name = "package_token"
+cardinality = "one"
+selector = { token = "package" }
+
+[[node.field]]
+name = "name"
+type = "GoDefName"
+cardinality = "one"
+selector = { node = "DefName" }
+
+[[node]]
+name = "GoImportDecl"
+kind = "ImportDecl"
+
+[[node.field]]
+name = "keyword_token"
+cardinality = "one"
+selector = { token = "import" }
+
+[[node.field]]
+name = "spec"
+type = "GoImportSpec"
+cardinality = "optional"
+selector = { node = "ImportSpec" }
+
+[[node.field]]
+name = "spec_list"
+type = "GoSpecList"
+cardinality = "optional"
+selector = { node = "SpecList" }
+
+[[node]]
+name = "GoImportSpec"
+kind = "ImportSpec"
+
+[[node.field]]
+name = "name"
+type = "GoDefName"
+cardinality = "optional"
+selector = { node = "DefName" }
+
+[[node.field]]
+name = "dot_token"
+cardinality = "optional"
+selector = { token = "." }
+
+[[node.field]]
+name = "path"
+type = "GoString"
+cardinality = "one"
+selector = { node = "String" }
+
+[[node]]
+name = "GoSpecList"
+kind = "SpecList"
+
+[[node.field]]
+name = "left_paren_token"
+cardinality = "one"
+selector = { token = "(" }
+
+[[node.field]]
+name = "specs"
+type = "GoSpec"
+cardinality = "many"
+selector = { union = "GoSpec" }
+
+[[node.field]]
+name = "right_paren_token"
+cardinality = "one"
+selector = { token = ")" }
+
+[[node]]
+name = "GoConstDecl"
+kind = "ConstDecl"
+
+[[node.field]]
+name = "keyword_token"
+cardinality = "one"
+selector = { token = "const" }
+
+[[node.field]]
+name = "spec"
+type = "GoConstSpec"
+cardinality = "optional"
+selector = { node = "ConstSpec" }
+
+[[node.field]]
+name = "spec_list"
+type = "GoSpecList"
+cardinality = "optional"
+selector = { node = "SpecList" }
+
+[[node]]
+name = "GoConstSpec"
+kind = "ConstSpec"
+
+[[node.field]]
+name = "names"
+type = "GoDefName"
+cardinality = "many"
+selector = { node = "DefName" }
+
+[[node.field]]
+name = "equals_token"
+cardinality = "optional"
+selector = { token = "=" }
+
+[[node]]
+name = "GoTypeDecl"
+kind = "TypeDecl"
+
+[[node.field]]
+name = "keyword_token"
+cardinality = "one"
+selector = { token = "type" }
+
+[[node.field]]
+name = "spec"
+type = "GoTypeSpec"
+cardinality = "optional"
+selector = { node = "TypeSpec" }
+
+[[node.field]]
+name = "spec_list"
+type = "GoSpecList"
+cardinality = "optional"
+selector = { node = "SpecList" }
+
+[[node]]
+name = "GoTypeSpec"
+kind = "TypeSpec"
+
+[[node.field]]
+name = "name"
+type = "GoDefName"
+cardinality = "one"
+selector = { node = "DefName" }
+
+[[node.field]]
+name = "type_parameters"
+type = "GoTypeParams"
+cardinality = "optional"
+selector = { node = "TypeParams" }
+
+[[node.field]]
+name = "assign_token"
+cardinality = "optional"
+selector = { token = "=" }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoVarDecl"
+kind = "VarDecl"
+
+[[node.field]]
+name = "keyword_token"
+cardinality = "optional"
+selector = { token = "var" }
+
+[[node.field]]
+name = "spec"
+type = "GoVarSpec"
+cardinality = "optional"
+selector = { node = "VarSpec" }
+
+[[node.field]]
+name = "spec_list"
+type = "GoSpecList"
+cardinality = "optional"
+selector = { node = "SpecList" }
+
+[[node]]
+name = "GoVarSpec"
+kind = "VarSpec"
+
+[[node.field]]
+name = "names"
+type = "GoDefName"
+cardinality = "many"
+selector = { node = "DefName" }
+
+[[node.field]]
+name = "equals_token"
+cardinality = "optional"
+selector = { token = "=" }
+
+[[node]]
+name = "GoFunctionDecl"
+kind = "FunctionDecl"
+
+[[node.field]]
+name = "func_token"
+cardinality = "one"
+selector = { token = "func" }
+
+[[node.field]]
+name = "name"
+type = "GoDefName"
+cardinality = "one"
+selector = { node = "DefName" }
+
+[[node.field]]
+name = "type_parameters"
+type = "GoTypeParams"
+cardinality = "optional"
+selector = { node = "TypeParams" }
+
+[[node.field]]
+name = "parameters"
+type = "GoParameters"
+cardinality = "one"
+selector = { node = "Parameters" }
+occurrence = 0
+
+[[node.field]]
+name = "result_parameters"
+type = "GoParameters"
+cardinality = "optional"
+selector = { node = "Parameters" }
+occurrence = 1
+
+[[node.field]]
+name = "result_type"
+type = "GoType"
+cardinality = "optional"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "body"
+type = "GoBlock"
+cardinality = "optional"
+selector = { node = "Block" }
+
+[[node]]
+name = "GoMethodDecl"
+kind = "MethodDecl"
+
+[[node.field]]
+name = "func_token"
+cardinality = "one"
+selector = { token = "func" }
+
+[[node.field]]
+name = "receiver"
+type = "GoParameters"
+cardinality = "one"
+selector = { node = "Parameters" }
+occurrence = 0
+
+[[node.field]]
+name = "name"
+type = "GoFieldName"
+cardinality = "one"
+selector = { node = "FieldName" }
+
+[[node.field]]
+name = "parameters"
+type = "GoParameters"
+cardinality = "one"
+selector = { node = "Parameters" }
+occurrence = 1
+
+[[node.field]]
+name = "result_parameters"
+type = "GoParameters"
+cardinality = "optional"
+selector = { node = "Parameters" }
+occurrence = 2
+
+[[node.field]]
+name = "result_type"
+type = "GoType"
+cardinality = "optional"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "body"
+type = "GoBlock"
+cardinality = "optional"
+selector = { node = "Block" }
+
+[[node]]
+name = "GoTypeParams"
+kind = "TypeParams"
+
+[[node.field]]
+name = "left_bracket_token"
+cardinality = "one"
+selector = { token = "[" }
+
+[[node.field]]
+name = "fields"
+type = "GoTypeParam"
+cardinality = "many"
+selector = { node = "TypeParam" }
+
+[[node.field]]
+name = "right_bracket_token"
+cardinality = "one"
+selector = { token = "]" }
+
+[[node]]
+name = "GoParameters"
+kind = "Parameters"
+
+[[node.field]]
+name = "left_paren_token"
+cardinality = "one"
+selector = { token = "(" }
+
+[[node.field]]
+name = "fields"
+type = "GoParameter"
+cardinality = "many"
+selector = { node = "Parameter" }
+
+[[node.field]]
+name = "right_paren_token"
+cardinality = "one"
+selector = { token = ")" }
+
+[[node]]
+name = "GoBlock"
+kind = "Block"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "declarations"
+type = "GoDeclaration"
+cardinality = "many"
+selector = { union = "GoDeclaration" }
+
+[[node.field]]
+name = "statements"
+type = "GoStatement"
+cardinality = "many"
+selector = { union = "GoStatement" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "GoDefName"
+kind = "DefName"
+
+[[node]]
+name = "GoVariableName"
+kind = "VariableName"
+
+[[node]]
+name = "GoTypeName"
+kind = "TypeName"
+
+[[node]]
+name = "GoFieldName"
+kind = "FieldName"
+
+[[node]]
+name = "GoLabelName"
+kind = "LabelName"
+
+[[node]]
+name = "GoExprStatement"
+kind = "ExprStatement"
+
+[[node.field]]
+name = "expression"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node]]
+name = "GoNumber"
+kind = "Number"
+
+[[node]]
+name = "GoBool"
+kind = "Bool"
+
+[[node]]
+name = "GoNil"
+kind = "Nil"
+
+[[node]]
+name = "GoRune"
+kind = "Rune"
+
+[[node]]
+name = "GoString"
+kind = "String"
+
+[[node]]
+name = "GoTypedLiteral"
+kind = "TypedLiteral"
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "body"
+type = "GoLiteralValue"
+cardinality = "one"
+selector = { node = "LiteralValue" }
+
+[[node]]
+name = "GoStructType"
+kind = "StructType"
+
+[[node.field]]
+name = "struct_token"
+cardinality = "one"
+selector = { token = "struct" }
+
+[[node.field]]
+name = "body"
+type = "GoStructBody"
+cardinality = "one"
+selector = { node = "StructBody" }
+
+[[node]]
+name = "GoStructBody"
+kind = "StructBody"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "fields"
+type = "GoFieldDecl"
+cardinality = "many"
+selector = { node = "FieldDecl" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "GoFieldDecl"
+kind = "FieldDecl"
+
+[[node.field]]
+name = "names"
+type = "GoFieldName"
+cardinality = "many"
+selector = { node = "FieldName" }
+
+[[node.field]]
+name = "star_token"
+cardinality = "optional"
+selector = { token = "*" }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "tag"
+type = "GoString"
+cardinality = "optional"
+selector = { node = "String" }
+
+[[node]]
+name = "GoPointerType"
+kind = "PointerType"
+
+[[node.field]]
+name = "star_token"
+cardinality = "one"
+selector = { token = "*" }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoFunctionType"
+kind = "FunctionType"
+
+[[node.field]]
+name = "func_token"
+cardinality = "one"
+selector = { token = "func" }
+
+[[node.field]]
+name = "parameters"
+type = "GoParameters"
+cardinality = "one"
+selector = { node = "Parameters" }
+occurrence = 0
+
+[[node.field]]
+name = "result_parameters"
+type = "GoParameters"
+cardinality = "optional"
+selector = { node = "Parameters" }
+occurrence = 1
+
+[[node.field]]
+name = "result_type"
+type = "GoType"
+cardinality = "optional"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoParameter"
+kind = "Parameter"
+
+[[node.field]]
+name = "names"
+type = "GoDefName"
+cardinality = "many"
+selector = { node = "DefName" }
+
+[[node.field]]
+name = "ellipsis_token"
+cardinality = "optional"
+selector = { token = "..." }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoTypeParam"
+kind = "TypeParam"
+
+[[node]]
+name = "GoInterfaceType"
+kind = "InterfaceType"
+
+[[node.field]]
+name = "interface_token"
+cardinality = "one"
+selector = { token = "interface" }
+
+[[node.field]]
+name = "body"
+type = "GoInterfaceBody"
+cardinality = "one"
+selector = { node = "InterfaceBody" }
+
+[[node]]
+name = "GoInterfaceBody"
+kind = "InterfaceBody"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "fields"
+type = "GoInterfaceElement"
+cardinality = "many"
+selector = { union = "GoInterfaceElement" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "GoMethodElem"
+kind = "MethodElem"
+
+[[node.field]]
+name = "name"
+type = "GoFieldName"
+cardinality = "one"
+selector = { node = "FieldName" }
+
+[[node.field]]
+name = "parameters"
+type = "GoParameters"
+cardinality = "one"
+selector = { node = "Parameters" }
+occurrence = 0
+
+[[node.field]]
+name = "result_parameters"
+type = "GoParameters"
+cardinality = "optional"
+selector = { node = "Parameters" }
+occurrence = 1
+
+[[node.field]]
+name = "result_type"
+type = "GoType"
+cardinality = "optional"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoUnderlyingType"
+kind = "UnderlyingType"
+
+[[node.field]]
+name = "tilde_token"
+cardinality = "one"
+selector = { token = "~" }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoTypeElem"
+kind = "TypeElem"
+
+[[node.field]]
+name = "terms"
+type = "GoTypeTerm"
+cardinality = "many"
+selector = { union = "GoTypeTerm" }
+
+[[node.field]]
+name = "operators"
+type = "GoLogicOp"
+cardinality = "many"
+selector = { node = "LogicOp" }
+
+[[node]]
+name = "GoLogicOp"
+kind = "LogicOp"
+
+[[node]]
+name = "GoChannelType"
+kind = "ChannelType"
+
+[[node.field]]
+name = "chan_token"
+cardinality = "one"
+selector = { token = "chan" }
+
+[[node.field]]
+name = "arrow_token"
+cardinality = "optional"
+selector = { token = "<-" }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoParenthesizedType"
+kind = "ParenthesizedType"
+
+[[node.field]]
+name = "left_paren_token"
+cardinality = "one"
+selector = { token = "(" }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "right_paren_token"
+cardinality = "one"
+selector = { token = ")" }
+
+[[node]]
+name = "GoQualifiedType"
+kind = "QualifiedType"
+
+[[node.field]]
+name = "qualifiers"
+type = "GoVariableName"
+cardinality = "many"
+selector = { node = "VariableName" }
+
+[[node.field]]
+name = "name"
+type = "GoTypeName"
+cardinality = "one"
+selector = { node = "TypeName" }
+
+[[node]]
+name = "GoParameterizedType"
+kind = "ParameterizedType"
+
+[[node.field]]
+name = "base"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "arguments"
+type = "GoTypeArgs"
+cardinality = "one"
+selector = { node = "TypeArgs" }
+
+[[node]]
+name = "GoTypeArgs"
+kind = "TypeArgs"
+
+[[node.field]]
+name = "left_bracket_token"
+cardinality = "one"
+selector = { token = "[" }
+
+[[node.field]]
+name = "types"
+type = "GoType"
+cardinality = "many"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "right_bracket_token"
+cardinality = "one"
+selector = { token = "]" }
+
+[[node]]
+name = "GoArrayType"
+kind = "ArrayType"
+
+[[node.field]]
+name = "left_bracket_token"
+cardinality = "one"
+selector = { token = "[" }
+
+[[node.field]]
+name = "length"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoSliceType"
+kind = "SliceType"
+
+[[node.field]]
+name = "left_bracket_token"
+cardinality = "one"
+selector = { token = "[" }
+
+[[node.field]]
+name = "ellipsis_token"
+cardinality = "optional"
+selector = { token = "..." }
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node]]
+name = "GoMapType"
+kind = "MapType"
+
+[[node.field]]
+name = "map_token"
+cardinality = "one"
+selector = { token = "map" }
+
+[[node.field]]
+name = "key"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+occurrence = 0
+
+[[node.field]]
+name = "value"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+occurrence = 1
+
+[[node]]
+name = "GoLiteralValue"
+kind = "LiteralValue"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "elements"
+type = "GoElement"
+cardinality = "many"
+selector = { node = "Element" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "GoElement"
+kind = "Element"
+
+[[node.field]]
+name = "key"
+type = "GoKey"
+cardinality = "optional"
+selector = { node = "Key" }
+
+[[node.field]]
+name = "value"
+type = "GoElementValue"
+cardinality = "one"
+selector = { union = "GoElementValue" }
+
+[[node.field]]
+name = "colon_token"
+cardinality = "optional"
+selector = { token = ":" }
+
+[[node]]
+name = "GoKey"
+kind = "Key"
+
+[[node.field]]
+name = "value"
+type = "GoElementValue"
+cardinality = "one"
+selector = { union = "GoElementValue" }
+
+[[node]]
+name = "GoParenthesizedExpr"
+kind = "ParenthesizedExpr"
+
+[[node.field]]
+name = "left_paren_token"
+cardinality = "one"
+selector = { token = "(" }
+
+[[node.field]]
+name = "expression"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "right_paren_token"
+cardinality = "one"
+selector = { token = ")" }
+
+[[node]]
+name = "GoFunctionLiteral"
+kind = "FunctionLiteral"
+
+[[node.field]]
+name = "func_token"
+cardinality = "one"
+selector = { token = "func" }
+
+[[node.field]]
+name = "parameters"
+type = "GoParameters"
+cardinality = "one"
+selector = { node = "Parameters" }
+occurrence = 0
+
+[[node.field]]
+name = "result_parameters"
+type = "GoParameters"
+cardinality = "optional"
+selector = { node = "Parameters" }
+occurrence = 1
+
+[[node.field]]
+name = "result_type"
+type = "GoType"
+cardinality = "optional"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "body"
+type = "GoBlock"
+cardinality = "one"
+selector = { node = "Block" }
+
+[[node]]
+name = "GoConversion"
+kind = "Conversion"
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "left_paren_token"
+cardinality = "one"
+selector = { token = "(" }
+
+[[node.field]]
+name = "expression"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "right_paren_token"
+cardinality = "one"
+selector = { token = ")" }
+
+[[node]]
+name = "GoSelectorExpr"
+kind = "SelectorExpr"
+
+[[node.field]]
+name = "qualifier"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "name"
+type = "GoFieldName"
+cardinality = "one"
+selector = { node = "FieldName" }
+
+[[node]]
+name = "GoIndexExpr"
+kind = "IndexExpr"
+
+[[node.field]]
+name = "base"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+occurrence = 0
+
+[[node.field]]
+name = "left_bracket_token"
+cardinality = "one"
+selector = { token = "[" }
+
+[[node.field]]
+name = "index"
+type = "GoAstExpr"
+cardinality = "one"
+selector = { union = "GoAstExpr" }
+occurrence = 1
+
+[[node.field]]
+name = "right_bracket_token"
+cardinality = "one"
+selector = { token = "]" }
+
+[[node]]
+name = "GoIndexListExpr"
+kind = "IndexListExpr"
+
+[[node]]
+name = "GoSliceExpr"
+kind = "SliceExpr"
+
+[[node]]
+name = "GoTypeAssertion"
+kind = "TypeAssertion"
+
+[[node.field]]
+name = "ty"
+type = "GoType"
+cardinality = "one"
+selector = { union = "GoType" }
+
+[[node.field]]
+name = "left_paren_token"
+cardinality = "one"
+selector = { token = "(" }
+
+[[node.field]]
+name = "right_paren_token"
+cardinality = "one"
+selector = { token = ")" }
+
+[[node]]
+name = "GoCallExpr"
+kind = "CallExpr"
+
+[[node.field]]
+name = "arguments"
+type = "GoArguments"
+cardinality = "one"
+selector = { node = "Arguments" }
+
+[[node]]
+name = "GoParameterizedExpr"
+kind = "ParameterizedExpr"
+
+[[node.field]]
+name = "base"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "arguments"
+type = "GoTypeArgs"
+cardinality = "one"
+selector = { node = "TypeArgs" }
+
+[[node]]
+name = "GoArguments"
+kind = "Arguments"
+
+[[node.field]]
+name = "left_paren_token"
+cardinality = "one"
+selector = { token = "(" }
+
+[[node.field]]
+name = "values"
+type = "GoAstExpr"
+cardinality = "many"
+selector = { union = "GoAstExpr" }
+
+[[node.field]]
+name = "ellipsis_token"
+cardinality = "optional"
+selector = { token = "..." }
+
+[[node.field]]
+name = "right_paren_token"
+cardinality = "one"
+selector = { token = ")" }
+
+[[node]]
+name = "GoUnaryExpr"
+kind = "UnaryExp"
+
+[[node]]
+name = "GoArithOp"
+kind = "ArithOp"
+
+[[node]]
+name = "GoBitOp"
+kind = "BitOp"
+
+[[node]]
+name = "GoDerefOp"
+kind = "DerefOp"
+
+[[node]]
+name = "GoBinaryExpr"
+kind = "BinaryExp"
+
+[[node]]
+name = "GoCompareOp"
+kind = "CompareOp"
+
+[[node]]
+name = "GoSendStatement"
+kind = "SendStatement"
+
+[[node.field]]
+name = "channel"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+occurrence = 0
+
+[[node.field]]
+name = "arrow_token"
+cardinality = "one"
+selector = { token = "<-" }
+
+[[node.field]]
+name = "value"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+occurrence = 1
+
+[[node]]
+name = "GoIncDecStatement"
+kind = "IncDecStatement"
+
+[[node.field]]
+name = "expression"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "operator"
+type = "GoIncDecOp"
+cardinality = "one"
+selector = { node = "IncDecOp" }
+
+[[node]]
+name = "GoIncDecOp"
+kind = "IncDecOp"
+
+[[node]]
+name = "GoAssignment"
+kind = "Assignment"
+
+[[node.field]]
+name = "equals_token"
+cardinality = "optional"
+selector = { token = "=" }
+
+[[node.field]]
+name = "update_operator"
+type = "GoUpdateOp"
+cardinality = "optional"
+selector = { node = "UpdateOp" }
+
+[[node]]
+name = "GoUpdateOp"
+kind = "UpdateOp"
+
+[[node]]
+name = "GoLabeledStatement"
+kind = "LabeledStatement"
+
+[[node.field]]
+name = "label"
+type = "GoLabelName"
+cardinality = "one"
+selector = { node = "LabelName" }
+
+[[node.field]]
+name = "colon_token"
+cardinality = "one"
+selector = { token = ":" }
+
+[[node.field]]
+name = "body"
+type = "GoStatement"
+cardinality = "optional"
+selector = { union = "GoStatement" }
+
+[[node]]
+name = "GoIfStatement"
+kind = "IfStatement"
+
+[[node.field]]
+name = "if_token"
+cardinality = "one"
+selector = { token = "if" }
+
+[[node.field]]
+name = "init"
+type = "GoClauseSimpleStatement"
+cardinality = "optional"
+selector = { union = "GoClauseSimpleStatement" }
+
+[[node.field]]
+name = "condition"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "body"
+type = "GoBlock"
+cardinality = "one"
+selector = { node = "Block" }
+occurrence = 0
+
+[[node.field]]
+name = "alternate_if"
+type = "GoIfStatement"
+cardinality = "optional"
+selector = { node = "IfStatement" }
+
+[[node.field]]
+name = "alternate_block"
+type = "GoBlock"
+cardinality = "optional"
+selector = { node = "Block" }
+occurrence = 1
+
+[[node]]
+name = "GoSwitchStatement"
+kind = "SwitchStatement"
+
+[[node.field]]
+name = "switch_token"
+cardinality = "one"
+selector = { token = "switch" }
+
+[[node.field]]
+name = "init"
+type = "GoClauseSimpleStatement"
+cardinality = "optional"
+selector = { union = "GoClauseSimpleStatement" }
+
+[[node.field]]
+name = "tag"
+type = "GoExpr"
+cardinality = "optional"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "body"
+type = "GoSwitchBlock"
+cardinality = "one"
+selector = { node = "SwitchBlock" }
+
+[[node]]
+name = "GoSwitchBlock"
+kind = "SwitchBlock"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "GoCase"
+kind = "Case"
+
+[[node.field]]
+name = "case_token"
+cardinality = "optional"
+selector = { token = "case" }
+
+[[node.field]]
+name = "default_token"
+cardinality = "optional"
+selector = { token = "default" }
+
+[[node.field]]
+name = "values"
+type = "GoCaseValue"
+cardinality = "many"
+selector = { union = "GoCaseValue" }
+
+[[node.field]]
+name = "colon_token"
+cardinality = "one"
+selector = { token = ":" }
+
+[[node]]
+name = "GoTypeSwitchStatement"
+kind = "TypeSwitchStatement"
+
+[[node.field]]
+name = "switch_token"
+cardinality = "one"
+selector = { token = "switch" }
+
+[[node.field]]
+name = "init"
+type = "GoClauseSimpleStatement"
+cardinality = "optional"
+selector = { union = "GoClauseSimpleStatement" }
+
+[[node.field]]
+name = "name"
+type = "GoDefName"
+cardinality = "optional"
+selector = { node = "DefName" }
+
+[[node.field]]
+name = "define_token"
+cardinality = "optional"
+selector = { token = ":=" }
+
+[[node.field]]
+name = "expression"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "left_paren_token"
+cardinality = "one"
+selector = { token = "(" }
+
+[[node.field]]
+name = "right_paren_token"
+cardinality = "one"
+selector = { token = ")" }
+
+[[node.field]]
+name = "body"
+type = "GoSwitchBlock"
+cardinality = "one"
+selector = { node = "SwitchBlock" }
+
+[[node]]
+name = "GoForStatement"
+kind = "ForStatement"
+
+[[node.field]]
+name = "for_token"
+cardinality = "one"
+selector = { token = "for" }
+
+[[node.field]]
+name = "condition"
+type = "GoExpr"
+cardinality = "optional"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "clause"
+type = "GoForClause"
+cardinality = "optional"
+selector = { node = "ForClause" }
+
+[[node.field]]
+name = "range_clause"
+type = "GoRangeClause"
+cardinality = "optional"
+selector = { node = "RangeClause" }
+
+[[node.field]]
+name = "body"
+type = "GoBlock"
+cardinality = "one"
+selector = { node = "Block" }
+
+[[node]]
+name = "GoForClause"
+kind = "ForClause"
+
+[[node.field]]
+name = "first_semicolon_token"
+cardinality = "one"
+selector = { token = ";" }
+occurrence = 0
+
+[[node.field]]
+name = "condition"
+type = "GoExpr"
+cardinality = "optional"
+selector = { union = "GoExpr" }
+
+[[node.field]]
+name = "second_semicolon_token"
+cardinality = "one"
+selector = { token = ";" }
+occurrence = 1
+
+[[node]]
+name = "GoRangeClause"
+kind = "RangeClause"
+
+[[node]]
+name = "GoGoStatement"
+kind = "GoStatement"
+
+[[node.field]]
+name = "go_token"
+cardinality = "one"
+selector = { token = "go" }
+
+[[node.field]]
+name = "expression"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[node]]
+name = "GoSelectStatement"
+kind = "SelectStatement"
+
+[[node.field]]
+name = "select_token"
+cardinality = "one"
+selector = { token = "select" }
+
+[[node.field]]
+name = "body"
+type = "GoSelectBlock"
+cardinality = "one"
+selector = { node = "SelectBlock" }
+
+[[node]]
+name = "GoSelectBlock"
+kind = "SelectBlock"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "GoReceiveStatement"
+kind = "ReceiveStatement"
+
+[[node]]
+name = "GoReturnStatement"
+kind = "ReturnStatement"
+
+[[node.field]]
+name = "return_token"
+cardinality = "one"
+selector = { token = "return" }
+
+[[node.field]]
+name = "results"
+type = "GoExpr"
+cardinality = "many"
+selector = { union = "GoExpr" }
+
+[[node]]
+name = "GoGotoStatement"
+kind = "GotoStatement"
+
+[[node.field]]
+name = "break_token"
+cardinality = "optional"
+selector = { token = "break" }
+
+[[node.field]]
+name = "continue_token"
+cardinality = "optional"
+selector = { token = "continue" }
+
+[[node.field]]
+name = "goto_token"
+cardinality = "optional"
+selector = { token = "goto" }
+
+[[node.field]]
+name = "label"
+type = "GoLabelName"
+cardinality = "optional"
+selector = { node = "LabelName" }
+
+[[node]]
+name = "GoFallthroughStatement"
+kind = "FallthroughStatement"
+
+[[node.field]]
+name = "fallthrough_token"
+cardinality = "one"
+selector = { token = "fallthrough" }
+
+[[node]]
+name = "GoDeferStatement"
+kind = "DeferStatement"
+
+[[node.field]]
+name = "defer_token"
+cardinality = "one"
+selector = { token = "defer" }
+
+[[node.field]]
+name = "expression"
+type = "GoExpr"
+cardinality = "one"
+selector = { union = "GoExpr" }
+
+[[union]]
+name = "GoDeclaration"
+variants = [
+	{ name = "Const", type = "GoConstDecl" },
+	{ name = "Type", type = "GoTypeDecl" },
+	{ name = "Var", type = "GoVarDecl" },
+	{ name = "Function", type = "GoFunctionDecl" },
+	{ name = "Method", type = "GoMethodDecl" },
+]
+
+[[union]]
+name = "GoGeneralDeclaration"
+variants = [
+	{ name = "Const", type = "GoConstDecl" },
+	{ name = "Type", type = "GoTypeDecl" },
+	{ name = "Var", type = "GoVarDecl" },
+]
+
+[[union]]
+name = "GoSpec"
+variants = [
+	{ name = "Import", type = "GoImportSpec" },
+	{ name = "Const", type = "GoConstSpec" },
+	{ name = "Type", type = "GoTypeSpec" },
+	{ name = "Var", type = "GoVarSpec" },
+]
+
+[[union]]
+name = "GoName"
+variants = [
+	{ name = "Definition", type = "GoDefName" },
+	{ name = "Variable", type = "GoVariableName" },
+	{ name = "Type", type = "GoTypeName" },
+	{ name = "Field", type = "GoFieldName" },
+	{ name = "Label", type = "GoLabelName" },
+	{ name = "Bool", type = "GoBool" },
+	{ name = "Nil", type = "GoNil" },
+]
+
+[[union]]
+name = "GoType"
+variants = [
+	{ name = "Struct", type = "GoStructType" },
+	{ name = "Pointer", type = "GoPointerType" },
+	{ name = "Function", type = "GoFunctionType" },
+	{ name = "Interface", type = "GoInterfaceType" },
+	{ name = "Channel", type = "GoChannelType" },
+	{ name = "Parenthesized", type = "GoParenthesizedType" },
+	{ name = "Qualified", type = "GoQualifiedType" },
+	{ name = "Named", type = "GoTypeName" },
+	{ name = "Parameterized", type = "GoParameterizedType" },
+	{ name = "Array", type = "GoArrayType" },
+	{ name = "Slice", type = "GoSliceType" },
+	{ name = "Map", type = "GoMapType" },
+]
+
+[[union]]
+name = "GoExpr"
+variants = [
+	{ name = "Number", type = "GoNumber" },
+	{ name = "Bool", type = "GoBool" },
+	{ name = "Nil", type = "GoNil" },
+	{ name = "Rune", type = "GoRune" },
+	{ name = "String", type = "GoString" },
+	{ name = "Variable", type = "GoVariableName" },
+	{ name = "TypedLiteral", type = "GoTypedLiteral" },
+	{ name = "Parenthesized", type = "GoParenthesizedExpr" },
+	{ name = "Function", type = "GoFunctionLiteral" },
+	{ name = "Conversion", type = "GoConversion" },
+	{ name = "Selector", type = "GoSelectorExpr" },
+	{ name = "Index", type = "GoIndexExpr" },
+	{ name = "IndexList", type = "GoIndexListExpr" },
+	{ name = "Slice", type = "GoSliceExpr" },
+	{ name = "TypeAssertion", type = "GoTypeAssertion" },
+	{ name = "Call", type = "GoCallExpr" },
+	{ name = "Parameterized", type = "GoParameterizedExpr" },
+	{ name = "Unary", type = "GoUnaryExpr" },
+	{ name = "Binary", type = "GoBinaryExpr" },
+]
+
+[[union]]
+name = "GoAstExpr"
+variants = [
+	{ name = "Expression", type = "GoExpr" },
+	{ name = "Type", type = "GoType" },
+]
+
+[[union]]
+name = "GoElementValue"
+variants = [
+	{ name = "Expression", type = "GoExpr" },
+	{ name = "Literal", type = "GoLiteralValue" },
+]
+
+[[union]]
+name = "GoTypeTerm"
+variants = [
+	{ name = "Type", type = "GoType" },
+	{ name = "Underlying", type = "GoUnderlyingType" },
+]
+
+[[union]]
+name = "GoInterfaceElement"
+variants = [
+	{ name = "Method", type = "GoMethodElem" },
+	{ name = "Term", type = "GoTypeTerm" },
+	{ name = "Union", type = "GoTypeElem" },
+]
+
+[[union]]
+name = "GoCaseValue"
+variants = [
+	{ name = "Expression", type = "GoExpr" },
+	{ name = "Type", type = "GoType" },
+	{ name = "Send", type = "GoSendStatement" },
+	{ name = "Receive", type = "GoReceiveStatement" },
+]
+
+[[union]]
+name = "GoSimpleStatement"
+variants = [
+	{ name = "Expression", type = "GoExprStatement" },
+	{ name = "Send", type = "GoSendStatement" },
+	{ name = "IncrementDecrement", type = "GoIncDecStatement" },
+	{ name = "Assignment", type = "GoAssignment" },
+	{ name = "Receive", type = "GoReceiveStatement" },
+]
+
+[[union]]
+name = "GoClauseSimpleStatement"
+variants = [
+	{ name = "Expression", type = "GoExprStatement" },
+	{ name = "Send", type = "GoSendStatement" },
+	{ name = "IncrementDecrement", type = "GoIncDecStatement" },
+	{ name = "Assignment", type = "GoAssignment" },
+	{ name = "ShortVariable", type = "GoVarDecl" },
+	{ name = "Receive", type = "GoReceiveStatement" },
+]
+
+[[union]]
+name = "GoStatement"
+variants = [
+	{ name = "Simple", type = "GoSimpleStatement" },
+	{ name = "Declaration", type = "GoGeneralDeclaration" },
+	{ name = "Block", type = "GoBlock" },
+	{ name = "Labeled", type = "GoLabeledStatement" },
+	{ name = "If", type = "GoIfStatement" },
+	{ name = "Switch", type = "GoSwitchStatement" },
+	{ name = "TypeSwitch", type = "GoTypeSwitchStatement" },
+	{ name = "For", type = "GoForStatement" },
+	{ name = "Go", type = "GoGoStatement" },
+	{ name = "Select", type = "GoSelectStatement" },
+	{ name = "Return", type = "GoReturnStatement" },
+	{ name = "Branch", type = "GoGotoStatement" },
+	{ name = "Fallthrough", type = "GoFallthroughStatement" },
+	{ name = "Defer", type = "GoDeferStatement" },
+]
+
+[[union]]
+name = "GoOperator"
+variants = [
+	{ name = "Arithmetic", type = "GoArithOp" },
+	{ name = "Bitwise", type = "GoBitOp" },
+	{ name = "Dereference", type = "GoDerefOp" },
+	{ name = "Logic", type = "GoLogicOp" },
+	{ name = "Compare", type = "GoCompareOp" },
+	{ name = "IncrementDecrement", type = "GoIncDecOp" },
+	{ name = "Update", type = "GoUpdateOp" },
+]
+
+[[union]]
+name = "GoComment"
+variants = [
+	{ name = "Line", type = "GoLineComment" },
+	{ name = "Block", type = "GoBlockComment" },
+]

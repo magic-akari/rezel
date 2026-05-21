@@ -29,6 +29,14 @@ run = "cargo run --locked --package rezel-codegen -- java --check"
 description = "Regenerate checked-in Java parser sources"
 run = "cargo run --locked --package rezel-codegen -- java --update"
 
+[tasks."codegen:rezel:go"]
+description = "Verify checked-in Go parser sources"
+run = "cargo run --locked --package rezel-codegen -- go --check"
+
+[tasks."codegen:rezel:go:update"]
+description = "Regenerate checked-in Go parser sources"
+run = "cargo run --locked --package rezel-codegen -- go --update"
+
 [tasks."codegen:rezel:fixtures"]
 description = "Verify checked-in rezel-generator test fixtures"
 run = "cargo run --locked --package rezel-codegen -- fixtures --check"
@@ -110,6 +118,7 @@ depends = [
 	"alignment",
 	"codegen:rezel:json",
 	"codegen:rezel:java",
+	"codegen:rezel:go",
 	"codegen:rezel:fixtures",
 	"codegen:java-identifiers",
 ]

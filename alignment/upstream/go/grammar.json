@@ -1,0 +1,11 @@
+{
+	"schema_version": 1,
+	"repository": "https://code.haverbeke.berlin/lezer/go",
+	"commit": "a419e05c2a992ffbb53411904ee02dde3e728b37",
+	"source": "src/go.grammar",
+	"blob_oid": "4aa4661bd2d4589f0ede5b61510bdde9ab31cef1",
+	"symbols": [
+		"@precedence",
+		"expr"
+	]
+}

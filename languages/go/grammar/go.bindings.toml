@@ -1,0 +1,17 @@
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "semicolon"
+rust_path = "crate::tokens::SEMICOLON"
+
+[[binding]]
+kind = "context-tracker"
+source = "./tokens"
+name = "trackTokens"
+rust_path = "crate::tokens::TRACK_TOKENS"
+
+[[binding]]
+kind = "property-source"
+source = "./highlight"
+name = "goHighlighting"
+rust_path = "crate::go_highlighting"

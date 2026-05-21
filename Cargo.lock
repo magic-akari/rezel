@@ -111,6 +111,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rezel-lang-go"
+version = "0.0.0"
+dependencies = [
+ "rezel-common",
+ "rezel-highlight",
+ "rezel-lr",
+]
+
+[[package]]
 name = "rezel-lang-java"
 version = "0.0.0"
 dependencies = [
