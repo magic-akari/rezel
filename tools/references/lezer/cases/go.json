@@ -1,0 +1,47 @@
+{
+	"schema": "rezel.lezer-go-reference-cases.v1",
+	"strict": [
+		{
+			"id": "declarations-and-types",
+			"source": "package surface\n\nimport (\n\talias \"example.test/pkg\"\n\t. \"example.test/dot\"\n)\n\nconst (\n\tzero = iota\n\tone int = 1\n)\nvar values = map[string]int{\"one\": 1}\ntype Alias[T any] = map[string]T\ntype Pair[A, B any] struct { Left A; Right B; Embedded }\ntype Constraint interface { ~int | ~string; Compare(Pair[int, string]) bool }\nfunc Transform[T any, R comparable](value T, fn func(T) R) R { return fn(value) }\nfunc (pair Pair[A, B]) First() A { return pair.Left }\n"
+		},
+		{
+			"id": "expressions-and-literals",
+			"source": "package expressions\n\ntype Item struct { Value int }\nfunc use(value any, items []Item) {\n\tvar _ = []Item{{Value: 0}, {1}}\n\tvar _ = map[string]int{\"x\": 1}\n\tvar _ = func(x int) int { return x }(1)\n\tvar _ = make([]int, 2)\n\tvar _ = new(Item)\n\tvar _ = items[0].Value\n\tvar _ = items[1:2:2]\n\tvar _ = value.(Item)\n\tvar _ = generic[int, string](1)\n\tvar _ = generic[[16]byte]\n\tvar _ = -items[0].Value + 3*4<<1 &^ 2\n\tvar _ = <-make(chan int)\n}\n"
+		},
+		{
+			"id": "statements-and-concurrency",
+			"source": "package flow\n\nfunc flow(ch chan int, input any, xs []int) int {\n\ttotal := 0\nouter:\n\tfor i := 0; i < len(xs); i++ {\n\t\tif xs[i] < 0 { continue outer } else { total += xs[i] }\n\t}\n\tfor _, value := range xs { total += value }\n\tfor range 3 { break }\n\tswitch value := input.(type) {\n\tcase int, string: _ = value\n\tdefault:\n\t}\n\tswitch total {\n\tcase 0: fallthrough\n\tdefault: total++\n\t}\n\tselect {\n\tcase ch <- total:\n\tcase value := <-ch: total = value\n\tdefault:\n\t}\n\tgo close(ch)\n\tdefer func() { recover() }()\n\tgoto done\ndone:\n\treturn total\n}\n"
+		},
+		{
+			"id": "semicolon-and-comments",
+			"source": "package semis\r\n\r\nvar truth = true // line\r\nvar falsity = false /* inline */\r\nvar absence = nil /* spanning\r\ncomment */\r\nvar ( grouped = 1 /* before close */ )\r\nfunc endings(values []int) {\r\n\tvalues[0]++\r\n\tif truth {\r\n\t\treturn\r\n\t}\r\n}\r\n"
+		},
+		{
+			"id": "maintained-go-1-26-deltas",
+			"source": "package modern\n\nvar _64bit = 64\nvar instantiatedArray = generic[[16]byte]\nvar instantiatedPair = generic[int32, int64]\ntype Alias[T any] = map[string]T\ntype names struct { true int; false int }\nfunc visit(true bool) {\n\tvar nil = true\n\tvar other = false\n\tfor range 3 {}\n\t_ = nil\n\t_ = other\n}\n"
+		},
+		{
+			"id": "unicode-and-lexical-boundaries",
+			"source": "package 字符\n\nconst (\n\tdecimal = 1_000_000\n\tbinary = 0b1010_0011\n\toctal = 0o755\n\thex = 0x1f_ff\n\tfloating = 0x1.fp3\n\timaginary = 2.5i\n\tchar = '界'\n\ttext = \"héllo 😀\"\n\traw = `line\n文本`\n)\nvar 变量 = 𐐀value"
+		}
+	],
+	"recovering": [
+		{
+			"id": "missing-expression",
+			"source": "package broken\nvar value =\n"
+		},
+		{
+			"id": "unexpected-operator",
+			"source": "package broken\nfunc run() int { return 1 + / 2 }\n"
+		},
+		{
+			"id": "truncated-composite",
+			"source": "package broken\nvar value = Item{Field: 1,\n"
+		},
+		{
+			"id": "incomplete-select",
+			"source": "package broken\nfunc run(ch chan int) { select { case value := <-ch:\n"
+		}
+	]
+}

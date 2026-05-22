@@ -1,0 +1,5615 @@
+{
+	"schema": "rezel.lezer-go-reference-snapshot.v1",
+	"reference": {
+		"packages": {
+			"@lezer/common": {
+				"version": "1.5.2",
+				"integrity": "sha512-sxQE460fPZyU3sdc8lafxiPwJHBzZRy/udNFynGQky1SePYBdhkBl1kOagA9uT3pxR8K09bOrmTUqA9wb/PjSQ=="
+			},
+			"@lezer/generator": {
+				"version": "1.8.0",
+				"integrity": "sha512-/SF4EDWowPqV1jOgoGSGTIFsE7Ezdr7ZYxyihl5eMKVO5tlnpIhFcDavgm1hHY5GEonoOAEnJ0CU0x+tvuAuUg=="
+			},
+			"@lezer/lr": {
+				"version": "1.4.10",
+				"integrity": "sha512-rnCpTIBafOx4mRp43xOxDJbFipJm/c0cia/V5TiGlhmMa+wsSdoGmUN3w5Bqrks/09Q/D4tNAmWaT8p6NRi77A=="
+			}
+		},
+		"artifacts": {
+			"grammar": {
+				"path": "languages/go/grammar/go.grammar",
+				"sha256": "c824021c322a55163a1d7ae835c89edf6ef8f5a8de17f635e452b168774f7316"
+			}
+		}
+	},
+	"coordinates": "raw-utf8-bytes",
+	"strict": [
+		{
+			"id": "declarations-and-types",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 455,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 15,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 15
+							}
+						]
+					},
+					{
+						"name": "ImportDecl",
+						"from": 17,
+						"to": 75,
+						"children": [
+							{
+								"name": "import",
+								"from": 17,
+								"to": 23
+							},
+							{
+								"name": "SpecList",
+								"from": 24,
+								"to": 75,
+								"children": [
+									{
+										"name": "(",
+										"from": 24,
+										"to": 25
+									},
+									{
+										"name": "ImportSpec",
+										"from": 27,
+										"to": 51,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 27,
+												"to": 32
+											},
+											{
+												"name": "String",
+												"from": 33,
+												"to": 51
+											}
+										]
+									},
+									{
+										"name": "ImportSpec",
+										"from": 53,
+										"to": 73,
+										"children": [
+											{
+												"name": ".",
+												"from": 53,
+												"to": 54
+											},
+											{
+												"name": "String",
+												"from": 55,
+												"to": 73
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 74,
+										"to": 75
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "ConstDecl",
+						"from": 77,
+						"to": 112,
+						"children": [
+							{
+								"name": "const",
+								"from": 77,
+								"to": 82
+							},
+							{
+								"name": "SpecList",
+								"from": 83,
+								"to": 112,
+								"children": [
+									{
+										"name": "(",
+										"from": 83,
+										"to": 84
+									},
+									{
+										"name": "ConstSpec",
+										"from": 86,
+										"to": 97,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 86,
+												"to": 90
+											},
+											{
+												"name": "=",
+												"from": 91,
+												"to": 92
+											},
+											{
+												"name": "VariableName",
+												"from": 93,
+												"to": 97
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 99,
+										"to": 110,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 99,
+												"to": 102
+											},
+											{
+												"name": "TypeName",
+												"from": 103,
+												"to": 106
+											},
+											{
+												"name": "=",
+												"from": 107,
+												"to": 108
+											},
+											{
+												"name": "Number",
+												"from": 109,
+												"to": 110
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 111,
+										"to": 112
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 113,
+						"to": 150,
+						"children": [
+							{
+								"name": "var",
+								"from": 113,
+								"to": 116
+							},
+							{
+								"name": "VarSpec",
+								"from": 117,
+								"to": 150,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 117,
+										"to": 123
+									},
+									{
+										"name": "=",
+										"from": 124,
+										"to": 125
+									},
+									{
+										"name": "TypedLiteral",
+										"from": 126,
+										"to": 150,
+										"children": [
+											{
+												"name": "MapType",
+												"from": 126,
+												"to": 140,
+												"children": [
+													{
+														"name": "map",
+														"from": 126,
+														"to": 129
+													},
+													{
+														"name": "[",
+														"from": 129,
+														"to": 130
+													},
+													{
+														"name": "TypeName",
+														"from": 130,
+														"to": 136
+													},
+													{
+														"name": "]",
+														"from": 136,
+														"to": 137
+													},
+													{
+														"name": "TypeName",
+														"from": 137,
+														"to": 140
+													}
+												]
+											},
+											{
+												"name": "LiteralValue",
+												"from": 140,
+												"to": 150,
+												"children": [
+													{
+														"name": "{",
+														"from": 140,
+														"to": 141
+													},
+													{
+														"name": "Element",
+														"from": 141,
+														"to": 149,
+														"children": [
+															{
+																"name": "Key",
+																"from": 141,
+																"to": 146,
+																"children": [
+																	{
+																		"name": "String",
+																		"from": 141,
+																		"to": 146
+																	}
+																]
+															},
+															{
+																"name": ":",
+																"from": 146,
+																"to": 147
+															},
+															{
+																"name": "Number",
+																"from": 148,
+																"to": 149
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 149,
+														"to": 150
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "TypeDecl",
+						"from": 151,
+						"to": 183,
+						"children": [
+							{
+								"name": "type",
+								"from": 151,
+								"to": 155
+							},
+							{
+								"name": "TypeSpec",
+								"from": 156,
+								"to": 183,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 156,
+										"to": 161
+									},
+									{
+										"name": "TypeParams",
+										"from": 161,
+										"to": 168,
+										"children": [
+											{
+												"name": "[",
+												"from": 161,
+												"to": 162
+											},
+											{
+												"name": "TypeParam",
+												"from": 162,
+												"to": 167,
+												"children": [
+													{
+														"name": "TypeName",
+														"from": 162,
+														"to": 163
+													},
+													{
+														"name": "TypeName",
+														"from": 164,
+														"to": 167
+													}
+												]
+											},
+											{
+												"name": "]",
+												"from": 167,
+												"to": 168
+											}
+										]
+									},
+									{
+										"name": "=",
+										"from": 169,
+										"to": 170
+									},
+									{
+										"name": "MapType",
+										"from": 171,
+										"to": 183,
+										"children": [
+											{
+												"name": "map",
+												"from": 171,
+												"to": 174
+											},
+											{
+												"name": "[",
+												"from": 174,
+												"to": 175
+											},
+											{
+												"name": "TypeName",
+												"from": 175,
+												"to": 181
+											},
+											{
+												"name": "]",
+												"from": 181,
+												"to": 182
+											},
+											{
+												"name": "TypeName",
+												"from": 182,
+												"to": 183
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "TypeDecl",
+						"from": 184,
+						"to": 240,
+						"children": [
+							{
+								"name": "type",
+								"from": 184,
+								"to": 188
+							},
+							{
+								"name": "TypeSpec",
+								"from": 189,
+								"to": 240,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 189,
+										"to": 193
+									},
+									{
+										"name": "TypeParams",
+										"from": 193,
+										"to": 203,
+										"children": [
+											{
+												"name": "[",
+												"from": 193,
+												"to": 194
+											},
+											{
+												"name": "TypeParam",
+												"from": 194,
+												"to": 202,
+												"children": [
+													{
+														"name": "TypeName",
+														"from": 194,
+														"to": 195
+													},
+													{
+														"name": ",",
+														"from": 195,
+														"to": 196
+													},
+													{
+														"name": "TypeName",
+														"from": 197,
+														"to": 198
+													},
+													{
+														"name": "TypeName",
+														"from": 199,
+														"to": 202
+													}
+												]
+											},
+											{
+												"name": "]",
+												"from": 202,
+												"to": 203
+											}
+										]
+									},
+									{
+										"name": "StructType",
+										"from": 204,
+										"to": 240,
+										"children": [
+											{
+												"name": "struct",
+												"from": 204,
+												"to": 210
+											},
+											{
+												"name": "StructBody",
+												"from": 211,
+												"to": 240,
+												"children": [
+													{
+														"name": "{",
+														"from": 211,
+														"to": 212
+													},
+													{
+														"name": "FieldDecl",
+														"from": 213,
+														"to": 219,
+														"children": [
+															{
+																"name": "FieldName",
+																"from": 213,
+																"to": 217
+															},
+															{
+																"name": "TypeName",
+																"from": 218,
+																"to": 219
+															}
+														]
+													},
+													{
+														"name": ";",
+														"from": 219,
+														"to": 220
+													},
+													{
+														"name": "FieldDecl",
+														"from": 221,
+														"to": 228,
+														"children": [
+															{
+																"name": "FieldName",
+																"from": 221,
+																"to": 226
+															},
+															{
+																"name": "TypeName",
+																"from": 227,
+																"to": 228
+															}
+														]
+													},
+													{
+														"name": ";",
+														"from": 228,
+														"to": 229
+													},
+													{
+														"name": "FieldDecl",
+														"from": 230,
+														"to": 238,
+														"children": [
+															{
+																"name": "TypeName",
+																"from": 230,
+																"to": 238
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 239,
+														"to": 240
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "TypeDecl",
+						"from": 241,
+						"to": 318,
+						"children": [
+							{
+								"name": "type",
+								"from": 241,
+								"to": 245
+							},
+							{
+								"name": "TypeSpec",
+								"from": 246,
+								"to": 318,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 246,
+										"to": 256
+									},
+									{
+										"name": "InterfaceType",
+										"from": 257,
+										"to": 318,
+										"children": [
+											{
+												"name": "interface",
+												"from": 257,
+												"to": 266
+											},
+											{
+												"name": "InterfaceBody",
+												"from": 267,
+												"to": 318,
+												"children": [
+													{
+														"name": "{",
+														"from": 267,
+														"to": 268
+													},
+													{
+														"name": "TypeElem",
+														"from": 269,
+														"to": 283,
+														"children": [
+															{
+																"name": "UnderlyingType",
+																"from": 269,
+																"to": 273,
+																"children": [
+																	{
+																		"name": "~",
+																		"from": 269,
+																		"to": 270
+																	},
+																	{
+																		"name": "TypeName",
+																		"from": 270,
+																		"to": 273
+																	}
+																]
+															},
+															{
+																"name": "LogicOp",
+																"from": 274,
+																"to": 275
+															},
+															{
+																"name": "UnderlyingType",
+																"from": 276,
+																"to": 283,
+																"children": [
+																	{
+																		"name": "~",
+																		"from": 276,
+																		"to": 277
+																	},
+																	{
+																		"name": "TypeName",
+																		"from": 277,
+																		"to": 283
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": ";",
+														"from": 283,
+														"to": 284
+													},
+													{
+														"name": "MethodElem",
+														"from": 285,
+														"to": 316,
+														"children": [
+															{
+																"name": "FieldName",
+																"from": 285,
+																"to": 292
+															},
+															{
+																"name": "Parameters",
+																"from": 292,
+																"to": 311,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 292,
+																		"to": 293
+																	},
+																	{
+																		"name": "Parameter",
+																		"from": 293,
+																		"to": 310,
+																		"children": [
+																			{
+																				"name": "ParameterizedType",
+																				"from": 293,
+																				"to": 310,
+																				"children": [
+																					{
+																						"name": "TypeName",
+																						"from": 293,
+																						"to": 297
+																					},
+																					{
+																						"name": "TypeArgs",
+																						"from": 297,
+																						"to": 310,
+																						"children": [
+																							{
+																								"name": "[",
+																								"from": 297,
+																								"to": 298
+																							},
+																							{
+																								"name": "TypeName",
+																								"from": 298,
+																								"to": 301
+																							},
+																							{
+																								"name": ",",
+																								"from": 301,
+																								"to": 302
+																							},
+																							{
+																								"name": "TypeName",
+																								"from": 303,
+																								"to": 309
+																							},
+																							{
+																								"name": "]",
+																								"from": 309,
+																								"to": 310
+																							}
+																						]
+																					}
+																				]
+																			}
+																		]
+																	},
+																	{
+																		"name": ")",
+																		"from": 310,
+																		"to": 311
+																	}
+																]
+															},
+															{
+																"name": "TypeName",
+																"from": 312,
+																"to": 316
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 317,
+														"to": 318
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "FunctionDecl",
+						"from": 319,
+						"to": 400,
+						"children": [
+							{
+								"name": "func",
+								"from": 319,
+								"to": 323
+							},
+							{
+								"name": "DefName",
+								"from": 324,
+								"to": 333
+							},
+							{
+								"name": "TypeParams",
+								"from": 333,
+								"to": 354,
+								"children": [
+									{
+										"name": "[",
+										"from": 333,
+										"to": 334
+									},
+									{
+										"name": "TypeParam",
+										"from": 334,
+										"to": 339,
+										"children": [
+											{
+												"name": "TypeName",
+												"from": 334,
+												"to": 335
+											},
+											{
+												"name": "TypeName",
+												"from": 336,
+												"to": 339
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 339,
+										"to": 340
+									},
+									{
+										"name": "TypeParam",
+										"from": 341,
+										"to": 353,
+										"children": [
+											{
+												"name": "TypeName",
+												"from": 341,
+												"to": 342
+											},
+											{
+												"name": "TypeName",
+												"from": 343,
+												"to": 353
+											}
+										]
+									},
+									{
+										"name": "]",
+										"from": 353,
+										"to": 354
+									}
+								]
+							},
+							{
+								"name": "Parameters",
+								"from": 354,
+								"to": 377,
+								"children": [
+									{
+										"name": "(",
+										"from": 354,
+										"to": 355
+									},
+									{
+										"name": "Parameter",
+										"from": 355,
+										"to": 362,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 355,
+												"to": 360
+											},
+											{
+												"name": "TypeName",
+												"from": 361,
+												"to": 362
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 362,
+										"to": 363
+									},
+									{
+										"name": "Parameter",
+										"from": 364,
+										"to": 376,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 364,
+												"to": 366
+											},
+											{
+												"name": "FunctionType",
+												"from": 367,
+												"to": 376,
+												"children": [
+													{
+														"name": "func",
+														"from": 367,
+														"to": 371
+													},
+													{
+														"name": "Parameters",
+														"from": 371,
+														"to": 374,
+														"children": [
+															{
+																"name": "(",
+																"from": 371,
+																"to": 372
+															},
+															{
+																"name": "Parameter",
+																"from": 372,
+																"to": 373,
+																"children": [
+																	{
+																		"name": "TypeName",
+																		"from": 372,
+																		"to": 373
+																	}
+																]
+															},
+															{
+																"name": ")",
+																"from": 373,
+																"to": 374
+															}
+														]
+													},
+													{
+														"name": "TypeName",
+														"from": 375,
+														"to": 376
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 376,
+										"to": 377
+									}
+								]
+							},
+							{
+								"name": "TypeName",
+								"from": 378,
+								"to": 379
+							},
+							{
+								"name": "Block",
+								"from": 380,
+								"to": 400,
+								"children": [
+									{
+										"name": "{",
+										"from": 380,
+										"to": 381
+									},
+									{
+										"name": "ReturnStatement",
+										"from": 382,
+										"to": 398,
+										"children": [
+											{
+												"name": "return",
+												"from": 382,
+												"to": 388
+											},
+											{
+												"name": "CallExpr",
+												"from": 389,
+												"to": 398,
+												"children": [
+													{
+														"name": "VariableName",
+														"from": 389,
+														"to": 391
+													},
+													{
+														"name": "Arguments",
+														"from": 391,
+														"to": 398,
+														"children": [
+															{
+																"name": "(",
+																"from": 391,
+																"to": 392
+															},
+															{
+																"name": "VariableName",
+																"from": 392,
+																"to": 397
+															},
+															{
+																"name": ")",
+																"from": 397,
+																"to": 398
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 399,
+										"to": 400
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "MethodDecl",
+						"from": 401,
+						"to": 454,
+						"children": [
+							{
+								"name": "func",
+								"from": 401,
+								"to": 405
+							},
+							{
+								"name": "Parameters",
+								"from": 406,
+								"to": 423,
+								"children": [
+									{
+										"name": "(",
+										"from": 406,
+										"to": 407
+									},
+									{
+										"name": "Parameter",
+										"from": 407,
+										"to": 422,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 407,
+												"to": 411
+											},
+											{
+												"name": "ParameterizedType",
+												"from": 412,
+												"to": 422,
+												"children": [
+													{
+														"name": "TypeName",
+														"from": 412,
+														"to": 416
+													},
+													{
+														"name": "TypeArgs",
+														"from": 416,
+														"to": 422,
+														"children": [
+															{
+																"name": "[",
+																"from": 416,
+																"to": 417
+															},
+															{
+																"name": "TypeName",
+																"from": 417,
+																"to": 418
+															},
+															{
+																"name": ",",
+																"from": 418,
+																"to": 419
+															},
+															{
+																"name": "TypeName",
+																"from": 420,
+																"to": 421
+															},
+															{
+																"name": "]",
+																"from": 421,
+																"to": 422
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 422,
+										"to": 423
+									}
+								]
+							},
+							{
+								"name": "FieldName",
+								"from": 424,
+								"to": 429
+							},
+							{
+								"name": "Parameters",
+								"from": 429,
+								"to": 431,
+								"children": [
+									{
+										"name": "(",
+										"from": 429,
+										"to": 430
+									},
+									{
+										"name": ")",
+										"from": 430,
+										"to": 431
+									}
+								]
+							},
+							{
+								"name": "TypeName",
+								"from": 432,
+								"to": 433
+							},
+							{
+								"name": "Block",
+								"from": 434,
+								"to": 454,
+								"children": [
+									{
+										"name": "{",
+										"from": 434,
+										"to": 435
+									},
+									{
+										"name": "ReturnStatement",
+										"from": 436,
+										"to": 452,
+										"children": [
+											{
+												"name": "return",
+												"from": 436,
+												"to": 442
+											},
+											{
+												"name": "SelectorExpr",
+												"from": 443,
+												"to": 452,
+												"children": [
+													{
+														"name": "VariableName",
+														"from": 443,
+														"to": 447
+													},
+													{
+														"name": ".",
+														"from": 447,
+														"to": 448
+													},
+													{
+														"name": "FieldName",
+														"from": 448,
+														"to": 452
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 453,
+										"to": 454
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "expressions-and-literals",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 432,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 19,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 19
+							}
+						]
+					},
+					{
+						"name": "TypeDecl",
+						"from": 21,
+						"to": 51,
+						"children": [
+							{
+								"name": "type",
+								"from": 21,
+								"to": 25
+							},
+							{
+								"name": "TypeSpec",
+								"from": 26,
+								"to": 51,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 26,
+										"to": 30
+									},
+									{
+										"name": "StructType",
+										"from": 31,
+										"to": 51,
+										"children": [
+											{
+												"name": "struct",
+												"from": 31,
+												"to": 37
+											},
+											{
+												"name": "StructBody",
+												"from": 38,
+												"to": 51,
+												"children": [
+													{
+														"name": "{",
+														"from": 38,
+														"to": 39
+													},
+													{
+														"name": "FieldDecl",
+														"from": 40,
+														"to": 49,
+														"children": [
+															{
+																"name": "FieldName",
+																"from": 40,
+																"to": 45
+															},
+															{
+																"name": "TypeName",
+																"from": 46,
+																"to": 49
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 50,
+														"to": 51
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "FunctionDecl",
+						"from": 52,
+						"to": 431,
+						"children": [
+							{
+								"name": "func",
+								"from": 52,
+								"to": 56
+							},
+							{
+								"name": "DefName",
+								"from": 57,
+								"to": 60
+							},
+							{
+								"name": "Parameters",
+								"from": 60,
+								"to": 85,
+								"children": [
+									{
+										"name": "(",
+										"from": 60,
+										"to": 61
+									},
+									{
+										"name": "Parameter",
+										"from": 61,
+										"to": 70,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 61,
+												"to": 66
+											},
+											{
+												"name": "TypeName",
+												"from": 67,
+												"to": 70
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 70,
+										"to": 71
+									},
+									{
+										"name": "Parameter",
+										"from": 72,
+										"to": 84,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 72,
+												"to": 77
+											},
+											{
+												"name": "SliceType",
+												"from": 78,
+												"to": 84,
+												"children": [
+													{
+														"name": "[",
+														"from": 78,
+														"to": 79
+													},
+													{
+														"name": "]",
+														"from": 79,
+														"to": 80
+													},
+													{
+														"name": "TypeName",
+														"from": 80,
+														"to": 84
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 84,
+										"to": 85
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 86,
+								"to": 431,
+								"children": [
+									{
+										"name": "{",
+										"from": 86,
+										"to": 87
+									},
+									{
+										"name": "VarDecl",
+										"from": 89,
+										"to": 120,
+										"children": [
+											{
+												"name": "var",
+												"from": 89,
+												"to": 92
+											},
+											{
+												"name": "VarSpec",
+												"from": 93,
+												"to": 120,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 93,
+														"to": 94
+													},
+													{
+														"name": "=",
+														"from": 95,
+														"to": 96
+													},
+													{
+														"name": "TypedLiteral",
+														"from": 97,
+														"to": 120,
+														"children": [
+															{
+																"name": "SliceType",
+																"from": 97,
+																"to": 103,
+																"children": [
+																	{
+																		"name": "[",
+																		"from": 97,
+																		"to": 98
+																	},
+																	{
+																		"name": "]",
+																		"from": 98,
+																		"to": 99
+																	},
+																	{
+																		"name": "TypeName",
+																		"from": 99,
+																		"to": 103
+																	}
+																]
+															},
+															{
+																"name": "LiteralValue",
+																"from": 103,
+																"to": 120,
+																"children": [
+																	{
+																		"name": "{",
+																		"from": 103,
+																		"to": 104
+																	},
+																	{
+																		"name": "Element",
+																		"from": 104,
+																		"to": 114,
+																		"children": [
+																			{
+																				"name": "LiteralValue",
+																				"from": 104,
+																				"to": 114,
+																				"children": [
+																					{
+																						"name": "{",
+																						"from": 104,
+																						"to": 105
+																					},
+																					{
+																						"name": "Element",
+																						"from": 105,
+																						"to": 113,
+																						"children": [
+																							{
+																								"name": "Key",
+																								"from": 105,
+																								"to": 110,
+																								"children": [
+																									{
+																										"name": "VariableName",
+																										"from": 105,
+																										"to": 110
+																									}
+																								]
+																							},
+																							{
+																								"name": ":",
+																								"from": 110,
+																								"to": 111
+																							},
+																							{
+																								"name": "Number",
+																								"from": 112,
+																								"to": 113
+																							}
+																						]
+																					},
+																					{
+																						"name": "}",
+																						"from": 113,
+																						"to": 114
+																					}
+																				]
+																			}
+																		]
+																	},
+																	{
+																		"name": ",",
+																		"from": 114,
+																		"to": 115
+																	},
+																	{
+																		"name": "Element",
+																		"from": 116,
+																		"to": 119,
+																		"children": [
+																			{
+																				"name": "LiteralValue",
+																				"from": 116,
+																				"to": 119,
+																				"children": [
+																					{
+																						"name": "{",
+																						"from": 116,
+																						"to": 117
+																					},
+																					{
+																						"name": "Element",
+																						"from": 117,
+																						"to": 118,
+																						"children": [
+																							{
+																								"name": "Number",
+																								"from": 117,
+																								"to": 118
+																							}
+																						]
+																					},
+																					{
+																						"name": "}",
+																						"from": 118,
+																						"to": 119
+																					}
+																				]
+																			}
+																		]
+																	},
+																	{
+																		"name": "}",
+																		"from": 119,
+																		"to": 120
+																	}
+																]
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 122,
+										"to": 152,
+										"children": [
+											{
+												"name": "var",
+												"from": 122,
+												"to": 125
+											},
+											{
+												"name": "VarSpec",
+												"from": 126,
+												"to": 152,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 126,
+														"to": 127
+													},
+													{
+														"name": "=",
+														"from": 128,
+														"to": 129
+													},
+													{
+														"name": "TypedLiteral",
+														"from": 130,
+														"to": 152,
+														"children": [
+															{
+																"name": "MapType",
+																"from": 130,
+																"to": 144,
+																"children": [
+																	{
+																		"name": "map",
+																		"from": 130,
+																		"to": 133
+																	},
+																	{
+																		"name": "[",
+																		"from": 133,
+																		"to": 134
+																	},
+																	{
+																		"name": "TypeName",
+																		"from": 134,
+																		"to": 140
+																	},
+																	{
+																		"name": "]",
+																		"from": 140,
+																		"to": 141
+																	},
+																	{
+																		"name": "TypeName",
+																		"from": 141,
+																		"to": 144
+																	}
+																]
+															},
+															{
+																"name": "LiteralValue",
+																"from": 144,
+																"to": 152,
+																"children": [
+																	{
+																		"name": "{",
+																		"from": 144,
+																		"to": 145
+																	},
+																	{
+																		"name": "Element",
+																		"from": 145,
+																		"to": 151,
+																		"children": [
+																			{
+																				"name": "Key",
+																				"from": 145,
+																				"to": 148,
+																				"children": [
+																					{
+																						"name": "String",
+																						"from": 145,
+																						"to": 148
+																					}
+																				]
+																			},
+																			{
+																				"name": ":",
+																				"from": 148,
+																				"to": 149
+																			},
+																			{
+																				"name": "Number",
+																				"from": 150,
+																				"to": 151
+																			}
+																		]
+																	},
+																	{
+																		"name": "}",
+																		"from": 151,
+																		"to": 152
+																	}
+																]
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 154,
+										"to": 193,
+										"children": [
+											{
+												"name": "var",
+												"from": 154,
+												"to": 157
+											},
+											{
+												"name": "VarSpec",
+												"from": 158,
+												"to": 193,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 158,
+														"to": 159
+													},
+													{
+														"name": "=",
+														"from": 160,
+														"to": 161
+													},
+													{
+														"name": "CallExpr",
+														"from": 162,
+														"to": 193,
+														"children": [
+															{
+																"name": "FunctionLiteral",
+																"from": 162,
+																"to": 190,
+																"children": [
+																	{
+																		"name": "func",
+																		"from": 162,
+																		"to": 166
+																	},
+																	{
+																		"name": "Parameters",
+																		"from": 166,
+																		"to": 173,
+																		"children": [
+																			{
+																				"name": "(",
+																				"from": 166,
+																				"to": 167
+																			},
+																			{
+																				"name": "Parameter",
+																				"from": 167,
+																				"to": 172,
+																				"children": [
+																					{
+																						"name": "DefName",
+																						"from": 167,
+																						"to": 168
+																					},
+																					{
+																						"name": "TypeName",
+																						"from": 169,
+																						"to": 172
+																					}
+																				]
+																			},
+																			{
+																				"name": ")",
+																				"from": 172,
+																				"to": 173
+																			}
+																		]
+																	},
+																	{
+																		"name": "TypeName",
+																		"from": 174,
+																		"to": 177
+																	},
+																	{
+																		"name": "Block",
+																		"from": 178,
+																		"to": 190,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 178,
+																				"to": 179
+																			},
+																			{
+																				"name": "ReturnStatement",
+																				"from": 180,
+																				"to": 188,
+																				"children": [
+																					{
+																						"name": "return",
+																						"from": 180,
+																						"to": 186
+																					},
+																					{
+																						"name": "VariableName",
+																						"from": 187,
+																						"to": 188
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 189,
+																				"to": 190
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "Arguments",
+																"from": 190,
+																"to": 193,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 190,
+																		"to": 191
+																	},
+																	{
+																		"name": "Number",
+																		"from": 191,
+																		"to": 192
+																	},
+																	{
+																		"name": ")",
+																		"from": 192,
+																		"to": 193
+																	}
+																]
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 195,
+										"to": 217,
+										"children": [
+											{
+												"name": "var",
+												"from": 195,
+												"to": 198
+											},
+											{
+												"name": "VarSpec",
+												"from": 199,
+												"to": 217,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 199,
+														"to": 200
+													},
+													{
+														"name": "=",
+														"from": 201,
+														"to": 202
+													},
+													{
+														"name": "CallExpr",
+														"from": 203,
+														"to": 217,
+														"children": [
+															{
+																"name": "make",
+																"from": 203,
+																"to": 207
+															},
+															{
+																"name": "Arguments",
+																"from": 207,
+																"to": 217,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 207,
+																		"to": 208
+																	},
+																	{
+																		"name": "SliceType",
+																		"from": 208,
+																		"to": 213,
+																		"children": [
+																			{
+																				"name": "[",
+																				"from": 208,
+																				"to": 209
+																			},
+																			{
+																				"name": "]",
+																				"from": 209,
+																				"to": 210
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 210,
+																				"to": 213
+																			}
+																		]
+																	},
+																	{
+																		"name": ",",
+																		"from": 213,
+																		"to": 214
+																	},
+																	{
+																		"name": "Number",
+																		"from": 215,
+																		"to": 216
+																	},
+																	{
+																		"name": ")",
+																		"from": 216,
+																		"to": 217
+																	}
+																]
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 219,
+										"to": 236,
+										"children": [
+											{
+												"name": "var",
+												"from": 219,
+												"to": 222
+											},
+											{
+												"name": "VarSpec",
+												"from": 223,
+												"to": 236,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 223,
+														"to": 224
+													},
+													{
+														"name": "=",
+														"from": 225,
+														"to": 226
+													},
+													{
+														"name": "CallExpr",
+														"from": 227,
+														"to": 236,
+														"children": [
+															{
+																"name": "VariableName",
+																"from": 227,
+																"to": 230
+															},
+															{
+																"name": "Arguments",
+																"from": 230,
+																"to": 236,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 230,
+																		"to": 231
+																	},
+																	{
+																		"name": "VariableName",
+																		"from": 231,
+																		"to": 235
+																	},
+																	{
+																		"name": ")",
+																		"from": 235,
+																		"to": 236
+																	}
+																]
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 238,
+										"to": 260,
+										"children": [
+											{
+												"name": "var",
+												"from": 238,
+												"to": 241
+											},
+											{
+												"name": "VarSpec",
+												"from": 242,
+												"to": 260,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 242,
+														"to": 243
+													},
+													{
+														"name": "=",
+														"from": 244,
+														"to": 245
+													},
+													{
+														"name": "SelectorExpr",
+														"from": 246,
+														"to": 260,
+														"children": [
+															{
+																"name": "IndexExpr",
+																"from": 246,
+																"to": 254,
+																"children": [
+																	{
+																		"name": "VariableName",
+																		"from": 246,
+																		"to": 251
+																	},
+																	{
+																		"name": "[",
+																		"from": 251,
+																		"to": 252
+																	},
+																	{
+																		"name": "Number",
+																		"from": 252,
+																		"to": 253
+																	},
+																	{
+																		"name": "]",
+																		"from": 253,
+																		"to": 254
+																	}
+																]
+															},
+															{
+																"name": ".",
+																"from": 254,
+																"to": 255
+															},
+															{
+																"name": "FieldName",
+																"from": 255,
+																"to": 260
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 262,
+										"to": 282,
+										"children": [
+											{
+												"name": "var",
+												"from": 262,
+												"to": 265
+											},
+											{
+												"name": "VarSpec",
+												"from": 266,
+												"to": 282,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 266,
+														"to": 267
+													},
+													{
+														"name": "=",
+														"from": 268,
+														"to": 269
+													},
+													{
+														"name": "SliceExpr",
+														"from": 270,
+														"to": 282,
+														"children": [
+															{
+																"name": "VariableName",
+																"from": 270,
+																"to": 275
+															},
+															{
+																"name": "[",
+																"from": 275,
+																"to": 276
+															},
+															{
+																"name": "Number",
+																"from": 276,
+																"to": 277
+															},
+															{
+																"name": ":",
+																"from": 277,
+																"to": 278
+															},
+															{
+																"name": "Number",
+																"from": 278,
+																"to": 279
+															},
+															{
+																"name": ":",
+																"from": 279,
+																"to": 280
+															},
+															{
+																"name": "Number",
+																"from": 280,
+																"to": 281
+															},
+															{
+																"name": "]",
+																"from": 281,
+																"to": 282
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 284,
+										"to": 304,
+										"children": [
+											{
+												"name": "var",
+												"from": 284,
+												"to": 287
+											},
+											{
+												"name": "VarSpec",
+												"from": 288,
+												"to": 304,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 288,
+														"to": 289
+													},
+													{
+														"name": "=",
+														"from": 290,
+														"to": 291
+													},
+													{
+														"name": "TypeAssertion",
+														"from": 292,
+														"to": 304,
+														"children": [
+															{
+																"name": "VariableName",
+																"from": 292,
+																"to": 297
+															},
+															{
+																"name": ".",
+																"from": 297,
+																"to": 298
+															},
+															{
+																"name": "(",
+																"from": 298,
+																"to": 299
+															},
+															{
+																"name": "TypeName",
+																"from": 299,
+																"to": 303
+															},
+															{
+																"name": ")",
+																"from": 303,
+																"to": 304
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 306,
+										"to": 337,
+										"children": [
+											{
+												"name": "var",
+												"from": 306,
+												"to": 309
+											},
+											{
+												"name": "VarSpec",
+												"from": 310,
+												"to": 337,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 310,
+														"to": 311
+													},
+													{
+														"name": "=",
+														"from": 312,
+														"to": 313
+													},
+													{
+														"name": "CallExpr",
+														"from": 314,
+														"to": 337,
+														"children": [
+															{
+																"name": "ParameterizedExpr",
+																"from": 314,
+																"to": 334,
+																"children": [
+																	{
+																		"name": "VariableName",
+																		"from": 314,
+																		"to": 321
+																	},
+																	{
+																		"name": "TypeArgs",
+																		"from": 321,
+																		"to": 334,
+																		"children": [
+																			{
+																				"name": "[",
+																				"from": 321,
+																				"to": 322
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 322,
+																				"to": 325
+																			},
+																			{
+																				"name": ",",
+																				"from": 325,
+																				"to": 326
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 327,
+																				"to": 333
+																			},
+																			{
+																				"name": "]",
+																				"from": 333,
+																				"to": 334
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "Arguments",
+																"from": 334,
+																"to": 337,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 334,
+																		"to": 335
+																	},
+																	{
+																		"name": "Number",
+																		"from": 335,
+																		"to": 336
+																	},
+																	{
+																		"name": ")",
+																		"from": 336,
+																		"to": 337
+																	}
+																]
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 339,
+										"to": 364,
+										"children": [
+											{
+												"name": "var",
+												"from": 339,
+												"to": 342
+											},
+											{
+												"name": "VarSpec",
+												"from": 343,
+												"to": 364,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 343,
+														"to": 344
+													},
+													{
+														"name": "=",
+														"from": 345,
+														"to": 346
+													},
+													{
+														"name": "IndexExpr",
+														"from": 347,
+														"to": 364,
+														"children": [
+															{
+																"name": "VariableName",
+																"from": 347,
+																"to": 354
+															},
+															{
+																"name": "[",
+																"from": 354,
+																"to": 355
+															},
+															{
+																"name": "ArrayType",
+																"from": 355,
+																"to": 363,
+																"children": [
+																	{
+																		"name": "[",
+																		"from": 355,
+																		"to": 356
+																	},
+																	{
+																		"name": "Number",
+																		"from": 356,
+																		"to": 358
+																	},
+																	{
+																		"name": "]",
+																		"from": 358,
+																		"to": 359
+																	},
+																	{
+																		"name": "TypeName",
+																		"from": 359,
+																		"to": 363
+																	}
+																]
+															},
+															{
+																"name": "]",
+																"from": 363,
+																"to": 364
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 366,
+										"to": 403,
+										"children": [
+											{
+												"name": "var",
+												"from": 366,
+												"to": 369
+											},
+											{
+												"name": "VarSpec",
+												"from": 370,
+												"to": 403,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 370,
+														"to": 371
+													},
+													{
+														"name": "=",
+														"from": 372,
+														"to": 373
+													},
+													{
+														"name": "BinaryExp",
+														"from": 374,
+														"to": 403,
+														"children": [
+															{
+																"name": "UnaryExp",
+																"from": 374,
+																"to": 389,
+																"children": [
+																	{
+																		"name": "ArithOp",
+																		"from": 374,
+																		"to": 375
+																	},
+																	{
+																		"name": "SelectorExpr",
+																		"from": 375,
+																		"to": 389,
+																		"children": [
+																			{
+																				"name": "IndexExpr",
+																				"from": 375,
+																				"to": 383,
+																				"children": [
+																					{
+																						"name": "VariableName",
+																						"from": 375,
+																						"to": 380
+																					},
+																					{
+																						"name": "[",
+																						"from": 380,
+																						"to": 381
+																					},
+																					{
+																						"name": "Number",
+																						"from": 381,
+																						"to": 382
+																					},
+																					{
+																						"name": "]",
+																						"from": 382,
+																						"to": 383
+																					}
+																				]
+																			},
+																			{
+																				"name": ".",
+																				"from": 383,
+																				"to": 384
+																			},
+																			{
+																				"name": "FieldName",
+																				"from": 384,
+																				"to": 389
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "ArithOp",
+																"from": 390,
+																"to": 391
+															},
+															{
+																"name": "BinaryExp",
+																"from": 392,
+																"to": 403,
+																"children": [
+																	{
+																		"name": "BinaryExp",
+																		"from": 392,
+																		"to": 398,
+																		"children": [
+																			{
+																				"name": "BinaryExp",
+																				"from": 392,
+																				"to": 395,
+																				"children": [
+																					{
+																						"name": "Number",
+																						"from": 392,
+																						"to": 393
+																					},
+																					{
+																						"name": "ArithOp",
+																						"from": 393,
+																						"to": 394
+																					},
+																					{
+																						"name": "Number",
+																						"from": 394,
+																						"to": 395
+																					}
+																				]
+																			},
+																			{
+																				"name": "BitOp",
+																				"from": 395,
+																				"to": 397
+																			},
+																			{
+																				"name": "Number",
+																				"from": 397,
+																				"to": 398
+																			}
+																		]
+																	},
+																	{
+																		"name": "BitOp",
+																		"from": 399,
+																		"to": 401
+																	},
+																	{
+																		"name": "Number",
+																		"from": 402,
+																		"to": 403
+																	}
+																]
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 405,
+										"to": 429,
+										"children": [
+											{
+												"name": "var",
+												"from": 405,
+												"to": 408
+											},
+											{
+												"name": "VarSpec",
+												"from": 409,
+												"to": 429,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 409,
+														"to": 410
+													},
+													{
+														"name": "=",
+														"from": 411,
+														"to": 412
+													},
+													{
+														"name": "UnaryExp",
+														"from": 413,
+														"to": 429,
+														"children": [
+															{
+																"name": "<-",
+																"from": 413,
+																"to": 415
+															},
+															{
+																"name": "CallExpr",
+																"from": 415,
+																"to": 429,
+																"children": [
+																	{
+																		"name": "make",
+																		"from": 415,
+																		"to": 419
+																	},
+																	{
+																		"name": "Arguments",
+																		"from": 419,
+																		"to": 429,
+																		"children": [
+																			{
+																				"name": "(",
+																				"from": 419,
+																				"to": 420
+																			},
+																			{
+																				"name": "ChannelType",
+																				"from": 420,
+																				"to": 428,
+																				"children": [
+																					{
+																						"name": "chan",
+																						"from": 420,
+																						"to": 424
+																					},
+																					{
+																						"name": "TypeName",
+																						"from": 425,
+																						"to": 428
+																					}
+																				]
+																			},
+																			{
+																				"name": ")",
+																				"from": 428,
+																				"to": 429
+																			}
+																		]
+																	}
+																]
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 430,
+										"to": 431
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "statements-and-concurrency",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 530,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 12,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 12
+							}
+						]
+					},
+					{
+						"name": "FunctionDecl",
+						"from": 14,
+						"to": 529,
+						"children": [
+							{
+								"name": "func",
+								"from": 14,
+								"to": 18
+							},
+							{
+								"name": "DefName",
+								"from": 19,
+								"to": 23
+							},
+							{
+								"name": "Parameters",
+								"from": 23,
+								"to": 57,
+								"children": [
+									{
+										"name": "(",
+										"from": 23,
+										"to": 24
+									},
+									{
+										"name": "Parameter",
+										"from": 24,
+										"to": 35,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 24,
+												"to": 26
+											},
+											{
+												"name": "ChannelType",
+												"from": 27,
+												"to": 35,
+												"children": [
+													{
+														"name": "chan",
+														"from": 27,
+														"to": 31
+													},
+													{
+														"name": "TypeName",
+														"from": 32,
+														"to": 35
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 35,
+										"to": 36
+									},
+									{
+										"name": "Parameter",
+										"from": 37,
+										"to": 46,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 37,
+												"to": 42
+											},
+											{
+												"name": "TypeName",
+												"from": 43,
+												"to": 46
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 46,
+										"to": 47
+									},
+									{
+										"name": "Parameter",
+										"from": 48,
+										"to": 56,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 48,
+												"to": 50
+											},
+											{
+												"name": "SliceType",
+												"from": 51,
+												"to": 56,
+												"children": [
+													{
+														"name": "[",
+														"from": 51,
+														"to": 52
+													},
+													{
+														"name": "]",
+														"from": 52,
+														"to": 53
+													},
+													{
+														"name": "TypeName",
+														"from": 53,
+														"to": 56
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 56,
+										"to": 57
+									}
+								]
+							},
+							{
+								"name": "TypeName",
+								"from": 58,
+								"to": 61
+							},
+							{
+								"name": "Block",
+								"from": 62,
+								"to": 529,
+								"children": [
+									{
+										"name": "{",
+										"from": 62,
+										"to": 63
+									},
+									{
+										"name": "VarDecl",
+										"from": 65,
+										"to": 75,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 65,
+												"to": 70
+											},
+											{
+												"name": ":=",
+												"from": 71,
+												"to": 73
+											},
+											{
+												"name": "Number",
+												"from": 74,
+												"to": 75
+											}
+										]
+									},
+									{
+										"name": "LabeledStatement",
+										"from": 76,
+										"to": 175,
+										"children": [
+											{
+												"name": "LabelName",
+												"from": 76,
+												"to": 81
+											},
+											{
+												"name": ":",
+												"from": 81,
+												"to": 82
+											},
+											{
+												"name": "ForStatement",
+												"from": 84,
+												"to": 175,
+												"children": [
+													{
+														"name": "for",
+														"from": 84,
+														"to": 87
+													},
+													{
+														"name": "ForClause",
+														"from": 88,
+														"to": 112,
+														"children": [
+															{
+																"name": "VarDecl",
+																"from": 88,
+																"to": 94,
+																"children": [
+																	{
+																		"name": "DefName",
+																		"from": 88,
+																		"to": 89
+																	},
+																	{
+																		"name": ":=",
+																		"from": 90,
+																		"to": 92
+																	},
+																	{
+																		"name": "Number",
+																		"from": 93,
+																		"to": 94
+																	}
+																]
+															},
+															{
+																"name": ";",
+																"from": 94,
+																"to": 95
+															},
+															{
+																"name": "BinaryExp",
+																"from": 96,
+																"to": 107,
+																"children": [
+																	{
+																		"name": "VariableName",
+																		"from": 96,
+																		"to": 97
+																	},
+																	{
+																		"name": "CompareOp",
+																		"from": 98,
+																		"to": 99
+																	},
+																	{
+																		"name": "CallExpr",
+																		"from": 100,
+																		"to": 107,
+																		"children": [
+																			{
+																				"name": "VariableName",
+																				"from": 100,
+																				"to": 103
+																			},
+																			{
+																				"name": "Arguments",
+																				"from": 103,
+																				"to": 107,
+																				"children": [
+																					{
+																						"name": "(",
+																						"from": 103,
+																						"to": 104
+																					},
+																					{
+																						"name": "VariableName",
+																						"from": 104,
+																						"to": 106
+																					},
+																					{
+																						"name": ")",
+																						"from": 106,
+																						"to": 107
+																					}
+																				]
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": ";",
+																"from": 107,
+																"to": 108
+															},
+															{
+																"name": "IncDecStatement",
+																"from": 109,
+																"to": 112,
+																"children": [
+																	{
+																		"name": "VariableName",
+																		"from": 109,
+																		"to": 110
+																	},
+																	{
+																		"name": "IncDecOp",
+																		"from": 110,
+																		"to": 112
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": "Block",
+														"from": 113,
+														"to": 175,
+														"children": [
+															{
+																"name": "{",
+																"from": 113,
+																"to": 114
+															},
+															{
+																"name": "IfStatement",
+																"from": 117,
+																"to": 172,
+																"children": [
+																	{
+																		"name": "if",
+																		"from": 117,
+																		"to": 119
+																	},
+																	{
+																		"name": "BinaryExp",
+																		"from": 120,
+																		"to": 129,
+																		"children": [
+																			{
+																				"name": "IndexExpr",
+																				"from": 120,
+																				"to": 125,
+																				"children": [
+																					{
+																						"name": "VariableName",
+																						"from": 120,
+																						"to": 122
+																					},
+																					{
+																						"name": "[",
+																						"from": 122,
+																						"to": 123
+																					},
+																					{
+																						"name": "VariableName",
+																						"from": 123,
+																						"to": 124
+																					},
+																					{
+																						"name": "]",
+																						"from": 124,
+																						"to": 125
+																					}
+																				]
+																			},
+																			{
+																				"name": "CompareOp",
+																				"from": 126,
+																				"to": 127
+																			},
+																			{
+																				"name": "Number",
+																				"from": 128,
+																				"to": 129
+																			}
+																		]
+																	},
+																	{
+																		"name": "Block",
+																		"from": 130,
+																		"to": 148,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 130,
+																				"to": 131
+																			},
+																			{
+																				"name": "GotoStatement",
+																				"from": 132,
+																				"to": 146,
+																				"children": [
+																					{
+																						"name": "continue",
+																						"from": 132,
+																						"to": 140
+																					},
+																					{
+																						"name": "LabelName",
+																						"from": 141,
+																						"to": 146
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 147,
+																				"to": 148
+																			}
+																		]
+																	},
+																	{
+																		"name": "else",
+																		"from": 149,
+																		"to": 153
+																	},
+																	{
+																		"name": "Block",
+																		"from": 154,
+																		"to": 172,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 154,
+																				"to": 155
+																			},
+																			{
+																				"name": "Assignment",
+																				"from": 156,
+																				"to": 170,
+																				"children": [
+																					{
+																						"name": "VariableName",
+																						"from": 156,
+																						"to": 161
+																					},
+																					{
+																						"name": "UpdateOp",
+																						"from": 162,
+																						"to": 164
+																					},
+																					{
+																						"name": "IndexExpr",
+																						"from": 165,
+																						"to": 170,
+																						"children": [
+																							{
+																								"name": "VariableName",
+																								"from": 165,
+																								"to": 167
+																							},
+																							{
+																								"name": "[",
+																								"from": 167,
+																								"to": 168
+																							},
+																							{
+																								"name": "VariableName",
+																								"from": 168,
+																								"to": 169
+																							},
+																							{
+																								"name": "]",
+																								"from": 169,
+																								"to": 170
+																							}
+																						]
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 171,
+																				"to": 172
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 174,
+																"to": 175
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "ForStatement",
+										"from": 177,
+										"to": 220,
+										"children": [
+											{
+												"name": "for",
+												"from": 177,
+												"to": 180
+											},
+											{
+												"name": "RangeClause",
+												"from": 181,
+												"to": 201,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 181,
+														"to": 182
+													},
+													{
+														"name": ",",
+														"from": 182,
+														"to": 183
+													},
+													{
+														"name": "DefName",
+														"from": 184,
+														"to": 189
+													},
+													{
+														"name": ":=",
+														"from": 190,
+														"to": 192
+													},
+													{
+														"name": "range",
+														"from": 193,
+														"to": 198
+													},
+													{
+														"name": "VariableName",
+														"from": 199,
+														"to": 201
+													}
+												]
+											},
+											{
+												"name": "Block",
+												"from": 202,
+												"to": 220,
+												"children": [
+													{
+														"name": "{",
+														"from": 202,
+														"to": 203
+													},
+													{
+														"name": "Assignment",
+														"from": 204,
+														"to": 218,
+														"children": [
+															{
+																"name": "VariableName",
+																"from": 204,
+																"to": 209
+															},
+															{
+																"name": "UpdateOp",
+																"from": 210,
+																"to": 212
+															},
+															{
+																"name": "VariableName",
+																"from": 213,
+																"to": 218
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 219,
+														"to": 220
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "ForStatement",
+										"from": 222,
+										"to": 243,
+										"children": [
+											{
+												"name": "for",
+												"from": 222,
+												"to": 225
+											},
+											{
+												"name": "RangeClause",
+												"from": 226,
+												"to": 233,
+												"children": [
+													{
+														"name": "range",
+														"from": 226,
+														"to": 231
+													},
+													{
+														"name": "Number",
+														"from": 232,
+														"to": 233
+													}
+												]
+											},
+											{
+												"name": "Block",
+												"from": 234,
+												"to": 243,
+												"children": [
+													{
+														"name": "{",
+														"from": 234,
+														"to": 235
+													},
+													{
+														"name": "GotoStatement",
+														"from": 236,
+														"to": 241,
+														"children": [
+															{
+																"name": "break",
+																"from": 236,
+																"to": 241
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 242,
+														"to": 243
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "TypeSwitchStatement",
+										"from": 245,
+										"to": 317,
+										"children": [
+											{
+												"name": "switch",
+												"from": 245,
+												"to": 251
+											},
+											{
+												"name": "DefName",
+												"from": 252,
+												"to": 257
+											},
+											{
+												"name": ":=",
+												"from": 258,
+												"to": 260
+											},
+											{
+												"name": "VariableName",
+												"from": 261,
+												"to": 266
+											},
+											{
+												"name": ".",
+												"from": 266,
+												"to": 267
+											},
+											{
+												"name": "(",
+												"from": 267,
+												"to": 268
+											},
+											{
+												"name": "type",
+												"from": 268,
+												"to": 272
+											},
+											{
+												"name": ")",
+												"from": 272,
+												"to": 273
+											},
+											{
+												"name": "SwitchBlock",
+												"from": 274,
+												"to": 317,
+												"children": [
+													{
+														"name": "{",
+														"from": 274,
+														"to": 275
+													},
+													{
+														"name": "Case",
+														"from": 277,
+														"to": 294,
+														"children": [
+															{
+																"name": "case",
+																"from": 277,
+																"to": 281
+															},
+															{
+																"name": "TypeName",
+																"from": 282,
+																"to": 285
+															},
+															{
+																"name": ",",
+																"from": 285,
+																"to": 286
+															},
+															{
+																"name": "TypeName",
+																"from": 287,
+																"to": 293
+															},
+															{
+																"name": ":",
+																"from": 293,
+																"to": 294
+															}
+														]
+													},
+													{
+														"name": "Assignment",
+														"from": 295,
+														"to": 304,
+														"children": [
+															{
+																"name": "VariableName",
+																"from": 295,
+																"to": 296
+															},
+															{
+																"name": "=",
+																"from": 297,
+																"to": 298
+															},
+															{
+																"name": "VariableName",
+																"from": 299,
+																"to": 304
+															}
+														]
+													},
+													{
+														"name": "Case",
+														"from": 306,
+														"to": 314,
+														"children": [
+															{
+																"name": "default",
+																"from": 306,
+																"to": 313
+															},
+															{
+																"name": ":",
+																"from": 313,
+																"to": 314
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 316,
+														"to": 317
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "SwitchStatement",
+										"from": 319,
+										"to": 375,
+										"children": [
+											{
+												"name": "switch",
+												"from": 319,
+												"to": 325
+											},
+											{
+												"name": "VariableName",
+												"from": 326,
+												"to": 331
+											},
+											{
+												"name": "SwitchBlock",
+												"from": 332,
+												"to": 375,
+												"children": [
+													{
+														"name": "{",
+														"from": 332,
+														"to": 333
+													},
+													{
+														"name": "Case",
+														"from": 335,
+														"to": 342,
+														"children": [
+															{
+																"name": "case",
+																"from": 335,
+																"to": 339
+															},
+															{
+																"name": "Number",
+																"from": 340,
+																"to": 341
+															},
+															{
+																"name": ":",
+																"from": 341,
+																"to": 342
+															}
+														]
+													},
+													{
+														"name": "FallthroughStatement",
+														"from": 343,
+														"to": 354,
+														"children": [
+															{
+																"name": "fallthrough",
+																"from": 343,
+																"to": 354
+															}
+														]
+													},
+													{
+														"name": "Case",
+														"from": 356,
+														"to": 364,
+														"children": [
+															{
+																"name": "default",
+																"from": 356,
+																"to": 363
+															},
+															{
+																"name": ":",
+																"from": 363,
+																"to": 364
+															}
+														]
+													},
+													{
+														"name": "IncDecStatement",
+														"from": 365,
+														"to": 372,
+														"children": [
+															{
+																"name": "VariableName",
+																"from": 365,
+																"to": 370
+															},
+															{
+																"name": "IncDecOp",
+																"from": 370,
+																"to": 372
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 374,
+														"to": 375
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "SelectStatement",
+										"from": 377,
+										"to": 452,
+										"children": [
+											{
+												"name": "select",
+												"from": 377,
+												"to": 383
+											},
+											{
+												"name": "SelectBlock",
+												"from": 384,
+												"to": 452,
+												"children": [
+													{
+														"name": "{",
+														"from": 384,
+														"to": 385
+													},
+													{
+														"name": "Case",
+														"from": 387,
+														"to": 404,
+														"children": [
+															{
+																"name": "case",
+																"from": 387,
+																"to": 391
+															},
+															{
+																"name": "SendStatement",
+																"from": 392,
+																"to": 403,
+																"children": [
+																	{
+																		"name": "VariableName",
+																		"from": 392,
+																		"to": 394
+																	},
+																	{
+																		"name": "<-",
+																		"from": 395,
+																		"to": 397
+																	},
+																	{
+																		"name": "VariableName",
+																		"from": 398,
+																		"to": 403
+																	}
+																]
+															},
+															{
+																"name": ":",
+																"from": 403,
+																"to": 404
+															}
+														]
+													},
+													{
+														"name": "Case",
+														"from": 406,
+														"to": 425,
+														"children": [
+															{
+																"name": "case",
+																"from": 406,
+																"to": 410
+															},
+															{
+																"name": "ReceiveStatement",
+																"from": 411,
+																"to": 424,
+																"children": [
+																	{
+																		"name": "DefName",
+																		"from": 411,
+																		"to": 416
+																	},
+																	{
+																		"name": ":=",
+																		"from": 417,
+																		"to": 419
+																	},
+																	{
+																		"name": "UnaryExp",
+																		"from": 420,
+																		"to": 424,
+																		"children": [
+																			{
+																				"name": "<-",
+																				"from": 420,
+																				"to": 422
+																			},
+																			{
+																				"name": "VariableName",
+																				"from": 422,
+																				"to": 424
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": ":",
+																"from": 424,
+																"to": 425
+															}
+														]
+													},
+													{
+														"name": "Assignment",
+														"from": 426,
+														"to": 439,
+														"children": [
+															{
+																"name": "VariableName",
+																"from": 426,
+																"to": 431
+															},
+															{
+																"name": "=",
+																"from": 432,
+																"to": 433
+															},
+															{
+																"name": "VariableName",
+																"from": 434,
+																"to": 439
+															}
+														]
+													},
+													{
+														"name": "Case",
+														"from": 441,
+														"to": 449,
+														"children": [
+															{
+																"name": "default",
+																"from": 441,
+																"to": 448
+															},
+															{
+																"name": ":",
+																"from": 448,
+																"to": 449
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 451,
+														"to": 452
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "GoStatement",
+										"from": 454,
+										"to": 466,
+										"children": [
+											{
+												"name": "go",
+												"from": 454,
+												"to": 456
+											},
+											{
+												"name": "CallExpr",
+												"from": 457,
+												"to": 466,
+												"children": [
+													{
+														"name": "VariableName",
+														"from": 457,
+														"to": 462
+													},
+													{
+														"name": "Arguments",
+														"from": 462,
+														"to": 466,
+														"children": [
+															{
+																"name": "(",
+																"from": 462,
+																"to": 463
+															},
+															{
+																"name": "VariableName",
+																"from": 463,
+																"to": 465
+															},
+															{
+																"name": ")",
+																"from": 465,
+																"to": 466
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "DeferStatement",
+										"from": 468,
+										"to": 496,
+										"children": [
+											{
+												"name": "defer",
+												"from": 468,
+												"to": 473
+											},
+											{
+												"name": "CallExpr",
+												"from": 474,
+												"to": 496,
+												"children": [
+													{
+														"name": "FunctionLiteral",
+														"from": 474,
+														"to": 494,
+														"children": [
+															{
+																"name": "func",
+																"from": 474,
+																"to": 478
+															},
+															{
+																"name": "Parameters",
+																"from": 478,
+																"to": 480,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 478,
+																		"to": 479
+																	},
+																	{
+																		"name": ")",
+																		"from": 479,
+																		"to": 480
+																	}
+																]
+															},
+															{
+																"name": "Block",
+																"from": 481,
+																"to": 494,
+																"children": [
+																	{
+																		"name": "{",
+																		"from": 481,
+																		"to": 482
+																	},
+																	{
+																		"name": "ExprStatement",
+																		"from": 483,
+																		"to": 492,
+																		"children": [
+																			{
+																				"name": "CallExpr",
+																				"from": 483,
+																				"to": 492,
+																				"children": [
+																					{
+																						"name": "VariableName",
+																						"from": 483,
+																						"to": 490
+																					},
+																					{
+																						"name": "Arguments",
+																						"from": 490,
+																						"to": 492,
+																						"children": [
+																							{
+																								"name": "(",
+																								"from": 490,
+																								"to": 491
+																							},
+																							{
+																								"name": ")",
+																								"from": 491,
+																								"to": 492
+																							}
+																						]
+																					}
+																				]
+																			}
+																		]
+																	},
+																	{
+																		"name": "}",
+																		"from": 493,
+																		"to": 494
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": "Arguments",
+														"from": 494,
+														"to": 496,
+														"children": [
+															{
+																"name": "(",
+																"from": 494,
+																"to": 495
+															},
+															{
+																"name": ")",
+																"from": 495,
+																"to": 496
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "GotoStatement",
+										"from": 498,
+										"to": 507,
+										"children": [
+											{
+												"name": "goto",
+												"from": 498,
+												"to": 502
+											},
+											{
+												"name": "LabelName",
+												"from": 503,
+												"to": 507
+											}
+										]
+									},
+									{
+										"name": "LabeledStatement",
+										"from": 508,
+										"to": 527,
+										"children": [
+											{
+												"name": "LabelName",
+												"from": 508,
+												"to": 512
+											},
+											{
+												"name": ":",
+												"from": 512,
+												"to": 513
+											},
+											{
+												"name": "ReturnStatement",
+												"from": 515,
+												"to": 527,
+												"children": [
+													{
+														"name": "return",
+														"from": 515,
+														"to": 521
+													},
+													{
+														"name": "VariableName",
+														"from": 522,
+														"to": 527
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 528,
+										"to": 529
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "semicolon-and-comments",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 234,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 13,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 13
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 17,
+						"to": 33,
+						"children": [
+							{
+								"name": "var",
+								"from": 17,
+								"to": 20
+							},
+							{
+								"name": "VarSpec",
+								"from": 21,
+								"to": 33,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 21,
+										"to": 26
+									},
+									{
+										"name": "=",
+										"from": 27,
+										"to": 28
+									},
+									{
+										"name": "Bool",
+										"from": 29,
+										"to": 33
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "LineComment",
+						"from": 34,
+						"to": 42
+					},
+					{
+						"name": "VarDecl",
+						"from": 43,
+						"to": 62,
+						"children": [
+							{
+								"name": "var",
+								"from": 43,
+								"to": 46
+							},
+							{
+								"name": "VarSpec",
+								"from": 47,
+								"to": 62,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 47,
+										"to": 54
+									},
+									{
+										"name": "=",
+										"from": 55,
+										"to": 56
+									},
+									{
+										"name": "Bool",
+										"from": 57,
+										"to": 62
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "BlockComment",
+						"from": 63,
+						"to": 75
+					},
+					{
+						"name": "VarDecl",
+						"from": 77,
+						"to": 94,
+						"children": [
+							{
+								"name": "var",
+								"from": 77,
+								"to": 80
+							},
+							{
+								"name": "VarSpec",
+								"from": 81,
+								"to": 94,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 81,
+										"to": 88
+									},
+									{
+										"name": "=",
+										"from": 89,
+										"to": 90
+									},
+									{
+										"name": "Nil",
+										"from": 91,
+										"to": 94
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "BlockComment",
+						"from": 95,
+						"to": 118
+					},
+					{
+						"name": "VarDecl",
+						"from": 120,
+						"to": 158,
+						"children": [
+							{
+								"name": "var",
+								"from": 120,
+								"to": 123
+							},
+							{
+								"name": "SpecList",
+								"from": 124,
+								"to": 158,
+								"children": [
+									{
+										"name": "(",
+										"from": 124,
+										"to": 125
+									},
+									{
+										"name": "VarSpec",
+										"from": 126,
+										"to": 137,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 126,
+												"to": 133
+											},
+											{
+												"name": "=",
+												"from": 134,
+												"to": 135
+											},
+											{
+												"name": "Number",
+												"from": 136,
+												"to": 137
+											}
+										]
+									},
+									{
+										"name": "BlockComment",
+										"from": 138,
+										"to": 156
+									},
+									{
+										"name": ")",
+										"from": 157,
+										"to": 158
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "FunctionDecl",
+						"from": 160,
+						"to": 232,
+						"children": [
+							{
+								"name": "func",
+								"from": 160,
+								"to": 164
+							},
+							{
+								"name": "DefName",
+								"from": 165,
+								"to": 172
+							},
+							{
+								"name": "Parameters",
+								"from": 172,
+								"to": 186,
+								"children": [
+									{
+										"name": "(",
+										"from": 172,
+										"to": 173
+									},
+									{
+										"name": "Parameter",
+										"from": 173,
+										"to": 185,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 173,
+												"to": 179
+											},
+											{
+												"name": "SliceType",
+												"from": 180,
+												"to": 185,
+												"children": [
+													{
+														"name": "[",
+														"from": 180,
+														"to": 181
+													},
+													{
+														"name": "]",
+														"from": 181,
+														"to": 182
+													},
+													{
+														"name": "TypeName",
+														"from": 182,
+														"to": 185
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 185,
+										"to": 186
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 187,
+								"to": 232,
+								"children": [
+									{
+										"name": "{",
+										"from": 187,
+										"to": 188
+									},
+									{
+										"name": "IncDecStatement",
+										"from": 191,
+										"to": 202,
+										"children": [
+											{
+												"name": "IndexExpr",
+												"from": 191,
+												"to": 200,
+												"children": [
+													{
+														"name": "VariableName",
+														"from": 191,
+														"to": 197
+													},
+													{
+														"name": "[",
+														"from": 197,
+														"to": 198
+													},
+													{
+														"name": "Number",
+														"from": 198,
+														"to": 199
+													},
+													{
+														"name": "]",
+														"from": 199,
+														"to": 200
+													}
+												]
+											},
+											{
+												"name": "IncDecOp",
+												"from": 200,
+												"to": 202
+											}
+										]
+									},
+									{
+										"name": "IfStatement",
+										"from": 205,
+										"to": 229,
+										"children": [
+											{
+												"name": "if",
+												"from": 205,
+												"to": 207
+											},
+											{
+												"name": "VariableName",
+												"from": 208,
+												"to": 213
+											},
+											{
+												"name": "Block",
+												"from": 214,
+												"to": 229,
+												"children": [
+													{
+														"name": "{",
+														"from": 214,
+														"to": 215
+													},
+													{
+														"name": "ReturnStatement",
+														"from": 219,
+														"to": 225,
+														"children": [
+															{
+																"name": "return",
+																"from": 219,
+																"to": 225
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 228,
+														"to": 229
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 231,
+										"to": 232
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "maintained-go-1-26-deltas",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 291,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 14,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 14
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 16,
+						"to": 31,
+						"children": [
+							{
+								"name": "var",
+								"from": 16,
+								"to": 19
+							},
+							{
+								"name": "VarSpec",
+								"from": 20,
+								"to": 31,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 20,
+										"to": 26
+									},
+									{
+										"name": "=",
+										"from": 27,
+										"to": 28
+									},
+									{
+										"name": "Number",
+										"from": 29,
+										"to": 31
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 32,
+						"to": 73,
+						"children": [
+							{
+								"name": "var",
+								"from": 32,
+								"to": 35
+							},
+							{
+								"name": "VarSpec",
+								"from": 36,
+								"to": 73,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 36,
+										"to": 53
+									},
+									{
+										"name": "=",
+										"from": 54,
+										"to": 55
+									},
+									{
+										"name": "IndexExpr",
+										"from": 56,
+										"to": 73,
+										"children": [
+											{
+												"name": "VariableName",
+												"from": 56,
+												"to": 63
+											},
+											{
+												"name": "[",
+												"from": 63,
+												"to": 64
+											},
+											{
+												"name": "ArrayType",
+												"from": 64,
+												"to": 72,
+												"children": [
+													{
+														"name": "[",
+														"from": 64,
+														"to": 65
+													},
+													{
+														"name": "Number",
+														"from": 65,
+														"to": 67
+													},
+													{
+														"name": "]",
+														"from": 67,
+														"to": 68
+													},
+													{
+														"name": "TypeName",
+														"from": 68,
+														"to": 72
+													}
+												]
+											},
+											{
+												"name": "]",
+												"from": 72,
+												"to": 73
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 74,
+						"to": 118,
+						"children": [
+							{
+								"name": "var",
+								"from": 74,
+								"to": 77
+							},
+							{
+								"name": "VarSpec",
+								"from": 78,
+								"to": 118,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 78,
+										"to": 94
+									},
+									{
+										"name": "=",
+										"from": 95,
+										"to": 96
+									},
+									{
+										"name": "IndexListExpr",
+										"from": 97,
+										"to": 118,
+										"children": [
+											{
+												"name": "VariableName",
+												"from": 97,
+												"to": 104
+											},
+											{
+												"name": "[",
+												"from": 104,
+												"to": 105
+											},
+											{
+												"name": "VariableName",
+												"from": 105,
+												"to": 110
+											},
+											{
+												"name": ",",
+												"from": 110,
+												"to": 111
+											},
+											{
+												"name": "VariableName",
+												"from": 112,
+												"to": 117
+											},
+											{
+												"name": "]",
+												"from": 117,
+												"to": 118
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "TypeDecl",
+						"from": 119,
+						"to": 151,
+						"children": [
+							{
+								"name": "type",
+								"from": 119,
+								"to": 123
+							},
+							{
+								"name": "TypeSpec",
+								"from": 124,
+								"to": 151,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 124,
+										"to": 129
+									},
+									{
+										"name": "TypeParams",
+										"from": 129,
+										"to": 136,
+										"children": [
+											{
+												"name": "[",
+												"from": 129,
+												"to": 130
+											},
+											{
+												"name": "TypeParam",
+												"from": 130,
+												"to": 135,
+												"children": [
+													{
+														"name": "TypeName",
+														"from": 130,
+														"to": 131
+													},
+													{
+														"name": "TypeName",
+														"from": 132,
+														"to": 135
+													}
+												]
+											},
+											{
+												"name": "]",
+												"from": 135,
+												"to": 136
+											}
+										]
+									},
+									{
+										"name": "=",
+										"from": 137,
+										"to": 138
+									},
+									{
+										"name": "MapType",
+										"from": 139,
+										"to": 151,
+										"children": [
+											{
+												"name": "map",
+												"from": 139,
+												"to": 142
+											},
+											{
+												"name": "[",
+												"from": 142,
+												"to": 143
+											},
+											{
+												"name": "TypeName",
+												"from": 143,
+												"to": 149
+											},
+											{
+												"name": "]",
+												"from": 149,
+												"to": 150
+											},
+											{
+												"name": "TypeName",
+												"from": 150,
+												"to": 151
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "TypeDecl",
+						"from": 152,
+						"to": 193,
+						"children": [
+							{
+								"name": "type",
+								"from": 152,
+								"to": 156
+							},
+							{
+								"name": "TypeSpec",
+								"from": 157,
+								"to": 193,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 157,
+										"to": 162
+									},
+									{
+										"name": "StructType",
+										"from": 163,
+										"to": 193,
+										"children": [
+											{
+												"name": "struct",
+												"from": 163,
+												"to": 169
+											},
+											{
+												"name": "StructBody",
+												"from": 170,
+												"to": 193,
+												"children": [
+													{
+														"name": "{",
+														"from": 170,
+														"to": 171
+													},
+													{
+														"name": "FieldDecl",
+														"from": 172,
+														"to": 180,
+														"children": [
+															{
+																"name": "FieldName",
+																"from": 172,
+																"to": 176
+															},
+															{
+																"name": "TypeName",
+																"from": 177,
+																"to": 180
+															}
+														]
+													},
+													{
+														"name": ";",
+														"from": 180,
+														"to": 181
+													},
+													{
+														"name": "FieldDecl",
+														"from": 182,
+														"to": 191,
+														"children": [
+															{
+																"name": "FieldName",
+																"from": 182,
+																"to": 187
+															},
+															{
+																"name": "TypeName",
+																"from": 188,
+																"to": 191
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 192,
+														"to": 193
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "FunctionDecl",
+						"from": 194,
+						"to": 290,
+						"children": [
+							{
+								"name": "func",
+								"from": 194,
+								"to": 198
+							},
+							{
+								"name": "DefName",
+								"from": 199,
+								"to": 204
+							},
+							{
+								"name": "Parameters",
+								"from": 204,
+								"to": 215,
+								"children": [
+									{
+										"name": "(",
+										"from": 204,
+										"to": 205
+									},
+									{
+										"name": "Parameter",
+										"from": 205,
+										"to": 214,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 205,
+												"to": 209
+											},
+											{
+												"name": "TypeName",
+												"from": 210,
+												"to": 214
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 214,
+										"to": 215
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 216,
+								"to": 290,
+								"children": [
+									{
+										"name": "{",
+										"from": 216,
+										"to": 217
+									},
+									{
+										"name": "VarDecl",
+										"from": 219,
+										"to": 233,
+										"children": [
+											{
+												"name": "var",
+												"from": 219,
+												"to": 222
+											},
+											{
+												"name": "VarSpec",
+												"from": 223,
+												"to": 233,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 223,
+														"to": 226
+													},
+													{
+														"name": "=",
+														"from": 227,
+														"to": 228
+													},
+													{
+														"name": "Bool",
+														"from": 229,
+														"to": 233
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "VarDecl",
+										"from": 235,
+										"to": 252,
+										"children": [
+											{
+												"name": "var",
+												"from": 235,
+												"to": 238
+											},
+											{
+												"name": "VarSpec",
+												"from": 239,
+												"to": 252,
+												"children": [
+													{
+														"name": "DefName",
+														"from": 239,
+														"to": 244
+													},
+													{
+														"name": "=",
+														"from": 245,
+														"to": 246
+													},
+													{
+														"name": "Bool",
+														"from": 247,
+														"to": 252
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "ForStatement",
+										"from": 254,
+										"to": 268,
+										"children": [
+											{
+												"name": "for",
+												"from": 254,
+												"to": 257
+											},
+											{
+												"name": "RangeClause",
+												"from": 258,
+												"to": 265,
+												"children": [
+													{
+														"name": "range",
+														"from": 258,
+														"to": 263
+													},
+													{
+														"name": "Number",
+														"from": 264,
+														"to": 265
+													}
+												]
+											},
+											{
+												"name": "Block",
+												"from": 266,
+												"to": 268,
+												"children": [
+													{
+														"name": "{",
+														"from": 266,
+														"to": 267
+													},
+													{
+														"name": "}",
+														"from": 267,
+														"to": 268
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "Assignment",
+										"from": 270,
+										"to": 277,
+										"children": [
+											{
+												"name": "VariableName",
+												"from": 270,
+												"to": 271
+											},
+											{
+												"name": "=",
+												"from": 272,
+												"to": 273
+											},
+											{
+												"name": "Nil",
+												"from": 274,
+												"to": 277
+											}
+										]
+									},
+									{
+										"name": "Assignment",
+										"from": 279,
+										"to": 288,
+										"children": [
+											{
+												"name": "VariableName",
+												"from": 279,
+												"to": 280
+											},
+											{
+												"name": "=",
+												"from": 281,
+												"to": 282
+											},
+											{
+												"name": "VariableName",
+												"from": 283,
+												"to": 288
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 289,
+										"to": 290
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "unicode-and-lexical-boundaries",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 216,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 14,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 14
+							}
+						]
+					},
+					{
+						"name": "ConstDecl",
+						"from": 16,
+						"to": 193,
+						"children": [
+							{
+								"name": "const",
+								"from": 16,
+								"to": 21
+							},
+							{
+								"name": "SpecList",
+								"from": 22,
+								"to": 193,
+								"children": [
+									{
+										"name": "(",
+										"from": 22,
+										"to": 23
+									},
+									{
+										"name": "ConstSpec",
+										"from": 25,
+										"to": 44,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 25,
+												"to": 32
+											},
+											{
+												"name": "=",
+												"from": 33,
+												"to": 34
+											},
+											{
+												"name": "Number",
+												"from": 35,
+												"to": 44
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 46,
+										"to": 66,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 46,
+												"to": 52
+											},
+											{
+												"name": "=",
+												"from": 53,
+												"to": 54
+											},
+											{
+												"name": "Number",
+												"from": 55,
+												"to": 66
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 68,
+										"to": 81,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 68,
+												"to": 73
+											},
+											{
+												"name": "=",
+												"from": 74,
+												"to": 75
+											},
+											{
+												"name": "Number",
+												"from": 76,
+												"to": 81
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 83,
+										"to": 96,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 83,
+												"to": 86
+											},
+											{
+												"name": "=",
+												"from": 87,
+												"to": 88
+											},
+											{
+												"name": "Number",
+												"from": 89,
+												"to": 96
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 98,
+										"to": 116,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 98,
+												"to": 106
+											},
+											{
+												"name": "=",
+												"from": 107,
+												"to": 108
+											},
+											{
+												"name": "Number",
+												"from": 109,
+												"to": 116
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 118,
+										"to": 134,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 118,
+												"to": 127
+											},
+											{
+												"name": "=",
+												"from": 128,
+												"to": 129
+											},
+											{
+												"name": "Number",
+												"from": 130,
+												"to": 134
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 136,
+										"to": 148,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 136,
+												"to": 140
+											},
+											{
+												"name": "=",
+												"from": 141,
+												"to": 142
+											},
+											{
+												"name": "Rune",
+												"from": 143,
+												"to": 148
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 150,
+										"to": 170,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 150,
+												"to": 154
+											},
+											{
+												"name": "=",
+												"from": 155,
+												"to": 156
+											},
+											{
+												"name": "String",
+												"from": 157,
+												"to": 170
+											}
+										]
+									},
+									{
+										"name": "ConstSpec",
+										"from": 172,
+										"to": 191,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 172,
+												"to": 175
+											},
+											{
+												"name": "=",
+												"from": 176,
+												"to": 177
+											},
+											{
+												"name": "String",
+												"from": 178,
+												"to": 191
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 192,
+										"to": 193
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 194,
+						"to": 216,
+						"children": [
+							{
+								"name": "var",
+								"from": 194,
+								"to": 197
+							},
+							{
+								"name": "VarSpec",
+								"from": 198,
+								"to": 216,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 198,
+										"to": 204
+									},
+									{
+										"name": "=",
+										"from": 205,
+										"to": 206
+									},
+									{
+										"name": "VariableName",
+										"from": 207,
+										"to": 216
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		}
+	],
+	"recovering": [
+		{
+			"id": "missing-expression",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 27,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 14,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 14
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 15,
+						"to": 27,
+						"children": [
+							{
+								"name": "var",
+								"from": 15,
+								"to": 18
+							},
+							{
+								"name": "VarSpec",
+								"from": 19,
+								"to": 27,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 19,
+										"to": 24
+									},
+									{
+										"name": "=",
+										"from": 25,
+										"to": 26
+									},
+									{
+										"name": "⚠",
+										"from": 27,
+										"to": 27
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "⚠",
+						"from": 27,
+						"to": 27
+					}
+				]
+			}
+		},
+		{
+			"id": "unexpected-operator",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 49,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 14,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 14
+							}
+						]
+					},
+					{
+						"name": "FunctionDecl",
+						"from": 15,
+						"to": 48,
+						"children": [
+							{
+								"name": "func",
+								"from": 15,
+								"to": 19
+							},
+							{
+								"name": "DefName",
+								"from": 20,
+								"to": 23
+							},
+							{
+								"name": "Parameters",
+								"from": 23,
+								"to": 25,
+								"children": [
+									{
+										"name": "(",
+										"from": 23,
+										"to": 24
+									},
+									{
+										"name": ")",
+										"from": 24,
+										"to": 25
+									}
+								]
+							},
+							{
+								"name": "TypeName",
+								"from": 26,
+								"to": 29
+							},
+							{
+								"name": "Block",
+								"from": 30,
+								"to": 48,
+								"children": [
+									{
+										"name": "{",
+										"from": 30,
+										"to": 31
+									},
+									{
+										"name": "ReturnStatement",
+										"from": 32,
+										"to": 46,
+										"children": [
+											{
+												"name": "return",
+												"from": 32,
+												"to": 38
+											},
+											{
+												"name": "BinaryExp",
+												"from": 39,
+												"to": 46,
+												"children": [
+													{
+														"name": "BinaryExp",
+														"from": 39,
+														"to": 43,
+														"children": [
+															{
+																"name": "Number",
+																"from": 39,
+																"to": 40
+															},
+															{
+																"name": "ArithOp",
+																"from": 41,
+																"to": 42
+															},
+															{
+																"name": "⚠",
+																"from": 43,
+																"to": 43
+															}
+														]
+													},
+													{
+														"name": "ArithOp",
+														"from": 43,
+														"to": 44
+													},
+													{
+														"name": "Number",
+														"from": 45,
+														"to": 46
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 47,
+										"to": 48
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "truncated-composite",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 42,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 14,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 14
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 15,
+						"to": 42,
+						"children": [
+							{
+								"name": "var",
+								"from": 15,
+								"to": 18
+							},
+							{
+								"name": "VarSpec",
+								"from": 19,
+								"to": 42,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 19,
+										"to": 24
+									},
+									{
+										"name": "=",
+										"from": 25,
+										"to": 26
+									},
+									{
+										"name": "TypedLiteral",
+										"from": 27,
+										"to": 42,
+										"children": [
+											{
+												"name": "TypeName",
+												"from": 27,
+												"to": 31
+											},
+											{
+												"name": "LiteralValue",
+												"from": 31,
+												"to": 42,
+												"children": [
+													{
+														"name": "{",
+														"from": 31,
+														"to": 32
+													},
+													{
+														"name": "Element",
+														"from": 32,
+														"to": 40,
+														"children": [
+															{
+																"name": "Key",
+																"from": 32,
+																"to": 37,
+																"children": [
+																	{
+																		"name": "VariableName",
+																		"from": 32,
+																		"to": 37
+																	}
+																]
+															},
+															{
+																"name": ":",
+																"from": 37,
+																"to": 38
+															},
+															{
+																"name": "Number",
+																"from": 39,
+																"to": 40
+															}
+														]
+													},
+													{
+														"name": ",",
+														"from": 40,
+														"to": 41
+													},
+													{
+														"name": "⚠",
+														"from": 42,
+														"to": 42
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "⚠",
+						"from": 42,
+						"to": 42
+					}
+				]
+			}
+		},
+		{
+			"id": "incomplete-select",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 68,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 14,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 14
+							}
+						]
+					},
+					{
+						"name": "FunctionDecl",
+						"from": 15,
+						"to": 68,
+						"children": [
+							{
+								"name": "func",
+								"from": 15,
+								"to": 19
+							},
+							{
+								"name": "DefName",
+								"from": 20,
+								"to": 23
+							},
+							{
+								"name": "Parameters",
+								"from": 23,
+								"to": 36,
+								"children": [
+									{
+										"name": "(",
+										"from": 23,
+										"to": 24
+									},
+									{
+										"name": "Parameter",
+										"from": 24,
+										"to": 35,
+										"children": [
+											{
+												"name": "DefName",
+												"from": 24,
+												"to": 26
+											},
+											{
+												"name": "ChannelType",
+												"from": 27,
+												"to": 35,
+												"children": [
+													{
+														"name": "chan",
+														"from": 27,
+														"to": 31
+													},
+													{
+														"name": "TypeName",
+														"from": 32,
+														"to": 35
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 35,
+										"to": 36
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 37,
+								"to": 68,
+								"children": [
+									{
+										"name": "{",
+										"from": 37,
+										"to": 38
+									},
+									{
+										"name": "SelectStatement",
+										"from": 39,
+										"to": 68,
+										"children": [
+											{
+												"name": "select",
+												"from": 39,
+												"to": 45
+											},
+											{
+												"name": "SelectBlock",
+												"from": 46,
+												"to": 68,
+												"children": [
+													{
+														"name": "{",
+														"from": 46,
+														"to": 47
+													},
+													{
+														"name": "Case",
+														"from": 48,
+														"to": 67,
+														"children": [
+															{
+																"name": "case",
+																"from": 48,
+																"to": 52
+															},
+															{
+																"name": "ReceiveStatement",
+																"from": 53,
+																"to": 66,
+																"children": [
+																	{
+																		"name": "DefName",
+																		"from": 53,
+																		"to": 58
+																	},
+																	{
+																		"name": ":=",
+																		"from": 59,
+																		"to": 61
+																	},
+																	{
+																		"name": "UnaryExp",
+																		"from": 62,
+																		"to": 66,
+																		"children": [
+																			{
+																				"name": "<-",
+																				"from": 62,
+																				"to": 64
+																			},
+																			{
+																				"name": "VariableName",
+																				"from": 64,
+																				"to": 66
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": ":",
+																"from": 66,
+																"to": 67
+															}
+														]
+													},
+													{
+														"name": "⚠",
+														"from": 68,
+														"to": 68
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "⚠",
+										"from": 68,
+										"to": 68
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "⚠",
+						"from": 68,
+						"to": 68
+					}
+				]
+			}
+		}
+	]
+}

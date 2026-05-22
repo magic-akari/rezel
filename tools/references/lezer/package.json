@@ -3,9 +3,9 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"check": "npm run typecheck && node src/json.ts && node src/java.ts",
+		"check": "npm run typecheck && node src/json.ts && node src/java.ts && node src/go.ts",
 		"typecheck": "tsc --project tsconfig.json",
-		"update": "npm run typecheck && node src/json.ts --update && node src/java.ts --update"
+		"update": "npm run typecheck && node src/json.ts --update && node src/java.ts --update && node src/go.ts --update"
 	},
 	"devDependencies": {
 		"@lezer/common": "1.5.2",

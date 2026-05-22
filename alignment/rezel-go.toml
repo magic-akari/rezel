@@ -30,6 +30,7 @@ evidence_files = [
 	"languages/go/grammar/go.bindings.toml",
 	"tools/codegen/src/main.rs",
 	"languages/go/tests/parse.rs",
+	"languages/go/tests/reference/lezer.rs",
 ]
 
 [[scope]]
@@ -40,6 +41,7 @@ representation = "A process-wide OnceLock owns the default parser while callers 
 evidence_files = [
 	"languages/go/tests/contract.rs",
 	"languages/go/tests/lowering.rs",
+	"languages/go/tests/reference/lezer.rs",
 ]
 
 [[scope]]
@@ -59,6 +61,7 @@ representation = "Typed Rust callbacks replace JavaScript token and context obje
 evidence_files = [
 	"languages/go/tests/contract.rs",
 	"languages/go/tests/parse.rs",
+	"languages/go/tests/reference/lezer.rs",
 ]
 
 [[scope]]
