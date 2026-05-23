@@ -8,6 +8,7 @@ members = [
 	"languages/java",
 	"languages/json",
 	"tools/codegen",
+	"tools/references/go/stdlib",
 	"tools/references/javac/stdlib",
 	"tools/source-alignment",
 ]

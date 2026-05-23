@@ -1,5 +1,6 @@
 [tools]
 dprint = "0.54.0"
+go = "1.26.3"
 java = "26.0.1"
 node = "26.1.0"
 
@@ -66,12 +67,24 @@ run = [
 ]
 
 [tasks.lint]
-description = "Run Rust lints"
+description = "Run repository lints"
+env = { GOTOOLCHAIN = "local", GOWORK = "off" }
 run = [
+	"go -C tools/references/go test .",
 	"npm --prefix tools/source-alignment run check",
 	"npm --prefix tools/references/lezer run typecheck",
 	"cargo lint-all",
 ]
+
+[tasks."reference:go"]
+description = "Verify Go parse acceptance and public AST snapshots"
+env = { GOTOOLCHAIN = "local", GOWORK = "off" }
+run = "go -C tools/references/go run . --check"
+
+[tasks."reference:go:update"]
+description = "Regenerate Go parser and public AST snapshots"
+env = { GOTOOLCHAIN = "local", GOWORK = "off" }
+run = "go -C tools/references/go run . --update"
 
 [tasks."reference:javac"]
 description = "Verify Java parse acceptance and compiler-tree snapshots"
@@ -88,6 +101,20 @@ run = "npm --prefix tools/references/lezer run check"
 [tasks."reference:lezer:update"]
 description = "Regenerate snapshots from the pinned Lezer reference"
 run = "npm --prefix tools/references/lezer run update"
+
+[tasks."reference:stdlib"]
+description = "Verify Rezel against standard-library sources"
+depends = ["reference:stdlib:go", "reference:stdlib:java"]
+
+[tasks."reference:stdlib:go"]
+description = "Verify Go standard-library source acceptance"
+env = { GOTOOLCHAIN = "local", GOWORK = "off" }
+run = "cargo run --locked --package rezel-go-stdlib-reference"
+
+[tasks."reference:stdlib:go:ast"]
+description = "Compare all Go standard-library ASTs with go/parser"
+env = { GOTOOLCHAIN = "local", GOWORK = "off" }
+run = "cargo run --locked --package rezel-go-stdlib-reference -- --ast-oracle"
 
 [tasks."reference:stdlib:java"]
 description = "Verify Java standard-library source acceptance and lowering"
@@ -128,7 +155,8 @@ description = "Run the full repository verification suite"
 depends = [
 	"verify",
 	"test:full",
+	"reference:go",
 	"reference:javac",
 	"reference:lezer",
-	"reference:stdlib:java",
+	"reference:stdlib",
 ]

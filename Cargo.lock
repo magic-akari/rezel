@@ -94,6 +94,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rezel-go-stdlib-reference"
+version = "0.0.0"
+dependencies = [
+ "rezel-lang-go",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rezel-highlight"
 version = "0.0.0"
 dependencies = [

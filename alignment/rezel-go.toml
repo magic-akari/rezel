@@ -41,7 +41,9 @@ representation = "A process-wide OnceLock owns the default parser while callers 
 evidence_files = [
 	"languages/go/tests/contract.rs",
 	"languages/go/tests/lowering.rs",
+	"languages/go/tests/reference/go.rs",
 	"languages/go/tests/reference/lezer.rs",
+	"tools/references/go/stdlib/src/main.rs",
 ]
 
 [[scope]]
@@ -115,7 +117,10 @@ rust_file = "ast/build_constraint.rs"
 classification = "standard-algorithm"
 invariant = "Valid top-of-file //go:build expressions derive the minimum Go version represented by go/ast.File.GoVersion."
 representation = "A bounded boolean-expression parser and structural minimum-version fold implement the public go/build/constraint grammar without a runtime Go dependency."
-evidence_files = ["languages/go/src/ast/build_constraint.rs"]
+evidence_files = [
+	"languages/go/src/ast/build_constraint.rs",
+	"languages/go/tests/reference/go.rs",
+]
 
 [[scope]]
 rust_file = "ast/lower.rs"
@@ -125,6 +130,7 @@ representation = "A checked traversal builds compact arenas, groups Lezer case s
 evidence_files = [
 	"languages/go/tests/contract.rs",
 	"languages/go/tests/lowering.rs",
+	"languages/go/tests/reference/go.rs",
 ]
 
 [[scope]]
@@ -132,7 +138,10 @@ rust_file = "ast/mod.rs"
 classification = "rezel-owned"
 invariant = "The public Go AST module exposes only the stable owned syntax model and lowering errors."
 representation = "A narrow Rust module facade hides lowering and build-constraint internals while re-exporting durable arena types."
-evidence_files = ["languages/go/tests/lowering.rs"]
+evidence_files = [
+	"languages/go/tests/lowering.rs",
+	"languages/go/tests/reference/go.rs",
+]
 
 [[scope]]
 rust_file = "ast/model.rs"
@@ -141,6 +150,7 @@ invariant = "The owned Go AST exposes stable node identities, public Go syntax k
 representation = "Contiguous node, field, node-list, and string arenas replace Go pointer-rich structs while preserving their ordered public projection."
 evidence_files = [
 	"languages/go/tests/lowering.rs",
+	"languages/go/tests/reference/go.rs",
 ]
 
 [[override_item]]
