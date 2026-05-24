@@ -33,47 +33,58 @@ pub(crate) static TRACK_TOKENS: ContextTracker =
 
 fn scan_semicolon(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let context = stack.context::<bool>().copied().unwrap_or(false);
-    let mut scan = 0_isize;
-    loop {
-        let next = input.peek(scan);
-        if matches!(next, Some(SPACE | TAB)) {
-            scan += 1;
-            continue;
-        }
+    let next = input.next();
+    let should_look_ahead = matches!(next, Some(SPACE | TAB | SLASH));
+    let should_insert = if should_look_ahead {
+        scan_semicolon_lookahead(input, context)
+    } else {
         let line_end = matches!(next, None | Some(NEWLINE | CARRIAGE_RETURN));
-        let line_comment = next == Some(SLASH) && input.peek(scan + 1) == Some(SLASH);
-        if context && (line_end || line_comment) {
-            input.accept_token(terms::insertedSemi, 0)?;
-            return Ok(());
+        let closing_delimiter = matches!(next, Some(CLOSE_PAREN | CLOSE_BRACE));
+        context && line_end || closing_delimiter
+    };
+    if should_insert {
+        input.accept_token(terms::insertedSemi, 0)?;
+    }
+    Ok(())
+}
+
+fn scan_semicolon_lookahead(input: &InputStream, context: bool) -> bool {
+    let mut lookahead = input.lookahead().peekable();
+    loop {
+        while matches!(lookahead.peek().copied(), Some(SPACE | TAB)) {
+            lookahead.next();
         }
-        let block_comment = next == Some(SLASH) && input.peek(scan + 1) == Some(ASTERISK);
-        if block_comment {
-            let (after, contains_line_end) = scan_block_comment(input, scan);
-            if contains_line_end {
-                if context {
-                    input.accept_token(terms::insertedSemi, 0)?;
-                }
-                return Ok(());
+        let Some(next) = lookahead.next() else {
+            return context;
+        };
+        if matches!(next, NEWLINE | CARRIAGE_RETURN) {
+            return context;
+        }
+        if next == SLASH && lookahead.peek() == Some(&SLASH) {
+            return context;
+        }
+        if next == SLASH && lookahead.peek() == Some(&ASTERISK) {
+            lookahead.next();
+            if scan_block_comment(&mut lookahead) {
+                return context;
             }
-            scan = after;
             continue;
         }
-        if matches!(next, Some(CLOSE_PAREN | CLOSE_BRACE)) {
-            input.accept_token(terms::insertedSemi, 0)?;
-        }
-        return Ok(());
+        return matches!(next, CLOSE_PAREN | CLOSE_BRACE);
     }
 }
 
-fn scan_block_comment(input: &mut InputStream, start: isize) -> (isize, bool) {
-    let mut scan = start + 2;
+fn scan_block_comment(input: &mut std::iter::Peekable<impl Iterator<Item = u16>>) -> bool {
     loop {
-        match input.peek(scan) {
-            None | Some(NEWLINE | CARRIAGE_RETURN) => return (scan, true),
-            Some(ASTERISK) if input.peek(scan + 1) == Some(SLASH) => {
-                return (scan + 2, false);
-            }
-            Some(_) => scan += 1,
+        let Some(next) = input.next() else {
+            return true;
+        };
+        if matches!(next, NEWLINE | CARRIAGE_RETURN) {
+            return true;
+        }
+        if next == ASTERISK && input.peek() == Some(&SLASH) {
+            input.next();
+            return false;
         }
     }
 }

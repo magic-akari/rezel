@@ -247,6 +247,20 @@ impl InputStream {
         code_unit_at(&*self.input, &self.ranges, cursor)
     }
 
+    /// Iterate forward from the current position in UTF-16 code units.
+    ///
+    /// External tokenizers that inspect a run of input should prefer this to
+    /// repeatedly calling [`Self::peek`] with increasing offsets.
+    pub fn lookahead(&self) -> impl Iterator<Item = u16> + '_ {
+        InputLookahead {
+            input: &*self.input,
+            ranges: &self.ranges,
+            cursor: Some(self.cursor),
+            initial_chunk: self.chunk.as_ref(),
+            loaded_chunk: None,
+        }
+    }
+
     /// Move forward by UTF-16 code units and return the new next unit.
     pub fn advance(&mut self, count: usize) -> Option<u16> {
         for _ in 0..count {
@@ -502,6 +516,102 @@ impl InputStream {
                 units[0]
             }
         });
+    }
+}
+
+struct InputLookahead<'a> {
+    input: &'a dyn Input,
+    ranges: &'a [TextRange],
+    cursor: Option<StreamCursor>,
+    initial_chunk: Option<&'a InputChunk>,
+    loaded_chunk: Option<InputChunk>,
+}
+
+impl InputLookahead<'_> {
+    fn ensure_chunk(&mut self, position: TextSize) {
+        let has_loaded = self
+            .loaded_chunk
+            .as_ref()
+            .is_some_and(|chunk| chunk.contains(position));
+        let has_initial = self
+            .initial_chunk
+            .is_some_and(|chunk| chunk.contains(position));
+        if !has_loaded && !has_initial {
+            self.loaded_chunk = self.input.logical_chunk(position);
+        }
+    }
+
+    fn chunk(&self, position: TextSize) -> Option<&InputChunk> {
+        self.loaded_chunk
+            .as_ref()
+            .filter(|chunk| chunk.contains(position))
+            .or_else(|| self.initial_chunk.filter(|chunk| chunk.contains(position)))
+    }
+
+    fn chunk_ascii(&mut self, position: TextSize) -> Option<u8> {
+        self.ensure_chunk(position);
+        self.chunk(position)?.ascii_byte(position)
+    }
+
+    fn chunk_units(&mut self, range: TextRange, position: TextSize) -> Option<LogicalUnits> {
+        self.ensure_chunk(position);
+        let chunk = self
+            .chunk(position)
+            .and_then(|chunk| chunk.logical_units(position));
+        let units = chunk.or_else(|| logical_units_at(self.input, range, position))?;
+        (units.raw_end() <= range.end()).then_some(units)
+    }
+}
+
+impl Iterator for InputLookahead<'_> {
+    type Item = u16;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            let cursor = self.cursor?;
+            let range = *self.ranges.get(cursor.range_index)?;
+            if cursor.byte >= range.end() {
+                self.cursor = next_range_cursor(self.ranges, cursor.range_index);
+                continue;
+            }
+            if !cursor.trailing_surrogate
+                && let Some(next) = self.chunk_ascii(cursor.byte)
+            {
+                let byte = cursor.byte + TextSize::from(1);
+                self.cursor = if byte < range.end() {
+                    Some(StreamCursor {
+                        byte,
+                        trailing_surrogate: false,
+                        ..cursor
+                    })
+                } else {
+                    next_range_cursor(self.ranges, cursor.range_index)
+                };
+                return Some(u16::from(next));
+            }
+            let logical = self.chunk_units(range, cursor.byte)?;
+            let units = logical.units();
+            let next = if cursor.trailing_surrogate && units.len() == 2 {
+                units[1]
+            } else {
+                units[0]
+            };
+            self.cursor = if units.len() == 2 && !cursor.trailing_surrogate {
+                Some(StreamCursor {
+                    trailing_surrogate: true,
+                    ..cursor
+                })
+            } else if logical.raw_end() < range.end() {
+                Some(StreamCursor {
+                    byte: logical.raw_end(),
+                    trailing_surrogate: false,
+                    ..cursor
+                })
+            } else {
+                next_range_cursor(self.ranges, cursor.range_index)
+            };
+            return Some(next);
+        }
     }
 }
 
@@ -782,10 +892,36 @@ fn overrides(token: u16, previous: u16, data: &[u16], offset: usize) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
     use rezel_common::StringInput;
 
     use super::*;
 
+    struct CountingInput {
+        inner: StringInput,
+        logical_reads: Arc<AtomicUsize>,
+    }
+
+    impl Input for CountingInput {
+        fn len(&self) -> TextSize {
+            self.inner.len()
+        }
+
+        fn chunk(&self, from: TextSize) -> Cow<'_, str> {
+            self.inner.chunk(from)
+        }
+
+        fn read(&self, range: TextRange) -> Cow<'_, str> {
+            self.inner.read(range)
+        }
+
+        fn logical_units(&self, from: TextSize) -> Option<LogicalUnits> {
+            self.logical_reads.fetch_add(1, Ordering::Relaxed);
+            self.inner.logical_units(from)
+        }
+    }
     fn stream(source: &str, ranges: impl Into<Arc<[TextRange]>>) -> InputStream {
         let input: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
         InputStream::new(input, ranges.into())
@@ -815,5 +951,45 @@ mod tests {
         input.reset(0.into());
 
         assert_eq!(input.next(), Some(0xd83d));
+    }
+
+    #[test]
+    fn lookahead_preserves_utf16_units_and_selected_ranges() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 5.into()),
+            TextRange::new(6.into(), 7.into()),
+        ]);
+        let mut input = stream("a😀Xb", ranges);
+
+        assert_eq!(
+            input.lookahead().collect::<Vec<_>>(),
+            vec![u16::from(b'a'), 0xd83d, 0xde00, u16::from(b'b')]
+        );
+
+        input.advance(1);
+        assert_eq!(
+            input.lookahead().collect::<Vec<_>>(),
+            vec![0xd83d, 0xde00, u16::from(b'b')]
+        );
+    }
+
+    #[test]
+    fn sequential_lookahead_resolves_input_linearly() {
+        const WIDTH: usize = 128;
+
+        let source: Arc<str> = " ".repeat(WIDTH + 1).into();
+        let logical_reads = Arc::new(AtomicUsize::new(0));
+        let input: Arc<dyn Input> = Arc::new(CountingInput {
+            inner: StringInput::try_new(source).unwrap(),
+            logical_reads: Arc::clone(&logical_reads),
+        });
+        let ranges = Arc::from([TextRange::new(
+            TextSize::from(0),
+            TextSize::try_from(WIDTH + 1).unwrap(),
+        )]);
+        let stream = InputStream::new(input, ranges);
+
+        assert_eq!(stream.lookahead().count(), WIDTH + 1);
+        assert!(logical_reads.load(Ordering::Relaxed) <= WIDTH + 2);
     }
 }

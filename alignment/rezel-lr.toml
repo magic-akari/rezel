@@ -103,7 +103,7 @@ upstream_symbols = [
 	"overrides",
 ]
 invariant = "Only tokenizers enabled by the current state run, with longest-match, precedence, fallback, extend, local-token, dialect, specialization, and external-token semantics."
-representation = "Tokenizer code observes UTF-16 code units over cached shared input chunks while public positions remain UTF-8 byte offsets; reads may borrow contiguous text, selected ranges bound every visible chunk, and Rust externals are static fallible function pointers."
+representation = "Tokenizer code observes UTF-16 code units over cached shared input chunks while public positions remain UTF-8 byte offsets; reads may borrow contiguous text, external tokenizers can traverse sequential lookahead through one forward cursor, and Rust externals are static fallible function pointers."
 
 [[override_item]]
 rust_item = "rezel_lr::parse::ParseLimits"
