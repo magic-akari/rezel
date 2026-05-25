@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 #![doc = include_str!("../README.md")]
 
+mod action_index;
 mod decode;
 mod parse;
 mod stack;

@@ -9,6 +9,7 @@ use rezel_common::{
     ParseWrapper, Parser, PartialParse, TextSize, Tree, TreeBuild,
 };
 
+use crate::action_index::ActionIndex;
 use crate::decode::pair;
 use crate::stack::Stack;
 use crate::table::{Action, ReservedTerm, SequenceCode, StateField, StateFlag};
@@ -369,6 +370,7 @@ pub(crate) struct ParserCore {
     pub(crate) buffer_length: TextSize,
     pub(crate) limits: ParseLimits,
     pub(crate) context: Option<&'static ContextTracker>,
+    action_index: Arc<ActionIndex>,
 }
 
 impl fmt::Debug for ParserCore {
@@ -600,6 +602,10 @@ impl LRParser {
             )
         })?;
         let dialect = Dialect::from_specs(None, language.dialects, language.max_term)?;
+        let action_index = Arc::new(
+            ActionIndex::build(language.states, language.state_data)
+                .map_err(configuration_error)?,
+        );
         let core = ParserCore {
             language,
             node_set,
@@ -610,6 +616,7 @@ impl LRParser {
             buffer_length: DEFAULT_BUFFER_LENGTH,
             limits: ParseLimits::default(),
             context: language.context,
+            action_index,
         };
         Ok(Self {
             core: Arc::new(core),
@@ -1110,26 +1117,16 @@ fn update_cached_token(
 
 fn add_actions(stack: &Stack, token: u16, end: TextSize, actions: &mut Vec<TokenAction>) {
     let core = stack.core();
-    let data = core.language.state_data;
     for field in [StateField::Actions, StateField::Skip] {
-        let mut index = core.state_slot(stack.state(), field) as usize;
-        loop {
-            if data[index] == SequenceCode::End.raw() {
-                match data[index + 1] {
-                    value if value == SequenceCode::Next.raw() => {
-                        index = pair(data, index + 2) as usize;
-                    }
-                    value if value == SequenceCode::Other.raw() && actions.is_empty() => {
-                        put_action(actions, Action::from_raw(pair(data, index + 2)), token, end);
-                        break;
-                    }
-                    _ => break,
-                }
-            }
-            if data[index] == token {
-                put_action(actions, Action::from_raw(pair(data, index + 1)), token, end);
-            }
-            index += 3;
+        let fallback = core
+            .action_index
+            .visit(stack.state(), field, token, |action| {
+                put_action(actions, action, token, end);
+            });
+        if actions.is_empty()
+            && let Some(fallback) = fallback
+        {
+            put_action(actions, fallback, token, end);
         }
     }
 }
