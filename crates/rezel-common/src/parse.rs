@@ -203,6 +203,18 @@ impl InputChunk {
         byte.is_ascii().then_some(byte)
     }
 
+    /// Borrow the identity-mapped bytes starting at an original position.
+    #[doc(hidden)]
+    #[must_use]
+    #[inline]
+    pub fn bytes_from(&self, position: TextSize) -> Option<&[u8]> {
+        let offset = position.checked_sub(self.raw_start)?;
+        let source_position = self.source_range.start().checked_add(offset)?;
+        self.source
+            .as_bytes()
+            .get(usize::from(source_position)..usize::from(self.source_range.end()))
+    }
+
     /// Read one logical character from this identity-mapped chunk.
     #[must_use]
     #[inline]

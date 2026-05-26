@@ -275,6 +275,63 @@ impl InputStream {
         self.next_unit
     }
 
+    /// Advance over one ASCII run in the current identity-mapped input chunk.
+    ///
+    /// Translation boundaries, selected-range boundaries, and non-ASCII
+    /// input stop the run before `predicate` is called for later bytes.
+    pub fn advance_ascii_while(&mut self, mut predicate: impl FnMut(u8) -> bool) -> usize {
+        if self.cursor.trailing_surrogate {
+            return 0;
+        }
+        let Some(range) = self.ranges.get(self.cursor.range_index).copied() else {
+            return 0;
+        };
+        if self.cursor.byte >= range.end() {
+            return 0;
+        }
+        let chunk_matches = self
+            .chunk
+            .as_ref()
+            .is_some_and(|chunk| chunk.contains(self.cursor.byte));
+        if !chunk_matches {
+            self.chunk = self.input.logical_chunk(self.cursor.byte);
+        }
+        let count = {
+            let Some(chunk) = self.chunk.as_ref() else {
+                return 0;
+            };
+            let Some(bytes) = chunk.bytes_from(self.cursor.byte) else {
+                return 0;
+            };
+            let available = usize::from(range.end() - self.cursor.byte).min(bytes.len());
+            bytes[..available]
+                .iter()
+                .copied()
+                .take_while(|byte| byte.is_ascii() && predicate(*byte))
+                .count()
+        };
+        if count == 0 {
+            return 0;
+        }
+        let Ok(width) = TextSize::try_from(count) else {
+            return 0;
+        };
+        let byte = self.cursor.byte + width;
+        self.cursor = if byte < range.end() {
+            StreamCursor {
+                byte,
+                trailing_surrogate: false,
+                ..self.cursor
+            }
+        } else {
+            next_range_cursor(&self.ranges, self.cursor.range_index)
+                .unwrap_or_else(|| end_cursor(&self.ranges))
+        };
+        self.logical = None;
+        self.refresh_next();
+        count
+    }
+
     /// Accept a token ending at the current stream position plus a UTF-16
     /// code-unit offset.
     ///
@@ -991,5 +1048,44 @@ mod tests {
 
         assert_eq!(stream.lookahead().count(), WIDTH + 1);
         assert!(logical_reads.load(Ordering::Relaxed) <= WIDTH + 2);
+    }
+
+    #[test]
+    fn bulk_ascii_advance_stops_at_logical_and_selected_range_boundaries() {
+        let input: Arc<dyn Input> =
+            Arc::new(StringInput::try_new(Arc::<str>::from("abcédef")).unwrap());
+        let ranges = Arc::from([TextRange::new(0.into(), 8.into())]);
+        let mut stream = InputStream::new(input, ranges);
+
+        assert_eq!(
+            stream.advance_ascii_while(|byte| byte.is_ascii_alphabetic()),
+            3
+        );
+        assert_eq!(stream.position(), TextSize::from(3));
+        assert_eq!(stream.next(), Some(0xe9));
+        stream.advance(1);
+        assert_eq!(
+            stream.advance_ascii_while(|byte| byte.is_ascii_alphabetic()),
+            3
+        );
+        assert_eq!(stream.position(), TextSize::from(8));
+
+        let input: Arc<dyn Input> =
+            Arc::new(StringInput::try_new(Arc::<str>::from("abXcd")).unwrap());
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 2.into()),
+            TextRange::new(3.into(), 5.into()),
+        ]);
+        let mut stream = InputStream::new(input, ranges);
+        assert_eq!(
+            stream.advance_ascii_while(|byte| byte.is_ascii_alphabetic()),
+            2
+        );
+        assert_eq!(stream.position(), TextSize::from(3));
+        assert_eq!(
+            stream.advance_ascii_while(|byte| byte.is_ascii_alphabetic()),
+            2
+        );
+        assert_eq!(stream.position(), TextSize::from(5));
     }
 }

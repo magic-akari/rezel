@@ -73,7 +73,7 @@ upstream_symbols = [
 	"ParseWrapper",
 ]
 invariant = "A parser creates a resumable parse over immutable input, and full parsing advances it to one completed tree."
-representation = "Rust shares immutable UTF-8 input and identity chunks through Arc, projects language-specific logical UTF-16 units without changing public TextSize byte coordinates, reports setup and parse failures through Result, and keeps selected mixed-parser ranges inside ParseRequest."
+representation = "Rust shares immutable UTF-8 input and bounded identity-chunk byte slices through Arc, projects language-specific logical UTF-16 units without changing public TextSize byte coordinates, reports setup and parse failures through Result, and keeps selected mixed-parser ranges inside ParseRequest."
 evidence_files = ["crates/rezel-common/tests/input.rs"]
 
 [[scope]]

@@ -21,8 +21,18 @@ fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
         return Ok(());
     }
 
-    input.advance(width);
-    while let Some((character, width)) = next_code_point(input, 0) {
+    if first <= 0x7f {
+        input.advance_ascii_while(|byte| is_java_identifier_part(u32::from(byte)));
+    } else {
+        input.advance(width);
+    }
+    loop {
+        if input.advance_ascii_while(|byte| is_java_identifier_part(u32::from(byte))) != 0 {
+            continue;
+        }
+        let Some((character, width)) = next_code_point(input, 0) else {
+            break;
+        };
         if !is_java_identifier_part(character) {
             break;
         }
