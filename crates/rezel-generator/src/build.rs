@@ -3904,8 +3904,17 @@ fn compute_goto_table(states: &[State], terms: &TermSet) -> Result<Vec<u16>, Gen
             continue;
         };
         let mut table = Vec::new();
-        for (entry_index, (target, sources)) in entries.iter().enumerate() {
-            let last = usize::from(entry_index + 1 == entries.len());
+        let mut groups = entries.iter().collect::<Vec<_>>();
+        let default_index = groups
+            .iter()
+            .enumerate()
+            .max_by_key(|(_, (target, sources))| (sources.len(), **target))
+            .map(|(index, _)| index)
+            .expect("a goto term has at least one target");
+        let default = groups.remove(default_index);
+        groups.push(default);
+        for (entry_index, (target, sources)) in groups.iter().copied().enumerate() {
+            let last = usize::from(entry_index + 1 == groups.len());
             let length = u16::try_from(sources.len())
                 .map_err(|_| GeneratorError::new("Goto group too large", None))?;
             table.push((length << 1) | u16::try_from(last).expect("last bit fits"));

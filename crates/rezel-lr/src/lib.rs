@@ -3,6 +3,7 @@
 
 mod action_index;
 mod decode;
+mod goto_index;
 mod parse;
 mod stack;
 mod token;

@@ -127,6 +127,55 @@ fn parse_cases_match_expected_trees() {
     );
 }
 
+#[test]
+fn goto_defaults_cover_the_dominant_source_groups() {
+    let mut multiple_target_terms = 0;
+    for case in case_files() {
+        let (grammar_source, _) = split_case_file(&case.source);
+        if expected_diagnostic(grammar_source).is_some() {
+            continue;
+        }
+        let compiled = compile_grammar(grammar_source, Some(&case.name), BuildOptions::default())
+            .unwrap_or_else(|error| panic!("{} failed to compile: {error}", case.name));
+        multiple_target_terms += assert_dominant_goto_defaults(&case.name, &compiled.goto);
+    }
+    assert!(
+        multiple_target_terms > 0,
+        "the upstream grammar inventory contains no multi-target goto terms"
+    );
+}
+
+fn assert_dominant_goto_defaults(case: &str, table: &[u16]) -> usize {
+    let term_count = usize::from(table[0]);
+    let header_length = term_count + 1;
+    let mut multiple_target_terms = 0;
+    for term in 0..term_count {
+        let mut position = usize::from(table[term + 1]);
+        if position < header_length {
+            continue;
+        }
+        let mut group_count = 0;
+        let mut largest_length = 0;
+        loop {
+            let group_tag = table[position];
+            let group_length = usize::from(group_tag >> 1);
+            let last = group_tag & 1 != 0;
+            group_count += 1;
+            largest_length = largest_length.max(group_length);
+            position += 2 + group_length;
+            if last {
+                assert_eq!(
+                    group_length, largest_length,
+                    "{case}: term {term} does not encode its dominant goto group as the default"
+                );
+                break;
+            }
+        }
+        multiple_target_terms += usize::from(group_count > 1);
+    }
+    multiple_target_terms
+}
+
 fn generated_case(name: &str) -> &'static case_registry::GeneratedCase {
     case_registry::CASES
         .iter()

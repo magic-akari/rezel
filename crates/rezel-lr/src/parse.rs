@@ -11,6 +11,7 @@ use rezel_common::{
 
 use crate::action_index::ActionIndex;
 use crate::decode::pair;
+use crate::goto_index::GotoIndex;
 use crate::stack::Stack;
 use crate::table::{Action, ReservedTerm, SequenceCode, StateField, StateFlag};
 use crate::token::{AcceptedToken, InputStream, Tokenizer};
@@ -371,6 +372,7 @@ pub(crate) struct ParserCore {
     pub(crate) limits: ParseLimits,
     pub(crate) context: Option<&'static ContextTracker>,
     action_index: Arc<ActionIndex>,
+    goto_index: Arc<GotoIndex>,
 }
 
 impl fmt::Debug for ParserCore {
@@ -417,34 +419,7 @@ impl ParserCore {
     }
 
     pub(crate) fn get_goto(&self, state: u16, term: u16, loose: bool) -> Option<u16> {
-        let table = self.language.goto;
-        if usize::from(term) >= usize::from(table[0]) {
-            return None;
-        }
-        let mut position = usize::from(table[usize::from(term) + 1]);
-        if position <= usize::from(table[0]) {
-            return None;
-        }
-        loop {
-            let group_tag = table[position];
-            position += 1;
-            let last = group_tag & 1 != 0;
-            let target = table[position];
-            position += 1;
-            if last && loose {
-                return Some(target);
-            }
-            let end = position + usize::from(group_tag >> 1);
-            for candidate in &table[position..end] {
-                if *candidate == state {
-                    return Some(target);
-                }
-            }
-            if last {
-                return None;
-            }
-            position = end;
-        }
+        self.goto_index.get(state, term, loose)
     }
 
     pub(crate) fn has_action(&self, state: u16, terminal: u16) -> Action {
@@ -606,6 +581,7 @@ impl LRParser {
             ActionIndex::build(language.states, language.state_data)
                 .map_err(configuration_error)?,
         );
+        let goto_index = Arc::new(GotoIndex::build(language.goto).map_err(configuration_error)?);
         let core = ParserCore {
             language,
             node_set,
@@ -617,6 +593,7 @@ impl LRParser {
             limits: ParseLimits::default(),
             context: language.context,
             action_index,
+            goto_index,
         };
         Ok(Self {
             core: Arc::new(core),

@@ -77,7 +77,7 @@ upstream_symbols = [
 	"pushStackDedup",
 ]
 invariant = "State-driven tokenization, LR and bounded GLR actions, dynamic precedence, deterministic pruning, recovery, and completion produce the selected top rule's concrete syntax tree."
-representation = "Generated data is held in a construction-validated static Language with term-indexed metadata and unchecked hot reads; the validated maximum node id and first repeat term are cached in ParserCore for shift, reduction, recovery, and tree classification, while selected-top fields and strict mode share one compact internal record; TokenCache borrows full per-tokenizer cache records while retaining only start, value, and end in its observable main-token snapshot; parser configuration is owned, input positions use UTF-8 TextSize values, failures use Result, and incremental fragments are excluded."
+representation = "Generated data is held in a construction-validated static Language with term-indexed action and goto projections plus unchecked hot reads; the validated maximum node id and first repeat term are cached in ParserCore for shift, reduction, recovery, and tree classification, while selected-top fields and strict mode share one compact internal record; TokenCache borrows full per-tokenizer cache records while retaining only start, value, and end in its observable main-token snapshot; parser configuration is owned, input positions use UTF-8 TextSize values, failures use Result, and incremental fragments are excluded."
 evidence_files = ["crates/rezel-lr/tests/validation.rs"]
 
 [[scope]]

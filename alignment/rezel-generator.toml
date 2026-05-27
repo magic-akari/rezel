@@ -118,13 +118,20 @@ upstream_symbols = [
 	"findSkipStates",
 	"isLiteralToken",
 ]
-invariant = "Grammar normalization, skip scopes, specialization, token conflicts, parser tables, dialects, node properties, and runtime metadata preserve the pinned generator's observable parse behavior."
-representation = "One Rust builder produces typed metadata for a static Rust backend; warnings are returned as structured diagnostics and external declarations remain symbolic until emission."
+invariant = "Grammar normalization, skip scopes, specialization, token conflicts, parser tables, dialects, node properties, and runtime metadata preserve the pinned generator's observable parse behavior except at documented Rezel-owned boundaries."
+representation = "One Rust builder produces typed metadata for a static Rust backend; warnings are returned as structured diagnostics, external declarations remain symbolic until emission, and goto groups retain the pinned compact ABI with an explicitly selected loose default."
 evidence_files = [
 	"crates/rezel-generator/tests/cases.rs",
 	"crates/rezel-generator/tests/parse.rs",
 	"tools/codegen/src/main.rs",
 ]
+
+[[override_item]]
+rust_item = "rezel_generator::build::compute_goto_table"
+classification = "rezel-owned"
+invariant = "Strict goto transitions preserve every generated source-to-target mapping, while loose recovery uses the target that covers the largest source-state group."
+representation = "The pinned generator makes the numerically last target the compact table fallback; Rezel selects the largest source group and uses the highest target only as a deterministic tie-breaker."
+evidence_files = ["crates/rezel-generator/tests/cases.rs"]
 
 [[scope]]
 rust_file = "emit.rs"
