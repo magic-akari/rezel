@@ -14,7 +14,7 @@ use crate::decode::pair;
 use crate::goto_index::GotoIndex;
 use crate::stack::Stack;
 use crate::table::{Action, ReservedTerm, SequenceCode, StateField, StateFlag};
-use crate::token::{AcceptedToken, InputStream, Tokenizer};
+use crate::token::{AcceptedToken, InputStream, TokenAsciiIndex, Tokenizer};
 
 /// One named grammar entry point.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -373,6 +373,7 @@ pub(crate) struct ParserCore {
     pub(crate) context: Option<&'static ContextTracker>,
     action_index: Arc<ActionIndex>,
     goto_index: Arc<GotoIndex>,
+    pub(crate) token_ascii_index: Arc<TokenAsciiIndex>,
 }
 
 impl fmt::Debug for ParserCore {
@@ -582,6 +583,8 @@ impl LRParser {
                 .map_err(configuration_error)?,
         );
         let goto_index = Arc::new(GotoIndex::build(language.goto).map_err(configuration_error)?);
+        let token_ascii_index =
+            Arc::new(TokenAsciiIndex::build(language.token_data).map_err(configuration_error)?);
         let core = ParserCore {
             language,
             node_set,
@@ -594,6 +597,7 @@ impl LRParser {
             context: language.context,
             action_index,
             goto_index,
+            token_ascii_index,
         };
         Ok(Self {
             core: Arc::new(core),

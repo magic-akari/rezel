@@ -8,6 +8,102 @@ use rezel_common::{
 use crate::stack::Stack;
 use crate::table::SequenceCode;
 
+const NO_TOKEN_STATE: u16 = u16::MAX;
+
+#[derive(Debug)]
+pub(crate) struct TokenAsciiIndex {
+    row_by_state: Box<[u16]>,
+    transitions: Box<[[u16; 128]]>,
+}
+
+impl TokenAsciiIndex {
+    pub(crate) fn build(data: &[u16]) -> Result<Self, &'static str> {
+        let mut row_by_state = vec![NO_TOKEN_STATE; data.len()];
+        let mut transitions = Vec::new();
+        let mut edge_targets = Vec::new();
+        let mut state = 0_usize;
+        while state < data.len() {
+            let header_end = state
+                .checked_add(3)
+                .ok_or("token table state header overflows")?;
+            let accept_end = usize::from(
+                *data
+                    .get(state + 1)
+                    .ok_or("token table header is truncated")?,
+            );
+            if accept_end < header_end || !(accept_end - header_end).is_multiple_of(2) {
+                return Err("token table accepting entries are malformed");
+            }
+            let edge_count = usize::from(
+                *data
+                    .get(state + 2)
+                    .ok_or("token table header is truncated")?,
+            );
+            let edge_end = accept_end
+                .checked_add(edge_count * 3)
+                .ok_or("token table edge count overflows")?;
+            let edges = data
+                .get(accept_end..edge_end)
+                .ok_or("token table edges are truncated")?;
+            if transitions.len() >= usize::from(NO_TOKEN_STATE) {
+                return Err("token table has too many states");
+            }
+            let row =
+                u16::try_from(transitions.len()).map_err(|_| "token table has too many states")?;
+            row_by_state[state] = row;
+            let mut ascii = [NO_TOKEN_STATE; 128];
+            for edge in edges.chunks_exact(3) {
+                let eof = edge[0] == SequenceCode::End.raw() && edge[1] == SequenceCode::End.raw();
+                let raw_from = u32::from(edge[0]);
+                let raw_to = if edge[1] == 0 {
+                    0x1_0000
+                } else {
+                    u32::from(edge[1])
+                };
+                if !eof && raw_from >= raw_to {
+                    return Err("token table edge range is malformed");
+                }
+                let from = usize::try_from(raw_from)
+                    .expect("u16 token edge fits usize")
+                    .min(ascii.len());
+                let to = usize::try_from(raw_to)
+                    .expect("UTF-16 token edge fits usize")
+                    .min(ascii.len());
+                ascii[from..to].fill(edge[2]);
+                edge_targets.push(edge[2]);
+            }
+            transitions.push(ascii);
+            state = edge_end;
+        }
+        for target in edge_targets {
+            let target = usize::from(target);
+            if row_by_state
+                .get(target)
+                .is_none_or(|row| *row == NO_TOKEN_STATE)
+            {
+                return Err("token table edge refers to an unknown state");
+            }
+        }
+        Ok(Self {
+            row_by_state: row_by_state.into_boxed_slice(),
+            transitions: transitions.into_boxed_slice(),
+        })
+    }
+
+    #[inline]
+    fn transition(&self, state: usize, next: u16) -> Option<usize> {
+        let row = *self.row_by_state.get(state)?;
+        if row == NO_TOKEN_STATE {
+            return None;
+        }
+        let target = *self
+            .transitions
+            .get(usize::from(row))?
+            .get(usize::from(next))?;
+        (target != NO_TOKEN_STATE).then_some(usize::from(target))
+    }
+}
+
 /// Flags controlling how a tokenizer participates in one parser state.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct TokenizerFlags {
@@ -124,6 +220,7 @@ impl Tokenizer {
                 let core = stack.core();
                 read_token(
                     core.language.token_data,
+                    Some(&core.token_ascii_index),
                     input,
                     stack,
                     group.id,
@@ -263,6 +360,9 @@ impl InputStream {
 
     /// Move forward by UTF-16 code units and return the new next unit.
     pub fn advance(&mut self, count: usize) -> Option<u16> {
+        if count == 1 && self.advance_ascii() {
+            return self.next_unit;
+        }
         for _ in 0..count {
             let Some(next) = self.advance_current() else {
                 self.cursor = end_cursor(&self.ranges);
@@ -273,6 +373,36 @@ impl InputStream {
         }
         self.refresh_next();
         self.next_unit
+    }
+
+    fn advance_ascii(&mut self) -> bool {
+        if self.cursor.trailing_surrogate {
+            return false;
+        }
+        let Some(next) = self.next_unit.and_then(|next| u8::try_from(next).ok()) else {
+            return false;
+        };
+        let Some(range) = self.ranges.get(self.cursor.range_index).copied() else {
+            return false;
+        };
+        let Some(chunk) = self.chunk.as_ref() else {
+            return false;
+        };
+        if chunk.ascii_byte(self.cursor.byte) != Some(next) {
+            return false;
+        }
+        let byte = self.cursor.byte + TextSize::from(1);
+        if byte >= range.end() {
+            return false;
+        }
+        self.cursor.byte = byte;
+        self.logical = None;
+        if let Some(next) = chunk.ascii_byte(byte) {
+            self.next_unit = Some(u16::from(next));
+        } else {
+            self.refresh_next();
+        }
+        true
     }
 
     /// Advance over one ASCII run in the current identity-mapped input chunk.
@@ -837,6 +967,7 @@ fn read_local_token(
         let next_position = input.next_position();
         read_token(
             group.data,
+            None,
             input,
             stack,
             0,
@@ -867,6 +998,7 @@ fn read_local_token(
 
 fn read_token(
     data: &[u16],
+    ascii_index: Option<&TokenAsciiIndex>,
     input: &mut InputStream,
     stack: &Stack,
     group: u8,
@@ -911,6 +1043,16 @@ fn read_token(
         let Some(next) = next else {
             break;
         };
+        if next < 0x80
+            && let Some(index) = ascii_index
+        {
+            let Some(next_state) = index.transition(state, next) else {
+                break;
+            };
+            state = next_state;
+            input.advance(1);
+            continue;
+        }
         while low < high {
             let middle = (low + high) >> 1;
             let edge = accept_end + middle * 3;
@@ -979,6 +1121,39 @@ mod tests {
             self.inner.logical_units(from)
         }
     }
+
+    #[test]
+    fn indexes_ascii_token_transitions() {
+        let index = TokenAsciiIndex::build(&[
+            1,
+            3,
+            1,
+            u16::from(b'A'),
+            u16::from(b'Z') + 1,
+            6,
+            1,
+            9,
+            1,
+            u16::from(b'a'),
+            u16::from(b'z') + 1,
+            6,
+        ])
+        .unwrap();
+
+        assert_eq!(index.transition(0, u16::from(b'A')), Some(6));
+        assert_eq!(index.transition(0, u16::from(b'Z')), Some(6));
+        assert_eq!(index.transition(6, u16::from(b'a')), Some(6));
+        assert_eq!(index.transition(6, u16::from(b'z')), Some(6));
+        assert_eq!(index.transition(0, u16::from(b'a')), None);
+        assert_eq!(index.transition(0, 0x80), None);
+        assert!(
+            TokenAsciiIndex::build(&[])
+                .unwrap()
+                .transition(0, 0)
+                .is_none()
+        );
+    }
+
     fn stream(source: &str, ranges: impl Into<Arc<[TextRange]>>) -> InputStream {
         let input: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
         InputStream::new(input, ranges.into())
