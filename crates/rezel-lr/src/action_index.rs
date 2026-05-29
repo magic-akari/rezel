@@ -25,6 +25,8 @@ pub(crate) struct ActionIndex {
     rows: Box<[ActionRow]>,
     terms: Box<[u16]>,
     actions: Box<[Action]>,
+    skip_terms: Box<[u64]>,
+    skip_has_fallback: bool,
 }
 
 impl ActionIndex {
@@ -86,13 +88,28 @@ impl ActionIndex {
             .into_iter()
             .map(|roots| Ok([row_id(&offsets, roots[0])?, row_id(&offsets, roots[1])?]))
             .collect::<Result<Box<[_]>, &'static str>>()?;
+        let (skip_terms, skip_has_fallback) = build_skip_filter(&state_rows, &rows, &terms);
 
         Ok(Self {
             state_rows,
             rows: rows.into_boxed_slice(),
             terms: terms.into_boxed_slice(),
             actions: actions.into_boxed_slice(),
+            skip_terms,
+            skip_has_fallback,
         })
+    }
+
+    pub(crate) fn skip_may_match(&self, term: u16) -> bool {
+        if self.skip_has_fallback {
+            return true;
+        }
+        let term = usize::from(term);
+        let word = term / u64::BITS as usize;
+        let bit = term % u64::BITS as usize;
+        self.skip_terms
+            .get(word)
+            .is_some_and(|terms| terms & (1_u64 << bit) != 0)
     }
 
     pub(crate) fn visit(
@@ -132,6 +149,42 @@ impl ActionIndex {
             row_id = row.next;
         }
     }
+}
+
+fn build_skip_filter(
+    state_rows: &[[u16; 2]],
+    rows: &[ActionRow],
+    terms: &[u16],
+) -> (Box<[u64]>, bool) {
+    let mut visited = vec![false; rows.len()];
+    let mut skip_terms = Vec::new();
+    let mut skip_has_fallback = false;
+    for state in state_rows {
+        let mut row_id = usize::from(state[1]);
+        while !visited[row_id] {
+            visited[row_id] = true;
+            let row = rows[row_id];
+            skip_terms.extend_from_slice(&terms[row.start as usize..row.end as usize]);
+            skip_has_fallback |= !row.fallback.is_none();
+            if row.next == NO_ROW {
+                break;
+            }
+            row_id = usize::from(row.next);
+        }
+    }
+    let word_count = skip_terms
+        .iter()
+        .copied()
+        .max()
+        .map_or(0, |term| usize::from(term) / u64::BITS as usize + 1);
+    let mut filter = vec![0_u64; word_count];
+    for term in skip_terms {
+        let term = usize::from(term);
+        let word = term / u64::BITS as usize;
+        let bit = term % u64::BITS as usize;
+        filter[word] |= 1_u64 << bit;
+    }
+    (filter.into_boxed_slice(), skip_has_fallback)
 }
 
 fn decode_row(data: &[u16], offset: usize) -> Result<DecodedRow, &'static str> {
@@ -260,6 +313,26 @@ mod tests {
         });
         assert!(actions.is_empty());
         assert_eq!(fallback.map(Action::raw), Some(14));
+        assert!(index.skip_may_match(9));
+    }
+
+    #[test]
+    fn filters_terminals_that_cannot_enter_skip_actions() {
+        let states = [0, 0, 2, 0, 0, 0];
+        let data = [
+            END,
+            SequenceCode::Done.raw(),
+            5,
+            10,
+            0,
+            END,
+            SequenceCode::Done.raw(),
+        ];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert!(index.skip_may_match(5));
+        assert!(!index.skip_may_match(4));
+        assert!(!index.skip_may_match(128));
     }
 
     #[test]

@@ -1098,17 +1098,28 @@ fn update_cached_token(
 
 fn add_actions(stack: &Stack, token: u16, end: TextSize, actions: &mut Vec<TokenAction>) {
     let core = stack.core();
-    for field in [StateField::Actions, StateField::Skip] {
-        let fallback = core
-            .action_index
-            .visit(stack.state(), field, token, |action| {
-                put_action(actions, action, token, end);
-            });
-        if actions.is_empty()
-            && let Some(fallback) = fallback
-        {
-            put_action(actions, fallback, token, end);
-        }
+    let fallback = core
+        .action_index
+        .visit(stack.state(), StateField::Actions, token, |action| {
+            put_action(actions, action, token, end);
+        });
+    if actions.is_empty()
+        && let Some(fallback) = fallback
+    {
+        put_action(actions, fallback, token, end);
+    }
+    if !core.action_index.skip_may_match(token) {
+        return;
+    }
+    let fallback = core
+        .action_index
+        .visit(stack.state(), StateField::Skip, token, |action| {
+            put_action(actions, action, token, end);
+        });
+    if actions.is_empty()
+        && let Some(fallback) = fallback
+    {
+        put_action(actions, fallback, token, end);
     }
 }
 
