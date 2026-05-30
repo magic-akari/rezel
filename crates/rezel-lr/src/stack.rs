@@ -25,6 +25,9 @@ impl RecoveryPolicy {
     const MIN_LARGE_REDUCTION_SPAN: TextSize = TextSize::new(2_000);
 }
 
+// Eight postfix records, with four `u32` fields per record.
+const MIN_BRANCH_BUFFER_CAPACITY: usize = 8 * 4;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct Frame {
     state: u16,
@@ -475,6 +478,16 @@ impl Stack {
     #[allow(clippy::cast_possible_truncation)]
     fn push_record(&mut self, term: u16, start: TextSize, end: TextSize, size: usize) {
         debug_assert!(u32::try_from(size).is_ok());
+        if self.buffer.is_empty()
+            && self.parent_buffer.is_some()
+            && self.buffer.capacity() < MIN_BRANCH_BUFFER_CAPACITY
+        {
+            // A GLR split freezes the shared prefix and leaves each branch
+            // with an empty mutable tail. Allocate only when the branch
+            // actually writes, but avoid regrowing that short tail one record
+            // at a time.
+            self.buffer.reserve_exact(MIN_BRANCH_BUFFER_CAPACITY);
+        }
         let record = [
             u32::from(term),
             u32::from(start),

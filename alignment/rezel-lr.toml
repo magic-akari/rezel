@@ -100,6 +100,18 @@ upstream_symbols = [
 invariant = "Shift, reduce, bounded branch splitting, recovery scoring, forced reductions, stack equivalence, and context transitions preserve the pinned runtime's action semantics."
 representation = "Rust stores typed frames, shares immutable postfix-prefix chunks across branches, retains only a branch-local mutable suffix, and exposes a backward cursor that feeds tree construction directly; can-shift simulations borrow the live frame prefix and materialize it only when a zero-depth reduction must append a frame; parser failures are explicit and reused-node records are absent."
 
+[[override_item]]
+rust_item = "rezel_lr::stack::MIN_BRANCH_BUFFER_CAPACITY"
+classification = "rezel-owned"
+invariant = "Reserving capacity for an active post-split tail never changes its logical postfix length, record contents, sharing boundary, or parser resource accounting, and an unwritten branch remains allocation-free."
+representation = "The first record written to an empty GLR branch tail reserves capacity for eight four-word CST records to avoid repeatedly growing very small Rust Vec buffers."
+evidence_files = [
+	"crates/rezel-generator/tests/cases.rs",
+	"crates/rezel-generator/tests/parse.rs",
+	"languages/java/tests/reference.rs",
+	"languages/go/tests/reference.rs",
+]
+
 [[scope]]
 rust_file = "token.rs"
 classification = "adapted"
