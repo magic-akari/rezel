@@ -6,9 +6,21 @@ const LINEAR_SEARCH_LIMIT: usize = 8;
 #[derive(Clone, Copy, Debug)]
 struct ActionRow {
     start: u32,
-    end: u32,
-    next: u16,
+    term_filter: u32,
     fallback: Action,
+    length: u16,
+    next: u16,
+}
+
+impl ActionRow {
+    fn range(self) -> core::ops::Range<usize> {
+        let start = self.start as usize;
+        start..start + usize::from(self.length)
+    }
+
+    fn may_contain(self, term: u16) -> bool {
+        self.term_filter & term_filter_bit(term) != 0
+    }
 }
 
 #[derive(Debug)]
@@ -67,20 +79,27 @@ impl ActionIndex {
         let mut actions = Vec::new();
         for (_, mut decoded) in decoded_rows {
             decoded.entries.sort_by_key(|(term, _)| *term);
+            let length = u16::try_from(decoded.entries.len())
+                .map_err(|_| "action sequence has too many entries")?;
+            let term_filter = build_term_filter(&decoded.entries);
             let start = u32::try_from(terms.len()).map_err(|_| "action projection is too large")?;
             for (term, action) in decoded.entries {
                 terms.push(term);
                 actions.push(action);
             }
-            let end = u32::try_from(terms.len()).map_err(|_| "action projection is too large")?;
+            let end = start
+                .checked_add(u32::from(length))
+                .ok_or("action projection is too large")?;
+            debug_assert_eq!(end as usize, terms.len());
             let next = decoded
                 .next
                 .map_or(Ok(NO_ROW), |next| row_id(&offsets, next))?;
             rows.push(ActionRow {
                 start,
-                end,
-                next,
+                term_filter,
                 fallback: decoded.fallback,
+                length,
+                next,
             });
         }
         reject_cycles(&rows)?;
@@ -124,23 +143,27 @@ impl ActionIndex {
             StateField::Skip => 1,
             _ => unreachable!("only action sequence fields are indexed"),
         };
+        let filter_rows = field == StateField::Actions;
         let mut row_id = self.state_rows[usize::from(state)][column];
         loop {
             let row = self.rows[usize::from(row_id)];
-            let start = row.start as usize;
-            let end = row.end as usize;
-            let terms = &self.terms[start..end];
-            if terms.len() <= LINEAR_SEARCH_LIMIT {
-                for (index, candidate) in terms.iter().copied().enumerate() {
-                    if candidate == term {
-                        visit(self.actions[start + index]);
+            let filter_row = filter_rows && usize::from(row.length) > LINEAR_SEARCH_LIMIT;
+            if !filter_row || row.may_contain(term) {
+                let range = row.range();
+                let start = range.start;
+                let terms = &self.terms[range];
+                if terms.len() <= LINEAR_SEARCH_LIMIT {
+                    for (index, candidate) in terms.iter().copied().enumerate() {
+                        if candidate == term {
+                            visit(self.actions[start + index]);
+                        }
                     }
-                }
-            } else {
-                let mut index = terms.partition_point(|candidate| *candidate < term);
-                while terms.get(index) == Some(&term) {
-                    visit(self.actions[start + index]);
-                    index += 1;
+                } else {
+                    let mut index = terms.partition_point(|candidate| *candidate < term);
+                    while terms.get(index) == Some(&term) {
+                        visit(self.actions[start + index]);
+                        index += 1;
+                    }
                 }
             }
             if row.next == NO_ROW {
@@ -149,6 +172,19 @@ impl ActionIndex {
             row_id = row.next;
         }
     }
+}
+
+fn build_term_filter(entries: &[(u16, Action)]) -> u32 {
+    let mut filter = 0;
+    for (term, _) in entries {
+        filter |= term_filter_bit(*term);
+    }
+    filter
+}
+
+const fn term_filter_bit(term: u16) -> u32 {
+    let folded = term ^ (term >> 5) ^ (term >> 10);
+    1_u32 << (folded & 31)
 }
 
 fn build_skip_filter(
@@ -164,7 +200,7 @@ fn build_skip_filter(
         while !visited[row_id] {
             visited[row_id] = true;
             let row = rows[row_id];
-            skip_terms.extend_from_slice(&terms[row.start as usize..row.end as usize]);
+            skip_terms.extend_from_slice(&terms[row.range()]);
             skip_has_fallback |= !row.fallback.is_none();
             if row.next == NO_ROW {
                 break;
@@ -333,6 +369,34 @@ mod tests {
         assert!(index.skip_may_match(5));
         assert!(!index.skip_may_match(4));
         assert!(!index.skip_may_match(128));
+    }
+
+    #[test]
+    fn long_rows_preserve_members_and_collision_fallbacks() {
+        let states = [0, 0, 0, 0, 0, 0];
+        let mut data = Vec::new();
+        for term in 1..=9_u16 {
+            data.extend_from_slice(&[term, term + 100, 0]);
+        }
+        data.extend_from_slice(&[END, OTHER, 200, 0]);
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        for term in 1..=9_u16 {
+            let mut actions = Vec::new();
+            let fallback = index.visit(0, StateField::Actions, term, |action| {
+                actions.push(action.raw());
+            });
+            assert_eq!(actions, [u32::from(term + 100)]);
+            assert_eq!(fallback.map(Action::raw), Some(200));
+        }
+
+        assert_eq!(term_filter_bit(3), term_filter_bit(34));
+        let mut actions = Vec::new();
+        let fallback = index.visit(0, StateField::Actions, 34, |action| {
+            actions.push(action.raw());
+        });
+        assert!(actions.is_empty());
+        assert_eq!(fallback.map(Action::raw), Some(200));
     }
 
     #[test]
