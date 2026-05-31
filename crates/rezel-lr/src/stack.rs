@@ -843,9 +843,13 @@ impl Stack {
         start: TextSize,
         input: &mut InputStream,
     ) -> Result<(), ParseError> {
-        let Some(context) = self.context.clone() else {
+        let Some(context) = self.context.as_ref() else {
             return Ok(());
         };
+        if !context.tracker.tracks_reductions() {
+            return Ok(());
+        }
+        let context = context.clone();
         input.reset(start);
         let value = context.tracker.reduce(&context.value, term, self, input)?;
         if context.value.same_identity(&value) {

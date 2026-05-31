@@ -159,6 +159,16 @@ classification = "rezel-owned"
 invariant = "A prepared language request enters the ordinary LR engine exactly once and retains every configured parse wrapper."
 representation = "The hidden Rust method separates language-owned request preparation from the shared LR parse constructor."
 
+[[override_item]]
+rust_item = "rezel_lr::parse::ContextTracker::tracks_reductions"
+classification = "rezel-owned"
+invariant = "An omitted reduction transition remains the identity operation and cannot alter the current context."
+representation = "Rust preserves an omitted callback as None and bypasses context cloning and input reset; the pinned runtime installs and invokes an identity callback instead."
+evidence_files = [
+	"languages/go/tests/parse.rs",
+	"languages/go/tests/reference.rs",
+]
+
 [[excluded]]
 upstream_file = "src/decode.ts"
 upstream_symbol = "decodeArray"

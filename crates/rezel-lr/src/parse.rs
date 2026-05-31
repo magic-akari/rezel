@@ -170,6 +170,10 @@ impl ContextTracker {
         (self.start)()
     }
 
+    pub(crate) const fn tracks_reductions(&self) -> bool {
+        self.reduce.is_some()
+    }
+
     pub(crate) fn shift(
         &self,
         context: &ContextValue,
