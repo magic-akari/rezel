@@ -823,7 +823,9 @@ impl Stack {
         let Some(context) = self.context.clone() else {
             return Ok(());
         };
-        input.reset(start);
+        if context.tracker.shift_uses_input() {
+            input.reset(start);
+        }
         let value = context.tracker.shift(&context.value, term, self, input)?;
         if context.value.same_identity(&value) {
             return Ok(());
@@ -850,7 +852,9 @@ impl Stack {
             return Ok(());
         }
         let context = context.clone();
-        input.reset(start);
+        if context.tracker.reduction_uses_input() {
+            input.reset(start);
+        }
         let value = context.tracker.reduce(&context.value, term, self, input)?;
         if context.value.same_identity(&value) {
             return Ok(());

@@ -59,7 +59,7 @@ classification = "adapted"
 upstream_file = "src/tokens.js"
 upstream_symbols = ["semicolon", "trackTokens"]
 invariant = "Automatic semicolon insertion preserves upstream line-ending, comment, delimiter, and preceding-token behavior while recognizing the Go specification's predeclared literal terms."
-representation = "Typed Rust callbacks replace JavaScript token and context objects; generated exported term identities avoid rescanning specialized literals, and two process-interned immutable contexts preserve primitive boolean identity. The semicolon callback follows cached input directly for immediate decisions and traverses whitespace and comments through one sequential lookahead cursor."
+representation = "Typed Rust callbacks replace JavaScript token and context objects; generated exported term identities avoid rescanning specialized literals, and two process-interned immutable contexts preserve primitive boolean identity. The semicolon callback follows cached input directly for immediate decisions and traverses whitespace and comments through one sequential lookahead cursor. The shift callback's type records that it cannot observe input, allowing the shared runtime to skip Lezer's input reset without introducing Go-specific logic there."
 evidence_files = [
 	"languages/go/tests/contract.rs",
 	"languages/go/tests/parse.rs",

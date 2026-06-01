@@ -29,7 +29,8 @@ pub(crate) static SEMICOLON: ExternalTokenizer = ExternalTokenizer::new(
 );
 
 pub(crate) static TRACK_TOKENS: ContextTracker =
-    ContextTracker::new(start_context, Some(shift_context), None, hash_context);
+    ContextTracker::new(start_context, None, None, hash_context)
+        .with_shift_without_input(shift_context);
 
 fn scan_semicolon(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let context = stack.context::<bool>().copied().unwrap_or(false);
@@ -93,14 +94,13 @@ fn start_context() -> ContextValue {
     boolean_context(false)
 }
 
-// The shared context-tracker ABI is fallible even though this transition is
-// total. Keeping the exact callback shape avoids a language-specific adapter.
+// Context transitions are fallible at the shared runtime boundary even though
+// this particular transition is total.
 #[allow(clippy::unnecessary_wraps)]
 fn shift_context(
     context: &ContextValue,
     term: u16,
     _stack: &Stack,
-    _input: &mut InputStream,
 ) -> Result<ContextValue, ParseError> {
     let previous = context.downcast_ref::<bool>().copied().unwrap_or(false);
     let next = if term == terms::space {

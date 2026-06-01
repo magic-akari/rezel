@@ -169,6 +169,22 @@ evidence_files = [
 	"languages/go/tests/reference.rs",
 ]
 
+[[override_item]]
+rust_item = "rezel_lr::parse::ContextTracker::with_shift_without_input"
+classification = "rezel-owned"
+invariant = "Opting into an input-independent shift callback preserves its context transition while making input observation impossible through the callback type."
+representation = "The pinned runtime resets input before every context callback; an explicit Rust builder accepts a callback without InputStream and lets the runtime bypass that reset."
+evidence_files = [
+	"languages/go/tests/parse.rs",
+	"languages/go/tests/reference.rs",
+]
+
+[[override_item]]
+rust_item = "rezel_lr::parse::ContextTracker::with_reduce_without_input"
+classification = "rezel-owned"
+invariant = "Opting into an input-independent reduce callback preserves its context transition while making input observation impossible through the callback type."
+representation = "The pinned runtime resets input before every context callback; an explicit Rust builder accepts a callback without InputStream and lets the runtime bypass that reset."
+
 [[excluded]]
 upstream_file = "src/decode.ts"
 upstream_symbol = "decodeArray"

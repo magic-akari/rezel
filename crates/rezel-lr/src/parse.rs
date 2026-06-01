@@ -140,17 +140,28 @@ impl fmt::Debug for ContextValue {
 
 type ContextTransition =
     fn(&ContextValue, u16, &Stack, &mut InputStream) -> Result<ContextValue, ParseError>;
+type ContextTransitionWithoutInput =
+    fn(&ContextValue, u16, &Stack) -> Result<ContextValue, ParseError>;
+
+#[derive(Clone, Copy)]
+enum ContextTransitionKind {
+    WithInput(ContextTransition),
+    WithoutInput(ContextTransitionWithoutInput),
+}
 
 /// Statically linked non-incremental context tracker.
 pub struct ContextTracker {
     start: fn() -> ContextValue,
-    shift: Option<ContextTransition>,
-    reduce: Option<ContextTransition>,
+    shift: Option<ContextTransitionKind>,
+    reduce: Option<ContextTransitionKind>,
     hash: fn(&ContextValue) -> u64,
 }
 
 impl ContextTracker {
-    /// Define a Rust context tracker.
+    /// Define a Rust context tracker whose transitions may observe input.
+    ///
+    /// The runtime positions the input stream at the transition start before
+    /// invoking each supplied callback.
     #[must_use]
     pub const fn new(
         start: fn() -> ContextValue,
@@ -160,18 +171,53 @@ impl ContextTracker {
     ) -> Self {
         Self {
             start,
-            shift,
-            reduce,
+            shift: match shift {
+                Some(shift) => Some(ContextTransitionKind::WithInput(shift)),
+                None => None,
+            },
+            reduce: match reduce {
+                Some(reduce) => Some(ContextTransitionKind::WithInput(reduce)),
+                None => None,
+            },
             hash,
         }
+    }
+
+    /// Replace the shift transition with one that cannot observe input.
+    ///
+    /// The runtime does not reposition the input stream before this callback.
+    #[must_use]
+    pub const fn with_shift_without_input(mut self, shift: ContextTransitionWithoutInput) -> Self {
+        self.shift = Some(ContextTransitionKind::WithoutInput(shift));
+        self
+    }
+
+    /// Replace the reduce transition with one that cannot observe input.
+    ///
+    /// The runtime does not reposition the input stream before this callback.
+    #[must_use]
+    pub const fn with_reduce_without_input(
+        mut self,
+        reduce: ContextTransitionWithoutInput,
+    ) -> Self {
+        self.reduce = Some(ContextTransitionKind::WithoutInput(reduce));
+        self
     }
 
     pub(crate) fn start(&self) -> ContextValue {
         (self.start)()
     }
 
+    pub(crate) const fn shift_uses_input(&self) -> bool {
+        matches!(self.shift, Some(ContextTransitionKind::WithInput(_)))
+    }
+
     pub(crate) const fn tracks_reductions(&self) -> bool {
         self.reduce.is_some()
+    }
+
+    pub(crate) const fn reduction_uses_input(&self) -> bool {
+        matches!(self.reduce, Some(ContextTransitionKind::WithInput(_)))
     }
 
     pub(crate) fn shift(
@@ -181,10 +227,11 @@ impl ContextTracker {
         stack: &Stack,
         input: &mut InputStream,
     ) -> Result<ContextValue, ParseError> {
-        self.shift.map_or_else(
-            || Ok(context.clone()),
-            |shift| shift(context, term, stack, input),
-        )
+        match self.shift {
+            Some(ContextTransitionKind::WithInput(shift)) => shift(context, term, stack, input),
+            Some(ContextTransitionKind::WithoutInput(shift)) => shift(context, term, stack),
+            None => Ok(context.clone()),
+        }
     }
 
     pub(crate) fn reduce(
@@ -194,10 +241,11 @@ impl ContextTracker {
         stack: &Stack,
         input: &mut InputStream,
     ) -> Result<ContextValue, ParseError> {
-        self.reduce.map_or_else(
-            || Ok(context.clone()),
-            |reduce| reduce(context, term, stack, input),
-        )
+        match self.reduce {
+            Some(ContextTransitionKind::WithInput(reduce)) => reduce(context, term, stack, input),
+            Some(ContextTransitionKind::WithoutInput(reduce)) => reduce(context, term, stack),
+            None => Ok(context.clone()),
+        }
     }
 
     pub(crate) fn hash(&self, context: &ContextValue) -> u64 {
