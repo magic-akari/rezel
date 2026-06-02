@@ -11,6 +11,7 @@ use crate::{NodeProp, Parser, TextRange, TextSize};
 pub const DEFAULT_BUFFER_LENGTH: TextSize = TextSize::new(1024);
 
 const MAX_NODE_TYPES: usize = u16::MAX as usize + 1;
+const MAX_TREE_BUFFER_WORDS: usize = 65_532;
 const BALANCE_BRANCH_FACTOR: usize = 8;
 static NEXT_NODE_TYPE_IDENTITY: AtomicU64 = AtomicU64::new(1);
 
@@ -885,6 +886,10 @@ fn build_tree<B>(build: &TreeBuild<B>) -> Tree
 where
     B: PostfixBuffer,
 {
+    assert!(
+        build.max_buffer_length <= TextSize::new(u32::from(u16::MAX)),
+        "tree-buffer source length exceeds 16 bits"
+    );
     let cursor = build.buffer.postfix_cursor();
     assert_eq!(
         cursor.position() % 4,
@@ -1215,6 +1220,9 @@ where
         let mut nodes = Vec::new();
         let mut stop_at = None;
         while self.cursor.position() > min_position {
+            if nodes.len() >= MAX_TREE_BUFFER_WORDS / 4 {
+                break;
+            }
             let size = self.cursor.size();
             if size > 4 {
                 self.cursor.next();
@@ -1304,7 +1312,8 @@ where
         if in_repeat.is_none() || size == max_size {
             result = BufferScan { size, start, skip };
         }
-        (result.size > 4).then_some(result)
+        let data_size = result.size.saturating_sub(result.skip);
+        (result.size > 4 && data_size <= MAX_TREE_BUFFER_WORDS).then_some(result)
     }
 
     fn copy_to_buffer(

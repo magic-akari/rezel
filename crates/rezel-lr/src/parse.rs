@@ -5,8 +5,8 @@ use std::fmt;
 use std::sync::Arc;
 
 use rezel_common::{
-    DEFAULT_BUFFER_LENGTH, NodeSet, NodeType, ParseError, ParseErrorKind, ParseRequest,
-    ParseWrapper, Parser, PartialParse, TextSize, Tree, TreeBuild,
+    NodeSet, NodeType, ParseError, ParseErrorKind, ParseRequest, ParseWrapper, Parser,
+    PartialParse, TextSize, Tree, TreeBuild,
 };
 
 use crate::action_index::ActionIndex;
@@ -15,6 +15,10 @@ use crate::goto_index::GotoIndex;
 use crate::stack::Stack;
 use crate::table::{Action, ReservedTerm, SequenceCode, StateField, StateFlag};
 use crate::token::{AcceptedToken, InputStream, TokenAsciiIndex, Tokenizer};
+
+// Non-incremental parses benefit from amortizing compact-tree allocation over
+// larger buffers than Lezer's incremental-friendly common default.
+const DEFAULT_PARSE_BUFFER_LENGTH: TextSize = TextSize::new(16 * 1024);
 
 /// One named grammar entry point.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -644,7 +648,7 @@ impl LRParser {
             min_repeat_term: language.min_repeat_term,
             dialect,
             top: ParserTop::new(top),
-            buffer_length: DEFAULT_BUFFER_LENGTH,
+            buffer_length: DEFAULT_PARSE_BUFFER_LENGTH,
             limits: ParseLimits::default(),
             context: language.context,
             action_index,
