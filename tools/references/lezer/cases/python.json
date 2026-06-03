@@ -1,0 +1,97 @@
+{
+	"schema": "rezel.lezer-python-reference-cases.v1",
+	"strict": [
+		{
+			"id": "module",
+			"top": "Module",
+			"source": "def compute[T = int](value: T) -> T:\n    return value\n"
+		},
+		{
+			"id": "parameter-separators",
+			"top": "Module",
+			"source": "def compute(value, /, other, *, option=True, **extras):\n    return value\n"
+		},
+		{
+			"id": "lambda-parameter-separator",
+			"top": "Expression",
+			"source": "lambda first=1, /, *, named: first"
+		},
+		{
+			"id": "relative-import-level",
+			"top": "Module",
+			"source": "from ...parent.module import value as alias\n"
+		},
+		{
+			"id": "patterns",
+			"top": "Module",
+			"source": "match subject:\n    case {\"name\": name, **rest} if name:\n        result = name\n"
+		},
+		{
+			"id": "formatted-and-template",
+			"top": "Module",
+			"source": "formatted = f\"value={value!r:>10}\"\ntemplate = t\"value={value!r:>10}\"\n"
+		},
+		{
+			"id": "interpolated-string-shapes",
+			"top": "Module",
+			"source": "formatted = f\"{{x}} {value=} { value = !s:{width}.{precision}f}\"\nraw = rf\"a\\n{{b}}{value}\"\ntemplate = t\"{value=} { value + 1 !a:{width}}\"\njoined = \"a\" f\"b{value}c\" \"d\"\nformats = f\"a{value}\" f\"b{width}\"\ntemplates = t\"a{value}\" t\"b{width}\"\n"
+		},
+		{
+			"id": "unicode",
+			"top": "Module",
+			"source": "λ = 1\nKelvin = λ + 1\n"
+		},
+		{
+			"id": "print-is-an-identifier-and-string-content",
+			"top": "Module",
+			"source": "print = formatter\nmessage = 'print remains string content'\nprint(message)\n"
+		},
+		{
+			"id": "expression-top",
+			"top": "Expression",
+			"source": "{name: value for name, value in entries}"
+		},
+		{
+			"id": "call-and-dictionary-items",
+			"top": "Expression",
+			"source": "call(value for first, second in entries) if flag else {\"key\": value, **mapping}"
+		},
+		{
+			"id": "parenthesized-with-items",
+			"top": "Module",
+			"source": "with (first() as left, second() as right):\n    consume(left, right)\n"
+		},
+		{
+			"id": "numeric-dictionary-items",
+			"top": "Expression",
+			"source": "{\n    0x0000: 0x0000,  # inline layout\n    0x000e: 0x000e,\n}"
+		},
+		{
+			"id": "parameter-layout",
+			"top": "Module",
+			"source": "def configure(first, /, second=None, \\\n              *, option=True):\n    pass\n"
+		},
+		{
+			"id": "function-type-top",
+			"top": "FunctionType",
+			"source": "(int, *tuple[int, ...], **dict[str, object]) -> bool"
+		}
+	],
+	"recovering": [
+		{
+			"id": "truncated-function",
+			"top": "Module",
+			"source": "def broken(value:\n    pass\n"
+		},
+		{
+			"id": "missing-suite",
+			"top": "Module",
+			"source": "if condition:\nvalue = 1\n"
+		},
+		{
+			"id": "unfinished-template",
+			"top": "Module",
+			"source": "value = t\"hello {name\"\n"
+		}
+	]
+}

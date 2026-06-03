@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/lezer-parser/python",
+  "commit": "254ca14c73b3a3db9b6475d33b0c233090b0bb11",
+  "source": "src/highlight.js",
+  "blob_oid": "ecbce8ab77fa943fbd74970f2e41d0d7e243e4ca",
+  "symbols": [
+    "pythonHighlighting"
+  ]
+}

@@ -3,6 +3,7 @@ dprint = "0.54.0"
 go = "1.26.3"
 java = "26.0.1"
 node = "26.1.0"
+python = "3.14.5"
 
 [hooks]
 postinstall = [
@@ -38,6 +39,14 @@ run = "cargo run --locked --package rezel-codegen -- go --check"
 description = "Regenerate checked-in Go parser sources"
 run = "cargo run --locked --package rezel-codegen -- go --update"
 
+[tasks."codegen:rezel:python"]
+description = "Verify checked-in Python parser sources"
+run = "cargo run --locked --package rezel-codegen -- python --check"
+
+[tasks."codegen:rezel:python:update"]
+description = "Regenerate checked-in Python parser sources"
+run = "cargo run --locked --package rezel-codegen -- python --update"
+
 [tasks."codegen:rezel:fixtures"]
 description = "Verify checked-in rezel-generator test fixtures"
 run = "cargo run --locked --package rezel-codegen -- fixtures --check"
@@ -53,6 +62,38 @@ run = "java tools/references/javac/java/JdkIdentifierTables.java --check languag
 [tasks."codegen:java-identifiers:update"]
 description = "Regenerate Java identifier tables"
 run = "java tools/references/javac/java/JdkIdentifierTables.java --write languages/java/src/unicode17.rs"
+
+[tasks."codegen:python-unicode"]
+description = "Verify Python Unicode 16 identifier tables"
+run = "python tools/references/cpython/unicode_tables.py --check languages/python/src/unicode16.rs"
+
+[tasks."codegen:python-unicode:update"]
+description = "Regenerate Python Unicode 16 identifier tables"
+run = "python tools/references/cpython/unicode_tables.py --write languages/python/src/unicode16.rs"
+
+[tasks."codegen:python-unicode-names"]
+description = "Verify Python Unicode 16 formal name aliases"
+run = "python tools/references/cpython/unicode_names.py --check languages/python/src/unicode16_names.rs"
+
+[tasks."codegen:python-unicode-names:update"]
+description = "Regenerate Python Unicode 16 formal name aliases"
+run = "python tools/references/cpython/unicode_names.py --write languages/python/src/unicode16_names.rs"
+
+[tasks."codegen:python-typed"]
+description = "Verify the complete Python typed CST schema"
+run = "python tools/references/cpython/typed_schema.py --check"
+
+[tasks."codegen:python-typed:update"]
+description = "Regenerate the complete Python typed CST schema"
+run = "python tools/references/cpython/typed_schema.py --update"
+
+[tasks."codegen:python-ast"]
+description = "Verify the CPython-aligned Rust AST schema"
+run = "python tools/references/cpython/ast_schema.py --check"
+
+[tasks."codegen:python-ast:update"]
+description = "Regenerate the CPython-aligned Rust AST schema"
+run = "python tools/references/cpython/ast_schema.py --update"
 
 [tasks.docs]
 description = "Build Rust API documentation"
@@ -102,9 +143,17 @@ run = "npm --prefix tools/references/lezer run check"
 description = "Regenerate snapshots from the pinned Lezer reference"
 run = "npm --prefix tools/references/lezer run update"
 
+[tasks."reference:cpython"]
+description = "Verify CPython 3.14 parse and AST snapshots"
+run = "python tools/references/cpython/reference.py --check"
+
+[tasks."reference:cpython:update"]
+description = "Regenerate CPython 3.14 parse and AST snapshots"
+run = "python tools/references/cpython/reference.py --update"
+
 [tasks."reference:stdlib"]
 description = "Verify Rezel against standard-library sources"
-depends = ["reference:stdlib:go", "reference:stdlib:java"]
+depends = ["reference:stdlib:go", "reference:stdlib:java", "reference:stdlib:python"]
 
 [tasks."reference:stdlib:go"]
 description = "Verify Go standard-library source acceptance"
@@ -123,6 +172,14 @@ run = "cargo run --locked --package rezel-java-stdlib-reference"
 [tasks."reference:stdlib:java:ast"]
 description = "Compare all Java standard-library ASTs with javac"
 run = "cargo run --locked --package rezel-java-stdlib-reference -- --ast-oracle"
+
+[tasks."reference:stdlib:python"]
+description = "Verify Python standard-library source acceptance and lowering"
+run = "cargo run --locked --package rezel-python-stdlib-reference"
+
+[tasks."reference:stdlib:python:ast"]
+description = "Compare all Python standard-library ASTs with CPython"
+run = "cargo run --locked --package rezel-python-stdlib-reference -- --ast-oracle"
 
 [tasks.test]
 description = "Run Rust tests"
@@ -146,8 +203,13 @@ depends = [
 	"codegen:rezel:json",
 	"codegen:rezel:java",
 	"codegen:rezel:go",
+	"codegen:rezel:python",
 	"codegen:rezel:fixtures",
 	"codegen:java-identifiers",
+	"codegen:python-unicode",
+	"codegen:python-unicode-names",
+	"codegen:python-typed",
+	"codegen:python-ast",
 ]
 
 [tasks."verify:full"]
@@ -157,6 +219,7 @@ depends = [
 	"test:full",
 	"reference:go",
 	"reference:javac",
+	"reference:cpython",
 	"reference:lezer",
 	"reference:stdlib",
 ]

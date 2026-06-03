@@ -1,0 +1,651 @@
+{
+	"schema": "rezel.cpython-python-reference-cases.v1",
+	"cases": [
+		{
+			"id": "basic-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "answer = 40 + 2\n"
+		},
+		{
+			"id": "expression-primitives-lowering",
+			"policy": "accepted",
+			"mode": "eval",
+			"typeComments": false,
+			"lowering": true,
+			"source": "(None, True, False, ..., 0xff, 20., 3.5j, -value, not flag, left < middle <= right, a and b and c, [1, 2], {1, 2}, value if flag else other)"
+		},
+		{
+			"id": "string-constants-lowering",
+			"policy": "accepted",
+			"mode": "eval",
+			"typeComments": false,
+			"lowering": true,
+			"source": "(\"line\\nλ\", r\"\\path\", b\"\\x00A\", \"adj\" \"acent\", \"\\ud800\", \"\\777\", b\"\\777\", b\"\\400\", b\"\\u1234\")"
+		},
+		{
+			"id": "named-unicode-escapes-lowering",
+			"policy": "accepted",
+			"mode": "eval",
+			"typeComments": false,
+			"lowering": true,
+			"source": "(\"\\N{KIRAT RAI LETTER A}\", \"\\N{latin small letter a}\", \"\\N{BACKSPACE}\", \"\\N{CJK UNIFIED IDEOGRAPH-4E00}\", \"\\N{HANGUL SYLLABLE GA}\", r\"\\N{NOT A REAL NAME}\", b\"\\N{NOT A REAL NAME}\")"
+		},
+		{
+			"id": "access-call-and-dict-lowering",
+			"policy": "accepted",
+			"mode": "eval",
+			"typeComments": false,
+			"lowering": true,
+			"source": "(obj.attr, obj[index], obj[first:second:step, index, :upper, lower:], call(1, name=2, *items, **options), consume(value for value in values), {\"key\": 1, **mapping})"
+		},
+		{
+			"id": "named-and-await-lowering",
+			"policy": "accepted",
+			"mode": "eval",
+			"typeComments": false,
+			"lowering": true,
+			"source": "(item := await source)"
+		},
+		{
+			"id": "comprehensions-lowering",
+			"policy": "accepted",
+			"mode": "eval",
+			"typeComments": false,
+			"lowering": true,
+			"source": "((value for first, second in source if predicate for third in other if final), [value async for value in source if predicate], {key: value for key, value in entries}, {value for value in values})"
+		},
+		{
+			"id": "assignment-groups-and-unpacking-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "first, *rest = values\nleft = middle = source\npacked = (*items, [head, *tail], {*values})\n"
+		},
+		{
+			"id": "standalone-starred-targets-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "*assigned = values\nfor *loop_target in values:\n    pass\nresult = [value for *comprehension_target in values]\nwith context as *with_target:\n    pass\n"
+		},
+		{
+			"id": "simple-statements-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "item: Type\nvalue: Type = 1\nobj.attr += 2\ndel item, obj.attr\nglobal first, second\nnonlocal outer\nassert value, \"message\"\nraise Error(\"value\") from cause\nyield\nyield value\nyield from values\npass\nbreak\ncontinue\n"
+		},
+		{
+			"id": "statement-groups-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "first = 1; second = 2; pass\nif condition: first = 3; second = 4\n"
+		},
+		{
+			"id": "control-flow-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "if first:\n    value = 1\nelif second:\n    value = 2\nelse:\n    value = 3\nwhile condition:\n    value += 1\nelse:\n    pass\nfor item in items:\n    consume(item)\nelse:\n    pass\nasync for item in async_items:\n    consume(item)\n"
+		},
+		{
+			"id": "with-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "with resource() as handle, second:\n    consume(handle)\nwith (first() as left, second() as right):\n    consume(left, right)\nasync with source as (first, second):\n    consume(first, second)\n"
+		},
+		{
+			"id": "match-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "match subject:\n    case None:\n        result = 0\n    case (True | False) as flag:\n        result = flag\n    case -1 | 1 + 2j:\n        result = 1\n    case [first, *rest]:\n        result = first\n    case {\"key\": value, **remaining} if value:\n        result = remaining\n    case pkg.Point(first, y=second):\n        result = second\n    case pkg.CONSTANT:\n        result = 2\n    case first, second:\n        result = first\n    case _:\n        result = None\n"
+		},
+		{
+			"id": "try-and-exception-groups-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "try:\n    operation()\nexcept First, Second:\n    recover()\nelse:\n    complete()\nfinally:\n    cleanup()\n\ntry:\n    grouped()\nexcept* (First, Second) as error:\n    recover(error)\n"
+		},
+		{
+			"id": "imports-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "import os, package.module as alias\nfrom ..package.module import first, second as other\nfrom . import local\nfrom package import *\n"
+		},
+		{
+			"id": "declarations-parameters-and-lambda-lowering",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "@outer\n@pkg.decorator(flag=True)\nasync def compute[T: int = str, *Ts = *tuple[int], **P = [int]](first: T = initial, /, second = other, *items: Ts, named, option: int = 1, **extras: P) -> T:\n    return first\n\n@registered\nclass Box[T = object](Base, metaclass=Meta):\n    pass\n\ntype Alias[T: int = str, *Ts = *tuple[int], **P = [int]] = tuple[T, *Ts]\nfactory = lambda first=1, /, *, named: first\n"
+		},
+		{
+			"id": "module-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "import os as operating_system\nfrom collections import deque\n\n@decorator(flag=True)\ndef compute[T: int = int](value: T, /, *, scale: float = 1.0) -> T:\n    local = value\n    if local > 0:\n        return local\n    elif local == 0:\n        raise ValueError(\"zero\")\n    else:\n        return -local\n\nclass Box[T = str](Base):\n    value: T\n\nmatch subject:\n    case {\"name\": str(name), **rest} if name:\n        result = name\n    case _:\n        result = None\n"
+		},
+		{
+			"id": "f-and-template-strings",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "formatted = f\"value={value!r:>10} \\N{SNOWMAN}\"\ntemplate = t\"value={value!r:>10} \\N{SNOWMAN}\"\n"
+		},
+		{
+			"id": "interpolated-string-shapes",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "formatted = f\"{{x}} {value=} { value = !s:{width}.{precision}f}\"\nraw = rf\"a\\n{{b}}{value}\"\ntemplate = t\"{value=} { value + 1 !a:{width}}\"\njoined = \"a\" f\"b{value}c\" \"d\"\nformats = f\"a{value}\" f\"b{width}\"\ntemplates = t\"a{value}\" t\"b{width}\"\n"
+		},
+		{
+			"id": "layout-in-flattened-shapes",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "mapping = {\n    \"first\": 0x0e,  # inline layout\n}\ndef configure(first, /, second=None, \\\n              *, option=True):\n    return mapping\n"
+		},
+		{
+			"id": "unicode-identifiers",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "λ = 1\nKelvin = λ + 1\n"
+		},
+		{
+			"id": "type-comments",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": true,
+			"lowering": true,
+			"source": "value = 1  # type: Result\n# type: ignore[attr-defined]\n"
+		},
+		{
+			"id": "eval-mode",
+			"policy": "accepted",
+			"mode": "eval",
+			"typeComments": false,
+			"lowering": true,
+			"source": "{name: value for name, value in entries if value is not None}"
+		},
+		{
+			"id": "single-mode",
+			"policy": "accepted",
+			"mode": "single",
+			"typeComments": false,
+			"lowering": true,
+			"source": "answer = 42\n"
+		},
+		{
+			"id": "func-type-mode",
+			"policy": "accepted",
+			"mode": "func_type",
+			"typeComments": false,
+			"lowering": true,
+			"source": "(int, str, *tuple[int, ...], **dict[str, object]) -> bool"
+		},
+		{
+			"id": "unexpected-indent",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "    value = 1\n"
+		},
+		{
+			"id": "unmatched-dedent",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "if condition:\n    value = 1\n  other = 2\n"
+		},
+		{
+			"id": "truncated-function",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "def broken(value:\n    pass\n"
+		},
+		{
+			"id": "python2-print-statement",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "print value\n"
+		},
+		{
+			"id": "python2-not-equal",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "different = left <> right\n"
+		},
+		{
+			"id": "python2-raise-statement",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "raise Error, value\n"
+		},
+		{
+			"id": "invalid-named-expression-target",
+			"policy": "rejected",
+			"mode": "eval",
+			"typeComments": false,
+			"source": "(object.attribute := value)"
+		},
+		{
+			"id": "python314-unparenthesized-exceptions",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "try:\n    operation()\nexcept Error, error:\n    recover(error)\n"
+		},
+		{
+			"id": "unparenthesized-exceptions-with-binding",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "try:\n    operation()\nexcept Error, OtherError as error:\n    recover(error)\n"
+		},
+		{
+			"id": "bare-except-star",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "try:\n    operation()\nexcept*:\n    recover()\n"
+		},
+		{
+			"id": "mixed-except-and-except-star",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "try:\n    operation()\nexcept First:\n    recover()\nexcept* Second:\n    recover_group()\n"
+		},
+		{
+			"id": "try-without-handler",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "try:\n    operation()\n"
+		},
+		{
+			"id": "try-else-without-except",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "try:\n    operation()\nelse:\n    complete()\nfinally:\n    cleanup()\n"
+		},
+		{
+			"id": "mixed-template-and-plain-strings",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "result = t\"template\" \"plain\"\n"
+		},
+		{
+			"id": "mixed-template-and-format-strings",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "result = t\"template\" f\"{value}\"\n"
+		},
+		{
+			"id": "literal-assignment-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "1 = value\n"
+		},
+		{
+			"id": "call-assignment-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "call() = value\n"
+		},
+		{
+			"id": "binary-assignment-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "left + right = value\n"
+		},
+		{
+			"id": "tuple-augmented-assignment-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "first, second += values\n"
+		},
+		{
+			"id": "binary-annotation-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "left + right: Result\n"
+		},
+		{
+			"id": "literal-delete-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "del 1\n"
+		},
+		{
+			"id": "call-delete-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "del call()\n"
+		},
+		{
+			"id": "literal-for-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "for 1 in values:\n    pass\n"
+		},
+		{
+			"id": "call-comprehension-target",
+			"policy": "rejected",
+			"mode": "eval",
+			"typeComments": false,
+			"source": "[value for call() in values]"
+		},
+		{
+			"id": "literal-with-target",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "with context as 1:\n    pass\n"
+		},
+		{
+			"id": "non-default-parameter-after-default",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "def function(first=1, second):\n    pass\n"
+		},
+		{
+			"id": "duplicate-parameter-names-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "def function(value, value):\n    pass\n"
+		},
+		{
+			"id": "bare-star-without-keyword-parameters",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "def function(*):\n    pass\n"
+		},
+		{
+			"id": "leading-positional-only-separator",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "def function(/, value):\n    pass\n"
+		},
+		{
+			"id": "duplicate-positional-only-separator",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "def function(first, /, second, /):\n    pass\n"
+		},
+		{
+			"id": "parameter-after-keyword-variadic",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "def function(**keywords, value):\n    pass\n"
+		},
+		{
+			"id": "positional-call-argument-after-keyword",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "function(first=1, 2)\n"
+		},
+		{
+			"id": "duplicate-call-keywords-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "function(value=1, value=2)\n"
+		},
+		{
+			"id": "generator-call-argument-not-sole",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "function(value for value in values, other)\n"
+		},
+		{
+			"id": "iterable-unpack-after-keyword-unpack",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "function(**keywords, *values)\n"
+		},
+		{
+			"id": "duplicate-sequence-pattern-captures-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "match subject:\n    case [value, value]:\n        pass\n"
+		},
+		{
+			"id": "or-pattern-binding-mismatch-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "match subject:\n    case [first] | [second]:\n        pass\n"
+		},
+		{
+			"id": "multiple-star-patterns-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "match subject:\n    case [*first, *second]:\n        pass\n"
+		},
+		{
+			"id": "duplicate-mapping-pattern-keys-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "match subject:\n    case {\"key\": first, \"key\": second}:\n        pass\n"
+		},
+		{
+			"id": "multiple-mapping-pattern-rests",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "match subject:\n    case {**first, **second}:\n        pass\n"
+		},
+		{
+			"id": "mapping-pattern-rest-before-entry",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "match subject:\n    case {**rest, \"key\": value}:\n        pass\n"
+		},
+		{
+			"id": "mapping-pattern-wildcard-rest",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "match subject:\n    case {**_}:\n        pass\n"
+		},
+		{
+			"id": "unreachable-pattern-alternative-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "match subject:\n    case value | 1:\n        pass\n"
+		},
+		{
+			"id": "duplicate-class-pattern-keywords-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "match subject:\n    case Point(x=first, x=second):\n        pass\n"
+		},
+		{
+			"id": "mixed-bytes-and-text-literals",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = b\"bytes\" \"text\"\n"
+		},
+		{
+			"id": "mixed-bytes-and-format-literals",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = b\"bytes\" f\"{text}\"\n"
+		},
+		{
+			"id": "non-ascii-bytes-literal",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = b\"λ\"\n"
+		},
+		{
+			"id": "invalid-hex-string-escape",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = \"\\x0\"\n"
+		},
+		{
+			"id": "invalid-short-unicode-string-escape",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = \"\\u123\"\n"
+		},
+		{
+			"id": "invalid-long-unicode-string-escape",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = \"\\U0000123\"\n"
+		},
+		{
+			"id": "out-of-range-long-unicode-string-escape",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = \"\\U00110000\"\n"
+		},
+		{
+			"id": "empty-named-unicode-string-escape",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = \"\\N{}\"\n"
+		},
+		{
+			"id": "unknown-named-unicode-string-escape",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = \"\\N{NOT A REAL NAME}\"\n"
+		},
+		{
+			"id": "loosely-matched-named-unicode-string-escape",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = \"\\N{LATIN_SMALL_LETTER_A}\"\n"
+		},
+		{
+			"id": "named-sequence-unicode-string-escape",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "value = \"\\N{KEYCAP NUMBER SIGN}\"\n"
+		},
+		{
+			"id": "import-trailing-comma",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "import first,\n"
+		},
+		{
+			"id": "from-import-unparenthesized-trailing-comma",
+			"policy": "rejected",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "from module import first,\n"
+		},
+		{
+			"id": "type-parameter-default-order-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "def function[First = int, Second]():\n    pass\n"
+		},
+		{
+			"id": "duplicate-type-parameter-names-ast-surface",
+			"policy": "accepted",
+			"mode": "exec",
+			"typeComments": false,
+			"lowering": true,
+			"source": "def function[Value, Value]():\n    pass\n"
+		},
+		{
+			"id": "starred-comprehension-extension",
+			"policy": "extension",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "result = [*item for item in values]\n"
+		},
+		{
+			"id": "dictionary-unpack-comprehension-extension",
+			"policy": "extension",
+			"mode": "exec",
+			"typeComments": false,
+			"source": "result = {**item for item in values}\n"
+		}
+	]
+}
