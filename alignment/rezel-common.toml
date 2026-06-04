@@ -73,7 +73,7 @@ upstream_symbols = [
 	"ParseWrapper",
 ]
 invariant = "A parser creates a resumable parse over immutable input, and full parsing advances it to one completed tree."
-representation = "Rust shares immutable UTF-8 input and bounded identity-chunk byte slices through Arc, projects language-specific logical UTF-16 units without changing public TextSize byte coordinates, reports setup and parse failures through Result, and keeps selected mixed-parser ranges inside ParseRequest."
+representation = "Rust shares immutable UTF-8 input and bounded identity-chunk byte slices through Arc, exposes language-specific logical code points without changing public TextSize byte coordinates, validates raw and translated range boundaries before parsing, reports failures through Result, and keeps selected mixed-parser ranges inside ParseRequest."
 evidence_files = ["crates/rezel-common/tests/input.rs"]
 
 [[scope]]
@@ -92,10 +92,10 @@ representation = "Rust traits and generic iterators add a zero-copy language-spe
 evidence_files = ["crates/rezel-common/tests/typed.rs"]
 
 [[override_item]]
-rust_item = "rezel_common::parse::ParseRequest::map_input"
+rust_item = "rezel_common::parse::ParseRequest::with_lexical_input"
 classification = "rezel-owned"
-invariant = "A language parser can replace an immutable input view once while preserving the caller's selected parse ranges."
-representation = "A hidden Rust request transformer makes language-specific logical input composable through the common Parser trait."
+invariant = "A language parser can replace the lexical input view while preserving raw UTF-8 byte coordinates and the caller's selected parse ranges."
+representation = "A hidden Rust request transformer composes language-specific lexical translation through the common Parser trait and revalidates translated boundaries once."
 
 [[override_item]]
 rust_item = "rezel_common::parse::ParseError::new"

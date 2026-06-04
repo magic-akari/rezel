@@ -1,4 +1,4 @@
-use rezel_common::ParseError;
+use rezel_common::{CodePoint, ParseError};
 use rezel_lr::{ExternalTokenizer, InputStream, Stack, TokenizerFlags};
 use unicode_normalization::UnicodeNormalization;
 
@@ -24,34 +24,34 @@ fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     if looks_like_string_prefix(input) {
         return Ok(());
     }
-    let Some((first, width)) = next_code_point(input, 0) else {
+    let Some(first) = input.next().map(CodePoint::as_u32) else {
         return Ok(());
     };
     if !is_identifier_start(first) {
         return Ok(());
     }
-    input.advance(width);
-    while let Some((character, width)) = next_code_point(input, 0) {
+    input.advance(1);
+    while let Some(character) = input.next().map(CodePoint::as_u32) {
         if !is_identifier_continue(character) {
             break;
         }
-        input.advance(width);
+        input.advance(1);
     }
-    input.accept_token(crate::terms::identifier, 0)
+    input.accept_token(crate::terms::identifier)
 }
 
-fn looks_like_string_prefix(input: &mut InputStream) -> bool {
+fn looks_like_string_prefix(input: &InputStream) -> bool {
     let Some(first) = input.peek(0).and_then(ascii_lowercase) else {
         return false;
     };
     let second = input.peek(1);
-    if matches!(second, Some(0x27 | 0x22)) {
+    if matches!(second.map(CodePoint::as_u32), Some(0x27 | 0x22)) {
         return matches!(first, b'b' | b'f' | b'r' | b't' | b'u');
     }
     let Some(second_prefix) = second.and_then(ascii_lowercase) else {
         return false;
     };
-    if !matches!(input.peek(2), Some(0x27 | 0x22)) {
+    if !matches!(input.peek(2).map(CodePoint::as_u32), Some(0x27 | 0x22)) {
         return false;
     }
     matches!(
@@ -60,25 +60,11 @@ fn looks_like_string_prefix(input: &mut InputStream) -> bool {
     )
 }
 
-fn ascii_lowercase(value: u16) -> Option<u8> {
-    let value = u8::try_from(value).ok()?;
+fn ascii_lowercase(value: CodePoint) -> Option<u8> {
+    let value = u8::try_from(value.as_u32()).ok()?;
     value
         .is_ascii_alphabetic()
         .then(|| value.to_ascii_lowercase())
-}
-
-fn next_code_point(input: &mut InputStream, offset: isize) -> Option<(u32, usize)> {
-    let first = input.peek(offset)?;
-    if !(0xd800..=0xdbff).contains(&first) {
-        return Some((u32::from(first), 1));
-    }
-    let second = input.peek(offset + 1)?;
-    if !(0xdc00..=0xdfff).contains(&second) {
-        return Some((u32::from(first), 1));
-    }
-    let high = u32::from(first) - 0xd800;
-    let low = u32::from(second) - 0xdc00;
-    Some((0x1_0000 + (high << 10) + low, 2))
 }
 
 fn is_identifier_start(value: u32) -> bool {

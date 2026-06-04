@@ -1,8 +1,10 @@
 use std::borrow::Cow;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use rezel_common::{
-    Input, InputChunk, LogicalUnits, ParseError, ParseErrorKind, TextRange, TextSize,
+    CodePoint, InputCharacter, InputChunk, LexicalInput, ParseError, ParseErrorKind, TextRange,
+    TextSize,
 };
 
 use crate::stack::Stack;
@@ -10,96 +12,185 @@ use crate::table::SequenceCode;
 
 const NO_TOKEN_STATE: u16 = u16::MAX;
 
+/// One generated token-DFA state.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TokenState {
+    group_mask: u16,
+    accept_start: u16,
+    edge_start: u16,
+    accept_count: u8,
+    edge_count: u8,
+}
+
+impl TokenState {
+    /// Construct generated token-state data.
+    #[doc(hidden)]
+    #[must_use]
+    pub const fn new(
+        group_mask: u16,
+        accept_start: u16,
+        edge_start: u16,
+        accept_count: u8,
+        edge_count: u8,
+    ) -> Self {
+        Self {
+            group_mask,
+            accept_start,
+            edge_start,
+            accept_count,
+            edge_count,
+        }
+    }
+}
+
+/// One accepting token term in a generated DFA state.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TokenAccept {
+    term: u16,
+    group_mask: u16,
+}
+
+impl TokenAccept {
+    /// Construct generated accepting-token data.
+    #[doc(hidden)]
+    #[must_use]
+    pub const fn new(term: u16, group_mask: u16) -> Self {
+        Self { term, group_mask }
+    }
+}
+
+/// One half-open Unicode code-point transition.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TokenEdge {
+    from: u32,
+    to: u32,
+    target: u16,
+}
+
+impl TokenEdge {
+    /// Construct generated code-point edge data.
+    #[doc(hidden)]
+    #[must_use]
+    pub const fn new(from: u32, to: u32, target: u16) -> Self {
+        Self { from, to, target }
+    }
+}
+
+/// One generated EOF transition, kept outside the character hot path.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TokenEof {
+    state: u16,
+    target: u16,
+}
+
+impl TokenEof {
+    /// Construct one generated EOF transition.
+    #[doc(hidden)]
+    #[must_use]
+    pub const fn new(state: u16, target: u16) -> Self {
+        Self { state, target }
+    }
+}
+
+/// Typed static token-DFA tables emitted by the generator.
+#[derive(Clone, Copy, Debug)]
+pub struct TokenTable {
+    states: &'static [TokenState],
+    accepts: &'static [TokenAccept],
+    edges: &'static [TokenEdge],
+    eof: &'static [TokenEof],
+}
+
+impl TokenTable {
+    /// Construct one generated token table.
+    #[doc(hidden)]
+    #[must_use]
+    pub const fn new(
+        states: &'static [TokenState],
+        accepts: &'static [TokenAccept],
+        edges: &'static [TokenEdge],
+        eof: &'static [TokenEof],
+    ) -> Self {
+        Self {
+            states,
+            accepts,
+            edges,
+            eof,
+        }
+    }
+
+    fn accepts(self, state: TokenState) -> &'static [TokenAccept] {
+        let start = usize::from(state.accept_start);
+        let end = start + usize::from(state.accept_count);
+        &self.accepts[start..end]
+    }
+
+    fn edges(self, state: TokenState) -> &'static [TokenEdge] {
+        let start = usize::from(state.edge_start);
+        let end = start + usize::from(state.edge_count);
+        &self.edges[start..end]
+    }
+
+    fn eof_target(self, state: usize) -> Option<usize> {
+        let state = u16::try_from(state).ok()?;
+        let index = self
+            .eof
+            .binary_search_by_key(&state, |transition| transition.state)
+            .ok()?;
+        Some(usize::from(self.eof[index].target))
+    }
+
+    #[inline]
+    fn transition(self, state: TokenState, next: u32) -> Option<usize> {
+        let edges = self.edges(state);
+        let mut low = 0_usize;
+        let mut high = edges.len();
+        while low < high {
+            let middle = (low + high) >> 1;
+            let edge = edges[middle];
+            if next < edge.from {
+                high = middle;
+            } else if next >= edge.to {
+                low = middle + 1;
+            } else {
+                return Some(usize::from(edge.target));
+            }
+        }
+        None
+    }
+}
+
 #[derive(Debug)]
 pub(crate) struct TokenAsciiIndex {
-    row_by_state: Box<[u16]>,
     transitions: Box<[[u16; 128]]>,
 }
 
 impl TokenAsciiIndex {
-    pub(crate) fn build(data: &[u16]) -> Result<Self, &'static str> {
-        let mut row_by_state = vec![NO_TOKEN_STATE; data.len()];
-        let mut transitions = Vec::new();
-        let mut edge_targets = Vec::new();
-        let mut state = 0_usize;
-        while state < data.len() {
-            let header_end = state
-                .checked_add(3)
-                .ok_or("token table state header overflows")?;
-            let accept_end = usize::from(
-                *data
-                    .get(state + 1)
-                    .ok_or("token table header is truncated")?,
-            );
-            if accept_end < header_end || !(accept_end - header_end).is_multiple_of(2) {
-                return Err("token table accepting entries are malformed");
-            }
-            let edge_count = usize::from(
-                *data
-                    .get(state + 2)
-                    .ok_or("token table header is truncated")?,
-            );
-            let edge_end = accept_end
-                .checked_add(edge_count * 3)
-                .ok_or("token table edge count overflows")?;
-            let edges = data
-                .get(accept_end..edge_end)
-                .ok_or("token table edges are truncated")?;
-            if transitions.len() >= usize::from(NO_TOKEN_STATE) {
-                return Err("token table has too many states");
-            }
-            let row =
-                u16::try_from(transitions.len()).map_err(|_| "token table has too many states")?;
-            row_by_state[state] = row;
+    pub(crate) fn build(table: &TokenTable) -> Self {
+        let mut transitions = Vec::with_capacity(table.states.len());
+        for state in table.states {
             let mut ascii = [NO_TOKEN_STATE; 128];
-            for edge in edges.chunks_exact(3) {
-                let eof = edge[0] == SequenceCode::End.raw() && edge[1] == SequenceCode::End.raw();
-                let raw_from = u32::from(edge[0]);
-                let raw_to = if edge[1] == 0 {
-                    0x1_0000
-                } else {
-                    u32::from(edge[1])
-                };
-                if !eof && raw_from >= raw_to {
-                    return Err("token table edge range is malformed");
+            for edge in table.edges(*state) {
+                let from = usize::try_from(edge.from)
+                    .unwrap_or(usize::MAX)
+                    .min(ascii.len());
+                let to = usize::try_from(edge.to)
+                    .unwrap_or(usize::MAX)
+                    .min(ascii.len());
+                if from < to {
+                    ascii[from..to].fill(edge.target);
                 }
-                let from = usize::try_from(raw_from)
-                    .expect("u16 token edge fits usize")
-                    .min(ascii.len());
-                let to = usize::try_from(raw_to)
-                    .expect("UTF-16 token edge fits usize")
-                    .min(ascii.len());
-                ascii[from..to].fill(edge[2]);
-                edge_targets.push(edge[2]);
             }
             transitions.push(ascii);
-            state = edge_end;
         }
-        for target in edge_targets {
-            let target = usize::from(target);
-            if row_by_state
-                .get(target)
-                .is_none_or(|row| *row == NO_TOKEN_STATE)
-            {
-                return Err("token table edge refers to an unknown state");
-            }
-        }
-        Ok(Self {
-            row_by_state: row_by_state.into_boxed_slice(),
+        Self {
             transitions: transitions.into_boxed_slice(),
-        })
+        }
     }
 
     #[inline]
-    fn transition(&self, state: usize, next: u16) -> Option<usize> {
-        let row = *self.row_by_state.get(state)?;
-        if row == NO_TOKEN_STATE {
-            return None;
-        }
-        let target = *self
-            .transitions
-            .get(usize::from(row))?
-            .get(usize::from(next))?;
+    fn transition(&self, state: usize, next: u8) -> Option<usize> {
+        let target = self.transitions[state][usize::from(next)];
         (target != NO_TOKEN_STATE).then_some(usize::from(target))
     }
 }
@@ -133,10 +224,10 @@ impl TokenGroup {
 /// One local token DFA and optional `@else` token.
 #[derive(Clone, Copy, Debug)]
 pub struct LocalTokenGroup {
-    /// Compact token DFA.
-    pub data: &'static [u16],
-    /// Offset of this group's token-precedence sequence.
-    pub precedence_offset: usize,
+    /// Typed token DFA.
+    pub table: &'static TokenTable,
+    /// Token-precedence sequence.
+    pub precedence: &'static [u16],
     /// Token emitted for otherwise unmatched input.
     pub else_token: Option<u16>,
 }
@@ -145,13 +236,13 @@ impl LocalTokenGroup {
     /// Construct a local token group.
     #[must_use]
     pub const fn new(
-        data: &'static [u16],
-        precedence_offset: usize,
+        table: &'static TokenTable,
+        precedence: &'static [u16],
         else_token: Option<u16>,
     ) -> Self {
         Self {
-            data,
-            precedence_offset,
+            table,
+            precedence,
             else_token,
         }
     }
@@ -214,12 +305,17 @@ impl Tokenizer {
         }
     }
 
-    pub(crate) fn token(self, input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+    pub(crate) fn token(
+        self,
+        tokenizer_index: usize,
+        input: &mut InputStream,
+        stack: &Stack,
+    ) -> Result<(), ParseError> {
         match self {
             Self::Group(group) => {
                 let core = stack.core();
                 read_token(
-                    core.language.token_data,
+                    core.language.token_table,
                     Some(&core.token_ascii_index),
                     input,
                     stack,
@@ -229,7 +325,12 @@ impl Tokenizer {
                 );
                 Ok(())
             }
-            Self::Local(group) => read_local_token(group, input, stack),
+            Self::Local(group) => {
+                let ascii_index = stack.core().local_token_ascii_indices[tokenizer_index]
+                    .as_ref()
+                    .expect("local tokenizer has an ASCII index");
+                read_local_token(group, ascii_index, input, stack)
+            }
             Self::External(tokenizer) => tokenizer.token(input, stack),
         }
     }
@@ -239,14 +340,69 @@ impl Tokenizer {
 struct StreamCursor {
     range_index: usize,
     byte: TextSize,
-    trailing_surrogate: bool,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct CachedLogical {
+struct CachedCharacter {
     range_index: usize,
     byte: TextSize,
-    units: LogicalUnits,
+    character: InputCharacter,
+}
+
+#[derive(Clone, Debug)]
+struct FastWindow {
+    source: Arc<str>,
+    source_start: usize,
+    source_end: usize,
+    raw_start: TextSize,
+    raw_end: TextSize,
+}
+
+impl FastWindow {
+    fn new(chunk: &InputChunk, raw_limit: TextSize) -> Option<Self> {
+        let raw_start = chunk.raw_start();
+        let raw_end = chunk.raw_end().min(raw_limit);
+        if raw_start >= raw_end {
+            return None;
+        }
+        let source_range = chunk.source_range();
+        let source_start = usize::from(source_range.start());
+        let source_length = usize::from(raw_end - raw_start);
+        let source_end = source_start.checked_add(source_length)?;
+        let source = chunk.shared_source();
+        (source_end <= source.len()).then_some(Self {
+            source,
+            source_start,
+            source_end,
+            raw_start,
+            raw_end,
+        })
+    }
+
+    #[inline]
+    fn source_position(&self, raw_position: TextSize) -> Option<usize> {
+        if raw_position < self.raw_start || raw_position > self.raw_end {
+            return None;
+        }
+        let offset = usize::from(raw_position - self.raw_start);
+        self.source_start.checked_add(offset)
+    }
+
+    #[inline]
+    fn contains(&self, raw_position: TextSize) -> bool {
+        self.raw_start <= raw_position && raw_position < self.raw_end
+    }
+}
+
+/// A validated position captured from one input stream.
+///
+/// Marks are tied to their originating stream and cannot be constructed by
+/// callers. This lets tokenizers save an endpoint without supplying unchecked
+/// byte positions or relative offsets.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct InputMark {
+    stream_id: u64,
+    position: TextSize,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -257,19 +413,23 @@ pub(crate) struct AcceptedToken {
 
 /// UTF-8-positioned input stream exposed to generated and external tokenizers.
 ///
-/// Token DFAs observe UTF-16 code units to preserve Lezer grammar token
-/// semantics. All public positions and accepted token ranges remain UTF-8 byte
-/// offsets.
+/// Tokenizers observe Unicode code points. Ordinary UTF-8 input produces only
+/// Unicode scalar values, while a language translation layer may explicitly
+/// produce surrogate code points. Positions and token ranges remain original
+/// UTF-8 byte offsets.
 pub struct InputStream {
-    input: Arc<dyn Input>,
+    input: Arc<dyn LexicalInput>,
     ranges: Arc<[TextRange]>,
     cursor: StreamCursor,
     end: TextSize,
     token_start: TextSize,
     accepted: Option<AcceptedToken>,
     chunk: Option<InputChunk>,
-    logical: Option<CachedLogical>,
-    next_unit: Option<u16>,
+    window: Option<FastWindow>,
+    window_source_position: usize,
+    character: Option<CachedCharacter>,
+    next_code_point: Option<CodePoint>,
+    stream_id: u64,
 }
 
 impl std::fmt::Debug for InputStream {
@@ -285,7 +445,7 @@ impl std::fmt::Debug for InputStream {
 }
 
 impl InputStream {
-    pub(crate) fn new(input: Arc<dyn Input>, ranges: Arc<[TextRange]>) -> Self {
+    pub(crate) fn new(input: Arc<dyn LexicalInput>, ranges: Arc<[TextRange]>) -> Self {
         let end = ranges.last().map_or(TextSize::from(0), |range| range.end());
         let cursor = first_cursor(&ranges);
         let mut stream = Self {
@@ -296,8 +456,11 @@ impl InputStream {
             token_start: cursor.byte,
             accepted: None,
             chunk: None,
-            logical: None,
-            next_unit: None,
+            window: None,
+            window_source_position: 0,
+            character: None,
+            next_code_point: None,
+            stream_id: next_stream_id(),
         };
         stream.refresh_next();
         stream
@@ -315,40 +478,27 @@ impl InputStream {
         self.end
     }
 
-    /// Next UTF-16 code unit, or `None` at the end of selected input.
+    /// Next Unicode code point, or `None` at the end of selected input.
     #[must_use]
-    pub const fn next(&self) -> Option<u16> {
-        self.next_unit
+    pub const fn next(&self) -> Option<CodePoint> {
+        self.next_code_point
     }
 
-    /// Look around the stream in UTF-16 code units.
+    /// Look around the stream in Unicode code points.
     #[must_use]
-    pub fn peek(&mut self, offset: isize) -> Option<u16> {
+    pub fn peek(&self, offset: isize) -> Option<CodePoint> {
         if offset == 0 {
             return self.next();
         }
-        if offset == 1
-            && !self.cursor.trailing_surrogate
-            && let Some(current) = self.current_logical()
-            && current.units().len() == 2
-        {
-            return Some(current.units()[1]);
-        }
-        if offset == -1
-            && self.cursor.trailing_surrogate
-            && let Some(current) = self.current_logical()
-        {
-            return Some(current.units()[0]);
-        }
         let cursor = self.offset_cursor(self.cursor, offset)?;
-        code_unit_at(&*self.input, &self.ranges, cursor)
+        code_point_at(&*self.input, &self.ranges, cursor)
     }
 
-    /// Iterate forward from the current position in UTF-16 code units.
+    /// Iterate forward from the current position in Unicode code points.
     ///
     /// External tokenizers that inspect a run of input should prefer this to
     /// repeatedly calling [`Self::peek`] with increasing offsets.
-    pub fn lookahead(&self) -> impl Iterator<Item = u16> + '_ {
+    pub fn lookahead(&self) -> impl Iterator<Item = CodePoint> + '_ {
         InputLookahead {
             input: &*self.input,
             ranges: &self.ranges,
@@ -358,50 +508,124 @@ impl InputStream {
         }
     }
 
-    /// Move forward by UTF-16 code units and return the new next unit.
-    pub fn advance(&mut self, count: usize) -> Option<u16> {
+    /// Move forward by Unicode code points and return the new next code point.
+    pub fn advance(&mut self, count: usize) -> Option<CodePoint> {
         if count == 1 && self.advance_ascii() {
-            return self.next_unit;
+            return self.next_code_point;
         }
+        self.advance_general(count)
+    }
+
+    fn advance_general(&mut self, count: usize) -> Option<CodePoint> {
         for _ in 0..count {
             let Some(next) = self.advance_current() else {
                 self.cursor = end_cursor(&self.ranges);
-                self.next_unit = None;
+                self.next_code_point = None;
                 return None;
             };
             self.cursor = next;
         }
         self.refresh_next();
-        self.next_unit
+        self.next_code_point
     }
 
     fn advance_ascii(&mut self) -> bool {
-        if self.cursor.trailing_surrogate {
-            return false;
-        }
-        let Some(next) = self.next_unit.and_then(|next| u8::try_from(next).ok()) else {
-            return false;
-        };
-        let Some(range) = self.ranges.get(self.cursor.range_index).copied() else {
+        let Some(next) = self
+            .next_code_point
+            .filter(|next| next.is_ascii())
+            .map(|next| u8::try_from(next.as_u32()).expect("ASCII code point fits u8"))
+        else {
             return false;
         };
-        let Some(chunk) = self.chunk.as_ref() else {
+
+        self.advance_known_ascii_in_window(next)
+    }
+
+    fn advance_known_ascii(&mut self, next: u8) {
+        debug_assert_eq!(self.next_code_point, Some(CodePoint::from(next)));
+        if !self.advance_known_ascii_in_window(next) {
+            self.advance_general(1);
+        }
+    }
+
+    fn advance_known_ascii_in_window(&mut self, next: u8) -> bool {
+        let source_position = self.window_source_position;
+        let next_byte = {
+            let Some(window) = self.window.as_ref() else {
+                return false;
+            };
+            if source_position >= window.source_end {
+                return false;
+            }
+            let bytes = window.source.as_bytes();
+            debug_assert_eq!(bytes.get(source_position).copied(), Some(next));
+            let next_source_position = source_position + 1;
+            if next_source_position < window.source_end {
+                bytes.get(next_source_position).copied()
+            } else {
+                None
+            }
+        };
+        let next_source_position = source_position + 1;
+
+        self.cursor.byte += TextSize::from(1);
+        self.window_source_position = next_source_position;
+        self.character = None;
+
+        if let Some(next) = next_byte
+            && next.is_ascii()
+        {
+            self.next_code_point = Some(CodePoint::from(next));
+            return true;
+        }
+
+        if self
+            .window
+            .as_ref()
+            .is_some_and(|window| self.cursor.byte == window.raw_end)
+        {
+            self.move_past_selected_range_end();
+        }
+        self.refresh_next();
+        true
+    }
+
+    fn move_past_selected_range_end(&mut self) {
+        let Some(range) = self.ranges.get(self.cursor.range_index) else {
+            return;
+        };
+        if self.cursor.byte < range.end() {
+            return;
+        }
+        self.cursor = next_range_cursor(&self.ranges, self.cursor.range_index)
+            .unwrap_or_else(|| end_cursor(&self.ranges));
+    }
+
+    fn load_identity_chunk(&mut self, range: TextRange, position: TextSize) {
+        self.chunk = self.input.identity_chunk(position);
+        self.window = self
+            .chunk
+            .as_ref()
+            .and_then(|chunk| FastWindow::new(chunk, range.end()))
+            .filter(|window| window.contains(position));
+        self.window_source_position = self
+            .window
+            .as_ref()
+            .and_then(|window| window.source_position(position))
+            .unwrap_or(0);
+    }
+
+    fn sync_window_position(&mut self) -> bool {
+        let Some(window) = self.window.as_ref() else {
             return false;
         };
-        if chunk.ascii_byte(self.cursor.byte) != Some(next) {
+        if !window.contains(self.cursor.byte) {
             return false;
         }
-        let byte = self.cursor.byte + TextSize::from(1);
-        if byte >= range.end() {
+        let Some(source_position) = window.source_position(self.cursor.byte) else {
             return false;
-        }
-        self.cursor.byte = byte;
-        self.logical = None;
-        if let Some(next) = chunk.ascii_byte(byte) {
-            self.next_unit = Some(u16::from(next));
-        } else {
-            self.refresh_next();
-        }
+        };
+        self.window_source_position = source_position;
         true
     }
 
@@ -410,35 +634,41 @@ impl InputStream {
     /// Translation boundaries, selected-range boundaries, and non-ASCII
     /// input stop the run before `predicate` is called for later bytes.
     pub fn advance_ascii_while(&mut self, mut predicate: impl FnMut(u8) -> bool) -> usize {
-        if self.cursor.trailing_surrogate {
-            return 0;
-        }
-        let Some(range) = self.ranges.get(self.cursor.range_index).copied() else {
-            return 0;
-        };
-        if self.cursor.byte >= range.end() {
-            return 0;
-        }
-        let chunk_matches = self
-            .chunk
+        let has_window = self
+            .window
             .as_ref()
-            .is_some_and(|chunk| chunk.contains(self.cursor.byte));
-        if !chunk_matches {
-            self.chunk = self.input.logical_chunk(self.cursor.byte);
+            .is_some_and(|window| self.window_source_position < window.source_end);
+        if !has_window {
+            let Some(range) = self.ranges.get(self.cursor.range_index).copied() else {
+                return 0;
+            };
+            if self.cursor.byte >= range.end() {
+                return 0;
+            }
+            self.load_identity_chunk(range, self.cursor.byte);
         }
-        let count = {
-            let Some(chunk) = self.chunk.as_ref() else {
+        let (count, next_byte, window_end) = {
+            let Some(window) = self.window.as_ref() else {
                 return 0;
             };
-            let Some(bytes) = chunk.bytes_from(self.cursor.byte) else {
+            debug_assert_eq!(
+                window.source_position(self.cursor.byte),
+                Some(self.window_source_position)
+            );
+            let Some(bytes) = window
+                .source
+                .as_bytes()
+                .get(self.window_source_position..window.source_end)
+            else {
                 return 0;
             };
-            let available = usize::from(range.end() - self.cursor.byte).min(bytes.len());
-            bytes[..available]
+            let count = bytes
                 .iter()
                 .copied()
                 .take_while(|byte| byte.is_ascii() && predicate(*byte))
-                .count()
+                .count();
+            let next_byte = bytes.get(count).copied();
+            (count, next_byte, window.raw_end)
         };
         if count == 0 {
             return 0;
@@ -446,59 +676,66 @@ impl InputStream {
         let Ok(width) = TextSize::try_from(count) else {
             return 0;
         };
-        let byte = self.cursor.byte + width;
-        self.cursor = if byte < range.end() {
-            StreamCursor {
-                byte,
-                trailing_surrogate: false,
-                ..self.cursor
-            }
-        } else {
-            next_range_cursor(&self.ranges, self.cursor.range_index)
-                .unwrap_or_else(|| end_cursor(&self.ranges))
-        };
-        self.logical = None;
+        self.cursor.byte += width;
+        self.window_source_position += count;
+        self.character = None;
+
+        if let Some(next) = next_byte
+            && next.is_ascii()
+        {
+            self.next_code_point = Some(CodePoint::from(next));
+            return count;
+        }
+
+        if self.cursor.byte == window_end {
+            self.move_past_selected_range_end();
+        }
         self.refresh_next();
         count
     }
 
-    /// Accept a token ending at the current stream position plus a UTF-16
-    /// code-unit offset.
-    ///
-    /// # Errors
-    ///
-    /// Returns an input error when the requested end is outside selected
-    /// ranges, inside a UTF-8 scalar, or before the token start.
-    pub fn accept_token(&mut self, token: u16, end_offset: isize) -> Result<(), ParseError> {
-        let Some(cursor) = self.offset_cursor(self.cursor, end_offset) else {
-            return Err(ParseError::new(
-                ParseErrorKind::Input,
-                Some(self.position()),
-                "token end is outside selected input",
-            ));
-        };
-        let end = boundary_position(&*self.input, cursor)?;
-        self.accept_token_to(token, end)
+    /// Capture the current validated input boundary.
+    #[must_use]
+    pub const fn mark(&self) -> InputMark {
+        InputMark {
+            stream_id: self.stream_id,
+            position: self.position(),
+        }
     }
 
-    /// Accept a token ending at an explicit UTF-8 byte position.
+    /// Accept a token ending at the current stream position.
     ///
     /// # Errors
     ///
-    /// Returns an input error for a reversed or non-boundary token range.
-    pub fn accept_token_to(&mut self, token: u16, end: TextSize) -> Result<(), ParseError> {
+    /// Returns an input error if an internal reset placed the stream before
+    /// the token start.
+    pub fn accept_token(&mut self, token: u16) -> Result<(), ParseError> {
+        self.accept_at(token, self.position())
+    }
+
+    /// Accept a token ending at a previously captured boundary.
+    ///
+    /// # Errors
+    ///
+    /// Returns an input error when the mark belongs to another stream or
+    /// precedes the current token start.
+    pub fn accept_token_to(&mut self, token: u16, mark: InputMark) -> Result<(), ParseError> {
+        if mark.stream_id != self.stream_id {
+            return Err(ParseError::new(
+                ParseErrorKind::Input,
+                None,
+                "token endpoint mark belongs to another input stream",
+            ));
+        }
+        self.accept_at(token, mark.position)
+    }
+
+    fn accept_at(&mut self, token: u16, end: TextSize) -> Result<(), ParseError> {
         if end < self.token_start {
             return Err(ParseError::new(
                 ParseErrorKind::Input,
                 Some(end),
                 "token end precedes its start",
-            ));
-        }
-        if end != self.end && !is_selected_boundary(&*self.input, &self.ranges, end) {
-            return Err(ParseError::new(
-                ParseErrorKind::Input,
-                Some(end),
-                "token end is not a selected UTF-8 boundary",
             ));
         }
         self.accepted = Some(AcceptedToken { value: token, end });
@@ -510,7 +747,34 @@ impl InputStream {
     /// Identity-mapped input in one selected range is returned by reference.
     /// Translated or discontiguous input is materialized only when required.
     #[must_use]
-    pub fn read(&self, from: TextSize, to: TextSize) -> Cow<'_, str> {
+    pub fn read_scalar(&self, from: TextSize, to: TextSize) -> Option<Cow<'_, str>> {
+        self.read_scalar_impl(from, to, true)
+    }
+
+    pub(crate) fn read_scalar_at_boundaries(
+        &self,
+        from: TextSize,
+        to: TextSize,
+    ) -> Option<Cow<'_, str>> {
+        if let [selected] = &*self.ranges
+            && from <= to
+            && selected.start() <= from
+            && to <= selected.end()
+        {
+            return self.input.scalar_text(TextRange::new(from, to));
+        }
+        self.read_scalar_impl(from, to, false)
+    }
+
+    fn read_scalar_impl(
+        &self,
+        from: TextSize,
+        to: TextSize,
+        validate_boundaries: bool,
+    ) -> Option<Cow<'_, str>> {
+        if from > to {
+            return None;
+        }
         let mut selected = self
             .ranges
             .iter()
@@ -524,29 +788,45 @@ impl InputStream {
                 Some(TextRange::new(start, end))
             });
         let Some(first) = selected.next() else {
-            return Cow::Borrowed("");
+            return Some(Cow::Borrowed(""));
         };
-        let first = self.input.read_logical(first);
+        if validate_boundaries
+            && (!self.input.is_boundary(first.start()) || !self.input.is_boundary(first.end()))
+        {
+            return None;
+        }
+        let first = self.input.scalar_text(first)?;
         let Some(second) = selected.next() else {
-            return first;
+            return Some(first);
         };
 
         let capacity = to.checked_sub(from).unwrap_or(TextSize::from(0));
         let mut result = String::with_capacity(usize::from(capacity));
         result.push_str(&first);
-        result.push_str(&self.input.read_logical(second));
-        for range in selected {
-            result.push_str(&self.input.read_logical(range));
+        if validate_boundaries
+            && (!self.input.is_boundary(second.start()) || !self.input.is_boundary(second.end()))
+        {
+            return None;
         }
-        Cow::Owned(result)
+        result.push_str(&self.input.scalar_text(second)?);
+        for range in selected {
+            if validate_boundaries
+                && (!self.input.is_boundary(range.start()) || !self.input.is_boundary(range.end()))
+            {
+                return None;
+            }
+            result.push_str(&self.input.scalar_text(range)?);
+        }
+        Some(Cow::Owned(result))
     }
 
     pub(crate) fn reset(&mut self, position: TextSize) {
         self.token_start = position;
         self.accepted = None;
-        if self.cursor.byte == position && !self.cursor.trailing_surrogate {
+        if self.cursor.byte == position {
             return;
         }
+        debug_assert!(self.input.is_boundary(position));
         self.cursor = cursor_at(&self.ranges, position);
         self.refresh_next();
     }
@@ -577,20 +857,12 @@ impl InputStream {
     }
 
     pub(crate) fn next_position(&self) -> Option<TextSize> {
-        self.next_position_from_cursor(self.cursor)
+        advance_cursor(&*self.input, &self.ranges, self.cursor).map(|cursor| cursor.byte)
     }
 
     pub(crate) fn next_position_from(&self, position: TextSize) -> Option<TextSize> {
-        self.next_position_from_cursor(cursor_at(&self.ranges, position))
-    }
-
-    fn next_position_from_cursor(&self, mut cursor: StreamCursor) -> Option<TextSize> {
-        loop {
-            cursor = advance_cursor(&*self.input, &self.ranges, cursor)?;
-            if !cursor.trailing_surrogate {
-                return Some(cursor.byte);
-            }
-        }
+        let cursor = cursor_at(&self.ranges, position);
+        advance_cursor(&*self.input, &self.ranges, cursor).map(|cursor| cursor.byte)
     }
 
     fn offset_cursor(&self, mut cursor: StreamCursor, offset: isize) -> Option<StreamCursor> {
@@ -606,38 +878,47 @@ impl InputStream {
         Some(cursor)
     }
 
-    fn current_logical(&mut self) -> Option<LogicalUnits> {
-        if let Some(cached) = self.logical
+    fn current_character(&mut self) -> Option<InputCharacter> {
+        self.current_character_impl(true)
+    }
+
+    fn current_character_after_chunk_load(&mut self) -> Option<InputCharacter> {
+        self.current_character_impl(false)
+    }
+
+    fn current_character_impl(&mut self, load_identity_chunk: bool) -> Option<InputCharacter> {
+        if let Some(cached) = self.character
             && cached.range_index == self.cursor.range_index
             && cached.byte == self.cursor.byte
         {
-            return Some(cached.units);
+            return Some(cached.character);
         }
         let range = *self.ranges.get(self.cursor.range_index)?;
         if self.cursor.byte >= range.end() {
             return None;
         }
-        let mut units = self.chunk_units(range, self.cursor.byte);
-        if units.is_none() {
-            self.chunk = self.input.logical_chunk(self.cursor.byte);
-            units = self.chunk_units(range, self.cursor.byte);
+        let mut character = self.chunk_character(range, self.cursor.byte);
+        if character.is_none() && load_identity_chunk {
+            self.load_identity_chunk(range, self.cursor.byte);
+            character = self.chunk_character(range, self.cursor.byte);
         }
-        let units = units.or_else(|| logical_units_at(&*self.input, range, self.cursor.byte))?;
-        self.logical = Some(CachedLogical {
+        let character =
+            character.or_else(|| character_at(&*self.input, range, self.cursor.byte))?;
+        self.character = Some(CachedCharacter {
             range_index: self.cursor.range_index,
             byte: self.cursor.byte,
-            units,
+            character,
         });
-        Some(units)
+        Some(character)
     }
 
     #[inline]
-    fn chunk_units(&self, range: TextRange, position: TextSize) -> Option<LogicalUnits> {
+    fn chunk_character(&self, range: TextRange, position: TextSize) -> Option<InputCharacter> {
         if position >= range.end() {
             return None;
         }
-        let units = self.chunk.as_ref()?.logical_units(position)?;
-        (units.raw_end() <= range.end()).then_some(units)
+        let character = self.chunk.as_ref()?.character(position)?;
+        (character.raw_end() <= range.end()).then_some(character)
     }
 
     #[inline]
@@ -653,30 +934,21 @@ impl InputStream {
         if self.cursor.byte >= range.end() {
             return next_range_cursor(&self.ranges, self.cursor.range_index);
         }
-        if !self.cursor.trailing_surrogate && self.chunk_ascii(range, self.cursor.byte).is_some() {
+        if self.chunk_ascii(range, self.cursor.byte).is_some() {
             let byte = self.cursor.byte + TextSize::from(1);
             if byte < range.end() {
                 return Some(StreamCursor {
                     byte,
-                    trailing_surrogate: false,
                     ..self.cursor
                 });
             }
             return next_range_cursor(&self.ranges, self.cursor.range_index)
                 .or_else(|| Some(end_cursor(&self.ranges)));
         }
-        let logical = self.current_logical()?;
-        if logical.units().len() == 2 && !self.cursor.trailing_surrogate {
-            return Some(StreamCursor {
-                trailing_surrogate: true,
-                ..self.cursor
-            });
-        }
-        let byte = logical.raw_end();
+        let byte = self.current_character()?.raw_end();
         if byte < range.end() {
             return Some(StreamCursor {
                 byte,
-                trailing_surrogate: false,
                 ..self.cursor
             });
         }
@@ -686,28 +958,24 @@ impl InputStream {
 
     fn refresh_next(&mut self) {
         let Some(range) = self.ranges.get(self.cursor.range_index).copied() else {
-            self.next_unit = None;
+            self.next_code_point = None;
             return;
         };
-        if !self.cursor.trailing_surrogate
-            && let Some(byte) = self.chunk_ascii(range, self.cursor.byte)
-        {
-            self.next_unit = Some(u16::from(byte));
+        if !self.sync_window_position() {
+            self.load_identity_chunk(range, self.cursor.byte);
+        }
+        if let Some(byte) = self.chunk_ascii(range, self.cursor.byte) {
+            self.next_code_point = Some(CodePoint::from(byte));
             return;
         }
-        self.next_unit = self.current_logical().map(|logical| {
-            let units = logical.units();
-            if self.cursor.trailing_surrogate && units.len() == 2 {
-                units[1]
-            } else {
-                units[0]
-            }
-        });
+        self.next_code_point = self
+            .current_character_after_chunk_load()
+            .map(InputCharacter::value);
     }
 }
 
 struct InputLookahead<'a> {
-    input: &'a dyn Input,
+    input: &'a dyn LexicalInput,
     ranges: &'a [TextRange],
     cursor: Option<StreamCursor>,
     initial_chunk: Option<&'a InputChunk>,
@@ -724,7 +992,7 @@ impl InputLookahead<'_> {
             .initial_chunk
             .is_some_and(|chunk| chunk.contains(position));
         if !has_loaded && !has_initial {
-            self.loaded_chunk = self.input.logical_chunk(position);
+            self.loaded_chunk = self.input.identity_chunk(position);
         }
     }
 
@@ -740,18 +1008,18 @@ impl InputLookahead<'_> {
         self.chunk(position)?.ascii_byte(position)
     }
 
-    fn chunk_units(&mut self, range: TextRange, position: TextSize) -> Option<LogicalUnits> {
+    fn chunk_character(&mut self, range: TextRange, position: TextSize) -> Option<InputCharacter> {
         self.ensure_chunk(position);
         let chunk = self
             .chunk(position)
-            .and_then(|chunk| chunk.logical_units(position));
-        let units = chunk.or_else(|| logical_units_at(self.input, range, position))?;
-        (units.raw_end() <= range.end()).then_some(units)
+            .and_then(|chunk| chunk.character(position));
+        let character = chunk.or_else(|| character_at(self.input, range, position))?;
+        (character.raw_end() <= range.end()).then_some(character)
     }
 }
 
 impl Iterator for InputLookahead<'_> {
-    type Item = u16;
+    type Item = CodePoint;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -761,43 +1029,25 @@ impl Iterator for InputLookahead<'_> {
                 self.cursor = next_range_cursor(self.ranges, cursor.range_index);
                 continue;
             }
-            if !cursor.trailing_surrogate
-                && let Some(next) = self.chunk_ascii(cursor.byte)
-            {
+            if let Some(next) = self.chunk_ascii(cursor.byte) {
                 let byte = cursor.byte + TextSize::from(1);
                 self.cursor = if byte < range.end() {
-                    Some(StreamCursor {
-                        byte,
-                        trailing_surrogate: false,
-                        ..cursor
-                    })
+                    Some(StreamCursor { byte, ..cursor })
                 } else {
                     next_range_cursor(self.ranges, cursor.range_index)
                 };
-                return Some(u16::from(next));
+                return Some(CodePoint::from(next));
             }
-            let logical = self.chunk_units(range, cursor.byte)?;
-            let units = logical.units();
-            let next = if cursor.trailing_surrogate && units.len() == 2 {
-                units[1]
-            } else {
-                units[0]
-            };
-            self.cursor = if units.len() == 2 && !cursor.trailing_surrogate {
+            let character = self.chunk_character(range, cursor.byte)?;
+            self.cursor = if character.raw_end() < range.end() {
                 Some(StreamCursor {
-                    trailing_surrogate: true,
-                    ..cursor
-                })
-            } else if logical.raw_end() < range.end() {
-                Some(StreamCursor {
-                    byte: logical.raw_end(),
-                    trailing_surrogate: false,
+                    byte: character.raw_end(),
                     ..cursor
                 })
             } else {
                 next_range_cursor(self.ranges, cursor.range_index)
             };
-            return Some(next);
+            return Some(character.value());
         }
     }
 }
@@ -812,7 +1062,6 @@ fn first_cursor(ranges: &[TextRange]) -> StreamCursor {
         byte: ranges
             .get(range_index)
             .map_or(TextSize::from(0), |range| range.start()),
-        trailing_surrogate: false,
     }
 }
 
@@ -820,7 +1069,6 @@ fn end_cursor(ranges: &[TextRange]) -> StreamCursor {
     StreamCursor {
         range_index: ranges.len().saturating_sub(1),
         byte: ranges.last().map_or(TextSize::from(0), |range| range.end()),
-        trailing_surrogate: false,
     }
 }
 
@@ -832,35 +1080,32 @@ fn cursor_at(ranges: &[TextRange], position: TextSize) -> StreamCursor {
     StreamCursor {
         range_index,
         byte: position,
-        trailing_surrogate: false,
     }
 }
 
-fn logical_units_at(
-    input: &dyn Input,
+fn character_at(
+    input: &dyn LexicalInput,
     range: TextRange,
     position: TextSize,
-) -> Option<LogicalUnits> {
-    let units = input.logical_units(position)?;
-    (units.raw_end() <= range.end()).then_some(units)
+) -> Option<InputCharacter> {
+    let character = input.character(position)?;
+    (character.raw_end() <= range.end()).then_some(character)
 }
 
-fn code_unit_at(input: &dyn Input, ranges: &[TextRange], cursor: StreamCursor) -> Option<u16> {
+fn code_point_at(
+    input: &dyn LexicalInput,
+    ranges: &[TextRange],
+    cursor: StreamCursor,
+) -> Option<CodePoint> {
     let range = ranges.get(cursor.range_index)?;
     if cursor.byte >= range.end() {
         return None;
     }
-    let logical = logical_units_at(input, *range, cursor.byte)?;
-    let units = logical.units();
-    Some(if cursor.trailing_surrogate && units.len() == 2 {
-        units[1]
-    } else {
-        units[0]
-    })
+    character_at(input, *range, cursor.byte).map(InputCharacter::value)
 }
 
 fn advance_cursor(
-    input: &dyn Input,
+    input: &dyn LexicalInput,
     ranges: &[TextRange],
     cursor: StreamCursor,
 ) -> Option<StreamCursor> {
@@ -868,35 +1113,18 @@ fn advance_cursor(
     if cursor.byte >= range.end() {
         return next_range_cursor(ranges, cursor.range_index);
     }
-    let logical = logical_units_at(input, *range, cursor.byte)?;
-    if logical.units().len() == 2 && !cursor.trailing_surrogate {
-        return Some(StreamCursor {
-            trailing_surrogate: true,
-            ..cursor
-        });
-    }
-    let byte = logical.raw_end();
+    let byte = character_at(input, *range, cursor.byte)?.raw_end();
     if byte < range.end() {
-        return Some(StreamCursor {
-            byte,
-            trailing_surrogate: false,
-            ..cursor
-        });
+        return Some(StreamCursor { byte, ..cursor });
     }
     next_range_cursor(ranges, cursor.range_index).or_else(|| Some(end_cursor(ranges)))
 }
 
 fn retreat_cursor(
-    input: &dyn Input,
+    input: &dyn LexicalInput,
     ranges: &[TextRange],
     cursor: StreamCursor,
 ) -> Option<StreamCursor> {
-    if cursor.trailing_surrogate {
-        return Some(StreamCursor {
-            trailing_surrogate: false,
-            ..cursor
-        });
-    }
     let range = ranges.get(cursor.range_index)?;
     let (range_index, byte_limit) = if cursor.byte > range.start() {
         (cursor.range_index, cursor.byte)
@@ -907,15 +1135,11 @@ fn retreat_cursor(
         (previous, ranges[previous].end())
     };
     let previous_range = ranges[range_index];
-    let (byte, logical) = input.logical_units_before(byte_limit)?;
-    if byte < previous_range.start() || logical.raw_end() != byte_limit {
+    let (byte, character) = input.character_before(byte_limit)?;
+    if byte < previous_range.start() || character.raw_end() != byte_limit {
         return None;
     }
-    Some(StreamCursor {
-        range_index,
-        byte,
-        trailing_surrogate: logical.units().len() == 2,
-    })
+    Some(StreamCursor { range_index, byte })
 }
 
 fn next_range_cursor(ranges: &[TextRange], range_index: usize) -> Option<StreamCursor> {
@@ -923,56 +1147,36 @@ fn next_range_cursor(ranges: &[TextRange], range_index: usize) -> Option<StreamC
     Some(StreamCursor {
         range_index: next,
         byte: ranges[next].start(),
-        trailing_surrogate: false,
     })
 }
 
-fn boundary_position(input: &dyn Input, cursor: StreamCursor) -> Result<TextSize, ParseError> {
-    if cursor.trailing_surrogate {
-        return Err(ParseError::new(
-            ParseErrorKind::Input,
-            Some(cursor.byte),
-            "token end falls inside a UTF-8 scalar",
-        ));
-    }
-    if cursor.byte == input.len() || input.chunk(cursor.byte).is_char_boundary(0) {
-        Ok(cursor.byte)
-    } else {
-        Err(ParseError::new(
-            ParseErrorKind::Input,
-            Some(cursor.byte),
-            "token end is not a UTF-8 boundary",
-        ))
-    }
-}
+fn next_stream_id() -> u64 {
+    static NEXT_STREAM_ID: AtomicU64 = AtomicU64::new(1);
 
-fn is_selected_boundary(input: &dyn Input, ranges: &[TextRange], position: TextSize) -> bool {
-    ranges.iter().any(|range| {
-        position >= range.start()
-            && position <= range.end()
-            && input
-                .read(TextRange::new(range.start(), position))
-                .is_char_boundary(usize::from(position - range.start()))
-    })
+    NEXT_STREAM_ID
+        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+        .expect("input stream identity space exhausted")
 }
 
 fn read_local_token(
     group: LocalTokenGroup,
+    ascii_index: &TokenAsciiIndex,
     input: &mut InputStream,
     stack: &Stack,
 ) -> Result<(), ParseError> {
     let start = input.position();
     loop {
         let scan_start = input.position();
+        let scan_end = input.mark();
         let next_position = input.next_position();
         read_token(
-            group.data,
-            None,
+            group.table,
+            Some(ascii_index),
             input,
             stack,
             0,
-            group.data,
-            group.precedence_offset,
+            group.precedence,
+            0,
         );
         if input.accepted().is_some() {
             if scan_start > start {
@@ -981,7 +1185,7 @@ fn read_local_token(
                     group
                         .else_token
                         .expect("scanning continued only with @else"),
-                    scan_start,
+                    scan_end,
                 )?;
             }
             return Ok(());
@@ -997,7 +1201,7 @@ fn read_local_token(
 }
 
 fn read_token(
-    data: &[u16],
+    table: &TokenTable,
     ascii_index: Option<&TokenAsciiIndex>,
     input: &mut InputStream,
     stack: &Stack,
@@ -1008,14 +1212,13 @@ fn read_token(
     let mut state = 0_usize;
     let group_mask = 1_u16 << group;
     'scan: loop {
-        if data.get(state).copied().unwrap_or(0) & group_mask == 0 {
+        let state_data = table.states[state];
+        if state_data.group_mask & group_mask == 0 {
             break;
         }
-        let accept_end = usize::from(data[state + 1]);
-        let mut index = state + 3;
-        while index < accept_end {
-            if data[index + 1] & group_mask != 0 {
-                let term = data[index];
+        for accept in table.accepts(state_data) {
+            if accept.group_mask & group_mask != 0 {
+                let term = accept.term;
                 let current = input.accepted_value();
                 let can_accept = stack.dialect_allows(term)
                     && current.is_none_or(|previous| {
@@ -1027,51 +1230,32 @@ fn read_token(
                     break;
                 }
             }
-            index += 2;
         }
 
         let next = input.next();
-        let mut low = 0_usize;
-        let mut high = usize::from(data[state + 2]);
-        if next.is_none()
-            && high > low
-            && data[accept_end + high * 3 - 3] == SequenceCode::End.raw()
-        {
-            state = usize::from(data[accept_end + high * 3 - 1]);
-            continue;
-        }
         let Some(next) = next else {
+            if let Some(target) = table.eof_target(state) {
+                state = target;
+                continue;
+            }
             break;
         };
+        let next = next.as_u32();
         if next < 0x80
             && let Some(index) = ascii_index
         {
-            let Some(next_state) = index.transition(state, next) else {
+            let ascii = u8::try_from(next).expect("ASCII code point fits in u8");
+            let Some(next_state) = index.transition(state, ascii) else {
                 break;
             };
             state = next_state;
-            input.advance(1);
+            input.advance_known_ascii(ascii);
             continue;
         }
-        while low < high {
-            let middle = (low + high) >> 1;
-            let edge = accept_end + middle * 3;
-            let from = u32::from(data[edge]);
-            let to = if data[edge + 1] == 0 {
-                0x1_0000
-            } else {
-                u32::from(data[edge + 1])
-            };
-            let next = u32::from(next);
-            if next < from {
-                high = middle;
-            } else if next >= to {
-                low = middle + 1;
-            } else {
-                state = usize::from(data[edge + 2]);
-                input.advance(1);
-                continue 'scan;
-            }
+        if let Some(next_state) = table.transition(state_data, next) {
+            state = next_state;
+            input.advance(1);
+            continue 'scan;
         }
         break;
     }
@@ -1091,71 +1275,121 @@ fn overrides(token: u16, previous: u16, data: &[u16], offset: usize) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Cow;
     use std::sync::atomic::{AtomicUsize, Ordering};
 
-    use rezel_common::StringInput;
+    use rezel_common::{Input, StringInput, Utf8Input};
 
     use super::*;
 
-    struct CountingInput {
-        inner: StringInput,
-        logical_reads: Arc<AtomicUsize>,
+    struct CountingLexicalInput {
+        inner: Utf8Input,
+        character_reads: Arc<AtomicUsize>,
     }
 
-    impl Input for CountingInput {
-        fn len(&self) -> TextSize {
-            self.inner.len()
+    struct BoundaryTranslationInput {
+        inner: Utf8Input,
+    }
+
+    impl LexicalInput for BoundaryTranslationInput {
+        fn raw(&self) -> &dyn Input {
+            self.inner.raw()
         }
 
-        fn chunk(&self, from: TextSize) -> Cow<'_, str> {
-            self.inner.chunk(from)
+        fn identity_chunk(&self, from: TextSize) -> Option<InputChunk> {
+            if from == TextSize::from(2) {
+                return None;
+            }
+            let mut chunk = self.inner.identity_chunk(from)?;
+            if from < TextSize::from(2) {
+                chunk.truncate(TextSize::from(2));
+            }
+            Some(chunk)
         }
 
-        fn read(&self, range: TextRange) -> Cow<'_, str> {
-            self.inner.read(range)
+        fn character(&self, from: TextSize) -> Option<InputCharacter> {
+            if from == TextSize::from(2) {
+                let surrogate = CodePoint::new(0xd800).expect("surrogate is a code point");
+                return Some(InputCharacter::new(surrogate, TextSize::from(3)));
+            }
+            self.inner.character(from)
         }
 
-        fn logical_units(&self, from: TextSize) -> Option<LogicalUnits> {
-            self.logical_reads.fetch_add(1, Ordering::Relaxed);
-            self.inner.logical_units(from)
+        fn scalar_text(&self, range: TextRange) -> Option<Cow<'_, str>> {
+            if range.start() <= TextSize::from(2) && TextSize::from(2) < range.end() {
+                return None;
+            }
+            self.inner.scalar_text(range)
+        }
+    }
+
+    impl LexicalInput for CountingLexicalInput {
+        fn raw(&self) -> &dyn Input {
+            self.inner.raw()
+        }
+
+        fn identity_chunk(&self, _from: TextSize) -> Option<InputChunk> {
+            None
+        }
+
+        fn character(&self, from: TextSize) -> Option<InputCharacter> {
+            self.character_reads.fetch_add(1, Ordering::Relaxed);
+            self.inner.character(from)
         }
     }
 
     #[test]
     fn indexes_ascii_token_transitions() {
-        let index = TokenAsciiIndex::build(&[
-            1,
-            3,
-            1,
-            u16::from(b'A'),
-            u16::from(b'Z') + 1,
-            6,
-            1,
-            9,
-            1,
-            u16::from(b'a'),
-            u16::from(b'z') + 1,
-            6,
-        ])
-        .unwrap();
+        static STATES: &[TokenState] = &[
+            TokenState::new(1, 0, 0, 0, 1),
+            TokenState::new(1, 0, 1, 0, 1),
+        ];
+        static EDGES: &[TokenEdge] = &[
+            TokenEdge::new(b'A' as u32, b'Z' as u32 + 1, 1),
+            TokenEdge::new(b'a' as u32, b'z' as u32 + 1, 1),
+        ];
+        static TABLE: TokenTable = TokenTable::new(STATES, &[], EDGES, &[]);
+        let index = TokenAsciiIndex::build(&TABLE);
 
-        assert_eq!(index.transition(0, u16::from(b'A')), Some(6));
-        assert_eq!(index.transition(0, u16::from(b'Z')), Some(6));
-        assert_eq!(index.transition(6, u16::from(b'a')), Some(6));
-        assert_eq!(index.transition(6, u16::from(b'z')), Some(6));
-        assert_eq!(index.transition(0, u16::from(b'a')), None);
-        assert_eq!(index.transition(0, 0x80), None);
-        assert!(
-            TokenAsciiIndex::build(&[])
-                .unwrap()
-                .transition(0, 0)
-                .is_none()
-        );
+        assert_eq!(index.transition(0, b'A'), Some(1));
+        assert_eq!(index.transition(0, b'Z'), Some(1));
+        assert_eq!(index.transition(1, b'a'), Some(1));
+        assert_eq!(index.transition(1, b'z'), Some(1));
+        assert_eq!(index.transition(0, b'a'), None);
+    }
+
+    #[test]
+    fn optimized_transitions_match_linear_edges() {
+        static STATES: &[TokenState] = &[TokenState::new(1, 0, 0, 0, 5)];
+        static EDGES: &[TokenEdge] = &[
+            TokenEdge::new(0, 10, 1),
+            TokenEdge::new(10, 0x80, 2),
+            TokenEdge::new(0x80, 0xd800, 3),
+            TokenEdge::new(0xe000, 0x10_ffff, 4),
+            TokenEdge::new(0x10_ffff, 0x11_0000, 5),
+        ];
+        static TABLE: TokenTable = TokenTable::new(STATES, &[], EDGES, &[]);
+        let state = STATES[0];
+        let ascii = TokenAsciiIndex::build(&TABLE);
+
+        for next in 0..=CodePoint::MAX {
+            let expected = EDGES
+                .iter()
+                .find(|edge| edge.from <= next && next < edge.to)
+                .map(|edge| usize::from(edge.target));
+            assert_eq!(TABLE.transition(state, next), expected, "U+{next:04X}");
+            if next < 0x80 {
+                assert_eq!(
+                    ascii.transition(0, u8::try_from(next).unwrap()),
+                    expected,
+                    "ASCII {next}"
+                );
+            }
+        }
     }
 
     fn stream(source: &str, ranges: impl Into<Arc<[TextRange]>>) -> InputStream {
-        let input: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(Utf8Input::new(raw));
         InputStream::new(input, ranges.into())
     }
 
@@ -1164,29 +1398,106 @@ mod tests {
         let ranges = Arc::from([TextRange::new(0.into(), 2.into())]);
         let mut input = stream("abX", ranges);
 
-        assert_eq!(input.next(), Some(u16::from(b'a')));
-        assert_eq!(input.advance(1), Some(u16::from(b'b')));
+        assert_eq!(input.next(), Some(CodePoint::from(b'a')));
+        assert_eq!(input.advance(1), Some(CodePoint::from(b'b')));
         assert_eq!(input.advance(1), None);
         assert_eq!(input.position(), TextSize::from(2));
         assert_eq!(input.next(), None);
     }
 
     #[test]
-    fn reset_rewinds_from_inside_a_surrogate_pair() {
-        let ranges = Arc::from([TextRange::new(0.into(), 5.into())]);
-        let mut input = stream("😀a", ranges);
+    fn known_ascii_advance_preserves_windows_translation_and_fallback() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 1.into()),
+            TextRange::new(2.into(), 3.into()),
+        ]);
+        let mut selected = stream("aXb", ranges);
 
-        assert_eq!(input.next(), Some(0xd83d));
-        assert_eq!(input.advance(1), Some(0xde00));
-        assert_eq!(input.position(), TextSize::from(0));
+        selected.advance_known_ascii(b'a');
+        assert_eq!(selected.position(), TextSize::from(2));
+        assert_eq!(selected.next(), Some(CodePoint::from(b'b')));
+        selected.advance_known_ascii(b'b');
+        assert_eq!(selected.position(), TextSize::from(3));
+        assert_eq!(selected.next(), None);
 
-        input.reset(0.into());
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("abXc").unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(BoundaryTranslationInput {
+            inner: Utf8Input::new(raw),
+        });
+        let ranges = Arc::from([TextRange::new(0.into(), 4.into())]);
+        let mut translated = InputStream::new(input, ranges);
 
-        assert_eq!(input.next(), Some(0xd83d));
+        translated.advance_known_ascii(b'a');
+        translated.advance_known_ascii(b'b');
+        assert_eq!(translated.position(), TextSize::from(2));
+        assert_eq!(
+            translated.next(),
+            Some(CodePoint::new(0xd800).expect("surrogate is a code point"))
+        );
+
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("ab").unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(CountingLexicalInput {
+            inner: Utf8Input::new(raw),
+            character_reads: Arc::new(AtomicUsize::new(0)),
+        });
+        let ranges = Arc::from([TextRange::new(0.into(), 2.into())]);
+        let mut fallback = InputStream::new(input, ranges);
+
+        fallback.advance_known_ascii(b'a');
+        assert_eq!(fallback.position(), TextSize::from(1));
+        assert_eq!(fallback.next(), Some(CodePoint::from(b'b')));
     }
 
     #[test]
-    fn lookahead_preserves_utf16_units_and_selected_ranges() {
+    fn prevalidated_scalar_reads_preserve_translation_and_selected_ranges() {
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("abXc").unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(BoundaryTranslationInput {
+            inner: Utf8Input::new(raw),
+        });
+        let ranges = Arc::from([TextRange::new(0.into(), 4.into())]);
+        let translated = InputStream::new(input, ranges);
+
+        assert_eq!(
+            translated
+                .read_scalar_at_boundaries(0.into(), 2.into())
+                .as_deref(),
+            Some("ab")
+        );
+        assert!(
+            translated
+                .read_scalar_at_boundaries(0.into(), 3.into())
+                .is_none()
+        );
+
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 2.into()),
+            TextRange::new(3.into(), 5.into()),
+        ]);
+        let stream = stream("abXcd", ranges);
+        assert_eq!(
+            stream
+                .read_scalar_at_boundaries(0.into(), 5.into())
+                .as_deref(),
+            Some("abcd")
+        );
+    }
+
+    #[test]
+    fn one_advance_crosses_an_entire_utf8_scalar() {
+        let ranges = Arc::from([TextRange::new(0.into(), 5.into())]);
+        let mut input = stream("😀a", ranges);
+
+        assert_eq!(input.next(), Some(CodePoint::from('😀')));
+        assert_eq!(input.advance(1), Some(CodePoint::from(b'a')));
+        assert_eq!(input.position(), TextSize::from(4));
+
+        input.reset(0.into());
+
+        assert_eq!(input.next(), Some(CodePoint::from('😀')));
+    }
+
+    #[test]
+    fn lookahead_preserves_code_points_and_selected_ranges() {
         let ranges = Arc::from([
             TextRange::new(0.into(), 5.into()),
             TextRange::new(6.into(), 7.into()),
@@ -1195,13 +1506,17 @@ mod tests {
 
         assert_eq!(
             input.lookahead().collect::<Vec<_>>(),
-            vec![u16::from(b'a'), 0xd83d, 0xde00, u16::from(b'b')]
+            vec![
+                CodePoint::from(b'a'),
+                CodePoint::from('😀'),
+                CodePoint::from(b'b')
+            ]
         );
 
         input.advance(1);
         assert_eq!(
             input.lookahead().collect::<Vec<_>>(),
-            vec![0xd83d, 0xde00, u16::from(b'b')]
+            vec![CodePoint::from('😀'), CodePoint::from(b'b')]
         );
     }
 
@@ -1210,10 +1525,11 @@ mod tests {
         const WIDTH: usize = 128;
 
         let source: Arc<str> = " ".repeat(WIDTH + 1).into();
-        let logical_reads = Arc::new(AtomicUsize::new(0));
-        let input: Arc<dyn Input> = Arc::new(CountingInput {
-            inner: StringInput::try_new(source).unwrap(),
-            logical_reads: Arc::clone(&logical_reads),
+        let character_reads = Arc::new(AtomicUsize::new(0));
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(CountingLexicalInput {
+            inner: Utf8Input::new(raw),
+            character_reads: Arc::clone(&character_reads),
         });
         let ranges = Arc::from([TextRange::new(
             TextSize::from(0),
@@ -1222,13 +1538,14 @@ mod tests {
         let stream = InputStream::new(input, ranges);
 
         assert_eq!(stream.lookahead().count(), WIDTH + 1);
-        assert!(logical_reads.load(Ordering::Relaxed) <= WIDTH + 2);
+        assert!(character_reads.load(Ordering::Relaxed) <= WIDTH + 2);
     }
 
     #[test]
     fn bulk_ascii_advance_stops_at_logical_and_selected_range_boundaries() {
-        let input: Arc<dyn Input> =
+        let raw: Arc<dyn Input> =
             Arc::new(StringInput::try_new(Arc::<str>::from("abcédef")).unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(Utf8Input::new(raw));
         let ranges = Arc::from([TextRange::new(0.into(), 8.into())]);
         let mut stream = InputStream::new(input, ranges);
 
@@ -1237,7 +1554,7 @@ mod tests {
             3
         );
         assert_eq!(stream.position(), TextSize::from(3));
-        assert_eq!(stream.next(), Some(0xe9));
+        assert_eq!(stream.next(), Some(CodePoint::from('é')));
         stream.advance(1);
         assert_eq!(
             stream.advance_ascii_while(|byte| byte.is_ascii_alphabetic()),
@@ -1245,8 +1562,9 @@ mod tests {
         );
         assert_eq!(stream.position(), TextSize::from(8));
 
-        let input: Arc<dyn Input> =
+        let raw: Arc<dyn Input> =
             Arc::new(StringInput::try_new(Arc::<str>::from("abXcd")).unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(Utf8Input::new(raw));
         let ranges = Arc::from([
             TextRange::new(0.into(), 2.into()),
             TextRange::new(3.into(), 5.into()),
@@ -1262,5 +1580,48 @@ mod tests {
             2
         );
         assert_eq!(stream.position(), TextSize::from(5));
+    }
+
+    #[test]
+    fn marks_support_reset_and_discontiguous_selected_ranges() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 2.into()),
+            TextRange::new(3.into(), 5.into()),
+        ]);
+        let mut input = stream("abXcd", ranges);
+        let start = input.mark();
+
+        input.advance(3);
+        let across_ranges = input.mark();
+        assert_eq!(input.position(), TextSize::from(4));
+
+        input.reset(0.into());
+        input.accept_token_to(7, across_ranges).unwrap();
+        assert_eq!(
+            input.accepted(),
+            Some(AcceptedToken {
+                value: 7,
+                end: TextSize::from(4),
+            })
+        );
+
+        input.reset(3.into());
+        let error = input.accept_token_to(7, start).unwrap_err();
+        assert_eq!(error.kind(), ParseErrorKind::Input);
+    }
+
+    #[test]
+    fn marks_cannot_cross_input_streams() {
+        let ranges = Arc::from([TextRange::new(0.into(), 1.into())]);
+        let first = stream("a", Arc::clone(&ranges));
+        let mut second = stream("b", ranges);
+
+        let error = second.accept_token_to(1, first.mark()).unwrap_err();
+
+        assert_eq!(error.kind(), ParseErrorKind::Input);
+        assert_eq!(
+            error.message(),
+            "token endpoint mark belongs to another input stream"
+        );
     }
 }

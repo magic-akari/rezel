@@ -1,20 +1,20 @@
-use rezel_common::ParseError;
+use rezel_common::{CodePoint, ParseError, ParseErrorKind};
 use rezel_lr::{
     ContextTracker, ContextValue, ExternalTokenizer, InputStream, Stack, TokenizerFlags,
 };
 
 use crate::{indentation::IndentColumns, terms};
 
-const LF: u16 = 10;
-const CR: u16 = 13;
-const SPACE: u16 = 32;
-const TAB: u16 = 9;
-const HASH: u16 = 35;
-const OPEN_BRACE: u16 = 123;
-const CLOSE_BRACE: u16 = 125;
-const SINGLE_QUOTE: u16 = 39;
-const DOUBLE_QUOTE: u16 = 34;
-const BACKSLASH: u16 = 92;
+const LF: u32 = 10;
+const CR: u32 = 13;
+const SPACE: u32 = 32;
+const TAB: u32 = 9;
+const HASH: u32 = 35;
+const OPEN_BRACE: u32 = 123;
+const CLOSE_BRACE: u32 = 125;
+const SINGLE_QUOTE: u32 = 39;
+const DOUBLE_QUOTE: u32 = 34;
+const BACKSLASH: u32 = 92;
 
 const BRACKETED: u8 = 1;
 const STRING: u8 = 2;
@@ -69,31 +69,30 @@ fn scan_newlines(input: &mut InputStream, stack: &Stack) -> Result<(), ParseErro
     let context = context(stack);
     if input.next().is_none() {
         if stack.can_shift(terms::eof) {
-            input.accept_token(terms::eof, 0)?;
+            input.accept_token(terms::eof)?;
         }
         return Ok(());
     }
     if context.flags & BRACKETED != 0 {
-        if input.next().is_some_and(is_line_break) && stack.can_shift(terms::newlineBracketed) {
-            input.accept_token(terms::newlineBracketed, 1)?;
+        if next_value(input).is_some_and(is_line_break) && stack.can_shift(terms::newlineBracketed)
+        {
+            input.advance(1);
+            input.accept_token(terms::newlineBracketed)?;
         }
         return Ok(());
     }
-    let previous = input.peek(-1);
+    let previous = peek_value(input, -1);
     if previous.is_none_or(is_line_break) && stack.can_shift(terms::blankLineStart) {
-        let mut spaces = 0_isize;
-        while matches!(input.next(), Some(SPACE | TAB)) {
+        let line_start = input.mark();
+        while matches!(next_value(input), Some(SPACE | TAB)) {
             input.advance(1);
-            spaces += 1;
         }
-        if input
-            .next()
-            .is_none_or(|next| is_line_break(next) || next == HASH)
-        {
-            input.accept_token(terms::blankLineStart, -spaces)?;
+        if next_value(input).is_none_or(|next| is_line_break(next) || next == HASH) {
+            input.accept_token_to(terms::blankLineStart, line_start)?;
         }
-    } else if input.next().is_some_and(is_line_break) && stack.can_shift(terms::newline) {
-        input.accept_token(terms::newline, 1)?;
+    } else if next_value(input).is_some_and(is_line_break) && stack.can_shift(terms::newline) {
+        input.advance(1);
+        input.accept_token(terms::newline)?;
     }
     Ok(())
 }
@@ -103,32 +102,29 @@ fn scan_indentation(input: &mut InputStream, stack: &Stack) -> Result<(), ParseE
     if context.flags != 0 {
         return Ok(());
     }
-    let previous = input.peek(-1);
+    let previous = peek_value(input, -1);
     if previous.is_some_and(|character| !is_line_break(character)) {
         return Ok(());
     }
     let mut columns = IndentColumns::default();
-    let mut characters = 0_isize;
-    while let Some(character) = input.next() {
-        if !columns.advance(u32::from(character)) {
+    let indent_start = input.mark();
+    while let Some(character) = next_value(input) {
+        if !columns.advance(character) {
             break;
         }
         input.advance(1);
-        characters += 1;
     }
-    let next_is_blank = input
-        .next()
-        .is_none_or(|next| is_line_break(next) || next == HASH);
+    let next_is_blank = next_value(input).is_none_or(|next| is_line_break(next) || next == HASH);
     if next_is_blank {
         return Ok(());
     }
     match columns.visual().cmp(&context.indent) {
         std::cmp::Ordering::Equal => {}
         std::cmp::Ordering::Greater => {
-            input.accept_token(terms::indent, 0)?;
+            input.accept_token(terms::indent)?;
         }
         std::cmp::Ordering::Less => {
-            input.accept_token(terms::dedent, -characters)?;
+            input.accept_token_to(terms::dedent, indent_start)?;
         }
     }
     Ok(())
@@ -146,13 +142,14 @@ fn scan_strings(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError
     let format = flags & FORMAT != 0;
     let start = input.position();
     loop {
-        match input.next() {
+        match next_value(input) {
             None => break,
             Some(OPEN_BRACE) if format => {
-                if input.peek(1) == Some(OPEN_BRACE) {
+                if peek_value(input, 1) == Some(OPEN_BRACE) {
                     input.advance(2);
                 } else if input.position() == start {
-                    input.accept_token(terms::replacementStart, 1)?;
+                    input.advance(1);
+                    input.accept_token(terms::replacementStart)?;
                     return Ok(());
                 } else {
                     break;
@@ -163,27 +160,30 @@ fn scan_strings(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError
                     break;
                 }
                 input.advance(1);
-                if let Some(escaped) = input.next() {
+                if let Some(escaped) = next_value(input) {
                     input.advance(1);
                     skip_escape(input, escaped);
                 }
-                input.accept_token(terms::Escape, 0)?;
+                input.accept_token(terms::Escape)?;
                 return Ok(());
             }
             Some(BACKSLASH)
-                if format && matches!(input.peek(1), Some(OPEN_BRACE | CLOSE_BRACE)) =>
+                if format && matches!(peek_value(input, 1), Some(OPEN_BRACE | CLOSE_BRACE)) =>
             {
                 input.advance(1);
             }
-            Some(BACKSLASH) if input.peek(1).is_some() => {
+            Some(BACKSLASH) if peek_value(input, 1).is_some() => {
                 input.advance(2);
             }
             Some(next)
                 if next == quote
-                    && (!long || input.peek(1) == Some(quote) && input.peek(2) == Some(quote)) =>
+                    && (!long
+                        || peek_value(input, 1) == Some(quote)
+                            && peek_value(input, 2) == Some(quote)) =>
             {
                 if input.position() == start {
-                    input.accept_token(terms::stringEnd, if long { 3 } else { 1 })?;
+                    input.advance(if long { 3 } else { 1 });
+                    input.accept_token(terms::stringEnd)?;
                     return Ok(());
                 }
                 break;
@@ -192,7 +192,7 @@ fn scan_strings(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError
                 if long {
                     input.advance(1);
                 } else if input.position() == start {
-                    input.accept_token(terms::stringEnd, 0)?;
+                    input.accept_token(terms::stringEnd)?;
                     return Ok(());
                 } else {
                     break;
@@ -204,16 +204,16 @@ fn scan_strings(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError
         }
     }
     if input.position() > start {
-        input.accept_token(terms::stringContent, 0)?;
+        input.accept_token(terms::stringContent)?;
     }
     Ok(())
 }
 
-fn skip_escape(input: &mut InputStream, escaped: u16) {
+fn skip_escape(input: &mut InputStream, escaped: u32) {
     match escaped {
         111 => {
             for _ in 0..2 {
-                if input.next().is_some_and(|next| (48..=55).contains(&next)) {
+                if next_value(input).is_some_and(|next| (48..=55).contains(&next)) {
                     input.advance(1);
                 }
             }
@@ -221,14 +221,14 @@ fn skip_escape(input: &mut InputStream, escaped: u16) {
         120 => skip_hex(input, 2),
         117 => skip_hex(input, 4),
         85 => skip_hex(input, 8),
-        78 if input.next() == Some(OPEN_BRACE) => {
+        78 if next_value(input) == Some(OPEN_BRACE) => {
             input.advance(1);
-            while input.next().is_some_and(|next| {
+            while next_value(input).is_some_and(|next| {
                 next != CLOSE_BRACE && next != SINGLE_QUOTE && next != DOUBLE_QUOTE && next != LF
             }) {
                 input.advance(1);
             }
-            if input.next() == Some(CLOSE_BRACE) {
+            if next_value(input) == Some(CLOSE_BRACE) {
                 input.advance(1);
             }
         }
@@ -238,17 +238,25 @@ fn skip_escape(input: &mut InputStream, escaped: u16) {
 
 fn skip_hex(input: &mut InputStream, count: usize) {
     for _ in 0..count {
-        if input.next().is_some_and(is_hex) {
+        if next_value(input).is_some_and(is_hex) {
             input.advance(1);
         }
     }
 }
 
-fn is_hex(value: u16) -> bool {
+fn next_value(input: &InputStream) -> Option<u32> {
+    input.next().map(CodePoint::as_u32)
+}
+
+fn peek_value(input: &InputStream, offset: isize) -> Option<u32> {
+    input.peek(offset).map(CodePoint::as_u32)
+}
+
+fn is_hex(value: u32) -> bool {
     (48..=57).contains(&value) || (65..=70).contains(&value) || (97..=102).contains(&value)
 }
 
-fn is_line_break(value: u16) -> bool {
+fn is_line_break(value: u32) -> bool {
     matches!(value, LF | CR)
 }
 
@@ -272,7 +280,15 @@ fn shift_context(
         .downcast_ref::<PythonContext>()
         .expect("Python parser context");
     if term == terms::indent {
-        let whitespace = input.read(input.position(), stack.position());
+        let whitespace = input
+            .read_scalar(input.position(), stack.position())
+            .ok_or_else(|| {
+                ParseError::new(
+                    ParseErrorKind::Input,
+                    Some(input.position()),
+                    "Python indentation contains a non-scalar code point",
+                )
+            })?;
         let indentation = count_indent(&whitespace);
         return Ok(child_context(value, indentation.visual(), 0));
     }

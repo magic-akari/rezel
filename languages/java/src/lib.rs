@@ -58,7 +58,8 @@ fn create_java_parse(
     parser: &LRParser,
     request: ParseRequest,
 ) -> Result<Box<dyn PartialParse>, ParseError> {
-    let input = JavaInput::new(Arc::clone(request.input()));
+    let request = request.into_validated()?;
+    let input = Arc::new(JavaInput::new(Arc::clone(request.input())));
     if parser.is_strict()
         && let Some(position) = input.malformed_escape_in(request.selected_ranges())
     {
@@ -68,8 +69,8 @@ fn create_java_parse(
             "malformed eligible Java Unicode escape",
         ));
     }
-    let request = request.map_input(|_| Arc::new(input));
-    parser.create_lr_parse(&request)
+    let request = request.with_lexical_input(input)?;
+    parser.create_lr_parse(request)
 }
 
 fn java_highlighting() -> NodePropSource {

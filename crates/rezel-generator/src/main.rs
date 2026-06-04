@@ -39,11 +39,12 @@ fn check(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
     let grammar = read_grammar(&grammar_path, true)?;
     print_warnings(&grammar);
     println!(
-        "{}: {} states, {} terms, {} token words",
+        "{}: {} states, {} terms, {} token states, {} token edges",
         grammar_path.display(),
         grammar.states.len() / rezel_lr::table::StateField::COUNT,
         grammar.max_term + 1,
-        grammar.token_data.len(),
+        grammar.token_table.states.len(),
+        grammar.token_table.edges.len(),
     );
     Ok(())
 }

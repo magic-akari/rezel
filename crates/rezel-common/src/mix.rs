@@ -144,7 +144,7 @@ fn mount_inner_parses(
         let inner_tree = if job.ranges.is_empty() {
             job.parser.parse("")?
         } else {
-            let inner_request = ParseRequest::ranges(Arc::clone(request.input()), job.ranges);
+            let inner_request = ParseRequest::ranges(Arc::clone(request.input()), job.ranges)?;
             run_to_completion(job.parser.create_parse(inner_request)?)?
         };
         job.target.set_prop(

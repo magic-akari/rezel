@@ -7,10 +7,30 @@ static STATES: &[u32] = &[
 ];
 static STATE_DATA: &[u16] = &[65535, 0, 3, 2, 0, 4, 2, 0, 7, 3, 0, 65535, 0];
 static GOTO: &[u16] = &[6, 1, 1, 7, 1, 1, 11, 5, 2, 0, 1, 2, 1, 0, 3, 4, 1];
-static TOKEN_DATA: &[u16] = &[
-    65535, 3, 3, 97, 98, 12, 98, 99, 17, 105, 106, 22, 65535, 17, 0, 7, 65535, 65535, 22,
-    0, 3, 65535, 65535, 27, 1, 8, 65535, 105, 106, 22,
+static TOKEN_STATES: &[rezel_lr::TokenState] = &[
+    rezel_lr::TokenState::new(65535, 0, 0, 0, 3),
+    rezel_lr::TokenState::new(65535, 0, 3, 1, 0),
+    rezel_lr::TokenState::new(65535, 1, 3, 1, 0),
+    rezel_lr::TokenState::new(65535, 2, 3, 1, 1),
 ];
+static TOKEN_ACCEPTS: &[rezel_lr::TokenAccept] = &[
+    rezel_lr::TokenAccept::new(7, 65535),
+    rezel_lr::TokenAccept::new(3, 65535),
+    rezel_lr::TokenAccept::new(8, 65535),
+];
+static TOKEN_EDGES: &[rezel_lr::TokenEdge] = &[
+    rezel_lr::TokenEdge::new(97, 98, 1),
+    rezel_lr::TokenEdge::new(98, 99, 2),
+    rezel_lr::TokenEdge::new(105, 106, 3),
+    rezel_lr::TokenEdge::new(105, 106, 3),
+];
+static TOKEN_EOF: &[rezel_lr::TokenEof] = &[];
+static TOKEN_TABLE: rezel_lr::TokenTable = rezel_lr::TokenTable::new(
+    TOKEN_STATES,
+    TOKEN_ACCEPTS,
+    TOKEN_EDGES,
+    TOKEN_EOF,
+);
 fn specialize_0(
     value: &str,
     _stack: &rezel_lr::Stack,
@@ -101,7 +121,7 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: STATES,
     state_data: STATE_DATA,
     goto: GOTO,
-    token_data: TOKEN_DATA,
+    token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
     max_term: 8u16,

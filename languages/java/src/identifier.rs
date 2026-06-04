@@ -14,7 +14,7 @@ pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
 );
 
 fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
-    let Some((first, width)) = next_code_point(input, 0) else {
+    let Some(first) = input.next().map(rezel_common::CodePoint::as_u32) else {
         return Ok(());
     };
     if !is_java_identifier_start(first) {
@@ -24,35 +24,21 @@ fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     if first <= 0x7f {
         input.advance_ascii_while(|byte| is_java_identifier_part(u32::from(byte)));
     } else {
-        input.advance(width);
+        input.advance(1);
     }
     loop {
         if input.advance_ascii_while(|byte| is_java_identifier_part(u32::from(byte))) != 0 {
             continue;
         }
-        let Some((character, width)) = next_code_point(input, 0) else {
+        let Some(character) = input.next().map(rezel_common::CodePoint::as_u32) else {
             break;
         };
         if !is_java_identifier_part(character) {
             break;
         }
-        input.advance(width);
+        input.advance(1);
     }
-    input.accept_token(crate::terms::identifier, 0)
-}
-
-fn next_code_point(input: &mut InputStream, offset: isize) -> Option<(u32, usize)> {
-    let first = input.peek(offset)?;
-    if !(0xd800..=0xdbff).contains(&first) {
-        return Some((u32::from(first), 1));
-    }
-    let second = input.peek(offset + 1)?;
-    if !(0xdc00..=0xdfff).contains(&second) {
-        return Some((u32::from(first), 1));
-    }
-    let high = u32::from(first) - 0xd800;
-    let low = u32::from(second) - 0xdc00;
-    Some((0x1_0000 + (high << 10) + low, 2))
+    input.accept_token(crate::terms::identifier)
 }
 
 fn is_java_identifier_start(value: u32) -> bool {

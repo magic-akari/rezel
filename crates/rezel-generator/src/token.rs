@@ -3,19 +3,30 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::GeneratorError;
 use crate::grammar::{TermId, TermSet};
 
-const UTF16_LIMIT: i64 = 0x1_0000;
+const CODE_POINT_LIMIT: u32 = 0x11_0000;
+const NO_STATE: u16 = u16::MAX;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct Edge {
-    pub from: i32,
-    pub to: i32,
-    pub target: usize,
+enum NfaEdge {
+    CodePoint { from: u32, to: u32, target: usize },
+    Eof { target: usize },
+    Epsilon { target: usize },
+}
+
+impl NfaEdge {
+    const fn target(self) -> usize {
+        match self {
+            Self::CodePoint { target, .. } | Self::Eof { target } | Self::Epsilon { target } => {
+                target
+            }
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct NfaState {
     pub accepting: Vec<TermId>,
-    pub edges: Vec<Edge>,
+    edges: Vec<NfaEdge>,
 }
 
 #[derive(Clone, Debug)]
@@ -52,19 +63,21 @@ impl TokenNfa {
     }
 
     pub fn edge(&mut self, from_state: usize, from: u32, to: u32, target: usize) {
-        self.states[from_state].edges.push(Edge {
-            from: i32::try_from(from).expect("UTF-16 bounds fit i32"),
-            to: i32::try_from(to).expect("UTF-16 bounds fit i32"),
-            target,
-        });
+        debug_assert!(from < to);
+        debug_assert!(to <= CODE_POINT_LIMIT);
+        self.states[from_state]
+            .edges
+            .push(NfaEdge::CodePoint { from, to, target });
+    }
+
+    pub fn eof(&mut self, from_state: usize, target: usize) {
+        self.states[from_state].edges.push(NfaEdge::Eof { target });
     }
 
     pub fn epsilon(&mut self, from_state: usize, target: usize) {
-        self.states[from_state].edges.push(Edge {
-            from: -1,
-            to: -1,
-            target,
-        });
+        self.states[from_state]
+            .edges
+            .push(NfaEdge::Epsilon { target });
     }
 
     #[must_use]
@@ -77,42 +90,45 @@ impl TokenNfa {
         while cursor < sets.len() {
             let set = sets[cursor].clone();
             let mut accepting = Vec::new();
-            let mut edges = Vec::new();
+            let mut code_point_edges = Vec::new();
+            let mut eof_targets = Vec::new();
             for state in &set {
                 for term in &self.states[*state].accepting {
                     push_unique(&mut accepting, *term);
                 }
-                edges.extend(
-                    self.states[*state]
-                        .edges
-                        .iter()
-                        .filter(|edge| edge.from >= 0)
-                        .copied(),
-                );
+                for edge in &self.states[*state].edges {
+                    match *edge {
+                        NfaEdge::CodePoint { .. } => code_point_edges.push(*edge),
+                        NfaEdge::Eof { target } => {
+                            for target in self.closure(target) {
+                                push_unique(&mut eof_targets, target);
+                            }
+                        }
+                        NfaEdge::Epsilon { .. } => {}
+                    }
+                }
             }
             let mut transitions = Vec::new();
-            for merged in self.merge_edges(&edges) {
+            for merged in self.merge_edges(&code_point_edges) {
                 let mut targets = merged.targets;
                 targets.sort_unstable();
                 targets.dedup();
-                let target = if let Some(target) = set_ids.get(&targets) {
-                    *target
-                } else {
-                    let target = sets.len();
-                    sets.push(targets.clone());
-                    set_ids.insert(targets, target);
-                    target
-                };
+                let target = intern_set(targets, &mut sets, &mut set_ids);
                 transitions.push(DfaEdge {
                     from: merged.from,
                     to: merged.to,
                     target,
                 });
             }
+            eof_targets.sort_unstable();
+            eof_targets.dedup();
+            let eof =
+                (!eof_targets.is_empty()).then(|| intern_set(eof_targets, &mut sets, &mut set_ids));
             accepting.sort_unstable();
             states.push(DfaState {
                 accepting,
                 edges: transitions,
+                eof,
             });
             cursor += 1;
         }
@@ -128,29 +144,34 @@ impl TokenNfa {
                 continue;
             }
             let current = &self.states[state];
-            let has_labeled = current.edges.iter().any(|edge| edge.from >= 0);
+            let has_labeled = current
+                .edges
+                .iter()
+                .any(|edge| !matches!(edge, NfaEdge::Epsilon { .. }));
             let uniquely_accepting = !current.accepting.is_empty()
                 && !current.edges.iter().any(|edge| {
-                    edge.from < 0
-                        && same_set(&current.accepting, &self.states[edge.target].accepting)
+                    matches!(edge, NfaEdge::Epsilon { .. })
+                        && same_set(&current.accepting, &self.states[edge.target()].accepting)
                 });
             if has_labeled || uniquely_accepting {
                 result.push(state);
             }
-            for edge in current.edges.iter().filter(|edge| edge.from < 0) {
-                stack.push(edge.target);
+            for edge in &current.edges {
+                if let NfaEdge::Epsilon { target } = edge {
+                    stack.push(*target);
+                }
             }
         }
         result.sort_unstable();
         result
     }
 
-    fn merge_edges(&self, edges: &[Edge]) -> Vec<MergedEdge> {
+    fn merge_edges(&self, edges: &[NfaEdge]) -> Vec<MergedEdge> {
         let mut boundaries = Vec::new();
         for edge in edges {
-            if edge.from >= 0 && edge.from != i32::from(u16::MAX) {
-                push_unique(&mut boundaries, edge.from);
-                push_unique(&mut boundaries, edge.to);
+            if let NfaEdge::CodePoint { from, to, .. } = *edge {
+                push_unique(&mut boundaries, from);
+                push_unique(&mut boundaries, to);
             }
         }
         boundaries.sort_unstable();
@@ -160,8 +181,15 @@ impl TokenNfa {
             let to = pair[1];
             let mut targets = Vec::new();
             for edge in edges {
-                if edge.to > from && edge.from < to {
-                    for target in self.closure(edge.target) {
+                if let NfaEdge::CodePoint {
+                    from: edge_from,
+                    to: edge_to,
+                    target,
+                } = *edge
+                    && edge_to > from
+                    && edge_from < to
+                {
+                    for target in self.closure(target) {
                         push_unique(&mut targets, target);
                     }
                 }
@@ -170,37 +198,35 @@ impl TokenNfa {
                 result.push(MergedEdge { from, to, targets });
             }
         }
-        let eof_edges = edges
-            .iter()
-            .filter(|edge| edge.from == i32::from(u16::MAX) && edge.to == i32::from(u16::MAX));
-        let mut eof_targets = Vec::new();
-        for edge in eof_edges {
-            for target in self.closure(edge.target) {
-                push_unique(&mut eof_targets, target);
-            }
-        }
-        if !eof_targets.is_empty() {
-            result.push(MergedEdge {
-                from: i32::from(u16::MAX),
-                to: i32::from(u16::MAX),
-                targets: eof_targets,
-            });
-        }
         result
     }
 }
 
+fn intern_set(
+    targets: Vec<usize>,
+    sets: &mut Vec<Vec<usize>>,
+    set_ids: &mut BTreeMap<Vec<usize>, usize>,
+) -> usize {
+    if let Some(target) = set_ids.get(&targets) {
+        return *target;
+    }
+    let target = sets.len();
+    sets.push(targets.clone());
+    set_ids.insert(targets, target);
+    target
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct MergedEdge {
-    from: i32,
-    to: i32,
+    from: u32,
+    to: u32,
     targets: Vec<usize>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct DfaEdge {
-    pub from: i32,
-    pub to: i32,
+    pub from: u32,
+    pub to: u32,
     pub target: usize,
 }
 
@@ -208,6 +234,7 @@ pub struct DfaEdge {
 pub struct DfaState {
     pub accepting: Vec<TermId>,
     pub edges: Vec<DfaEdge>,
+    pub eof: Option<usize>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -216,36 +243,72 @@ pub struct TokenDfa {
     pub start: usize,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct EncodedTokenState {
+    pub group_mask: u16,
+    pub accept_start: u16,
+    pub edge_start: u16,
+    pub accept_count: u8,
+    pub edge_count: u8,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct EncodedTokenEof {
+    pub state: u16,
+    pub target: u16,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct EncodedTokenAccept {
+    pub term: u16,
+    pub group_mask: u16,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct EncodedTokenEdge {
+    pub from: u32,
+    pub to: u32,
+    pub target: u16,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct EncodedTokenTable {
+    pub states: Vec<EncodedTokenState>,
+    pub accepts: Vec<EncodedTokenAccept>,
+    pub edges: Vec<EncodedTokenEdge>,
+    pub eof: Vec<EncodedTokenEof>,
+}
+
 impl TokenDfa {
-    /// Encode the minimized token automaton in the runtime's compact format.
+    /// Encode the minimized token automaton as typed static-table data.
     ///
     /// # Errors
     ///
     /// Returns an error when offsets exceed the 16-bit runtime encoding.
-    pub fn to_array(
+    pub fn to_table(
         &self,
         terms: &TermSet,
         group_masks: &BTreeMap<u16, u16>,
         precedence: &[u16],
-    ) -> Result<Vec<u16>, GeneratorError> {
+    ) -> Result<EncodedTokenTable, GeneratorError> {
         let order = self.reachable_order();
-        let mut offsets = vec![0_usize; self.states.len()];
-        let mut data = Vec::<i64>::new();
+        if order.len() > usize::from(NO_STATE) {
+            return Err(GeneratorError::new(
+                "Tokenizer has too many states for 16-bit state ids",
+                None,
+            ));
+        }
+        let mut state_ids = vec![NO_STATE; self.states.len()];
+        for (encoded, state_id) in order.iter().copied().enumerate() {
+            state_ids[state_id] = u16::try_from(encoded)
+                .expect("token state count was checked against the reserved sentinel");
+        }
+
+        let mut table = EncodedTokenTable::default();
         for state_id in order {
             let state = &self.states[state_id];
-            let start = data.len();
-            let accept_end = start + 3 + state.accepting.len() * 2;
-            offsets[state_id] = start;
-            data.push(i64::from(self.state_mask(state_id, terms, group_masks)));
-            data.push(
-                i64::try_from(accept_end)
-                    .map_err(|_| GeneratorError::new("Tokenizer tables are too large", None))?,
-            );
-            data.push(
-                i64::try_from(state.edges.len())
-                    .map_err(|_| GeneratorError::new("Tokenizer tables are too large", None))?,
-            );
-
+            let encoded_state = state_ids[state_id];
+            let accept_start = table.accepts.len();
             let mut accepting = state.accepting.clone();
             accepting.sort_by_key(|term| {
                 let id = terms.output_id(*term);
@@ -256,33 +319,66 @@ impl TokenDfa {
             });
             for term in accepting {
                 let id = terms.output_id(term);
-                data.push(i64::from(id));
-                data.push(i64::from(group_masks.get(&id).copied().unwrap_or(u16::MAX)));
+                table.accepts.push(EncodedTokenAccept {
+                    term: id,
+                    group_mask: group_masks.get(&id).copied().unwrap_or(u16::MAX),
+                });
             }
+            let accept_end = table.accepts.len();
+            let accept_count = table_count(accept_end - accept_start, "accepts")?;
+            let edge_start = table.edges.len();
+            let mut previous_edge_end = None;
             for edge in &state.edges {
-                data.push(i64::from(edge.from));
-                data.push(i64::from(edge.to));
-                let marker = -i64::try_from(edge.target)
-                    .map_err(|_| GeneratorError::new("Tokenizer tables are too large", None))?
-                    - 1;
-                data.push(marker);
+                if edge.from >= edge.to || edge.to > CODE_POINT_LIMIT {
+                    return Err(GeneratorError::new(
+                        "Tokenizer edge is outside the Unicode code-point domain",
+                        None,
+                    ));
+                }
+                if previous_edge_end.is_some_and(|end| edge.from < end) {
+                    return Err(GeneratorError::new(
+                        "Tokenizer state edges must be sorted and non-overlapping",
+                        None,
+                    ));
+                }
+                let target = state_ids.get(edge.target).copied().unwrap_or(NO_STATE);
+                if target == NO_STATE {
+                    return Err(GeneratorError::new(
+                        "Tokenizer edge refers to an unreachable state",
+                        None,
+                    ));
+                }
+                table.edges.push(EncodedTokenEdge {
+                    from: edge.from,
+                    to: edge.to,
+                    target,
+                });
+                previous_edge_end = Some(edge.to);
             }
-        }
-        for value in &mut data {
-            if *value < 0 {
-                let state = usize::try_from(-*value - 1)
-                    .expect("negative transition markers encode state ids");
-                *value = i64::try_from(offsets[state])
-                    .map_err(|_| GeneratorError::new("Tokenizer tables are too large", None))?;
+            let edge_end = table.edges.len();
+            let edge_count = table_count(edge_end - edge_start, "edges")?;
+            if let Some(target) = state.eof {
+                let target = state_ids.get(target).copied().unwrap_or(NO_STATE);
+                if target == NO_STATE {
+                    return Err(GeneratorError::new(
+                        "Tokenizer EOF transition refers to an unreachable state",
+                        None,
+                    ));
+                }
+                table.eof.push(EncodedTokenEof {
+                    state: encoded_state,
+                    target,
+                });
             }
+            table.states.push(EncodedTokenState {
+                group_mask: self.state_mask(state_id, terms, group_masks),
+                accept_start: table_index(accept_start)?,
+                edge_start: table_index(edge_start)?,
+                accept_count,
+                edge_count,
+            });
         }
-        if data.len() > usize::from(u16::MAX) {
-            return Err(GeneratorError::new(
-                "Tokenizer tables too big to represent with 16-bit offsets.",
-                None,
-            ));
-        }
-        data.into_iter().map(encode_token_table_value).collect()
+        Ok(table)
     }
 
     #[must_use]
@@ -341,6 +437,9 @@ impl TokenDfa {
                 continue;
             }
             result.push(state);
+            if let Some(target) = self.states[state].eof {
+                stack.push(target);
+            }
             for edge in self.states[state].edges.iter().rev() {
                 stack.push(edge.target);
             }
@@ -353,6 +452,9 @@ impl TokenDfa {
         for (state_id, state) in self.states.iter().enumerate() {
             for edge in &state.edges {
                 closure[state_id].insert(edge.target);
+            }
+            if let Some(target) = state.eof {
+                closure[state_id].insert(target);
             }
         }
         loop {
@@ -396,12 +498,18 @@ impl TokenDfa {
     }
 }
 
-fn encode_token_table_value(value: i64) -> Result<u16, GeneratorError> {
-    if value == UTF16_LIMIT {
-        return Ok(0);
-    }
+fn table_index(value: usize) -> Result<u16, GeneratorError> {
     u16::try_from(value)
-        .map_err(|_| GeneratorError::new("Tokenizer table value exceeds 16 bits", None))
+        .map_err(|_| GeneratorError::new("Tokenizer table exceeds 16-bit indices", None))
+}
+
+fn table_count(value: usize, kind: &str) -> Result<u8, GeneratorError> {
+    u8::try_from(value).map_err(|_| {
+        GeneratorError::new(
+            format!("Tokenizer state has too many {kind} for 8-bit counts"),
+            None,
+        )
+    })
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -483,6 +591,7 @@ fn minimize(mut dfa: TokenDfa) -> TokenDfa {
         for edge in &mut state.edges {
             edge.target = partition[edge.target];
         }
+        state.eof = state.eof.map(|target| partition[target]);
         states.push(state);
     }
     dfa.start = partition[dfa.start];
@@ -507,7 +616,8 @@ fn accepting_partition(states: &[DfaState]) -> Vec<usize> {
 }
 
 fn equivalent_dfa_states(left: &DfaState, right: &DfaState, partition: &[usize]) -> bool {
-    left.edges.len() == right.edges.len()
+    left.eof.map(|target| partition[target]) == right.eof.map(|target| partition[target])
+        && left.edges.len() == right.edges.len()
         && left.edges.iter().zip(&right.edges).all(|(left, right)| {
             left.from == right.from
                 && left.to == right.to

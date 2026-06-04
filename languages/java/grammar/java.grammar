@@ -1050,8 +1050,11 @@ commaSepTrailing<expr> { (expr ("," expr?)*)? }
 
   @precedence { FloatingPointLiteral, IntegerLiteral }
 
+  characterCodeUnit {
+    $[\u{0}-\u{9}\u{b}-\u{26}\u{28}-\u{5b}\u{5d}-\u{ffff}]
+  }
   CharacterLiteral[isolate] {
-    "'" (![\\'\n] | "\\" ("'" | "\\" | ![\n\\']+)) "'"
+    "'" (characterCodeUnit | "\\" ("'" | "\\" | characterCodeUnit+)) "'"
   }
   StringLiteral[isolate] {
     "\"" (![\\"\n] | "\\" (![\n] | "\n"))* "\""

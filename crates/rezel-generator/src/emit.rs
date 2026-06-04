@@ -6,6 +6,7 @@ use quote::quote;
 use syn::LitStr;
 
 use crate::source::format_generated_rust;
+use crate::token::EncodedTokenTable;
 use crate::{
     CompiledGrammar, GeneratorError, RustBindingKind, RustBindings, SpecializerMetadata,
     TokenizerMetadata,
@@ -72,20 +73,38 @@ fn emit_parser(
     format_generated_rust(&source, "Generated parser is invalid Rust")
 }
 
-fn emit_parser_arrays(source: &mut String, grammar: &CompiledGrammar) -> BTreeMap<usize, String> {
+struct LocalTableNames {
+    table: String,
+    precedence: String,
+}
+
+fn emit_parser_arrays(
+    source: &mut String,
+    grammar: &CompiledGrammar,
+) -> BTreeMap<usize, LocalTableNames> {
     write_array(source, "STATES", "u32", &grammar.states);
     write_array(source, "STATE_DATA", "u16", &grammar.state_data);
     write_array(source, "GOTO", "u16", &grammar.goto);
-    write_array(source, "TOKEN_DATA", "u16", &grammar.token_data);
+    write_token_table(source, "TOKEN", &grammar.token_table);
     grammar
         .tokenizers
         .iter()
         .enumerate()
         .filter_map(|(index, tokenizer)| match tokenizer {
-            TokenizerMetadata::Local { data, .. } => {
-                let name = format!("LOCAL_TOKEN_DATA_{index}");
-                write_array(source, &name, "u16", data);
-                Some((index, name))
+            TokenizerMetadata::Local {
+                table, precedence, ..
+            } => {
+                let prefix = format!("LOCAL_TOKEN_{index}");
+                let table_name = write_token_table(source, &prefix, table);
+                let precedence_name = format!("{prefix}_PRECEDENCE");
+                write_array(source, &precedence_name, "u16", precedence);
+                Some((
+                    index,
+                    LocalTableNames {
+                        table: table_name,
+                        precedence: precedence_name,
+                    },
+                ))
             }
             _ => None,
         })
@@ -95,7 +114,7 @@ fn emit_parser_arrays(source: &mut String, grammar: &CompiledGrammar) -> BTreeMa
 fn emit_tokenizers(
     grammar: &CompiledGrammar,
     bindings: &RustBindings,
-    local_names: &BTreeMap<usize, String>,
+    local_names: &BTreeMap<usize, LocalTableNames>,
 ) -> Result<Vec<TokenStream>, GeneratorError> {
     grammar
         .tokenizers
@@ -111,23 +130,18 @@ fn emit_tokenizers(
                             )
                         }
                     }
-                    TokenizerMetadata::Local {
-                        precedence_offset,
-                        else_token,
-                        ..
-                    } => {
-                        let data = Ident::new(
-                            local_names
-                                .get(&index)
-                                .expect("local tokenizer has emitted data"),
-                            Span::call_site(),
-                        );
+                    TokenizerMetadata::Local { else_token, .. } => {
+                        let names = local_names
+                            .get(&index)
+                            .expect("local tokenizer has emitted data");
+                        let table = Ident::new(&names.table, Span::call_site());
+                        let precedence = Ident::new(&names.precedence, Span::call_site());
                         let fallback = option_u16(*else_token);
                         quote! {
                             rezel_lr::Tokenizer::Local(
                                 rezel_lr::LocalTokenGroup::new(
-                                    #data,
-                                    #precedence_offset,
+                                    &#table,
+                                    #precedence,
                                     #fallback,
                                 )
                             )
@@ -248,7 +262,7 @@ fn emit_language_definition(
             states: STATES,
             state_data: STATE_DATA,
             goto: GOTO,
-            token_data: TOKEN_DATA,
+            token_table: &TOKEN_TABLE,
             tokenizers: TOKENIZERS,
             top_rules: TOP_RULES,
             max_term: #max_term,
@@ -462,6 +476,65 @@ where
         let _ = write!(source, "{value},");
     }
     source.push_str("];\n");
+}
+
+fn write_token_table(source: &mut String, prefix: &str, table: &EncodedTokenTable) -> String {
+    let states = format!("{prefix}_STATES");
+    let accepts = format!("{prefix}_ACCEPTS");
+    let edges = format!("{prefix}_EDGES");
+    let eof = format!("{prefix}_EOF");
+    let table_name = format!("{prefix}_TABLE");
+
+    let _ = write!(source, "static {states}: &[rezel_lr::TokenState] = &[");
+    for state in &table.states {
+        let _ = write!(
+            source,
+            "rezel_lr::TokenState::new({},{},{},{},{}),",
+            state.group_mask,
+            state.accept_start,
+            state.edge_start,
+            state.accept_count,
+            state.edge_count,
+        );
+    }
+    source.push_str("];\n");
+
+    let _ = write!(source, "static {accepts}: &[rezel_lr::TokenAccept] = &[");
+    for accept in &table.accepts {
+        let _ = write!(
+            source,
+            "rezel_lr::TokenAccept::new({},{}),",
+            accept.term, accept.group_mask,
+        );
+    }
+    source.push_str("];\n");
+
+    let _ = write!(source, "static {edges}: &[rezel_lr::TokenEdge] = &[");
+    for edge in &table.edges {
+        let _ = write!(
+            source,
+            "rezel_lr::TokenEdge::new({},{},{}),",
+            edge.from, edge.to, edge.target,
+        );
+    }
+    source.push_str("];\n");
+
+    let _ = write!(source, "static {eof}: &[rezel_lr::TokenEof] = &[");
+    for transition in &table.eof {
+        let _ = write!(
+            source,
+            "rezel_lr::TokenEof::new({},{}),",
+            transition.state, transition.target,
+        );
+    }
+    source.push_str("];\n");
+
+    let _ = writeln!(
+        source,
+        "static {table_name}: rezel_lr::TokenTable = \
+         rezel_lr::TokenTable::new({states}, {accepts}, {edges}, {eof});"
+    );
+    table_name
 }
 
 fn rust_identifier(name: &str, used: &mut BTreeSet<String>) -> Ident {

@@ -19,5 +19,6 @@ pub use parse::{
 };
 pub use stack::Stack;
 pub use token::{
-    ExternalTokenizer, InputStream, LocalTokenGroup, TokenGroup, Tokenizer, TokenizerFlags,
+    ExternalTokenizer, InputMark, InputStream, LocalTokenGroup, TokenAccept, TokenEdge, TokenEof,
+    TokenGroup, TokenState, TokenTable, Tokenizer, TokenizerFlags,
 };

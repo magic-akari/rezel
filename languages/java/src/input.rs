@@ -1,16 +1,19 @@
 use std::borrow::Cow;
 use std::sync::Arc;
 
-use rezel_common::{Input, InputChunk, LogicalUnits, TextRange, TextSize};
+use rezel_common::{
+    CodePoint, Input, InputCharacter, InputChunk, LexicalInput, TextRange, TextSize,
+};
 
 /// Java's JLS §3.3 Unicode-escape view over original UTF-8 input.
 ///
-/// The parser observes translated UTF-16 units while all ranges continue to
-/// address the wrapped input.
+/// The parser observes translated code points while all ranges continue to
+/// address the wrapped input. UTF-16 surrogate code units are confined to this
+/// language adapter.
 #[derive(Clone)]
 pub(crate) struct JavaInput {
     raw: Arc<dyn Input>,
-    escapes: Arc<[UnicodeEscape]>,
+    translations: Arc<[Translation]>,
     final_sub: Option<TextSize>,
     malformed_escapes: Arc<[TextSize]>,
 }
@@ -20,7 +23,7 @@ impl std::fmt::Debug for JavaInput {
         formatter
             .debug_struct("JavaInput")
             .field("length", &self.raw.len())
-            .field("escape_count", &self.escapes.len())
+            .field("translation_count", &self.translations.len())
             .field("final_sub", &self.final_sub)
             .field("malformed_escape_count", &self.malformed_escapes.len())
             .finish()
@@ -36,7 +39,7 @@ impl JavaInput {
         } = scan_unicode_escapes(&*raw);
         Self {
             raw,
-            escapes: escapes.into(),
+            translations: combine_escapes(&escapes).into(),
             final_sub,
             malformed_escapes: malformed_escapes.into(),
         }
@@ -56,43 +59,11 @@ impl JavaInput {
         None
     }
 
-    fn escape_starting_at(&self, position: TextSize) -> Option<UnicodeEscape> {
-        self.escapes
-            .binary_search_by_key(&position, |escape| escape.range.start())
-            .ok()
-            .map(|index| self.escapes[index])
-    }
-
-    fn escape_ending_at(&self, position: TextSize) -> Option<UnicodeEscape> {
+    fn translation_at_or_after(&self, position: TextSize) -> Option<Translation> {
         let index = self
-            .escapes
-            .partition_point(|escape| escape.range.end() < position);
-        self.escapes
-            .get(index)
-            .copied()
-            .filter(|escape| escape.range.end() == position)
-    }
-
-    fn lexical_escape_value(&self, escape: UnicodeEscape) -> u16 {
-        const REPLACEMENT_CHARACTER: u16 = 0xfffd;
-
-        // The generated token DFA ranges over Unicode scalar values, whereas
-        // Java Unicode escapes may produce isolated UTF-16 surrogates. Preserve
-        // valid pairs and substitute only isolated code units for lexing; raw
-        // source slices and byte ranges remain unchanged.
-        if (0xd800..=0xdbff).contains(&escape.value) {
-            return self
-                .escape_starting_at(escape.range.end())
-                .filter(|next| (0xdc00..=0xdfff).contains(&next.value))
-                .map_or(REPLACEMENT_CHARACTER, |_| escape.value);
-        }
-        if (0xdc00..=0xdfff).contains(&escape.value) {
-            return self
-                .escape_ending_at(escape.range.start())
-                .filter(|previous| (0xd800..=0xdbff).contains(&previous.value))
-                .map_or(REPLACEMENT_CHARACTER, |_| escape.value);
-        }
-        escape.value
+            .translations
+            .partition_point(|translation| translation.range.end() <= position);
+        self.translations.get(index).copied()
     }
 
     fn range_has_translation(&self, range: TextRange) -> bool {
@@ -103,43 +74,57 @@ impl JavaInput {
             return true;
         }
         let index = self
-            .escapes
-            .partition_point(|escape| escape.range.end() <= range.start());
-        self.escapes
+            .translations
+            .partition_point(|translation| translation.range.end() <= range.start());
+        self.translations
             .get(index)
-            .is_some_and(|escape| escape.range.start() < range.end())
+            .is_some_and(|translation| translation.range.start() < range.end())
+    }
+
+    /// Read translated text for AST lowering.
+    ///
+    /// AST string storage cannot represent isolated surrogates. Such values
+    /// are replaced here, after tokenization, rather than in the lexical view.
+    pub(crate) fn read_logical(&self, range: TextRange) -> Cow<'_, str> {
+        if let Some(text) = self.scalar_text(range) {
+            return text;
+        }
+        let mut result = String::new();
+        let mut position = range.start();
+        while position < range.end() {
+            let Some(character) = self.character(position) else {
+                break;
+            };
+            if character.raw_end() > range.end() {
+                break;
+            }
+            result.push(
+                character
+                    .value()
+                    .as_char()
+                    .unwrap_or(char::REPLACEMENT_CHARACTER),
+            );
+            position = character.raw_end();
+        }
+        Cow::Owned(result)
     }
 }
 
-impl Input for JavaInput {
-    fn len(&self) -> TextSize {
-        self.raw.len()
+impl LexicalInput for JavaInput {
+    fn raw(&self) -> &dyn Input {
+        &*self.raw
     }
 
-    fn chunk(&self, from: TextSize) -> Cow<'_, str> {
-        self.raw.chunk(from)
-    }
-
-    fn line_chunks(&self) -> bool {
-        self.raw.line_chunks()
-    }
-
-    fn read(&self, range: TextRange) -> Cow<'_, str> {
-        self.raw.read(range)
-    }
-
-    fn logical_chunk(&self, from: TextSize) -> Option<InputChunk> {
-        if self.final_sub.is_none() && self.escapes.is_empty() {
-            return self.raw.logical_chunk(from);
+    fn identity_chunk(&self, from: TextSize) -> Option<InputChunk> {
+        if self.final_sub.is_none() && self.translations.is_empty() {
+            return self.raw.identity_chunk(from);
         }
-        let escape_index = self
-            .escapes
-            .partition_point(|escape| escape.range.start() < from);
-        let next_escape = self
-            .escapes
-            .get(escape_index)
-            .map(|escape| escape.range.start());
-        let next_translation = next_escape
+        let translation = self.translation_at_or_after(from);
+        if translation.is_some_and(|translation| translation.range.start() <= from) {
+            return None;
+        }
+        let next_translation = translation
+            .map(|translation| translation.range.start())
             .into_iter()
             .chain(self.final_sub.filter(|position| *position >= from))
             .min()
@@ -147,71 +132,159 @@ impl Input for JavaInput {
         if next_translation == from {
             return None;
         }
-        let mut chunk = self.raw.logical_chunk(from)?;
+        let mut chunk = self.raw.identity_chunk(from)?;
         let end = chunk.raw_end().min(next_translation);
         chunk.truncate(end);
         chunk.contains(from).then_some(chunk)
     }
 
-    fn logical_units(&self, from: TextSize) -> Option<LogicalUnits> {
-        if self.final_sub.is_none() && self.escapes.is_empty() {
-            return self.raw.logical_units(from);
-        }
+    fn character(&self, from: TextSize) -> Option<InputCharacter> {
         if self.final_sub == Some(from) {
-            return Some(LogicalUnits::new(
-                &[u16::from(b' ')],
+            return Some(InputCharacter::new(
+                CodePoint::from(b' '),
                 from + TextSize::from(1),
             ));
         }
-        if let Some(escape) = self.escape_starting_at(from) {
-            let value = self.lexical_escape_value(escape);
-            return Some(LogicalUnits::new(&[value], escape.range.end()));
+        if let Some(translation) = self.translation_at_or_after(from) {
+            if translation.range.start() == from {
+                return Some(InputCharacter::new(
+                    translation.value,
+                    translation.range.end(),
+                ));
+            }
+            if translation.range.start() < from {
+                return None;
+            }
         }
-        self.raw.logical_units(from)
+        raw_character(&*self.raw, from)
     }
 
-    fn logical_units_before(&self, before: TextSize) -> Option<(TextSize, LogicalUnits)> {
-        if self.final_sub.is_none() && self.escapes.is_empty() {
-            return self.raw.logical_units_before(before);
-        }
+    fn character_before(&self, before: TextSize) -> Option<(TextSize, InputCharacter)> {
         if self
             .final_sub
             .is_some_and(|position| position + TextSize::from(1) == before)
         {
             let start = before - TextSize::from(1);
-            return Some((start, LogicalUnits::new(&[u16::from(b' ')], before)));
+            return Some((start, InputCharacter::new(CodePoint::from(b' '), before)));
         }
-        if let Some(escape) = self.escape_ending_at(before) {
-            let value = self.lexical_escape_value(escape);
-            return Some((escape.range.start(), LogicalUnits::new(&[value], before)));
+        let index = self
+            .translations
+            .partition_point(|translation| translation.range.end() <= before);
+        if let Some(translation) = index
+            .checked_sub(1)
+            .and_then(|index| self.translations.get(index))
+            .copied()
+            && translation.range.end() == before
+        {
+            return Some((
+                translation.range.start(),
+                InputCharacter::new(translation.value, before),
+            ));
         }
-        self.raw.logical_units_before(before)
+        if let Some(translation) = self.translations.get(index)
+            && translation.range.start() < before
+        {
+            return None;
+        }
+        raw_character_before(&*self.raw, before)
     }
 
-    fn read_logical(&self, range: TextRange) -> Cow<'_, str> {
-        if !self.range_has_translation(range) {
-            return self.raw.read_logical(range);
+    fn is_boundary(&self, position: TextSize) -> bool {
+        if !self.raw.is_boundary(position) {
+            return false;
         }
-        let mut units = Vec::new();
+        self.translation_at_or_after(position)
+            .is_none_or(|translation| translation.range.start() >= position)
+    }
+
+    fn scalar_text(&self, range: TextRange) -> Option<Cow<'_, str>> {
+        if !self.range_has_translation(range) {
+            return Some(self.raw.read(range));
+        }
+        debug_assert!(self.is_boundary(range.start()) && self.is_boundary(range.end()));
+        let mut result = String::new();
         let mut position = range.start();
         while position < range.end() {
-            let Some(logical) = self.logical_units(position) else {
-                break;
-            };
-            if logical.raw_end() > range.end() {
-                break;
+            let character = self.character(position)?;
+            if character.raw_end() > range.end() {
+                return None;
             }
-            units.extend_from_slice(logical.units());
-            position = logical.raw_end();
+            result.push(character.value().as_char()?);
+            position = character.raw_end();
         }
-        Cow::Owned(String::from_utf16_lossy(&units))
+        (position == range.end()).then_some(Cow::Owned(result))
     }
+}
+
+fn raw_character(input: &dyn Input, from: TextSize) -> Option<InputCharacter> {
+    if let Some(chunk) = input.identity_chunk(from)
+        && let Some(character) = chunk.character(from)
+    {
+        return Some(character);
+    }
+    if !input.is_boundary(from) {
+        return None;
+    }
+    let character = input.chunk(from).chars().next()?;
+    let width = TextSize::try_from(character.len_utf8()).ok()?;
+    Some(InputCharacter::new(
+        CodePoint::from(character),
+        from + width,
+    ))
+}
+
+fn raw_character_before(input: &dyn Input, before: TextSize) -> Option<(TextSize, InputCharacter)> {
+    if !input.is_boundary(before) {
+        return None;
+    }
+    let text = input.read(TextRange::new(TextSize::from(0), before));
+    let (start, character) = text.char_indices().next_back()?;
+    let start = TextSize::try_from(start).ok()?;
+    Some((
+        start,
+        InputCharacter::new(CodePoint::from(character), before),
+    ))
+}
+
+#[derive(Clone, Copy, Debug)]
+struct Translation {
+    range: TextRange,
+    value: CodePoint,
 }
 
 #[derive(Clone, Copy, Debug)]
 struct UnicodeEscape {
     range: TextRange,
     value: u16,
+}
+
+fn combine_escapes(escapes: &[UnicodeEscape]) -> Vec<Translation> {
+    let mut translations = Vec::with_capacity(escapes.len());
+    let mut index = 0;
+    while index < escapes.len() {
+        let current = escapes[index];
+        if (0xd800..=0xdbff).contains(&current.value)
+            && let Some(next) = escapes.get(index + 1).copied()
+            && next.range.start() == current.range.end()
+            && (0xdc00..=0xdfff).contains(&next.value)
+        {
+            let high = u32::from(current.value) - 0xd800;
+            let low = u32::from(next.value) - 0xdc00;
+            let value = 0x1_0000 + (high << 10) + low;
+            translations.push(Translation {
+                range: TextRange::new(current.range.start(), next.range.end()),
+                value: CodePoint::new(value).expect("a valid surrogate pair is a code point"),
+            });
+            index += 2;
+            continue;
+        }
+        translations.push(Translation {
+            range: current.range,
+            value: CodePoint::from(current.value),
+        });
+        index += 1;
+    }
+    translations
 }
 
 struct ScanResult {
@@ -269,12 +342,10 @@ fn scan_unicode_escapes(input: &dyn Input) -> ScanResult {
         position += TextSize::try_from(chunk.len()).expect("input chunk fits in text coordinates");
     }
 
-    let final_sub = input
-        .logical_units_before(input.len())
-        .and_then(|(start, logical)| {
-            (logical.raw_end() == input.len() && logical.units() == [u16::from(0x1a_u8)])
-                .then_some(start)
-        });
+    let final_sub = raw_character_before(input, input.len()).and_then(|(start, character)| {
+        (character.raw_end() == input.len() && character.value() == CodePoint::from(0x1a_u8))
+            .then_some(start)
+    });
     ScanResult {
         escapes,
         final_sub,
@@ -352,12 +423,28 @@ mod tests {
 
         fn chunk(&self, from: TextSize) -> Cow<'_, str> {
             let from = usize::from(from);
-            let to = (from + self.chunk_length).min(self.source.len());
+            let mut to = (from + self.chunk_length).min(self.source.len());
+            while to > from && !self.source.is_char_boundary(to) {
+                to -= 1;
+            }
+            if to == from && from < self.source.len() {
+                let width = self.source[from..]
+                    .chars()
+                    .next()
+                    .expect("input position precedes one character")
+                    .len_utf8();
+                to = from + width;
+            }
             Cow::Borrowed(&self.source[from..to])
         }
 
         fn read(&self, range: TextRange) -> Cow<'_, str> {
             Cow::Borrowed(&self.source[usize::from(range.start())..usize::from(range.end())])
+        }
+
+        fn is_boundary(&self, position: TextSize) -> bool {
+            let position = usize::from(position);
+            position <= self.source.len() && self.source.is_char_boundary(position)
         }
     }
 
@@ -398,49 +485,105 @@ mod tests {
     #[test]
     fn retains_raw_boundaries_for_escaped_units() {
         let input = input(r"cl\u0061ss");
-        let logical = input.logical_units(2.into()).unwrap();
-        assert_eq!(logical.units(), &[u16::from(b'a')]);
-        assert_eq!(logical.raw_end(), 8.into());
-        let (start, previous) = input.logical_units_before(8.into()).unwrap();
+        let character = input.character(2.into()).unwrap();
+        assert_eq!(character.value(), CodePoint::from(b'a'));
+        assert_eq!(character.raw_end(), 8.into());
+        let (start, previous) = input.character_before(8.into()).unwrap();
         assert_eq!(start, 2.into());
-        assert_eq!(previous, logical);
+        assert_eq!(previous, character);
+        assert!(input.is_boundary(2.into()));
+        assert!(!input.is_boundary(3.into()));
+        assert!(input.is_boundary(8.into()));
     }
 
     #[test]
     fn shared_chunks_stop_at_translated_units() {
         let input = input(r"cl\u0061ss");
-        let prefix = input.logical_chunk(0.into()).expect("identity prefix");
+        let prefix = input.identity_chunk(0.into()).expect("identity prefix");
         assert_eq!(prefix.raw_start(), 0.into());
         assert_eq!(prefix.raw_end(), 2.into());
-        assert!(input.logical_chunk(2.into()).is_none());
+        assert!(input.identity_chunk(2.into()).is_none());
 
-        let suffix = input.logical_chunk(8.into()).expect("identity suffix");
+        let suffix = input.identity_chunk(8.into()).expect("identity suffix");
         assert_eq!(suffix.raw_start(), 8.into());
         assert_eq!(suffix.raw_end(), 10.into());
     }
 
     #[test]
-    fn preserves_utf16_surrogates_and_ignores_final_sub() {
+    fn combines_valid_pairs_and_preserves_isolated_surrogates() {
         let pair = input(r"\uD83D\uDE00");
-        assert_eq!(pair.logical_units(0.into()).unwrap().units(), &[0xd83d]);
-        assert_eq!(pair.logical_units(6.into()).unwrap().units(), &[0xde00]);
+        let character = pair.character(0.into()).unwrap();
+        assert_eq!(character.value(), CodePoint::from('😀'));
+        assert_eq!(character.raw_end(), 12.into());
+        assert!(!pair.is_boundary(6.into()));
+        assert!(pair.character(6.into()).is_none());
+        let (start, previous) = pair.character_before(12.into()).unwrap();
+        assert_eq!(start, TextSize::from(0));
+        assert_eq!(previous, character);
         assert_eq!(cooked(r"\uD83D\uDE00"), "😀");
+
+        let high = input(r"\uD800");
+        let high_character = high.character(0.into()).unwrap();
         assert_eq!(
-            input(r"\uD800").logical_units(0.into()).unwrap().units(),
-            &[0xfffd]
+            high_character.value(),
+            CodePoint::new(0xd800).expect("surrogate is a code point")
+        );
+        assert!(
+            high.scalar_text(TextRange::new(0.into(), 6.into()))
+                .is_none()
+        );
+        assert_eq!(high.character_before(6.into()).unwrap().1, high_character);
+
+        let low = input(r"\uDC00");
+        assert_eq!(
+            low.character(0.into()).unwrap().value(),
+            CodePoint::new(0xdc00).expect("surrogate is a code point")
+        );
+        assert!(
+            low.scalar_text(TextRange::new(0.into(), 6.into()))
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn distinguishes_isolated_surrogates_from_replacement_characters() {
+        let surrogate = input(r"\uD800");
+        let escaped_replacement = input(r"\uFFFD");
+        let direct_replacement = input("\u{fffd}");
+
+        assert_eq!(
+            surrogate.character(0.into()).unwrap().value(),
+            CodePoint::new(0xd800).unwrap()
         );
         assert_eq!(
-            input(r"\uD800")
-                .logical_units_before(6.into())
-                .unwrap()
-                .1
-                .units(),
-            &[0xfffd]
+            escaped_replacement.character(0.into()).unwrap().value(),
+            CodePoint::from(char::REPLACEMENT_CHARACTER)
         );
         assert_eq!(
-            input(r"\uDC00").logical_units(0.into()).unwrap().units(),
-            &[0xfffd]
+            direct_replacement.character(0.into()).unwrap().value(),
+            CodePoint::from(char::REPLACEMENT_CHARACTER)
         );
+        assert!(
+            surrogate
+                .scalar_text(TextRange::new(0.into(), 6.into()))
+                .is_none()
+        );
+        assert_eq!(
+            escaped_replacement
+                .scalar_text(TextRange::new(0.into(), 6.into()))
+                .unwrap(),
+            "\u{fffd}"
+        );
+        assert_eq!(
+            direct_replacement
+                .scalar_text(TextRange::new(0.into(), 3.into()))
+                .unwrap(),
+            "\u{fffd}"
+        );
+    }
+
+    #[test]
+    fn ignores_final_sub_in_the_lexical_view() {
         assert_eq!(cooked("class A {}\u{1a}"), "class A {} ");
     }
 

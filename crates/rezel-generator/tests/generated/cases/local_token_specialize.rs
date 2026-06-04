@@ -7,11 +7,40 @@ static STATES: &[u32] = &[
 ];
 static STATE_DATA: &[u16] = &[65535, 0, 5, 2, 0, 65535, 0, 7, 4, 0, 65535, 0];
 static GOTO: &[u16] = &[4, 1, 1, 5, 8, 3, 1, 0, 3, 3, 2];
-static TOKEN_DATA: &[u16] = &[65535, 3, 1, 35, 36, 6, 65535, 11, 0, 5, 65535];
-static LOCAL_TOKEN_DATA_1: &[u16] = &[
-    65535, 3, 2, 65, 91, 9, 97, 123, 9, 65535, 14, 2, 6, 65535, 65, 91, 9, 97, 123, 9,
-    65535,
+static TOKEN_STATES: &[rezel_lr::TokenState] = &[
+    rezel_lr::TokenState::new(65535, 0, 0, 0, 1),
+    rezel_lr::TokenState::new(65535, 0, 1, 1, 0),
 ];
+static TOKEN_ACCEPTS: &[rezel_lr::TokenAccept] = &[rezel_lr::TokenAccept::new(5, 65535)];
+static TOKEN_EDGES: &[rezel_lr::TokenEdge] = &[rezel_lr::TokenEdge::new(35, 36, 1)];
+static TOKEN_EOF: &[rezel_lr::TokenEof] = &[];
+static TOKEN_TABLE: rezel_lr::TokenTable = rezel_lr::TokenTable::new(
+    TOKEN_STATES,
+    TOKEN_ACCEPTS,
+    TOKEN_EDGES,
+    TOKEN_EOF,
+);
+static LOCAL_TOKEN_1_STATES: &[rezel_lr::TokenState] = &[
+    rezel_lr::TokenState::new(65535, 0, 0, 0, 2),
+    rezel_lr::TokenState::new(65535, 0, 2, 1, 2),
+];
+static LOCAL_TOKEN_1_ACCEPTS: &[rezel_lr::TokenAccept] = &[
+    rezel_lr::TokenAccept::new(6, 65535),
+];
+static LOCAL_TOKEN_1_EDGES: &[rezel_lr::TokenEdge] = &[
+    rezel_lr::TokenEdge::new(65, 91, 1),
+    rezel_lr::TokenEdge::new(97, 123, 1),
+    rezel_lr::TokenEdge::new(65, 91, 1),
+    rezel_lr::TokenEdge::new(97, 123, 1),
+];
+static LOCAL_TOKEN_1_EOF: &[rezel_lr::TokenEof] = &[];
+static LOCAL_TOKEN_1_TABLE: rezel_lr::TokenTable = rezel_lr::TokenTable::new(
+    LOCAL_TOKEN_1_STATES,
+    LOCAL_TOKEN_1_ACCEPTS,
+    LOCAL_TOKEN_1_EDGES,
+    LOCAL_TOKEN_1_EOF,
+);
+static LOCAL_TOKEN_1_PRECEDENCE: &[u16] = &[65535];
 fn specialize_0(
     value: &str,
     _stack: &rezel_lr::Stack,
@@ -66,7 +95,11 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
 static TOKENIZERS: &[rezel_lr::Tokenizer] = &[
     rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(1u8)),
     rezel_lr::Tokenizer::Local(
-        rezel_lr::LocalTokenGroup::new(LOCAL_TOKEN_DATA_1, 20usize, None),
+        rezel_lr::LocalTokenGroup::new(
+            &LOCAL_TOKEN_1_TABLE,
+            LOCAL_TOKEN_1_PRECEDENCE,
+            None,
+        ),
     ),
 ];
 static TOP_RULES: &[rezel_lr::TopRule] = &[
@@ -89,7 +122,7 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: STATES,
     state_data: STATE_DATA,
     goto: GOTO,
-    token_data: TOKEN_DATA,
+    token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
     max_term: 7u16,

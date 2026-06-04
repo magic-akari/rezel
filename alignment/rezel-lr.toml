@@ -40,7 +40,7 @@ classification = "adapted"
 upstream_file = "src/constants.ts"
 upstream_symbols = ["Action", "StateFlag", "ParseState", "Seq", "Term"]
 invariant = "Generated action bit fields, state-record offsets, sequence sentinels, flags, and the reserved error term retain the pinned runtime's numeric ABI."
-representation = "Rust uses transparent newtypes and repr enums with const accessors while generated tables remain raw u16 and u32 slices."
+representation = "Rust uses transparent newtypes and repr enums with const accessors; generated action, state, goto, and metadata tables remain raw numeric slices while token DFAs use typed records."
 
 [[scope]]
 rust_file = "decode.rs"
@@ -126,13 +126,13 @@ upstream_symbols = [
 	"overrides",
 ]
 invariant = "Only tokenizers enabled by the current state run, with longest-match, precedence, fallback, extend, local-token, dialect, specialization, and external-token semantics."
-representation = "Tokenizer code observes UTF-16 code units over cached shared input chunks while public positions remain UTF-8 byte offsets; reads may borrow contiguous text, external tokenizers can traverse sequential lookahead through one forward cursor, identity-mapped ASCII advances avoid re-decoding the consumed unit, external tokenizers may bulk-advance bounded identity-mapped ASCII runs, and Rust externals are static fallible function pointers."
+representation = "Tokenizer code observes logical code points over cached identity-mapped input chunks while public positions remain UTF-8 byte offsets; opaque stream marks preserve token endpoints across multi-byte characters and selected ranges, reads may borrow scalar text, external tokenizers can traverse sequential lookahead through one forward cursor, bounded ASCII runs use prevalidated identity windows, other ASCII transitions reuse their already classified byte when advancing that window, and Rust externals are static fallible function pointers."
 
 [[override_item]]
 rust_item = "rezel_lr::token::TokenAsciiIndex"
 classification = "rezel-owned"
-invariant = "Every indexed ASCII transition resolves to the same next DFA state as the authoritative compact global-token table, while missing and non-ASCII transitions retain the compact-table path."
-representation = "Parser construction projects every global DFA state's ASCII edges into immutable dense rows shared by parser clones; generated tables and local-token DFAs remain unchanged."
+invariant = "Every indexed ASCII transition resolves to the same next DFA state as the authoritative global or local token table, while missing and non-ASCII transitions retain the typed-table path."
+representation = "Parser construction projects every generated global and local TokenTable state's ASCII edges into immutable dense rows shared by parser clones; non-ASCII transitions continue through the authoritative half-open code-point edges."
 evidence_files = [
 	"crates/rezel-lr/src/token.rs",
 	"crates/rezel-lr/tests/validation.rs",

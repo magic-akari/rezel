@@ -11,8 +11,8 @@ pub use text_size::{TextRange, TextSize};
 
 pub use mix::{MixedParseSpec, NestedParse, Overlay, OverlayMatch, parse_mixed};
 pub use parse::{
-    Input, InputChunk, LogicalUnits, ParseError, ParseErrorKind, ParseRequest, ParseWrapper,
-    Parser, PartialParse, StringInput,
+    CodePoint, Input, InputCharacter, InputChunk, LexicalInput, ParseError, ParseErrorKind,
+    ParseRequest, ParseWrapper, Parser, PartialParse, StringInput, Utf8Input,
 };
 pub use prop::{
     NodeProp, NodePropConfig, NodePropDeserializer, NodePropSource, PropertyError, PropertyValue,

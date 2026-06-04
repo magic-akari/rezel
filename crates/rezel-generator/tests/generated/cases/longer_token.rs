@@ -8,12 +8,41 @@ static STATES: &[u32] = &[
 ];
 static STATE_DATA: &[u16] = &[65535, 0, 7, 3, 0, 8, 4, 0, 9, 5, 0, 65535, 0];
 static GOTO: &[u16] = &[6, 1, 1, 7, 7, 7, 11, 5, 2, 0, 1, 2, 1, 0, 3, 6, 1];
-static TOKEN_DATA: &[u16] = &[
-    65535, 3, 2, 98, 99, 9, 102, 103, 26, 65535, 12, 1, 97, 98, 15, 65535, 18, 1, 122,
-    123, 21, 65535, 26, 0, 9, 65535, 65535, 29, 1, 111, 112, 32, 65535, 35, 1, 111, 112,
-    38, 65535, 43, 1, 7, 65535, 98, 99, 46, 65535, 49, 1, 97, 98, 52, 65535, 55, 1, 114,
-    115, 58, 65535, 63, 0, 8, 65535,
+static TOKEN_STATES: &[rezel_lr::TokenState] = &[
+    rezel_lr::TokenState::new(65535, 0, 0, 0, 2),
+    rezel_lr::TokenState::new(65535, 0, 2, 0, 1),
+    rezel_lr::TokenState::new(65535, 0, 3, 0, 1),
+    rezel_lr::TokenState::new(65535, 0, 4, 1, 0),
+    rezel_lr::TokenState::new(65535, 1, 4, 0, 1),
+    rezel_lr::TokenState::new(65535, 1, 5, 0, 1),
+    rezel_lr::TokenState::new(65535, 1, 6, 1, 1),
+    rezel_lr::TokenState::new(65535, 2, 7, 0, 1),
+    rezel_lr::TokenState::new(65535, 2, 8, 0, 1),
+    rezel_lr::TokenState::new(65535, 2, 9, 1, 0),
 ];
+static TOKEN_ACCEPTS: &[rezel_lr::TokenAccept] = &[
+    rezel_lr::TokenAccept::new(9, 65535),
+    rezel_lr::TokenAccept::new(7, 65535),
+    rezel_lr::TokenAccept::new(8, 65535),
+];
+static TOKEN_EDGES: &[rezel_lr::TokenEdge] = &[
+    rezel_lr::TokenEdge::new(98, 99, 1),
+    rezel_lr::TokenEdge::new(102, 103, 4),
+    rezel_lr::TokenEdge::new(97, 98, 2),
+    rezel_lr::TokenEdge::new(122, 123, 3),
+    rezel_lr::TokenEdge::new(111, 112, 5),
+    rezel_lr::TokenEdge::new(111, 112, 6),
+    rezel_lr::TokenEdge::new(98, 99, 7),
+    rezel_lr::TokenEdge::new(97, 98, 8),
+    rezel_lr::TokenEdge::new(114, 115, 9),
+];
+static TOKEN_EOF: &[rezel_lr::TokenEof] = &[];
+static TOKEN_TABLE: rezel_lr::TokenTable = rezel_lr::TokenTable::new(
+    TOKEN_STATES,
+    TOKEN_ACCEPTS,
+    TOKEN_EDGES,
+    TOKEN_EOF,
+);
 fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
     static NODE_SET: std::sync::OnceLock<std::sync::Arc<rezel_common::NodeSet>> = std::sync::OnceLock::new();
     NODE_SET
@@ -88,7 +117,7 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: STATES,
     state_data: STATE_DATA,
     goto: GOTO,
-    token_data: TOKEN_DATA,
+    token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
     max_term: 9u16,

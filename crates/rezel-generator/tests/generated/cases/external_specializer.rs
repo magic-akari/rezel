@@ -11,13 +11,48 @@ static STATE_DATA: &[u16] = &[
     3, 6, 0, 65535, 0,
 ];
 static GOTO: &[u16] = &[6, 1, 1, 7, 1, 7, 11, 5, 4, 0, 3, 2, 3, 0, 3, 7, 3];
-static TOKEN_DATA: &[u16] = &[
-    65535, 3, 12, 9, 14, 39, 32, 33, 39, 65, 91, 74, 97, 123, 74, 133, 134, 39, 160, 161,
-    39, 5760, 5761, 39, 8192, 8203, 39, 8232, 8234, 39, 8239, 8240, 39, 8287, 8288, 39,
-    12288, 12289, 39, 65535, 44, 10, 10, 65535, 9, 14, 39, 32, 33, 39, 133, 134, 39, 160,
-    161, 39, 5760, 5761, 39, 8192, 8203, 39, 8232, 8234, 39, 8239, 8240, 39, 8287, 8288,
-    39, 12288, 12289, 39, 65535, 79, 2, 3, 65535, 65, 91, 74, 97, 123, 74,
+static TOKEN_STATES: &[rezel_lr::TokenState] = &[
+    rezel_lr::TokenState::new(65535, 0, 0, 0, 12),
+    rezel_lr::TokenState::new(65535, 0, 12, 1, 10),
+    rezel_lr::TokenState::new(65535, 1, 22, 1, 2),
 ];
+static TOKEN_ACCEPTS: &[rezel_lr::TokenAccept] = &[
+    rezel_lr::TokenAccept::new(10, 65535),
+    rezel_lr::TokenAccept::new(3, 65535),
+];
+static TOKEN_EDGES: &[rezel_lr::TokenEdge] = &[
+    rezel_lr::TokenEdge::new(9, 14, 1),
+    rezel_lr::TokenEdge::new(32, 33, 1),
+    rezel_lr::TokenEdge::new(65, 91, 2),
+    rezel_lr::TokenEdge::new(97, 123, 2),
+    rezel_lr::TokenEdge::new(133, 134, 1),
+    rezel_lr::TokenEdge::new(160, 161, 1),
+    rezel_lr::TokenEdge::new(5760, 5761, 1),
+    rezel_lr::TokenEdge::new(8192, 8203, 1),
+    rezel_lr::TokenEdge::new(8232, 8234, 1),
+    rezel_lr::TokenEdge::new(8239, 8240, 1),
+    rezel_lr::TokenEdge::new(8287, 8288, 1),
+    rezel_lr::TokenEdge::new(12288, 12289, 1),
+    rezel_lr::TokenEdge::new(9, 14, 1),
+    rezel_lr::TokenEdge::new(32, 33, 1),
+    rezel_lr::TokenEdge::new(133, 134, 1),
+    rezel_lr::TokenEdge::new(160, 161, 1),
+    rezel_lr::TokenEdge::new(5760, 5761, 1),
+    rezel_lr::TokenEdge::new(8192, 8203, 1),
+    rezel_lr::TokenEdge::new(8232, 8234, 1),
+    rezel_lr::TokenEdge::new(8239, 8240, 1),
+    rezel_lr::TokenEdge::new(8287, 8288, 1),
+    rezel_lr::TokenEdge::new(12288, 12289, 1),
+    rezel_lr::TokenEdge::new(65, 91, 2),
+    rezel_lr::TokenEdge::new(97, 123, 2),
+];
+static TOKEN_EOF: &[rezel_lr::TokenEof] = &[];
+static TOKEN_TABLE: rezel_lr::TokenTable = rezel_lr::TokenTable::new(
+    TOKEN_STATES,
+    TOKEN_ACCEPTS,
+    TOKEN_EDGES,
+    TOKEN_EOF,
+);
 fn specialize_0(
     value: &str,
     stack: &rezel_lr::Stack,
@@ -106,7 +141,7 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: STATES,
     state_data: STATE_DATA,
     goto: GOTO,
-    token_data: TOKEN_DATA,
+    token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
     max_term: 10u16,

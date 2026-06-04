@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use rezel_common::{IterMode, ParseErrorKind, Parser, TextRange};
+use rezel_common::{Input, IterMode, ParseErrorKind, ParseRequest, Parser, StringInput, TextRange};
 
 #[test]
 fn parser_preserves_original_ranges_across_unicode_translation() {
@@ -74,5 +74,44 @@ fn malformed_unicode_escapes_are_strict_lexical_errors() {
             .expect_err("strict Java rejects malformed eligible Unicode escapes");
         assert_eq!(error.kind(), ParseErrorKind::Syntax);
         assert_eq!(error.position(), Some(position));
+    }
+}
+
+#[test]
+fn character_literals_follow_java_utf16_code_unit_width() {
+    let parser = rezel_lang_java::parser().with_strict(true);
+
+    parser
+        .parse(r"class Sample { char value = '\uD800'; }")
+        .expect("javac accepts one isolated surrogate code unit");
+
+    for source in [
+        r"class Sample { char value = '\uD83D\uDE00'; }",
+        "class Sample { char value = '😀'; }",
+    ] {
+        let error = parser
+            .parse(source)
+            .expect_err("a supplementary character needs two UTF-16 code units");
+        assert_eq!(error.kind(), ParseErrorKind::Syntax);
+    }
+}
+
+#[test]
+fn selected_ranges_reject_java_translation_interiors() {
+    for (source, endpoint) in [(r"\u0061", 3_u32), (r"\uD83D\uDE00", 6_u32)] {
+        let input: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+        let request = ParseRequest::ranges(input, vec![TextRange::new(0.into(), endpoint.into())])
+            .expect("the endpoint is a raw UTF-8 boundary");
+
+        let Err(error) = rezel_lang_java::parser().create_parse(request) else {
+            panic!("translation interior endpoint was accepted");
+        };
+
+        assert_eq!(error.kind(), ParseErrorKind::Input);
+        assert_eq!(error.position(), Some(endpoint.into()));
+        assert_eq!(
+            error.message(),
+            "parse range endpoint splits a translated character"
+        );
     }
 }

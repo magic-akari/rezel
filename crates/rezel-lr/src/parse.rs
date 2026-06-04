@@ -14,7 +14,7 @@ use crate::decode::pair;
 use crate::goto_index::GotoIndex;
 use crate::stack::Stack;
 use crate::table::{Action, ReservedTerm, SequenceCode, StateField, StateFlag};
-use crate::token::{AcceptedToken, InputStream, TokenAsciiIndex, Tokenizer};
+use crate::token::{AcceptedToken, InputStream, TokenAsciiIndex, TokenTable, Tokenizer};
 
 // Non-incremental parses benefit from amortizing compact-tree allocation over
 // larger buffers than Lezer's incremental-friendly common default.
@@ -319,7 +319,7 @@ pub struct Language {
     /// Compact nonterminal goto table.
     pub goto: &'static [u16],
     /// Generated global token DFA.
-    pub token_data: &'static [u16],
+    pub token_table: &'static TokenTable,
     /// Tokenizer precedence order and groups.
     pub tokenizers: &'static [Tokenizer],
     /// Grammar entry points.
@@ -430,6 +430,7 @@ pub(crate) struct ParserCore {
     action_index: Arc<ActionIndex>,
     goto_index: Arc<GotoIndex>,
     pub(crate) token_ascii_index: Arc<TokenAsciiIndex>,
+    pub(crate) local_token_ascii_indices: Arc<[Option<TokenAsciiIndex>]>,
 }
 
 impl fmt::Debug for ParserCore {
@@ -639,8 +640,16 @@ impl LRParser {
                 .map_err(configuration_error)?,
         );
         let goto_index = Arc::new(GotoIndex::build(language.goto).map_err(configuration_error)?);
-        let token_ascii_index =
-            Arc::new(TokenAsciiIndex::build(language.token_data).map_err(configuration_error)?);
+        let token_ascii_index = Arc::new(TokenAsciiIndex::build(language.token_table));
+        let local_token_ascii_indices = language
+            .tokenizers
+            .iter()
+            .map(|tokenizer| match tokenizer {
+                Tokenizer::Local(group) => Some(TokenAsciiIndex::build(group.table)),
+                Tokenizer::Group(_) | Tokenizer::External(_) => None,
+            })
+            .collect::<Vec<_>>()
+            .into();
         let core = ParserCore {
             language,
             node_set,
@@ -654,6 +663,7 @@ impl LRParser {
             action_index,
             goto_index,
             token_ascii_index,
+            local_token_ascii_indices,
         };
         Ok(Self {
             core: Arc::new(core),
@@ -805,8 +815,9 @@ impl LRParser {
     #[doc(hidden)]
     pub fn create_lr_parse(
         &self,
-        request: &ParseRequest,
+        request: ParseRequest,
     ) -> Result<Box<dyn PartialParse>, ParseError> {
+        let request = request.into_validated()?;
         let mut parse: Box<dyn PartialParse> =
             Box::new(Parse::new(Arc::clone(&self.core), request.clone()));
         for wrapper in &*self.wrappers {
@@ -853,7 +864,7 @@ impl Parser for LRParser {
         if let Some(create_parse) = self.custom_create_parse {
             return create_parse(self, request);
         }
-        self.create_lr_parse(&request)
+        self.create_lr_parse(request)
     }
 }
 
@@ -1054,7 +1065,8 @@ impl TokenCache {
                     || token.context != context
             };
             if stale {
-                self.tokens[index] = update_cached_token(tokenizer, stack, stream, mask, context)?;
+                self.tokens[index] =
+                    update_cached_token(index, tokenizer, stack, stream, mask, context)?;
             }
             let token = &self.tokens[index];
             if token.value != Some(ReservedTerm::Error.raw()) {
@@ -1107,6 +1119,7 @@ impl TokenCache {
 }
 
 fn update_cached_token(
+    tokenizer_index: usize,
     tokenizer: Tokenizer,
     stack: &Stack,
     stream: &mut InputStream,
@@ -1115,7 +1128,7 @@ fn update_cached_token(
 ) -> Result<CachedToken, ParseError> {
     let start = stream.clip_position(stack.position());
     stream.reset(start);
-    tokenizer.token(stream, stack)?;
+    tokenizer.token(tokenizer_index, stream, stack)?;
     let accepted = stream.accepted().unwrap_or_else(|| AcceptedToken {
         value: ReservedTerm::Error.raw(),
         end: stream
@@ -1137,8 +1150,8 @@ fn update_cached_token(
             if Some(specializer.term) != token.value {
                 continue;
             }
-            let lexeme = stream.read(token.start, token.end);
-            if let Some(result) = (specializer.get)(&lexeme, stack)
+            if let Some(lexeme) = stream.read_scalar_at_boundaries(token.start, token.end)
+                && let Some(result) = (specializer.get)(&lexeme, stack)
                 && core.dialect.allows(result.term)
             {
                 match result.kind {
@@ -1255,7 +1268,7 @@ struct Parse {
 impl Parse {
     fn new(core: Arc<ParserCore>, request: ParseRequest) -> Self {
         let ranges: Arc<[_]> = request.selected_ranges().to_vec().into();
-        let stream = InputStream::new(Arc::clone(request.input()), Arc::clone(&ranges));
+        let stream = InputStream::new(Arc::clone(request.lexical_input()), Arc::clone(&ranges));
         let start = ranges
             .first()
             .map_or(TextSize::from(0), |range| range.start());

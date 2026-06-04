@@ -14,11 +14,38 @@ static STATE_DATA: &[u16] = &[
 static GOTO: &[u16] = &[
     9, 1, 1, 1, 10, 1, 1, 1, 16, 10, 9, 2, 0, 4, 5, 6, 2, 1, 0, 2, 7, 4, 2, 8, 5, 3, 9, 6,
 ];
-static TOKEN_DATA: &[u16] = &[
-    65535, 3, 8, 40, 41, 27, 41, 42, 32, 42, 43, 37, 43, 44, 42, 45, 46, 42, 47, 48, 37,
-    120, 121, 47, 121, 122, 47, 65535, 32, 0, 9, 65535, 65535, 37, 0, 10, 65535, 65535,
-    42, 0, 4, 65535, 65535, 47, 0, 5, 65535, 65535, 52, 0, 2, 65535,
+static TOKEN_STATES: &[rezel_lr::TokenState] = &[
+    rezel_lr::TokenState::new(65535, 0, 0, 0, 8),
+    rezel_lr::TokenState::new(65535, 0, 8, 1, 0),
+    rezel_lr::TokenState::new(65535, 1, 8, 1, 0),
+    rezel_lr::TokenState::new(65535, 2, 8, 1, 0),
+    rezel_lr::TokenState::new(65535, 3, 8, 1, 0),
+    rezel_lr::TokenState::new(65535, 4, 8, 1, 0),
 ];
+static TOKEN_ACCEPTS: &[rezel_lr::TokenAccept] = &[
+    rezel_lr::TokenAccept::new(9, 65535),
+    rezel_lr::TokenAccept::new(10, 65535),
+    rezel_lr::TokenAccept::new(4, 65535),
+    rezel_lr::TokenAccept::new(5, 65535),
+    rezel_lr::TokenAccept::new(2, 65535),
+];
+static TOKEN_EDGES: &[rezel_lr::TokenEdge] = &[
+    rezel_lr::TokenEdge::new(40, 41, 1),
+    rezel_lr::TokenEdge::new(41, 42, 2),
+    rezel_lr::TokenEdge::new(42, 43, 3),
+    rezel_lr::TokenEdge::new(43, 44, 4),
+    rezel_lr::TokenEdge::new(45, 46, 4),
+    rezel_lr::TokenEdge::new(47, 48, 3),
+    rezel_lr::TokenEdge::new(120, 121, 5),
+    rezel_lr::TokenEdge::new(121, 122, 5),
+];
+static TOKEN_EOF: &[rezel_lr::TokenEof] = &[];
+static TOKEN_TABLE: rezel_lr::TokenTable = rezel_lr::TokenTable::new(
+    TOKEN_STATES,
+    TOKEN_ACCEPTS,
+    TOKEN_EDGES,
+    TOKEN_EOF,
+);
 fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
     static NODE_SET: std::sync::OnceLock<std::sync::Arc<rezel_common::NodeSet>> = std::sync::OnceLock::new();
     NODE_SET
@@ -93,7 +120,7 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: STATES,
     state_data: STATE_DATA,
     goto: GOTO,
-    token_data: TOKEN_DATA,
+    token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
     max_term: 10u16,

@@ -28,7 +28,7 @@ evidence_files = [
 rust_file = "identifier.rs"
 classification = "standard-algorithm"
 invariant = "External Java identifier tokenization follows Java 26 Character identifier properties and removes identifier-ignorable code points only when deriving cooked names."
-representation = "Generated Unicode 17 scalar ranges, a Latin-1 equivalent fast path, and a UTF-16 code-point scanner replace calls into the Java Character API; identity-mapped ASCII identifier runs advance in bulk and fall back at translations and non-ASCII input."
+representation = "Generated Unicode 17 scalar ranges, a Latin-1 equivalent fast path, and a Unicode code-point scanner replace calls into the Java Character API; identity-mapped ASCII identifier runs advance in bulk and fall back at translations and non-ASCII input."
 evidence_files = [
 	"languages/java/tests/contract.rs",
 	"languages/java/tests/reference/javac.rs",
@@ -39,7 +39,7 @@ evidence_files = [
 rust_file = "input.rs"
 classification = "standard-algorithm"
 invariant = "JLS Unicode escapes are translated before tokenization while every observable source range remains an original UTF-8 byte range."
-representation = "A sorted escape index projects logical UTF-16 units and shared identity chunks without materializing a translated source string."
+representation = "A sorted escape index combines translated surrogate pairs into logical code points, preserves isolated surrogates, and exposes shared identity chunks without materializing a translated source string."
 evidence_files = [
 	"languages/java/tests/contract.rs",
 	"languages/java/tests/reference/javac.rs",

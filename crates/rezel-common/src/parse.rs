@@ -77,45 +77,95 @@ impl fmt::Display for ParseError {
 
 impl Error for ParseError {}
 
-/// One logical UTF-16 input character and its original byte boundary.
-///
-/// This is an internal parser-input extension point. Most inputs use the
-/// default implementation on [`Input`]. A language-specific lexical
-/// translation may override it while preserving original source positions.
-#[doc(hidden)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct LogicalUnits {
-    units: [u16; 2],
-    len: u8,
-    raw_end: TextSize,
-}
+/// One Unicode code point, including values in the surrogate range.
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct CodePoint(u32);
 
-impl LogicalUnits {
-    /// Construct one logical UTF-16 sequence.
-    ///
-    /// # Panics
-    ///
-    /// Panics when `units` is empty or contains more than two code units.
+impl CodePoint {
+    /// Largest Unicode code point.
+    pub const MAX: u32 = 0x10_ffff;
+
+    /// Construct a code point.
     #[must_use]
-    #[inline]
-    pub fn new(units: &[u16], raw_end: TextSize) -> Self {
-        let (storage, len) = match units {
-            [first] => ([*first, 0], 1),
-            [first, second] => ([*first, *second], 2),
-            _ => panic!("a logical input character has one or two UTF-16 units"),
-        };
-        Self {
-            units: storage,
-            len,
-            raw_end,
+    pub const fn new(value: u32) -> Option<Self> {
+        if value <= Self::MAX {
+            Some(Self(value))
+        } else {
+            None
         }
     }
 
-    /// UTF-16 units in this logical character.
+    /// Numeric code-point value.
+    #[must_use]
+    pub const fn as_u32(self) -> u32 {
+        self.0
+    }
+
+    /// Convert a Unicode scalar value to `char`.
+    #[must_use]
+    pub const fn as_char(self) -> Option<char> {
+        char::from_u32(self.0)
+    }
+
+    /// Whether this code point is ASCII.
+    #[must_use]
+    pub const fn is_ascii(self) -> bool {
+        self.0 <= 0x7f
+    }
+
+    /// Whether this code point is a Unicode scalar value.
+    #[must_use]
+    pub const fn is_scalar(self) -> bool {
+        self.0 < 0xd800 || self.0 > 0xdfff
+    }
+
+    /// Whether this code point is a UTF-16 surrogate.
+    #[must_use]
+    pub const fn is_surrogate(self) -> bool {
+        !self.is_scalar()
+    }
+}
+
+impl From<u8> for CodePoint {
+    fn from(value: u8) -> Self {
+        Self(u32::from(value))
+    }
+}
+
+impl From<u16> for CodePoint {
+    fn from(value: u16) -> Self {
+        Self(u32::from(value))
+    }
+}
+
+impl From<char> for CodePoint {
+    fn from(value: char) -> Self {
+        Self(u32::from(value))
+    }
+}
+
+/// One logical code point and its original byte boundary.
+#[doc(hidden)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct InputCharacter {
+    value: CodePoint,
+    raw_end: TextSize,
+}
+
+impl InputCharacter {
+    /// Construct one logical input character.
     #[must_use]
     #[inline]
-    pub fn units(&self) -> &[u16] {
-        &self.units[..usize::from(self.len)]
+    pub const fn new(value: CodePoint, raw_end: TextSize) -> Self {
+        Self { value, raw_end }
+    }
+
+    /// Logical code point.
+    #[must_use]
+    #[inline]
+    pub const fn value(self) -> CodePoint {
+        self.value
     }
 
     /// Original UTF-8 byte boundary after this logical character.
@@ -127,10 +177,6 @@ impl LogicalUnits {
 }
 
 /// Shared UTF-8 input segment whose bytes map one-to-one to source positions.
-///
-/// This is an internal parser-input extension point. Language adapters that
-/// translate source characters may return identity chunks between translated
-/// regions and fall back to [`Input::logical_units`] at translated positions.
 #[doc(hidden)]
 #[derive(Clone, Debug)]
 pub struct InputChunk {
@@ -190,6 +236,20 @@ impl InputChunk {
         self.raw_start <= position && position < self.raw_end()
     }
 
+    /// Whether a raw position is a UTF-8 boundary in this chunk.
+    #[must_use]
+    #[inline]
+    pub fn is_boundary(&self, position: TextSize) -> bool {
+        let Some(offset) = position.checked_sub(self.raw_start) else {
+            return false;
+        };
+        let Some(source_position) = self.source_range.start().checked_add(offset) else {
+            return false;
+        };
+        source_position <= self.source_range.end()
+            && self.source.is_char_boundary(usize::from(source_position))
+    }
+
     /// Read one directly mapped ASCII byte from this chunk.
     #[must_use]
     #[inline]
@@ -203,25 +263,27 @@ impl InputChunk {
         byte.is_ascii().then_some(byte)
     }
 
-    /// Borrow the identity-mapped bytes starting at an original position.
+    /// Clone the shared source backing this chunk.
     #[doc(hidden)]
     #[must_use]
-    #[inline]
-    pub fn bytes_from(&self, position: TextSize) -> Option<&[u8]> {
-        let offset = position.checked_sub(self.raw_start)?;
-        let source_position = self.source_range.start().checked_add(offset)?;
-        self.source
-            .as_bytes()
-            .get(usize::from(source_position)..usize::from(self.source_range.end()))
+    pub fn shared_source(&self) -> Arc<str> {
+        Arc::clone(&self.source)
     }
 
-    /// Read one logical character from this identity-mapped chunk.
+    /// Byte range in the shared source backing this chunk.
+    #[doc(hidden)]
+    #[must_use]
+    pub const fn source_range(&self) -> TextRange {
+        self.source_range
+    }
+
+    /// Read one Unicode scalar from this identity-mapped chunk.
     #[must_use]
     #[inline]
-    pub fn logical_units(&self, position: TextSize) -> Option<LogicalUnits> {
+    pub fn character(&self, position: TextSize) -> Option<InputCharacter> {
         if let Some(byte) = self.ascii_byte(position) {
-            return Some(LogicalUnits::new(
-                &[u16::from(byte)],
+            return Some(InputCharacter::new(
+                CodePoint::from(byte),
                 position + TextSize::from(1),
             ));
         }
@@ -235,10 +297,11 @@ impl InputChunk {
             .get(usize::from(source_position)..usize::from(self.source_range.end()))?
             .chars()
             .next()?;
-        let mut units = [0; 2];
-        let encoded = character.encode_utf16(&mut units);
         let character_length = TextSize::try_from(character.len_utf8()).ok()?;
-        Some(LogicalUnits::new(encoded, position + character_length))
+        Some(InputCharacter::new(
+            CodePoint::from(character),
+            position + character_length,
+        ))
     }
 
     /// Shorten this chunk at one original UTF-8 byte boundary.
@@ -282,43 +345,124 @@ pub trait Input: Send + Sync {
     /// Read one byte range.
     fn read(&self, range: TextRange) -> Cow<'_, str>;
 
-    /// Return a shared identity-mapped logical chunk starting at one original
-    /// byte position.
+    /// Whether a position is a valid UTF-8 byte boundary.
+    fn is_boundary(&self, position: TextSize) -> bool;
+
+    /// Return a shared identity-mapped chunk starting at one original byte
+    /// position.
     ///
     /// The conservative default exposes no identity chunk. Inputs may opt in
-    /// when their source storage and logical character view are known to map
-    /// one-to-one over the returned segment.
+    /// when their source storage maps one-to-one over the returned segment.
     #[doc(hidden)]
-    fn logical_chunk(&self, _from: TextSize) -> Option<InputChunk> {
+    fn identity_chunk(&self, _from: TextSize) -> Option<InputChunk> {
         None
     }
+}
 
-    /// Read one logical UTF-16 character at an original byte boundary.
+/// Language-specific lexical view over one raw UTF-8 input.
+///
+/// Ordinary inputs expose Unicode scalar values. Translation layers may
+/// additionally expose surrogate code points when the source language is
+/// defined in terms of UTF-16 code units.
+#[doc(hidden)]
+pub trait LexicalInput: Send + Sync {
+    /// Underlying raw input.
+    fn raw(&self) -> &dyn Input;
+
+    /// Input length in original UTF-8 bytes.
     #[doc(hidden)]
-    fn logical_units(&self, from: TextSize) -> Option<LogicalUnits> {
-        let character = self.chunk(from).chars().next()?;
-        let mut units = [0; 2];
-        let encoded = character.encode_utf16(&mut units);
+    fn len(&self) -> TextSize {
+        self.raw().len()
+    }
+
+    /// Whether the lexical input has no raw bytes.
+    #[doc(hidden)]
+    fn is_empty(&self) -> bool {
+        self.len() == TextSize::from(0)
+    }
+
+    /// Shared identity-mapped region beginning at one logical boundary.
+    #[doc(hidden)]
+    fn identity_chunk(&self, from: TextSize) -> Option<InputChunk> {
+        self.raw().identity_chunk(from)
+    }
+
+    /// Read one logical code point at an original byte boundary.
+    ///
+    /// The caller has already established that `from` is a complete logical
+    /// boundary.
+    #[doc(hidden)]
+    fn character(&self, from: TextSize) -> Option<InputCharacter> {
+        debug_assert!(self.raw().is_boundary(from));
+        let character = self.raw().chunk(from).chars().next()?;
         let character_length = TextSize::try_from(character.len_utf8()).ok()?;
-        Some(LogicalUnits::new(encoded, from + character_length))
+        Some(InputCharacter::new(
+            CodePoint::from(character),
+            from + character_length,
+        ))
     }
 
     /// Read the logical character immediately before an original byte
     /// boundary.
+    ///
+    /// The caller has already established that `before` is a complete logical
+    /// boundary.
     #[doc(hidden)]
-    fn logical_units_before(&self, before: TextSize) -> Option<(TextSize, LogicalUnits)> {
-        let text = self.read(TextRange::new(TextSize::from(0), before));
+    fn character_before(&self, before: TextSize) -> Option<(TextSize, InputCharacter)> {
+        debug_assert!(self.raw().is_boundary(before));
+        let text = self.raw().read(TextRange::new(TextSize::from(0), before));
         let (start, character) = text.char_indices().next_back()?;
         let start = TextSize::try_from(start).ok()?;
-        let mut units = [0; 2];
-        let encoded = character.encode_utf16(&mut units);
-        Some((start, LogicalUnits::new(encoded, before)))
+        Some((
+            start,
+            InputCharacter::new(CodePoint::from(character), before),
+        ))
     }
 
-    /// Read the lexically translated spelling of one original byte range.
+    /// Whether a raw position is a complete logical-character boundary.
     #[doc(hidden)]
-    fn read_logical(&self, range: TextRange) -> Cow<'_, str> {
-        self.read(range)
+    fn is_boundary(&self, position: TextSize) -> bool {
+        self.raw().is_boundary(position)
+    }
+
+    /// Read translated text between complete logical boundaries when every
+    /// logical code point is a scalar value.
+    ///
+    /// `None` represents a translated spelling that cannot be encoded as
+    /// UTF-8, such as one containing an isolated surrogate.
+    #[doc(hidden)]
+    fn scalar_text(&self, range: TextRange) -> Option<Cow<'_, str>> {
+        Some(self.raw().read(range))
+    }
+}
+
+/// Identity lexical view for ordinary UTF-8 input.
+#[doc(hidden)]
+#[derive(Clone)]
+pub struct Utf8Input {
+    raw: Arc<dyn Input>,
+}
+
+impl Utf8Input {
+    /// Wrap one raw UTF-8 input without lexical translation.
+    #[must_use]
+    pub fn new(raw: Arc<dyn Input>) -> Self {
+        Self { raw }
+    }
+}
+
+impl fmt::Debug for Utf8Input {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Utf8Input")
+            .field("length", &self.raw.len())
+            .finish()
+    }
+}
+
+impl LexicalInput for Utf8Input {
+    fn raw(&self) -> &dyn Input {
+        &*self.raw
     }
 }
 
@@ -376,7 +520,11 @@ impl Input for StringInput {
         )
     }
 
-    fn logical_chunk(&self, from: TextSize) -> Option<InputChunk> {
+    fn is_boundary(&self, position: TextSize) -> bool {
+        position <= self.length && self.source.is_char_boundary(usize::from(position))
+    }
+
+    fn identity_chunk(&self, from: TextSize) -> Option<InputChunk> {
         if from >= self.length || !self.source.is_char_boundary(usize::from(from)) {
             return None;
         }
@@ -393,7 +541,9 @@ impl Input for StringInput {
 #[derive(Clone)]
 pub struct ParseRequest {
     input: Arc<dyn Input>,
+    lexical_input: Arc<dyn LexicalInput>,
     ranges: Arc<[TextRange]>,
+    validated: bool,
 }
 
 impl fmt::Debug for ParseRequest {
@@ -402,7 +552,8 @@ impl fmt::Debug for ParseRequest {
             .debug_struct("ParseRequest")
             .field("input_length", &self.input.len())
             .field("ranges", &self.ranges)
-            .finish()
+            .field("validated", &self.validated)
+            .finish_non_exhaustive()
     }
 }
 
@@ -411,18 +562,32 @@ impl ParseRequest {
     #[must_use]
     pub fn full(input: Arc<dyn Input>) -> Self {
         let length = input.len();
+        let lexical_input = Arc::new(Utf8Input::new(Arc::clone(&input)));
         Self {
             input,
+            lexical_input,
             ranges: Arc::from([TextRange::new(TextSize::from(0), length)]),
+            validated: false,
         }
     }
 
-    pub(crate) fn ranges(input: Arc<dyn Input>, ranges: Vec<TextRange>) -> Self {
-        validate_ranges(input.len(), &ranges);
-        Self {
+    /// Build a request over selected raw byte ranges.
+    ///
+    /// # Errors
+    ///
+    /// Returns an input error when ranges overlap, extend past the input, or
+    /// use endpoints that are not UTF-8 boundaries.
+    #[doc(hidden)]
+    pub fn ranges(input: Arc<dyn Input>, ranges: Vec<TextRange>) -> Result<Self, ParseError> {
+        let lexical_input = Arc::new(Utf8Input::new(Arc::clone(&input)));
+        let mut request = Self {
             input,
+            lexical_input,
             ranges: ranges.into(),
-        }
+            validated: false,
+        };
+        request.ensure_validated()?;
+        Ok(request)
     }
 
     /// Input being parsed.
@@ -431,23 +596,35 @@ impl ParseRequest {
         &self.input
     }
 
-    /// Replace the input view while preserving selected source ranges.
-    ///
-    /// The replacement must use the same coordinate space and length.
+    /// Language-specific lexical input view.
     #[doc(hidden)]
     #[must_use]
-    pub fn map_input(self, map: impl FnOnce(Arc<dyn Input>) -> Arc<dyn Input>) -> Self {
-        let original_length = self.input.len();
-        let input = map(self.input);
-        assert_eq!(
-            input.len(),
-            original_length,
-            "a mapped parse input must preserve source coordinates"
-        );
-        Self {
-            input,
-            ranges: self.ranges,
+    pub fn lexical_input(&self) -> &Arc<dyn LexicalInput> {
+        &self.lexical_input
+    }
+
+    /// Replace the lexical view while preserving raw source coordinates.
+    ///
+    /// # Errors
+    ///
+    /// Returns an input error when the replacement does not wrap the same raw
+    /// input or when a selected endpoint splits a translated character.
+    #[doc(hidden)]
+    pub fn with_lexical_input(
+        mut self,
+        lexical_input: Arc<dyn LexicalInput>,
+    ) -> Result<Self, ParseError> {
+        if !std::ptr::eq(self.input.as_ref(), lexical_input.raw()) {
+            return Err(ParseError::new(
+                ParseErrorKind::Input,
+                None,
+                "a lexical input must wrap the parse request's raw input",
+            ));
         }
+        self.lexical_input = lexical_input;
+        self.validated = false;
+        self.ensure_validated()?;
+        Ok(self)
     }
 
     /// Byte ranges selected by an internal mixed parse.
@@ -456,22 +633,94 @@ impl ParseRequest {
     pub fn selected_ranges(&self) -> &[TextRange] {
         &self.ranges
     }
+
+    /// Validate raw and translated input boundaries.
+    ///
+    /// # Errors
+    ///
+    /// Returns an input error for malformed selected ranges or endpoints that
+    /// are not complete raw and logical character boundaries.
+    #[doc(hidden)]
+    pub fn validate(&self) -> Result<(), ParseError> {
+        validate_ranges(&*self.input, &*self.lexical_input, &self.ranges)
+    }
+
+    /// Validate this request unless its current immutable input view was
+    /// already checked.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same input errors as [`Self::validate`].
+    #[doc(hidden)]
+    pub fn into_validated(mut self) -> Result<Self, ParseError> {
+        self.ensure_validated()?;
+        Ok(self)
+    }
+
+    fn ensure_validated(&mut self) -> Result<(), ParseError> {
+        if !self.validated {
+            self.validate()?;
+            self.validated = true;
+        }
+        Ok(())
+    }
 }
 
-fn validate_ranges(input_length: TextSize, ranges: &[TextRange]) {
-    assert!(!ranges.is_empty(), "a parse request must contain one range");
+fn validate_ranges(
+    input: &dyn Input,
+    lexical_input: &dyn LexicalInput,
+    ranges: &[TextRange],
+) -> Result<(), ParseError> {
+    if ranges.is_empty() {
+        return Err(ParseError::new(
+            ParseErrorKind::Input,
+            None,
+            "a parse request must contain at least one range",
+        ));
+    }
+    let input_length = input.len();
+    if lexical_input.len() != input_length {
+        return Err(ParseError::new(
+            ParseErrorKind::Input,
+            None,
+            "a lexical input must preserve raw source coordinates",
+        ));
+    }
     let mut previous_end = TextSize::from(0);
     for (index, range) in ranges.iter().enumerate() {
-        assert!(
-            range.end() <= input_length,
-            "parse range extends past the input"
-        );
-        assert!(
-            index == 0 || range.start() >= previous_end,
-            "parse ranges must be sorted and non-overlapping"
-        );
+        if range.end() > input_length {
+            return Err(ParseError::new(
+                ParseErrorKind::Input,
+                Some(range.end()),
+                "parse range extends past the input",
+            ));
+        }
+        if index != 0 && range.start() < previous_end {
+            return Err(ParseError::new(
+                ParseErrorKind::Input,
+                Some(range.start()),
+                "parse ranges must be sorted and non-overlapping",
+            ));
+        }
+        for position in [range.start(), range.end()] {
+            if !input.is_boundary(position) {
+                return Err(ParseError::new(
+                    ParseErrorKind::Input,
+                    Some(position),
+                    "parse range endpoint is not a UTF-8 boundary",
+                ));
+            }
+            if !lexical_input.is_boundary(position) {
+                return Err(ParseError::new(
+                    ParseErrorKind::Input,
+                    Some(position),
+                    "parse range endpoint splits a translated character",
+                ));
+            }
+        }
         previous_end = range.end();
     }
+    Ok(())
 }
 
 /// In-progress non-incremental parse.

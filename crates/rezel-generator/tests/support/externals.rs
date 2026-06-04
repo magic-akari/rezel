@@ -1,6 +1,6 @@
 use std::sync::OnceLock;
 
-use rezel_common::{NodeProp, NodePropConfig, NodePropDeserializer};
+use rezel_common::{CodePoint, NodeProp, NodePropConfig, NodePropDeserializer};
 use rezel_lr::{ExternalTokenizer, InputStream, Stack, TokenizerFlags};
 
 #[allow(clippy::all, clippy::pedantic, dead_code, missing_docs)]
@@ -27,13 +27,13 @@ fn tokenize_ext1(input: &mut InputStream, _stack: &Stack) -> Result<(), rezel_co
         return Ok(());
     };
     let term = match next {
-        value if value == u16::from(b'{') => BRACE_OPEN,
-        value if value == u16::from(b'}') => BRACE_CLOSE,
-        value if value == u16::from(b'.') => DOT,
+        value if value == CodePoint::from(b'{') => BRACE_OPEN,
+        value if value == CodePoint::from(b'}') => BRACE_CLOSE,
+        value if value == CodePoint::from(b'.') => DOT,
         _ => return Ok(()),
     };
     input.advance(1);
-    input.accept_token(term, 0)
+    input.accept_token(term)
 }
 
 pub fn spec1(value: &str, _stack: &Stack) -> Option<u16> {

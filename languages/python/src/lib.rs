@@ -92,14 +92,11 @@ fn default_parser() -> &'static LRParser {
     })
 }
 
-#[expect(
-    clippy::needless_pass_by_value,
-    reason = "CreateParse callbacks receive an owned request"
-)]
 fn create_python_parse(
     parser: &LRParser,
     request: ParseRequest,
 ) -> Result<Box<dyn PartialParse>, ParseError> {
+    let request = request.into_validated()?;
     let full_source = matches!(
         request.selected_ranges(),
         [range]
@@ -113,7 +110,7 @@ fn create_python_parse(
     }
 
     let input = validate.then(|| Arc::clone(request.input()));
-    let inner = parser.create_lr_parse(&request)?;
+    let inner = parser.create_lr_parse(request)?;
     let Some(input) = input else {
         return Ok(inner);
     };

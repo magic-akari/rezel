@@ -14,16 +14,11 @@ use crate::node::{
     TokenReference,
 };
 use crate::parse_grammar;
-use crate::token::{TokenConflict, TokenDfa, TokenNfa};
+use crate::token::{EncodedTokenTable, TokenConflict, TokenDfa, TokenNfa};
 use crate::{GeneratorError, GeneratorWarning};
 
 const MIN_SHARED_ACTIONS: usize = 5;
 const MAX_CODE_POINT: u32 = 0x10_ffff;
-const ASTRAL_START: u32 = 0x1_0000;
-const SURROGATE_GAP_START: u32 = 0xd800;
-const SURROGATE_GAP_END: u32 = 0xe000;
-const LOW_SURROGATE_START: u32 = 0xdc00;
-const LOW_SURROGATE_END: u32 = 0xdfff;
 
 /// Options that affect generated static parser data.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
@@ -48,8 +43,8 @@ pub enum TokenizerMetadata {
         group_id: u8,
     },
     Local {
-        data: Vec<u16>,
-        precedence_offset: usize,
+        table: EncodedTokenTable,
+        precedence: Vec<u16>,
         else_token: Option<u16>,
     },
     External {
@@ -132,7 +127,7 @@ pub struct CompiledGrammar {
     pub states: Vec<u32>,
     pub state_data: Vec<u16>,
     pub goto: Vec<u16>,
-    pub token_data: Vec<u16>,
+    pub token_table: EncodedTokenTable,
     pub tokenizers: Vec<TokenizerMetadata>,
     pub top_rules: Vec<TopRuleMetadata>,
     pub max_term: u16,
@@ -358,7 +353,7 @@ struct TokenConflictSets {
     soft: Vec<TokenConflict>,
 }
 
-type MainTokenTables = (Vec<TokenGroup>, Vec<u16>, Vec<u16>);
+type MainTokenTables = (Vec<TokenGroup>, Vec<u16>, EncodedTokenTable);
 
 #[derive(Clone, Debug)]
 struct BuiltTokenizer {
@@ -469,7 +464,7 @@ impl Builder {
         }
         let start_group = u8::try_from(local_metadata.len())
             .map_err(|_| GeneratorError::new("Too many local token groups", None))?;
-        let (groups, token_precedence, token_data) =
+        let (groups, token_precedence, token_table) =
             self.build_main_token_groups(&mut full, &skip_info, start_group)?;
         self.check_external_conflicts(&full, &skip_info)?;
 
@@ -512,7 +507,7 @@ impl Builder {
             states,
             state_data,
             goto,
-            token_data,
+            token_table,
             tokenizers: tokenizers
                 .into_iter()
                 .map(|tokenizer| tokenizer.metadata)
@@ -2681,8 +2676,12 @@ impl Builder {
                 arguments,
             ),
             ExpressionKind::CharClass(class) => {
-                for (low, high) in class.ranges() {
-                    self.token_set_mut(set).nfa.edge(from, *low, *high, target);
+                if *class == crate::node::CharClass::Eof {
+                    self.token_set_mut(set).nfa.eof(from, target);
+                } else {
+                    for (low, high) in class.ranges() {
+                        self.token_set_mut(set).nfa.edge(from, *low, *high, target);
+                    }
                 }
                 Ok(())
             }
@@ -2832,43 +2831,25 @@ impl Builder {
         mut from: usize,
         target: usize,
     ) {
-        let units = literal.value.encode_utf16().collect::<Vec<_>>();
-        for (index, unit) in units.iter().copied().enumerate() {
-            let next = if index + 1 == units.len() {
+        let characters = literal.value.chars().collect::<Vec<_>>();
+        for (index, character) in characters.iter().copied().enumerate() {
+            let next = if index + 1 == characters.len() {
                 target
             } else {
                 self.token_set_mut(set).nfa.state()
             };
+            let value = u32::from(character);
             self.token_set_mut(set)
                 .nfa
-                .edge(from, u32::from(unit), u32::from(unit) + 1, next);
+                .edge(from, value, value + 1, next);
             from = next;
         }
     }
 
     fn build_any_token(&mut self, set: TokenSetId, from: usize, target: usize) {
-        let intermediate = self.token_set_mut(set).nfa.state();
         self.token_set_mut(set)
             .nfa
-            .edge(from, 0, LOW_SURROGATE_START, target);
-        self.token_set_mut(set).nfa.edge(
-            from,
-            LOW_SURROGATE_START,
-            u32::from(u16::MAX) + 1,
-            target,
-        );
-        self.token_set_mut(set).nfa.edge(
-            from,
-            SURROGATE_GAP_START,
-            LOW_SURROGATE_START,
-            intermediate,
-        );
-        self.token_set_mut(set).nfa.edge(
-            intermediate,
-            LOW_SURROGATE_START,
-            SURROGATE_GAP_END,
-            target,
-        );
+            .edge(from, 0, MAX_CODE_POINT + 1, target);
     }
 
     fn add_range_edges(
@@ -2876,76 +2857,13 @@ impl Builder {
         set: TokenSetId,
         from: usize,
         target: usize,
-        mut low: u32,
+        low: u32,
         high: u32,
     ) {
-        if low < ASTRAL_START {
-            if low < SURROGATE_GAP_START {
-                self.token_set_mut(set)
-                    .nfa
-                    .edge(from, low, high.min(SURROGATE_GAP_START), target);
-            }
-            if high > SURROGATE_GAP_END {
-                self.token_set_mut(set).nfa.edge(
-                    from,
-                    low.max(SURROGATE_GAP_END),
-                    high.min(u32::from(u16::MAX) + 1),
-                    target,
-                );
-            }
-            low = ASTRAL_START;
-        }
-        if high <= ASTRAL_START {
-            return;
-        }
-        let (low_high, low_low) = surrogate_pair(low);
-        let (high_high, high_low) = surrogate_pair(high - 1);
-        if low_high == high_high {
-            let intermediate = self.token_set_mut(set).nfa.state();
+        if low < high {
             self.token_set_mut(set)
                 .nfa
-                .edge(from, low_high, low_high + 1, intermediate);
-            self.token_set_mut(set)
-                .nfa
-                .edge(intermediate, low_low, high_low + 1, target);
-            return;
-        }
-        let mut middle_start = low_high;
-        let mut middle_end = high_high;
-        if low_low > LOW_SURROGATE_START {
-            middle_start += 1;
-            let intermediate = self.token_set_mut(set).nfa.state();
-            self.token_set_mut(set)
-                .nfa
-                .edge(from, low_high, low_high + 1, intermediate);
-            self.token_set_mut(set)
-                .nfa
-                .edge(intermediate, low_low, LOW_SURROGATE_END + 1, target);
-        }
-        if high_low < LOW_SURROGATE_END {
-            middle_end -= 1;
-            let intermediate = self.token_set_mut(set).nfa.state();
-            self.token_set_mut(set)
-                .nfa
-                .edge(from, high_high, high_high + 1, intermediate);
-            self.token_set_mut(set).nfa.edge(
-                intermediate,
-                LOW_SURROGATE_START,
-                high_low + 1,
-                target,
-            );
-        }
-        if middle_start <= middle_end {
-            let intermediate = self.token_set_mut(set).nfa.state();
-            self.token_set_mut(set)
-                .nfa
-                .edge(from, middle_start, middle_end + 1, intermediate);
-            self.token_set_mut(set).nfa.edge(
-                intermediate,
-                LOW_SURROGATE_START,
-                LOW_SURROGATE_END + 1,
-                target,
-            );
+                .edge(from, low, high.min(MAX_CODE_POINT + 1), target);
         }
     }
 
@@ -3170,14 +3088,11 @@ impl Builder {
             }
         }
         let precedence = self.build_precedence_table(TokenSetId::Local(index), &[])?;
-        let data = dfa.to_array(&self.terms, &BTreeMap::new(), &precedence)?;
-        let precedence_offset = data.len();
-        let mut full_data = data;
-        full_data.extend_from_slice(&precedence);
-        full_data.push(SequenceCode::End.raw());
+        let table = dfa.to_table(&self.terms, &BTreeMap::new(), &precedence)?;
+        let precedence = sequence_with_end(&precedence);
         Ok(TokenizerMetadata::Local {
-            data: full_data,
-            precedence_offset,
+            table,
+            precedence,
             else_token: self.local_tokens[index]
                 .fallback
                 .map(|term| self.terms.output_id(term)),
@@ -3205,8 +3120,8 @@ impl Builder {
         }
         let precedence = self.build_precedence_table(TokenSetId::Main, &conflicts.soft)?;
         let masks = self.token_group_masks(&groups);
-        let data = dfa.to_array(&self.terms, &masks, &precedence)?;
-        Ok((groups, precedence, data))
+        let table = dfa.to_table(&self.terms, &masks, &precedence)?;
+        Ok((groups, precedence, table))
     }
 
     fn reject_zero_length_token(&self, dfa: &TokenDfa) -> Result<(), GeneratorError> {
@@ -3678,13 +3593,6 @@ fn invert_ranges(ranges: &[(u32, u32)]) -> Vec<(u32, u32)> {
         result.push((position, MAX_CODE_POINT + 1));
     }
     result
-}
-
-fn surrogate_pair(code_point: u32) -> (u32, u32) {
-    let scalar = code_point - ASTRAL_START;
-    let high = SURROGATE_GAP_START + (scalar >> 10);
-    let low = LOW_SURROGATE_START + (scalar & 0x3ff);
-    (high, low)
 }
 
 fn add_precedence_relation(relations: &mut Vec<TokenPrecedence>, term: TermId, after: &[TermId]) {

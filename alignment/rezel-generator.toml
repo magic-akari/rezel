@@ -283,8 +283,8 @@ upstream_symbols = [
 	"applyMinimization",
 	"mergeEdges",
 ]
-invariant = "Token expressions compile through epsilon closure, deterministic range partitioning, accepting-term-preserving minimization, conflict discovery, and the pinned compact tokenizer encoding."
-representation = "Arena indices replace linked State object references; exclusive UTF-16 range ends use the runtime's u16 sentinel representation."
+invariant = "Token expressions compile through epsilon closure, deterministic code-point range partitioning, accepting-term-preserving minimization, and conflict discovery into equivalent DFA behavior."
+representation = "Arena indices replace linked State object references; typed TokenState, TokenAccept, TokenEdge, and TokenEof records use half-open u32 code-point ranges and explicit EOF transitions instead of the upstream UTF-16 sentinel encoding."
 evidence_files = ["crates/rezel-generator/tests/cases.rs"]
 
 [[scope]]

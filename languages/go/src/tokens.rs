@@ -1,20 +1,20 @@
 use std::sync::LazyLock;
 
-use rezel_common::ParseError;
+use rezel_common::{CodePoint, ParseError};
 use rezel_lr::{
     ContextTracker, ContextValue, ExternalTokenizer, InputStream, Stack, TokenizerFlags,
 };
 
 use crate::terms;
 
-const NEWLINE: u16 = 10;
-const CARRIAGE_RETURN: u16 = 13;
-const SPACE: u16 = 32;
-const TAB: u16 = 9;
-const SLASH: u16 = 47;
-const ASTERISK: u16 = 42;
-const CLOSE_PAREN: u16 = 41;
-const CLOSE_BRACE: u16 = 125;
+const NEWLINE: u32 = 10;
+const CARRIAGE_RETURN: u32 = 13;
+const SPACE: u32 = 32;
+const TAB: u32 = 9;
+const SLASH: u32 = 47;
+const ASTERISK: u32 = 42;
+const CLOSE_PAREN: u32 = 41;
+const CLOSE_BRACE: u32 = 125;
 
 static BOOLEAN_CONTEXTS: LazyLock<[ContextValue; 2]> =
     LazyLock::new(|| [ContextValue::new(false), ContextValue::new(true)]);
@@ -34,7 +34,7 @@ pub(crate) static TRACK_TOKENS: ContextTracker =
 
 fn scan_semicolon(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let context = stack.context::<bool>().copied().unwrap_or(false);
-    let next = input.next();
+    let next = input.next().map(CodePoint::as_u32);
     let should_look_ahead = matches!(next, Some(SPACE | TAB | SLASH));
     let should_insert = if should_look_ahead {
         scan_semicolon_lookahead(input, context)
@@ -44,13 +44,13 @@ fn scan_semicolon(input: &mut InputStream, stack: &Stack) -> Result<(), ParseErr
         context && line_end || closing_delimiter
     };
     if should_insert {
-        input.accept_token(terms::insertedSemi, 0)?;
+        input.accept_token(terms::insertedSemi)?;
     }
     Ok(())
 }
 
 fn scan_semicolon_lookahead(input: &InputStream, context: bool) -> bool {
-    let mut lookahead = input.lookahead().peekable();
+    let mut lookahead = input.lookahead().map(CodePoint::as_u32).peekable();
     loop {
         while matches!(lookahead.peek().copied(), Some(SPACE | TAB)) {
             lookahead.next();
@@ -75,7 +75,7 @@ fn scan_semicolon_lookahead(input: &InputStream, context: bool) -> bool {
     }
 }
 
-fn scan_block_comment(input: &mut std::iter::Peekable<impl Iterator<Item = u16>>) -> bool {
+fn scan_block_comment(input: &mut std::iter::Peekable<impl Iterator<Item = u32>>) -> bool {
     loop {
         let Some(next) = input.next() else {
             return true;

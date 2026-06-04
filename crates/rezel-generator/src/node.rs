@@ -392,7 +392,7 @@ impl CharClass {
                 (8287, 8288),
                 (12288, 12289),
             ],
-            Self::Eof => &[(0xffff, 0xffff)],
+            Self::Eof => &[],
         }
     }
 }
