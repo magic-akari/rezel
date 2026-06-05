@@ -10,6 +10,7 @@ description = "LR runtime for Rezel-generated parsers"
 
 [dependencies]
 rezel-common.workspace = true
+zerocopy.workspace = true
 
 [lints]
 workspace = true

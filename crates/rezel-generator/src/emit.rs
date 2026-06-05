@@ -1,10 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::Write as _;
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::LitStr;
 
+use crate::binary::BinaryTables;
 use crate::source::format_generated_rust;
 use crate::token::EncodedTokenTable;
 use crate::{
@@ -15,11 +15,20 @@ use crate::{
 /// Generated parser and term modules.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GeneratedRust {
+    /// Thin Rust module containing the typed loader and executable parser glue.
     pub parser: String,
+    /// Rust module containing exported term and dialect constants.
     pub terms: String,
+    /// Native-layout parser data for little-endian targets.
+    pub little_endian_data: Vec<u8>,
+    /// Native-layout parser data for big-endian targets.
+    pub big_endian_data: Vec<u8>,
 }
 
 /// Emit one static-table Rust parser.
+///
+/// The parser source expects sibling `generated.le.bin` and
+/// `generated.be.bin` files containing the returned data.
 ///
 /// # Errors
 ///
@@ -28,10 +37,32 @@ pub fn emit_rust(
     grammar: &CompiledGrammar,
     bindings: &RustBindings,
 ) -> Result<GeneratedRust, GeneratorError> {
+    emit_rust_with_data_paths(grammar, bindings, "generated.le.bin", "generated.be.bin")
+}
+
+/// Emit one static-table Rust parser with explicit data paths.
+///
+/// The paths are embedded in the generated parser and are resolved relative to
+/// that Rust source file.
+///
+/// # Errors
+///
+/// Returns missing/invalid external bindings or invalid generated Rust.
+pub fn emit_rust_with_data_paths(
+    grammar: &CompiledGrammar,
+    bindings: &RustBindings,
+    little_endian_path: &str,
+    big_endian_path: &str,
+) -> Result<GeneratedRust, GeneratorError> {
     bindings.validate(grammar)?;
     let terms = emit_terms(grammar)?;
-    let parser = emit_parser(grammar, bindings)?;
-    Ok(GeneratedRust { parser, terms })
+    let emitted = emit_parser(grammar, bindings, little_endian_path, big_endian_path)?;
+    Ok(GeneratedRust {
+        parser: emitted.source,
+        terms,
+        little_endian_data: emitted.little_endian_data,
+        big_endian_data: emitted.big_endian_data,
+    })
 }
 
 /// Emit named term and dialect identifiers.
@@ -62,30 +93,51 @@ pub fn emit_terms(grammar: &CompiledGrammar) -> Result<String, GeneratorError> {
 fn emit_parser(
     grammar: &CompiledGrammar,
     bindings: &RustBindings,
-) -> Result<String, GeneratorError> {
+    little_endian_path: &str,
+    big_endian_path: &str,
+) -> Result<EmittedParser, GeneratorError> {
     let mut source =
         String::from("#![allow(clippy::all, clippy::pedantic, missing_docs, unused_mut)]\n");
-    let local_names = emit_parser_arrays(&mut source, grammar);
+    let mut glue = String::new();
+    let mut tables = BinaryTables::default();
+    let local_names = emit_parser_arrays(&mut glue, &mut tables, grammar);
     let tokenizer_values = emit_tokenizers(grammar, bindings, &local_names)?;
-    let dialects = emit_dialects(&mut source, grammar);
+    let dialects = emit_dialects(&mut tables, grammar);
+    let dynamic_precedences = dynamic_precedences(grammar);
+    tables.push_i16("dynamic_precedences", &dynamic_precedences);
+    let binary = tables.finish(little_endian_path, big_endian_path);
+    source.push_str(&binary.declaration.to_string());
+    source.push_str(&glue);
     let structural = emit_language_definition(grammar, bindings, &tokenizer_values, &dialects)?;
     source.push_str(&structural.to_string());
-    format_generated_rust(&source, "Generated parser is invalid Rust")
+    let source = format_generated_rust(&source, "Generated parser is invalid Rust")?;
+    Ok(EmittedParser {
+        source,
+        little_endian_data: binary.little_endian,
+        big_endian_data: binary.big_endian,
+    })
+}
+
+struct EmittedParser {
+    source: String,
+    little_endian_data: Vec<u8>,
+    big_endian_data: Vec<u8>,
 }
 
 struct LocalTableNames {
     table: String,
-    precedence: String,
+    precedence: Ident,
 }
 
 fn emit_parser_arrays(
     source: &mut String,
+    tables: &mut BinaryTables,
     grammar: &CompiledGrammar,
 ) -> BTreeMap<usize, LocalTableNames> {
-    write_array(source, "STATES", "u32", &grammar.states);
-    write_array(source, "STATE_DATA", "u16", &grammar.state_data);
-    write_array(source, "GOTO", "u16", &grammar.goto);
-    write_token_table(source, "TOKEN", &grammar.token_table);
+    tables.push_u32("states", &grammar.states);
+    tables.push_u16("state_data", &grammar.state_data);
+    tables.push_u16("goto", &grammar.goto);
+    write_token_table(source, tables, "TOKEN", "token", &grammar.token_table);
     grammar
         .tokenizers
         .iter()
@@ -95,9 +147,10 @@ fn emit_parser_arrays(
                 table, precedence, ..
             } => {
                 let prefix = format!("LOCAL_TOKEN_{index}");
-                let table_name = write_token_table(source, &prefix, table);
-                let precedence_name = format!("{prefix}_PRECEDENCE");
-                write_array(source, &precedence_name, "u16", precedence);
+                let field_prefix = format!("local_token_{index}");
+                let table_name = write_token_table(source, tables, &prefix, &field_prefix, table);
+                let precedence_name =
+                    tables.push_u16(&format!("{field_prefix}_precedence"), precedence);
                 Some((
                     index,
                     LocalTableNames {
@@ -135,13 +188,13 @@ fn emit_tokenizers(
                             .get(&index)
                             .expect("local tokenizer has emitted data");
                         let table = Ident::new(&names.table, Span::call_site());
-                        let precedence = Ident::new(&names.precedence, Span::call_site());
+                        let precedence = &names.precedence;
                         let fallback = option_u16(*else_token);
                         quote! {
                             rezel_lr::Tokenizer::Local(
                                 rezel_lr::LocalTokenGroup::new(
                                     &#table,
-                                    #precedence,
+                                    &TABLES.#precedence,
                                     #fallback,
                                 )
                             )
@@ -161,16 +214,12 @@ fn emit_tokenizers(
         .collect()
 }
 
-fn emit_dialects(source: &mut String, grammar: &CompiledGrammar) -> Vec<TokenStream> {
+fn emit_dialects(tables: &mut BinaryTables, grammar: &CompiledGrammar) -> Vec<TokenStream> {
     let dialect_term_arrays = grammar
         .dialects
         .iter()
         .enumerate()
-        .map(|(index, (_, terms))| {
-            let name = format!("DIALECT_TERMS_{index}");
-            write_array(source, &name, "u16", terms);
-            Ident::new(&name, Span::call_site())
-        })
+        .map(|(index, (_, terms))| tables.push_u16(&format!("dialect_terms_{index}"), terms))
         .collect::<Vec<_>>();
     grammar
         .dialects
@@ -181,7 +230,7 @@ fn emit_dialects(source: &mut String, grammar: &CompiledGrammar) -> Vec<TokenStr
             quote! {
                 rezel_lr::DialectSpec {
                     name: #name,
-                    terms: #terms,
+                    terms: &TABLES.#terms,
                 }
             }
         })
@@ -206,15 +255,6 @@ fn emit_language_definition(
             }
         }
     });
-    let dynamic_precedences = if grammar.dynamic_precedences.is_empty() {
-        Vec::new()
-    } else {
-        let mut values = vec![0_i16; usize::from(grammar.max_term) + 1];
-        for &(term, precedence) in &grammar.dynamic_precedences {
-            values[usize::from(term)] = precedence;
-        }
-        values
-    };
     let term_names = grammar.term_names.iter().map(|(term, name)| {
         let name = LitStr::new(name, Span::call_site());
         quote!((#term, #name))
@@ -248,9 +288,6 @@ fn emit_language_definition(
         static DIALECTS: &[rezel_lr::DialectSpec] = &[
             #(#dialects),*
         ];
-        static DYNAMIC_PRECEDENCES: &[i16] = &[
-            #(#dynamic_precedences),*
-        ];
         static SPECIALIZERS: &[rezel_lr::SpecializerSpec] = &[
             #(#specializer_values),*
         ];
@@ -259,9 +296,9 @@ fn emit_language_definition(
         ];
 
         pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
-            states: STATES,
-            state_data: STATE_DATA,
-            goto: GOTO,
+            states: &TABLES.states,
+            state_data: &TABLES.state_data,
+            goto: &TABLES.goto,
             token_table: &TOKEN_TABLE,
             tokenizers: TOKENIZERS,
             top_rules: TOP_RULES,
@@ -271,7 +308,7 @@ fn emit_language_definition(
             node_set,
             context: #context,
             dialects: DIALECTS,
-            dynamic_precedences: DYNAMIC_PRECEDENCES,
+            dynamic_precedences: &TABLES.dynamic_precedences,
             specializers: SPECIALIZERS,
             term_names: TERM_NAMES,
         };
@@ -467,72 +504,41 @@ fn option_u16(value: Option<u16>) -> TokenStream {
     value.map_or_else(|| quote!(None), |value| quote!(Some(#value)))
 }
 
-fn write_array<T>(source: &mut String, name: &str, ty: &str, values: &[T])
-where
-    T: std::fmt::Display,
-{
-    let _ = write!(source, "static {name}: &[{ty}] = &[");
-    for value in values {
-        let _ = write!(source, "{value},");
+fn dynamic_precedences(grammar: &CompiledGrammar) -> Vec<i16> {
+    if grammar.dynamic_precedences.is_empty() {
+        return Vec::new();
     }
-    source.push_str("];\n");
+    let mut values = vec![0_i16; usize::from(grammar.max_term) + 1];
+    for &(term, precedence) in &grammar.dynamic_precedences {
+        values[usize::from(term)] = precedence;
+    }
+    values
 }
 
-fn write_token_table(source: &mut String, prefix: &str, table: &EncodedTokenTable) -> String {
-    let states = format!("{prefix}_STATES");
-    let accepts = format!("{prefix}_ACCEPTS");
-    let edges = format!("{prefix}_EDGES");
-    let eof = format!("{prefix}_EOF");
+fn write_token_table(
+    source: &mut String,
+    tables: &mut BinaryTables,
+    prefix: &str,
+    field_prefix: &str,
+    table: &EncodedTokenTable,
+) -> String {
+    let fields = tables.push_token_table(field_prefix, table);
     let table_name = format!("{prefix}_TABLE");
-
-    let _ = write!(source, "static {states}: &[rezel_lr::TokenState] = &[");
-    for state in &table.states {
-        let _ = write!(
-            source,
-            "rezel_lr::TokenState::new({},{},{},{},{}),",
-            state.group_mask,
-            state.accept_start,
-            state.edge_start,
-            state.accept_count,
-            state.edge_count,
-        );
-    }
-    source.push_str("];\n");
-
-    let _ = write!(source, "static {accepts}: &[rezel_lr::TokenAccept] = &[");
-    for accept in &table.accepts {
-        let _ = write!(
-            source,
-            "rezel_lr::TokenAccept::new({},{}),",
-            accept.term, accept.group_mask,
-        );
-    }
-    source.push_str("];\n");
-
-    let _ = write!(source, "static {edges}: &[rezel_lr::TokenEdge] = &[");
-    for edge in &table.edges {
-        let _ = write!(
-            source,
-            "rezel_lr::TokenEdge::new({},{},{}),",
-            edge.from, edge.to, edge.target,
-        );
-    }
-    source.push_str("];\n");
-
-    let _ = write!(source, "static {eof}: &[rezel_lr::TokenEof] = &[");
-    for transition in &table.eof {
-        let _ = write!(
-            source,
-            "rezel_lr::TokenEof::new({},{}),",
-            transition.state, transition.target,
-        );
-    }
-    source.push_str("];\n");
-
-    let _ = writeln!(
-        source,
-        "static {table_name}: rezel_lr::TokenTable = \
-         rezel_lr::TokenTable::new({states}, {accepts}, {edges}, {eof});"
+    let table_name_ident = Ident::new(&table_name, Span::call_site());
+    let states = fields.states;
+    let accepts = fields.accepts;
+    let edges = fields.edges;
+    let eof = fields.eof;
+    source.push_str(
+        &quote! {
+            static #table_name_ident: rezel_lr::TokenTable = rezel_lr::TokenTable::new(
+                &TABLES.#states,
+                &TABLES.#accepts,
+                &TABLES.#edges,
+                &TABLES.#eof,
+            );
+        }
+        .to_string(),
     );
     table_name
 }

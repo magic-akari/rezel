@@ -90,6 +90,17 @@ evidence_files = [
 ]
 
 [[scope]]
+rust_file = "binary.rs"
+classification = "rezel-owned"
+invariant = "Generated parser tables retain the exact native numeric values, record boundaries, and alignment expected by the LR runtime on little- and big-endian targets."
+representation = "The generator serializes the existing typed arrays into paired native-layout blobs, including deterministic C-layout padding; generated Rust uses zerocopy at compile time to include the selected blob as one aligned static value without runtime decoding."
+evidence_files = [
+	"crates/rezel-generator/tests/cases.rs",
+	"tools/codegen/src/main.rs",
+	"crates/rezel-lr/src/token.rs",
+]
+
+[[scope]]
 rust_file = "build.rs"
 classification = "adapted"
 upstream_file = "src/build.ts"
@@ -136,8 +147,8 @@ evidence_files = ["crates/rezel-generator/tests/cases.rs"]
 [[scope]]
 rust_file = "emit.rs"
 classification = "rezel-owned"
-invariant = "A compiled grammar deterministically emits valid static Rust tables, node metadata, term identifiers, and direct external symbol references."
-representation = "quote and proc-macro2 generate Rust syntax, syn validates it, prettyplease formats it, and a sequential writer emits large numeric arrays."
+invariant = "A compiled grammar deterministically emits valid static parser data, thin Rust glue, node metadata, term identifiers, and direct external symbol references."
+representation = "quote and proc-macro2 generate the typed loader and executable Rust glue, syn validates it, prettyplease formats it, and binary table serialization is delegated to the generator-owned native-layout writer."
 evidence_files = [
 	"crates/rezel-generator/tests/cases.rs",
 	"tools/codegen/src/main.rs",

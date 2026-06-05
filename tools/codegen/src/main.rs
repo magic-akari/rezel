@@ -9,7 +9,8 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use rezel_generator::{
-    BuildOptions, CompiledGrammar, RustBindings, compile_grammar, emit_rust, emit_typed_syntax,
+    BuildOptions, CompiledGrammar, RustBindings, compile_grammar, emit_rust_with_data_paths,
+    emit_typed_syntax,
 };
 
 const USAGE: &str =
@@ -73,13 +74,22 @@ fn generate_language(
     reject_warnings(language, &grammar)?;
     let bindings_source = fs::read_to_string(bindings_path)?;
     let bindings = RustBindings::from_toml_str(&bindings_source)?;
-    let generated = emit_rust(&grammar, &bindings)?;
+    let generated =
+        emit_rust_with_data_paths(&grammar, &bindings, "generated.le.bin", "generated.be.bin")?;
     let source_root = language_root.join("src");
     outputs.manage_scoped_source_directory(&source_root, regeneration_command);
     let parser = annotated(&generated.parser, regeneration_command)?;
     outputs.emit(&source_root.join("generated.rs"), &parser)?;
     let terms = annotated(&generated.terms, regeneration_command)?;
     outputs.emit(&source_root.join("terms.rs"), &terms)?;
+    outputs.emit_bytes(
+        &source_root.join("generated.le.bin"),
+        &generated.little_endian_data,
+    )?;
+    outputs.emit_bytes(
+        &source_root.join("generated.be.bin"),
+        &generated.big_endian_data,
+    )?;
 
     let typed_schema = fs::read_to_string(typed_path)?;
     let typed = emit_typed_syntax(&grammar, &typed_schema)?;
@@ -125,12 +135,23 @@ fn generate_upstream_cases(
         let grammar = compile_grammar(grammar_source, Some(name), BuildOptions::default())?;
         reject_warnings(name, &grammar)?;
         let stem = snake_case(name);
+        let little_endian_name = format!("{stem}.le.bin");
+        let big_endian_name = format!("{stem}.be.bin");
         let bindings = case_bindings(&path)?;
-        let generated = emit_rust(&grammar, &bindings)?;
+        let generated =
+            emit_rust_with_data_paths(&grammar, &bindings, &little_endian_name, &big_endian_name)?;
         let parser = annotated(&generated.parser, regeneration_command)?;
         outputs.emit(&output_root.join(format!("{stem}.rs")), &parser)?;
         let terms = annotated(&generated.terms, regeneration_command)?;
         outputs.emit(&output_root.join(format!("{stem}_terms.rs")), &terms)?;
+        outputs.emit_bytes(
+            &output_root.join(little_endian_name),
+            &generated.little_endian_data,
+        )?;
+        outputs.emit_bytes(
+            &output_root.join(big_endian_name),
+            &generated.big_endian_data,
+        )?;
         cases.push((name.to_owned(), stem));
     }
     let registry = case_registry_source(&cases, regeneration_command)?;
@@ -166,9 +187,24 @@ fn generate_test_parse_fixtures(
         let source_name = format!("test/test-parse.ts::{name}");
         let grammar = compile_grammar(&source, Some(&source_name), BuildOptions::default())?;
         reject_warnings(name, &grammar)?;
-        let generated = emit_rust(&grammar, &RustBindings::default())?;
+        let little_endian_name = format!("{name}.le.bin");
+        let big_endian_name = format!("{name}.be.bin");
+        let generated = emit_rust_with_data_paths(
+            &grammar,
+            &RustBindings::default(),
+            &little_endian_name,
+            &big_endian_name,
+        )?;
         let parser = annotated(&generated.parser, regeneration_command)?;
         outputs.emit(&output_root.join(format!("{name}.rs")), &parser)?;
+        outputs.emit_bytes(
+            &output_root.join(little_endian_name),
+            &generated.little_endian_data,
+        )?;
+        outputs.emit_bytes(
+            &output_root.join(big_endian_name),
+            &generated.big_endian_data,
+        )?;
     }
     Ok(())
 }
@@ -384,10 +420,12 @@ impl<'a> Outputs<'a> {
     }
 
     fn emit(&mut self, path: &Path, source: &str) -> Result<()> {
-        if let Some(previous) = self
-            .expected
-            .insert(path.to_path_buf(), source.as_bytes().to_vec())
-            && previous != source.as_bytes()
+        self.emit_bytes(path, source.as_bytes())
+    }
+
+    fn emit_bytes(&mut self, path: &Path, expected: &[u8]) -> Result<()> {
+        if let Some(previous) = self.expected.insert(path.to_path_buf(), expected.to_vec())
+            && previous != expected
         {
             return Err(format!("conflicting generated output for {}", path.display()).into());
         }

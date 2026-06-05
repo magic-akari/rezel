@@ -6,6 +6,7 @@ use rezel_common::{
     CodePoint, InputCharacter, InputChunk, LexicalInput, ParseError, ParseErrorKind, TextRange,
     TextSize,
 };
+use zerocopy::{FromBytes, Immutable};
 
 use crate::stack::Stack;
 use crate::table::SequenceCode;
@@ -13,7 +14,8 @@ use crate::table::SequenceCode;
 const NO_TOKEN_STATE: u16 = u16::MAX;
 
 /// One generated token-DFA state.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, align(2))]
+#[derive(Clone, Copy, Debug, Eq, FromBytes, Immutable, PartialEq)]
 pub struct TokenState {
     group_mask: u16,
     accept_start: u16,
@@ -22,74 +24,29 @@ pub struct TokenState {
     edge_count: u8,
 }
 
-impl TokenState {
-    /// Construct generated token-state data.
-    #[doc(hidden)]
-    #[must_use]
-    pub const fn new(
-        group_mask: u16,
-        accept_start: u16,
-        edge_start: u16,
-        accept_count: u8,
-        edge_count: u8,
-    ) -> Self {
-        Self {
-            group_mask,
-            accept_start,
-            edge_start,
-            accept_count,
-            edge_count,
-        }
-    }
-}
-
 /// One accepting token term in a generated DFA state.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, align(2))]
+#[derive(Clone, Copy, Debug, Eq, FromBytes, Immutable, PartialEq)]
 pub struct TokenAccept {
     term: u16,
     group_mask: u16,
 }
 
-impl TokenAccept {
-    /// Construct generated accepting-token data.
-    #[doc(hidden)]
-    #[must_use]
-    pub const fn new(term: u16, group_mask: u16) -> Self {
-        Self { term, group_mask }
-    }
-}
-
 /// One half-open Unicode code-point transition.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, align(4))]
+#[derive(Clone, Copy, Debug, Eq, FromBytes, Immutable, PartialEq)]
 pub struct TokenEdge {
     from: u32,
     to: u32,
     target: u16,
 }
 
-impl TokenEdge {
-    /// Construct generated code-point edge data.
-    #[doc(hidden)]
-    #[must_use]
-    pub const fn new(from: u32, to: u32, target: u16) -> Self {
-        Self { from, to, target }
-    }
-}
-
 /// One generated EOF transition, kept outside the character hot path.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, align(2))]
+#[derive(Clone, Copy, Debug, Eq, FromBytes, Immutable, PartialEq)]
 pub struct TokenEof {
     state: u16,
     target: u16,
-}
-
-impl TokenEof {
-    /// Construct one generated EOF transition.
-    #[doc(hidden)]
-    #[must_use]
-    pub const fn new(state: u16, target: u16) -> Self {
-        Self { state, target }
-    }
 }
 
 /// Typed static token-DFA tables emitted by the generator.
@@ -1338,14 +1295,61 @@ mod tests {
     }
 
     #[test]
+    fn generated_token_state_stays_compact() {
+        assert_eq!(std::mem::size_of::<TokenState>(), 8);
+        assert_eq!(std::mem::align_of::<TokenState>(), 2);
+        assert_eq!(std::mem::offset_of!(TokenState, group_mask), 0);
+        assert_eq!(std::mem::offset_of!(TokenState, accept_start), 2);
+        assert_eq!(std::mem::offset_of!(TokenState, edge_start), 4);
+        assert_eq!(std::mem::offset_of!(TokenState, accept_count), 6);
+        assert_eq!(std::mem::offset_of!(TokenState, edge_count), 7);
+
+        assert_eq!(std::mem::size_of::<TokenAccept>(), 4);
+        assert_eq!(std::mem::align_of::<TokenAccept>(), 2);
+        assert_eq!(std::mem::offset_of!(TokenAccept, term), 0);
+        assert_eq!(std::mem::offset_of!(TokenAccept, group_mask), 2);
+
+        assert_eq!(std::mem::size_of::<TokenEof>(), 4);
+        assert_eq!(std::mem::align_of::<TokenEof>(), 2);
+        assert_eq!(std::mem::offset_of!(TokenEof, state), 0);
+        assert_eq!(std::mem::offset_of!(TokenEof, target), 2);
+
+        assert_eq!(std::mem::size_of::<TokenEdge>(), 12);
+        assert_eq!(std::mem::align_of::<TokenEdge>(), 4);
+        assert_eq!(std::mem::offset_of!(TokenEdge, from), 0);
+        assert_eq!(std::mem::offset_of!(TokenEdge, to), 4);
+        assert_eq!(std::mem::offset_of!(TokenEdge, target), 8);
+    }
+
+    #[test]
     fn indexes_ascii_token_transitions() {
         static STATES: &[TokenState] = &[
-            TokenState::new(1, 0, 0, 0, 1),
-            TokenState::new(1, 0, 1, 0, 1),
+            TokenState {
+                group_mask: 1,
+                accept_start: 0,
+                edge_start: 0,
+                accept_count: 0,
+                edge_count: 1,
+            },
+            TokenState {
+                group_mask: 1,
+                accept_start: 0,
+                edge_start: 1,
+                accept_count: 0,
+                edge_count: 1,
+            },
         ];
         static EDGES: &[TokenEdge] = &[
-            TokenEdge::new(b'A' as u32, b'Z' as u32 + 1, 1),
-            TokenEdge::new(b'a' as u32, b'z' as u32 + 1, 1),
+            TokenEdge {
+                from: b'A' as u32,
+                to: b'Z' as u32 + 1,
+                target: 1,
+            },
+            TokenEdge {
+                from: b'a' as u32,
+                to: b'z' as u32 + 1,
+                target: 1,
+            },
         ];
         static TABLE: TokenTable = TokenTable::new(STATES, &[], EDGES, &[]);
         let index = TokenAsciiIndex::build(&TABLE);
@@ -1359,13 +1363,39 @@ mod tests {
 
     #[test]
     fn optimized_transitions_match_linear_edges() {
-        static STATES: &[TokenState] = &[TokenState::new(1, 0, 0, 0, 5)];
+        static STATES: &[TokenState] = &[TokenState {
+            group_mask: 1,
+            accept_start: 0,
+            edge_start: 0,
+            accept_count: 0,
+            edge_count: 5,
+        }];
         static EDGES: &[TokenEdge] = &[
-            TokenEdge::new(0, 10, 1),
-            TokenEdge::new(10, 0x80, 2),
-            TokenEdge::new(0x80, 0xd800, 3),
-            TokenEdge::new(0xe000, 0x10_ffff, 4),
-            TokenEdge::new(0x10_ffff, 0x11_0000, 5),
+            TokenEdge {
+                from: 0,
+                to: 10,
+                target: 1,
+            },
+            TokenEdge {
+                from: 10,
+                to: 0x80,
+                target: 2,
+            },
+            TokenEdge {
+                from: 0x80,
+                to: 0xd800,
+                target: 3,
+            },
+            TokenEdge {
+                from: 0xe000,
+                to: 0x10_ffff,
+                target: 4,
+            },
+            TokenEdge {
+                from: 0x10_ffff,
+                to: 0x11_0000,
+                target: 5,
+            },
         ];
         static TABLE: TokenTable = TokenTable::new(STATES, &[], EDGES, &[]);
         let state = STATES[0];

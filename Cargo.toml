@@ -39,6 +39,7 @@ text-size = "1.1.1"
 toml = "1.1.2"
 unicode-normalization = "=0.1.24"
 unicode_names2 = "=2.0.0"
+zerocopy = { version = "0.8.50", features = ["derive"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

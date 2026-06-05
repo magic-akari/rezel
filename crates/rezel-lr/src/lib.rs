@@ -22,3 +22,9 @@ pub use token::{
     ExternalTokenizer, InputMark, InputStream, LocalTokenGroup, TokenAccept, TokenEdge, TokenEof,
     TokenGroup, TokenState, TokenTable, Tokenizer, TokenizerFlags,
 };
+
+/// Implementation details referenced by generated parser glue.
+#[doc(hidden)]
+pub mod __private {
+    pub use zerocopy::include_value;
+}

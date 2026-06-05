@@ -191,6 +191,7 @@ dependencies = [
  "serde_json",
  "syn",
  "toml",
+ "zerocopy",
 ]
 
 [[package]]
@@ -228,6 +229,7 @@ dependencies = [
  "rezel-lr",
  "serde",
  "serde_json",
+ "zerocopy",
 ]
 
 [[package]]
@@ -239,6 +241,7 @@ dependencies = [
  "rezel-lr",
  "serde",
  "serde_json",
+ "zerocopy",
 ]
 
 [[package]]
@@ -250,6 +253,7 @@ dependencies = [
  "rezel-lr",
  "serde",
  "serde_json",
+ "zerocopy",
 ]
 
 [[package]]
@@ -263,6 +267,7 @@ dependencies = [
  "serde_json",
  "unicode-normalization",
  "unicode_names2",
+ "zerocopy",
 ]
 
 [[package]]
@@ -270,6 +275,7 @@ name = "rezel-lr"
 version = "0.0.0"
 dependencies = [
  "rezel-common",
+ "zerocopy",
 ]
 
 [[package]]

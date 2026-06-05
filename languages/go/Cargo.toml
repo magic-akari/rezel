@@ -25,6 +25,7 @@ highlight = ["dep:rezel-highlight"]
 rezel-common.workspace = true
 rezel-highlight = { workspace = true, optional = true }
 rezel-lr.workspace = true
+zerocopy.workspace = true
 
 [dev-dependencies]
 serde.workspace = true

@@ -7,7 +7,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use rezel_generator::{
-    BuildOptions, RustBindings, compile_grammar, emit_rust, emit_terms, emit_typed_syntax,
+    BuildOptions, RustBindings, compile_grammar, emit_rust_with_data_paths, emit_terms,
+    emit_typed_syntax,
 };
 
 fn main() {
@@ -106,8 +107,15 @@ fn generate(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
     };
     let grammar = read_grammar_with_options(&grammar_path, include_names)?;
     print_warnings(&grammar);
-    let generated = emit_rust(&grammar, &bindings)?;
+    let little_endian_output = output.with_extension("le.bin");
+    let big_endian_output = output.with_extension("be.bin");
+    let little_endian_path = generated_data_name(&little_endian_output)?;
+    let big_endian_path = generated_data_name(&big_endian_output)?;
+    let generated =
+        emit_rust_with_data_paths(&grammar, &bindings, little_endian_path, big_endian_path)?;
     fs::write(&output, generated.parser)?;
+    fs::write(little_endian_output, generated.little_endian_data)?;
+    fs::write(big_endian_output, generated.big_endian_data)?;
     if let Some(terms_output) = terms_output {
         fs::write(terms_output, generated.terms)?;
     }
@@ -117,6 +125,12 @@ fn generate(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
         fs::write(typed_output, typed)?;
     }
     Ok(())
+}
+
+fn generated_data_name(path: &Path) -> Result<&str, Box<dyn Error>> {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| "generated data path must have a UTF-8 file name".into())
 }
 
 fn terms(arguments: &[OsString]) -> Result<(), Box<dyn Error>> {
@@ -201,5 +215,6 @@ fn usage() -> &'static str {
      \x20 rezel generate GRAMMAR --output PARSER.rs [--terms TERMS.rs]\n\
      \x20       [--include-names] [--bindings BINDINGS.toml]\n\
      \x20       [--typed SCHEMA.toml --typed-output TYPED.rs]\n\
+     \x20       (also writes PARSER.le.bin and PARSER.be.bin)\n\
      \x20 rezel terms GRAMMAR [--output TERMS.rs]"
 }

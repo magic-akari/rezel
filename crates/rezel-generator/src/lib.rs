@@ -2,6 +2,7 @@
 #![doc = include_str!("../README.md")]
 
 mod automaton;
+mod binary;
 mod binding;
 mod build;
 mod emit;
@@ -19,7 +20,7 @@ pub use build::{
     ProductionMetadata, PropertySourceMetadata, SpecializedTokenMetadata, SpecializerMetadata,
     SyntaxMetadata, TokenizerMetadata, TopRuleMetadata, compile_grammar,
 };
-pub use emit::{GeneratedRust, emit_rust, emit_terms};
+pub use emit::{GeneratedRust, emit_rust, emit_rust_with_data_paths, emit_terms};
 pub use error::{GeneratorError, GeneratorWarning};
 pub use node::*;
 pub use parse::parse_grammar;
