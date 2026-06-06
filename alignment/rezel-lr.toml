@@ -184,6 +184,10 @@ rust_item = "rezel_lr::parse::ContextTracker::with_reduce_without_input"
 classification = "rezel-owned"
 invariant = "Opting into an input-independent reduce callback preserves its context transition while making input observation impossible through the callback type."
 representation = "The pinned runtime resets input before every context callback; an explicit Rust builder accepts a callback without InputStream and lets the runtime bypass that reset."
+evidence_files = [
+	"languages/python/tests/contract.rs",
+	"languages/python/tests/reference/lezer.rs",
+]
 
 [[excluded]]
 upstream_file = "src/decode.ts"

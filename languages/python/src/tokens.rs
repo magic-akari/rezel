@@ -58,12 +58,9 @@ pub(crate) static STRINGS: ExternalTokenizer = ExternalTokenizer::new(
     },
 );
 
-pub(crate) static TRACK_INDENT: ContextTracker = ContextTracker::new(
-    start_context,
-    Some(shift_context),
-    Some(reduce_context),
-    hash_context,
-);
+pub(crate) static TRACK_INDENT: ContextTracker =
+    ContextTracker::new(start_context, Some(shift_context), None, hash_context)
+        .with_reduce_without_input(reduce_context);
 
 fn scan_newlines(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let context = context(stack);
@@ -312,7 +309,6 @@ fn reduce_context(
     value: &ContextValue,
     term: u16,
     _stack: &Stack,
-    _input: &mut InputStream,
 ) -> Result<ContextValue, ParseError> {
     let current = value
         .downcast_ref::<PythonContext>()

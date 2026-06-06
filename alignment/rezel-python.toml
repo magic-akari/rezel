@@ -74,7 +74,7 @@ classification = "adapted"
 upstream_file = "src/tokens.js"
 upstream_symbols = ["newlines", "indentation", "trackIndent", "strings"]
 invariant = "Python newlines, structural indentation contexts, and string modes preserve maintained Lezer CST recovery behavior while excluding Python 2-only print syntax."
-representation = "Typed Rust external tokenizers and immutable context values replace JavaScript tokenizers."
+representation = "Typed Rust external tokenizers and immutable context values replace JavaScript tokenizers; the reduction transition's input-free callback type lets the runtime skip Lezer's unconditional stream reset."
 evidence_files = [
 	"languages/python/tests/contract.rs",
 	"languages/python/tests/reference/cpython.rs",
