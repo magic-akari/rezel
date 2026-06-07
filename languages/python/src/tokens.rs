@@ -78,6 +78,9 @@ fn scan_newlines(input: &mut InputStream, stack: &Stack) -> Result<(), ParseErro
         }
         return Ok(());
     }
+    if !matches!(next_value(input), Some(SPACE | TAB | HASH | LF | CR)) {
+        return Ok(());
+    }
     let previous = peek_value(input, -1);
     if previous.is_none_or(is_line_break) && stack.can_shift(terms::blankLineStart) {
         let line_start = input.mark();
