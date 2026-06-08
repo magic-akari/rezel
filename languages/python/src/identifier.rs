@@ -30,8 +30,18 @@ fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     if !is_identifier_start(first) {
         return Ok(());
     }
-    input.advance(1);
-    while let Some(character) = input.next().map(CodePoint::as_u32) {
+    if first < 0x80 {
+        input.advance_ascii_while(|byte| is_identifier_continue(u32::from(byte)));
+    } else {
+        input.advance(1);
+    }
+    loop {
+        if input.advance_ascii_while(|byte| is_identifier_continue(u32::from(byte))) != 0 {
+            continue;
+        }
+        let Some(character) = input.next().map(CodePoint::as_u32) else {
+            break;
+        };
         if !is_identifier_continue(character) {
             break;
         }

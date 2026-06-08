@@ -43,6 +43,15 @@ fn named_official_tops_are_available() {
 }
 
 #[test]
+fn mixed_ascii_and_unicode_identifiers_parse_as_single_names() {
+    let source = "ascii_42 = 1\nªµ = 2\nasciiª = 3\nasciiª42 = 4\nªascii42 = 5\n";
+    rezel_lang_python::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap_or_else(|error| panic!("rejected mixed identifier boundaries: {error}"));
+}
+
+#[test]
 fn python_2_syntax_is_not_a_strict_cst_extension() {
     for source in [
         "print value\n",
