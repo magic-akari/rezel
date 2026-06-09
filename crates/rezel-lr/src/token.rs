@@ -1205,6 +1205,9 @@ fn read_token(
             let Some(next_state) = index.transition(state, ascii) else {
                 break;
             };
+            if next_state == state && advance_ascii_self_loop(input, index, state) {
+                continue;
+            }
             state = next_state;
             input.advance_known_ascii(ascii);
             continue;
@@ -1216,6 +1219,11 @@ fn read_token(
         }
         break;
     }
+}
+
+#[inline]
+fn advance_ascii_self_loop(input: &mut InputStream, index: &TokenAsciiIndex, state: usize) -> bool {
+    input.advance_ascii_while(|byte| index.transition(state, byte) == Some(state)) != 0
 }
 
 fn find_offset(data: &[u16], start: usize, term: u16) -> Option<usize> {
@@ -1415,6 +1423,63 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn bulk_ascii_self_loop_stops_before_a_different_transition() {
+        static STATES: &[TokenState] = &[
+            TokenState {
+                group_mask: 1,
+                accept_start: 0,
+                edge_start: 0,
+                accept_count: 0,
+                edge_count: 1,
+            },
+            TokenState {
+                group_mask: 1,
+                accept_start: 0,
+                edge_start: 1,
+                accept_count: 0,
+                edge_count: 2,
+            },
+            TokenState {
+                group_mask: 1,
+                accept_start: 0,
+                edge_start: 3,
+                accept_count: 0,
+                edge_count: 0,
+            },
+        ];
+        static EDGES: &[TokenEdge] = &[
+            TokenEdge {
+                from: b'a' as u32,
+                to: b'z' as u32 + 1,
+                target: 1,
+            },
+            TokenEdge {
+                from: b'!' as u32,
+                to: b'!' as u32 + 1,
+                target: 2,
+            },
+            TokenEdge {
+                from: b'a' as u32,
+                to: b'z' as u32 + 1,
+                target: 1,
+            },
+        ];
+        static TABLE: TokenTable = TokenTable::new(STATES, &[], EDGES, &[]);
+        let index = TokenAsciiIndex::build(&TABLE);
+        let ranges = Arc::from([TextRange::new(0.into(), 5.into())]);
+        let mut input = stream("abc!x", ranges);
+
+        assert_eq!(index.transition(0, b'a'), Some(1));
+        input.advance(1);
+        assert!(advance_ascii_self_loop(&mut input, &index, 1));
+        assert_eq!(input.position(), TextSize::from(3));
+        assert_eq!(input.next(), Some(CodePoint::from(b'!')));
+        assert_eq!(index.transition(1, b'!'), Some(2));
+        assert!(!advance_ascii_self_loop(&mut input, &index, 1));
+        assert_eq!(input.position(), TextSize::from(3));
     }
 
     fn stream(source: &str, ranges: impl Into<Arc<[TextRange]>>) -> InputStream {
