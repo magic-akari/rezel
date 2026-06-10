@@ -823,7 +823,7 @@ impl Stack {
         let Some(context) = self.context.clone() else {
             return Ok(());
         };
-        if context.tracker.shift_uses_input() {
+        if context.tracker.shift_uses_input(term) {
             input.reset(start);
         }
         let value = context.tracker.shift(&context.value, term, self, input)?;

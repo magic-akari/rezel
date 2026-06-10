@@ -180,6 +180,16 @@ evidence_files = [
 ]
 
 [[override_item]]
+rust_item = "rezel_lr::parse::ContextTracker::with_shift_input_terms"
+classification = "rezel-owned"
+invariant = "A term-scoped input contract preserves every context transition when its callback observes InputStream only for the declared shifted terms."
+representation = "The pinned runtime resets input before every context shift; a static Rust tracker may declare the exact terms whose callback observes input and leave the stream cursor untouched for every other term."
+evidence_files = [
+	"languages/python/tests/contract.rs",
+	"languages/python/tests/reference/lezer.rs",
+]
+
+[[override_item]]
 rust_item = "rezel_lr::parse::ContextTracker::with_reduce_without_input"
 classification = "rezel-owned"
 invariant = "Opting into an input-independent reduce callback preserves its context transition while making input observation impossible through the callback type."

@@ -157,6 +157,7 @@ enum ContextTransitionKind {
 pub struct ContextTracker {
     start: fn() -> ContextValue,
     shift: Option<ContextTransitionKind>,
+    shift_input_terms: Option<&'static [u16]>,
     reduce: Option<ContextTransitionKind>,
     hash: fn(&ContextValue) -> u64,
 }
@@ -179,6 +180,7 @@ impl ContextTracker {
                 Some(shift) => Some(ContextTransitionKind::WithInput(shift)),
                 None => None,
             },
+            shift_input_terms: None,
             reduce: match reduce {
                 Some(reduce) => Some(ContextTransitionKind::WithInput(reduce)),
                 None => None,
@@ -193,6 +195,17 @@ impl ContextTracker {
     #[must_use]
     pub const fn with_shift_without_input(mut self, shift: ContextTransitionWithoutInput) -> Self {
         self.shift = Some(ContextTransitionKind::WithoutInput(shift));
+        self
+    }
+
+    /// Restrict input observation to the listed shifted terms.
+    ///
+    /// The runtime does not reposition the input stream before invoking the
+    /// callback for other terms. The callback must not inspect or advance its
+    /// `InputStream` argument for a term absent from this list.
+    #[must_use]
+    pub const fn with_shift_input_terms(mut self, terms: &'static [u16]) -> Self {
+        self.shift_input_terms = Some(terms);
         self
     }
 
@@ -212,8 +225,11 @@ impl ContextTracker {
         (self.start)()
     }
 
-    pub(crate) const fn shift_uses_input(&self) -> bool {
+    pub(crate) fn shift_uses_input(&self, term: u16) -> bool {
         matches!(self.shift, Some(ContextTransitionKind::WithInput(_)))
+            && self
+                .shift_input_terms
+                .is_none_or(|terms| terms.contains(&term))
     }
 
     pub(crate) const fn tracks_reductions(&self) -> bool {
@@ -1723,4 +1739,53 @@ fn prune_by_score(stacks: &mut Vec<Stack>, maximum: usize) {
     }
     stacks.sort_by_key(|stack| Reverse(stack.score()));
     stacks.truncate(maximum);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn start_context() -> ContextValue {
+        ContextValue::new(())
+    }
+
+    #[allow(clippy::unnecessary_wraps)]
+    fn shift_with_input(
+        context: &ContextValue,
+        _term: u16,
+        _stack: &Stack,
+        _input: &mut InputStream,
+    ) -> Result<ContextValue, ParseError> {
+        Ok(context.clone())
+    }
+
+    #[allow(clippy::unnecessary_wraps)]
+    fn shift_without_input(
+        context: &ContextValue,
+        _term: u16,
+        _stack: &Stack,
+    ) -> Result<ContextValue, ParseError> {
+        Ok(context.clone())
+    }
+
+    fn hash_context(_context: &ContextValue) -> u64 {
+        0
+    }
+
+    #[test]
+    fn context_shift_input_can_be_scoped_to_terms() {
+        let default =
+            ContextTracker::new(start_context, Some(shift_with_input), None, hash_context);
+        assert!(default.shift_uses_input(3));
+
+        let scoped = default.with_shift_input_terms(&[7, 11]);
+        assert!(!scoped.shift_uses_input(3));
+        assert!(scoped.shift_uses_input(7));
+        assert!(scoped.shift_uses_input(11));
+
+        let state_only = ContextTracker::new(start_context, None, None, hash_context)
+            .with_shift_without_input(shift_without_input)
+            .with_shift_input_terms(&[7]);
+        assert!(!state_only.shift_uses_input(7));
+    }
 }

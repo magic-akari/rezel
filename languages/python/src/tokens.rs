@@ -60,6 +60,7 @@ pub(crate) static STRINGS: ExternalTokenizer = ExternalTokenizer::new(
 
 pub(crate) static TRACK_INDENT: ContextTracker =
     ContextTracker::new(start_context, Some(shift_context), None, hash_context)
+        .with_shift_input_terms(&[terms::indent])
         .with_reduce_without_input(reduce_context);
 
 fn scan_newlines(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
