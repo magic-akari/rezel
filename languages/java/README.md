@@ -1,9 +1,17 @@
 # rezel-lang-java
 
-Java SE 26 parser and typed syntax for Rezel.
+Java SE 26 parser, typed syntax, and owned compiler-tree projection for Rezel.
 
-The default parser recovers from syntax errors and represents recovery points
-with `⚠` nodes. Enable strict mode when invalid input must be rejected:
+The grammar is derived from a pinned Lezer grammar and updated to the Java SE 26
+language contract. Focused reference tests compare acceptance and public tree
+projections with JDK 26 `javac`; a standard-library runner provides broad
+coverage.
+
+## Parsing and source translation
+
+`Program` parses complete source and `ClassContent` parses a class-body
+fragment. The default parser recovers from syntax errors and records recovery
+points with `⚠` nodes. Enable strict mode when invalid input must be rejected:
 
 ```rust
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -17,12 +25,13 @@ assert_eq!(tree.to_string(), strict_tree.to_string());
 # }
 ```
 
-All ranges address the original UTF-8 source. The parser applies the Unicode
-escape translation required by the Java Language Specification while
-preserving those original byte ranges. A malformed eligible Unicode escape is
-reported as an input error before syntactic recovery.
+The language facade applies Java's eligible Unicode-escape translation before
+tokenization while preserving original UTF-8 byte ranges. A malformed eligible
+escape is an input error and cannot be hidden by syntax recovery.
 
-Generated typed syntax provides zero-copy direct-child access over the CST:
+## Typed CST
+
+Generated typed syntax provides zero-copy direct-child access:
 
 ```rust
 use rezel_common::TypedNode;
@@ -38,10 +47,31 @@ assert!(program.compilation_unit().is_some());
 # }
 ```
 
-`JavaAst::lower` converts a strict tree into an owned arena whose node kinds,
-fields, properties, and source positions follow the public JDK compiler-tree
-API. Comments remain available in the CST and typed syntax but are not part of
-the lowered AST.
+The typed API remains backed by the CST. Comments and concrete tokens therefore
+remain available even when a later projection omits them.
 
-The optional `highlight` Cargo feature exposes syntactic tag projection
-through `highlight_spans`. It performs no binding, scope, or semantic analysis.
+## Owned AST
+
+`JavaAst::lower` converts a strict complete-source tree into an owned arena
+whose node kinds, ordered getters, properties, and source ranges follow the
+public JDK compiler-tree API:
+
+```rust
+use rezel_lang_java::ast::{JavaAst, JavaAstKind};
+
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let source = "class Sample {}";
+# let tree = rezel_lang_java::parser().with_strict(true).parse(source)?;
+let ast = JavaAst::lower(&tree, source)?;
+assert_eq!(ast.root().kind(), JavaAstKind::CompilationUnit);
+# Ok(())
+# }
+```
+
+Lowering rejects recovery trees. Comments remain a CST concern and are not
+nodes in the compiler-tree projection.
+
+## Highlighting
+
+The optional `highlight` Cargo feature exposes `highlight_spans`. It projects
+syntactic tags and performs no binding, scope, type, or semantic analysis.

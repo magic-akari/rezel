@@ -1,10 +1,15 @@
 # rezel-lang-json
 
-JSON reference language for Rezel, generated from the unchanged
-`@lezer/json` 1.0.3 grammar.
+JSON parser and zero-copy typed syntax for Rezel.
 
-The crate exposes one cheap-to-clone recovering parser over static Rust
-tables. Configure a clone for strict parsing when required:
+The grammar is derived from the pinned `@lezer/json` grammar identified in
+`THIRD_PARTY_NOTICES.md`. Strict acceptance and resource behavior are also
+tested against `JSONTestSuite`. The package has one `JsonText` entry point.
+
+## Parsing
+
+The default parser recovers from syntax errors and records recovery points with
+`⚠` nodes. Enable strict mode when invalid JSON must be rejected:
 
 ```rust
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,11 +23,22 @@ assert_eq!(recovered.to_string(), strict.to_string());
 # }
 ```
 
-The generic Rezel CST is always available. The crate also exposes zero-copy
-typed syntax wrappers such as `JsonRoot`, `JsonObject`, `JsonArray`, and
-`JsonValue`. Import the re-exported `TypedNode` trait to use `downcast_from`,
-`syntax`, `into_syntax`, and `text`.
+All positions are byte offsets in the original UTF-8 Rust string. Parser
+configuration is cheap to clone and shares immutable generated tables.
 
-Typed syntax is a view over the same CST rather than an owned semantic JSON
-model. It does not depend on the optional `highlight` feature, which attaches
-the upstream `jsonHighlighting` property source for use with `rezel-highlight`.
+## Typed CST
+
+The generic CST is always available. Generated wrappers such as `JsonRoot`,
+`JsonObject`, `JsonArray`, and `JsonValue` provide zero-copy direct-child
+navigation over the same tree. Import the re-exported `TypedNode` trait for
+downcasting and source-backed node access.
+
+Typed syntax does not decode an owned JSON value. Consumers that need a value
+model can project one from a strict tree while retaining the CST for concrete
+syntax and ranges.
+
+## Highlighting
+
+The optional `highlight` Cargo feature attaches JSON syntactic tags for use
+with `rezel-highlight`. It classifies strings, numbers, property names,
+literals, separators, and delimiters without semantic analysis.

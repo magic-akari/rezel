@@ -1,18 +1,16 @@
 # rezel-generator
 
-Grammar compiler and Rust source generator for Rezel parsers.
+Grammar compiler and Rust artifact generator for Rezel parsers.
 
-## When to depend on this crate
+## Role in the system
 
-Most applications should depend on a published `rezel-lang-*` parser crate.
-Use `rezel-generator` directly when you are:
+The generator reads a Lezer-style grammar and produces the immutable inputs
+consumed by `rezel-lr`. Use it directly when developing a language package,
+integrating generation into a tool, or testing grammar diagnostics. Ordinary
+parser users should depend on a generated `rezel-lang-*` package.
 
-- compiling a Lezer grammar into Rust during parser development;
-- integrating grammar compilation into a build or release tool;
-- inspecting grammar diagnostics or generated term identifiers.
-
-Generated parser crates must use matching versions of `rezel-generator`,
-`rezel-lr`, and `rezel-common`.
+The generator, runtime, common crate, and generated parser package must use
+compatible versions.
 
 ## Command-line interface
 
@@ -20,13 +18,15 @@ The `rezel` binary exposes three operations:
 
 ```console
 rezel check grammar.grammar
-rezel generate grammar.grammar --output parser.rs --terms terms.rs
+rezel generate grammar.grammar --output generated.rs --terms terms.rs
 rezel terms grammar.grammar --output terms.rs
 ```
 
-`generate` emits deterministic Rust source containing static LR tables and a
-`rezel_lr::Language`. Grammar-declared external tokenizers, specializers,
-context trackers, and node properties are linked through a checked manifest:
+`generate` always writes two parser-table blobs next to its Rust output:
+`generated.le.bin` and `generated.be.bin`. The Rust glue selects the
+native-endian representation at compile time.
+
+External grammar declarations are linked through a checked manifest:
 
 ```toml
 [[binding]]
@@ -36,14 +36,41 @@ name = "tokens"
 rust_path = "crate::TOKENS"
 ```
 
-Pass it to `generate` with `--bindings language.bindings.toml`.
+Pass it with `--bindings language.bindings.toml`. Missing, unused, duplicate,
+or invalid bindings are generation errors.
 
-Zero-copy typed syntax wrappers can be generated from a separate schema:
+Zero-copy typed CST wrappers are generated from an independently checked TOML
+schema:
 
 ```console
 rezel generate language.grammar --output generated.rs \
+  --bindings language.bindings.toml \
   --typed language.typed.toml --typed-output typed.rs
 ```
+
+Use `--include-names` when generated diagnostics and tree APIs need term names.
+See [Adding a language](../../docs/adding-a-language/README.md) for the full
+package command and maintained-output workflow.
+
+## Compilation pipeline
+
+Generation performs these operations:
+
+1. parse and validate grammar declarations;
+2. lower EBNF, inline rules, and normalize productions;
+3. construct a canonical LR(1) automaton and conservatively merge compatible
+   states;
+4. resolve declared precedence, cuts, and explicit GLR ambiguity;
+5. compile code-point token automata and lexical precedence;
+6. validate Rust external bindings and typed-schema coverage;
+7. emit Rust glue, named terms, both endian table blobs, and typed wrappers.
+
+The grammar notation follows Lezer's core design. The
+[Rezel grammar guide](../../docs/adding-a-language/02-grammar-syntax.md) is the
+self-contained project reference; the
+[Lezer System Guide](https://lezer.codemirror.net/docs/guide/) provides deeper
+background. Generator diagnostics and tests define the currently implemented
+Rezel behavior.
 
 ## Library interface
 
@@ -60,18 +87,17 @@ let grammar = compile_grammar(
 let generated = emit_rust(&grammar, &RustBindings::default())?;
 
 assert!(generated.parser.contains("LANGUAGE"));
+assert!(!generated.little_endian_data.is_empty());
+assert!(!generated.big_endian_data.is_empty());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-Compilation constructs a canonical LR(1) automaton, conservatively merges
-compatible states, compiles token automata, and produces the metadata consumed
-by `rezel-lr`.
+`emit_rust` returns parser source, terms source, and both byte vectors.
+`emit_typed_syntax` validates a typed schema against the compiled grammar and
+returns Rust source.
 
-## Current limits
-
-The generator emits static Rust source only. JavaScript parser images,
-direct-code parsers, IELR tables, and incremental-reuse metadata are not
-currently generated.
+The generator does not currently emit JavaScript parser images, direct-code
+parsers, IELR tables, or cross-edit reuse metadata.
 
 ## License
 

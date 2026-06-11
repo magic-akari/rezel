@@ -1,26 +1,40 @@
 # rezel-common
 
-Shared syntax-tree and parser interfaces for Rezel runtimes, generated parsers,
-and language crates.
+Shared input, parser, tree, typed-syntax, and node-property interfaces for
+Rezel runtimes and language packages.
 
-## When to depend on this crate
+## Role in the system
 
-Start with a `rezel-lang-*` crate when parsing a supported language. Add a
-direct dependency on `rezel-common` when your code needs to:
+`rezel-common` defines the language-independent boundaries around parsing:
 
-- inspect generic `Tree`, `SyntaxNode`, `TreeCursor`, or `NodeType` values;
-- implement an `Input`, `Parser`, or `PartialParse` adapter;
-- implement language-specific typed CST wrappers;
-- define or consume node properties;
-- integrate mounted trees, overlays, or mixed-language parsing.
+- immutable UTF-8 `Input` and original byte coordinates;
+- `Parser`, `ParseRequest`, `PartialParse`, errors, and wrappers;
+- compact `Tree`, `SyntaxNode`, `TreeCursor`, and `NodeType` APIs;
+- typed-CST traits and child iterators;
+- node properties, mounted trees, overlays, and mixed-language parsing.
 
-Language crates use these types in their public APIs without re-exporting the
-entire common API. Use the same `rezel-common` version as the language crate.
+Applications normally begin with a `rezel-lang-*` package. Depend on this crate
+directly when implementing a parser/input adapter or consuming generic syntax
+trees. Use the same `rezel-common` version as the language package and runtime.
 
-## Tree traversal
+## Source model
 
-Parsers produce compact concrete syntax trees. A cursor provides iterative
-navigation over visible nodes:
+`Input` stores immutable UTF-8 text. `TextSize` and `TextRange` always measure
+bytes in the original source. Their 32-bit coordinate space supports inputs
+smaller than 4 GiB; larger inputs are rejected during input construction.
+
+The parser's internal lexical view reads logical `CodePoint` values together
+with their next original byte boundary. Ordinary input yields Unicode scalar
+values. A language-owned translation layer may present another logical stream
+while preserving the raw coordinate contract.
+
+Line and column coordinates are downstream projections. They are not stored in
+the CST and must not replace original byte ranges in a language adapter.
+
+## Trees and typed syntax
+
+Parsers produce compact concrete syntax trees. Cursors traverse visible
+structure without constructing another tree:
 
 ```rust
 use rezel_common::{IterMode, Tree};
@@ -40,23 +54,23 @@ fn node_names(tree: &Tree) -> Vec<String> {
 }
 ```
 
-`NodeProp` and `NodeSet` attach language-specific metadata without changing the
-generic tree representation. `parse_mixed` supports parsers that mount nested
-trees or parse selected overlay ranges with another language.
+Generated typed wrappers implement `SyntaxLanguage` and `TypedNode` over the
+same `SyntaxNode` handles. `NodeProp` and `NodeSet` attach metadata without
+making the generic tree language-specific.
 
-## Source positions
+`parse_mixed` can parse mounted sublanguages and selected overlay ranges. The
+host and mounted trees retain their own language node sets while sharing the
+common tree interface.
 
-All source positions and ranges are UTF-8 byte offsets represented by the
-re-exported [`TextSize`](https://docs.rs/text-size/1.1.1/text_size/struct.TextSize.html)
-and [`TextRange`](https://docs.rs/text-size/1.1.1/text_size/struct.TextRange.html)
-types. Their 32-bit coordinate space supports inputs smaller than 4 GiB;
-larger inputs are rejected when constructing parser input.
+## Parse lifecycle
 
-## Current limits
+`Parser` creates a `PartialParse`; repeated `advance` calls resume one parse
+until it returns a tree or error. Wrappers can add language-owned validation
+around that lifecycle.
 
-This crate does not provide a language grammar by itself. Incremental fragments,
-changed-range reporting, weak node maps, and cross-parse node reuse are not
-currently supported.
+Reusing unchanged tree fragments across separate source edits is not currently
+implemented. The resumable single-parse interface does not imply cross-edit
+incremental parsing.
 
 ## License
 
