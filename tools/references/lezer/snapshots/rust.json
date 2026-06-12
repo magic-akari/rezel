@@ -1,0 +1,4918 @@
+{
+	"schema": "rezel.lezer-rust-reference-snapshot.v1",
+	"reference": {
+		"packages": {
+			"@lezer/common": {
+				"version": "1.5.2",
+				"integrity": "sha512-sxQE460fPZyU3sdc8lafxiPwJHBzZRy/udNFynGQky1SePYBdhkBl1kOagA9uT3pxR8K09bOrmTUqA9wb/PjSQ=="
+			},
+			"@lezer/generator": {
+				"version": "1.8.0",
+				"integrity": "sha512-/SF4EDWowPqV1jOgoGSGTIFsE7Ezdr7ZYxyihl5eMKVO5tlnpIhFcDavgm1hHY5GEonoOAEnJ0CU0x+tvuAuUg=="
+			},
+			"@lezer/lr": {
+				"version": "1.4.10",
+				"integrity": "sha512-rnCpTIBafOx4mRp43xOxDJbFipJm/c0cia/V5TiGlhmMa+wsSdoGmUN3w5Bqrks/09Q/D4tNAmWaT8p6NRi77A=="
+			}
+		},
+		"artifacts": {
+			"grammar": {
+				"path": "languages/rust/grammar/rust.grammar",
+				"sha256": "4ff742714a1d01f519a06efe311f97a02dd737f78b8db6ac735370547c3ef063"
+			}
+		}
+	},
+	"coordinates": "raw-utf8-bytes",
+	"strict": [
+		{
+			"id": "declarations-and-types",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 391,
+				"children": [
+					{
+						"name": "UseDeclaration",
+						"from": 0,
+						"to": 43,
+						"children": [
+							{
+								"name": "use",
+								"from": 0,
+								"to": 3
+							},
+							{
+								"name": "ScopedUseList",
+								"from": 4,
+								"to": 42,
+								"children": [
+									{
+										"name": "ScopeIdentifier",
+										"from": 4,
+										"to": 7
+									},
+									{
+										"name": "::",
+										"from": 7,
+										"to": 9
+									},
+									{
+										"name": "UseList",
+										"from": 9,
+										"to": 42,
+										"children": [
+											{
+												"name": "{",
+												"from": 9,
+												"to": 10
+											},
+											{
+												"name": "ScopedIdentifier",
+												"from": 10,
+												"to": 20,
+												"children": [
+													{
+														"name": "ScopeIdentifier",
+														"from": 10,
+														"to": 13
+													},
+													{
+														"name": "::",
+														"from": 13,
+														"to": 15
+													},
+													{
+														"name": "BoundIdentifier",
+														"from": 15,
+														"to": 20
+													}
+												]
+											},
+											{
+												"name": ",",
+												"from": 20,
+												"to": 21
+											},
+											{
+												"name": "ScopedIdentifier",
+												"from": 22,
+												"to": 41,
+												"children": [
+													{
+														"name": "ScopeIdentifier",
+														"from": 22,
+														"to": 28
+													},
+													{
+														"name": "::",
+														"from": 28,
+														"to": 30
+													},
+													{
+														"name": "BoundIdentifier",
+														"from": 30,
+														"to": 41
+													}
+												]
+											},
+											{
+												"name": "}",
+												"from": 41,
+												"to": 42
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": ";",
+								"from": 42,
+								"to": 43
+							}
+						]
+					},
+					{
+						"name": "StructItem",
+						"from": 45,
+						"to": 117,
+						"children": [
+							{
+								"name": "Vis",
+								"from": 45,
+								"to": 48,
+								"children": [
+									{
+										"name": "pub",
+										"from": 45,
+										"to": 48
+									}
+								]
+							},
+							{
+								"name": "struct",
+								"from": 49,
+								"to": 55
+							},
+							{
+								"name": "TypeIdentifier",
+								"from": 56,
+								"to": 60
+							},
+							{
+								"name": "TypeParamList",
+								"from": 60,
+								"to": 74,
+								"children": [
+									{
+										"name": "<",
+										"from": 60,
+										"to": 61
+									},
+									{
+										"name": "Lifetime",
+										"from": 61,
+										"to": 63
+									},
+									{
+										"name": ",",
+										"from": 63,
+										"to": 64
+									},
+									{
+										"name": "ConstrainedTypeParameter",
+										"from": 65,
+										"to": 73,
+										"children": [
+											{
+												"name": "TypeIdentifier",
+												"from": 65,
+												"to": 66
+											},
+											{
+												"name": "TraitBounds",
+												"from": 66,
+												"to": 73,
+												"children": [
+													{
+														"name": ":",
+														"from": 66,
+														"to": 67
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 68,
+														"to": 73
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ">",
+										"from": 73,
+										"to": 74
+									}
+								]
+							},
+							{
+								"name": "FieldDeclarationList",
+								"from": 75,
+								"to": 117,
+								"children": [
+									{
+										"name": "{",
+										"from": 75,
+										"to": 76
+									},
+									{
+										"name": "FieldDeclaration",
+										"from": 81,
+										"to": 92,
+										"children": [
+											{
+												"name": "FieldIdentifier",
+												"from": 81,
+												"to": 85
+											},
+											{
+												"name": ":",
+												"from": 85,
+												"to": 86
+											},
+											{
+												"name": "ReferenceType",
+												"from": 87,
+												"to": 92,
+												"children": [
+													{
+														"name": "&",
+														"from": 87,
+														"to": 88
+													},
+													{
+														"name": "Lifetime",
+														"from": 88,
+														"to": 90
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 91,
+														"to": 92
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 92,
+										"to": 93
+									},
+									{
+										"name": "FieldDeclaration",
+										"from": 98,
+										"to": 114,
+										"children": [
+											{
+												"name": "FieldIdentifier",
+												"from": 98,
+												"to": 103
+											},
+											{
+												"name": ":",
+												"from": 103,
+												"to": 104
+											},
+											{
+												"name": "GenericType",
+												"from": 105,
+												"to": 114,
+												"children": [
+													{
+														"name": "TypeIdentifier",
+														"from": 105,
+														"to": 111
+													},
+													{
+														"name": "TypeArgList",
+														"from": 111,
+														"to": 114,
+														"children": [
+															{
+																"name": "<",
+																"from": 111,
+																"to": 112
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 112,
+																"to": 113
+															},
+															{
+																"name": ">",
+																"from": 113,
+																"to": 114
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 114,
+										"to": 115
+									},
+									{
+										"name": "}",
+										"from": 116,
+										"to": 117
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "EnumItem",
+						"from": 119,
+						"to": 190,
+						"children": [
+							{
+								"name": "enum",
+								"from": 119,
+								"to": 123
+							},
+							{
+								"name": "TypeIdentifier",
+								"from": 124,
+								"to": 129
+							},
+							{
+								"name": "TypeParamList",
+								"from": 129,
+								"to": 132,
+								"children": [
+									{
+										"name": "<",
+										"from": 129,
+										"to": 130
+									},
+									{
+										"name": "TypeIdentifier",
+										"from": 130,
+										"to": 131
+									},
+									{
+										"name": ">",
+										"from": 131,
+										"to": 132
+									}
+								]
+							},
+							{
+								"name": "EnumVariantList",
+								"from": 133,
+								"to": 190,
+								"children": [
+									{
+										"name": "{",
+										"from": 133,
+										"to": 134
+									},
+									{
+										"name": "EnumVariant",
+										"from": 139,
+										"to": 147,
+										"children": [
+											{
+												"name": "Identifier",
+												"from": 139,
+												"to": 144
+											},
+											{
+												"name": "OrderedFieldDeclarationList",
+												"from": 144,
+												"to": 147,
+												"children": [
+													{
+														"name": "(",
+														"from": 144,
+														"to": 145
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 145,
+														"to": 146
+													},
+													{
+														"name": ")",
+														"from": 146,
+														"to": 147
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 147,
+										"to": 148
+									},
+									{
+										"name": "EnumVariant",
+										"from": 153,
+										"to": 177,
+										"children": [
+											{
+												"name": "Identifier",
+												"from": 153,
+												"to": 160
+											},
+											{
+												"name": "FieldDeclarationList",
+												"from": 161,
+												"to": 177,
+												"children": [
+													{
+														"name": "{",
+														"from": 161,
+														"to": 162
+													},
+													{
+														"name": "FieldDeclaration",
+														"from": 163,
+														"to": 175,
+														"children": [
+															{
+																"name": "FieldIdentifier",
+																"from": 163,
+																"to": 170
+															},
+															{
+																"name": ":",
+																"from": 170,
+																"to": 171
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 172,
+																"to": 175
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 176,
+														"to": 177
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 177,
+										"to": 178
+									},
+									{
+										"name": "EnumVariant",
+										"from": 183,
+										"to": 187,
+										"children": [
+											{
+												"name": "Identifier",
+												"from": 183,
+												"to": 187
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 187,
+										"to": 188
+									},
+									{
+										"name": "}",
+										"from": 189,
+										"to": 190
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "TraitItem",
+						"from": 192,
+						"to": 287,
+						"children": [
+							{
+								"name": "trait",
+								"from": 192,
+								"to": 197
+							},
+							{
+								"name": "TypeIdentifier",
+								"from": 198,
+								"to": 205
+							},
+							{
+								"name": "TypeParamList",
+								"from": 205,
+								"to": 208,
+								"children": [
+									{
+										"name": "<",
+										"from": 205,
+										"to": 206
+									},
+									{
+										"name": "TypeIdentifier",
+										"from": 206,
+										"to": 207
+									},
+									{
+										"name": ">",
+										"from": 207,
+										"to": 208
+									}
+								]
+							},
+							{
+								"name": "DeclarationList",
+								"from": 209,
+								"to": 287,
+								"children": [
+									{
+										"name": "{",
+										"from": 209,
+										"to": 210
+									},
+									{
+										"name": "AssociatedType",
+										"from": 215,
+										"to": 226,
+										"children": [
+											{
+												"name": "type",
+												"from": 215,
+												"to": 219
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 220,
+												"to": 225
+											},
+											{
+												"name": ";",
+												"from": 225,
+												"to": 226
+											}
+										]
+									},
+									{
+										"name": "FunctionItem",
+										"from": 231,
+										"to": 285,
+										"children": [
+											{
+												"name": "fn",
+												"from": 231,
+												"to": 233
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 234,
+												"to": 241
+											},
+											{
+												"name": "ParamList",
+												"from": 241,
+												"to": 258,
+												"children": [
+													{
+														"name": "(",
+														"from": 241,
+														"to": 242
+													},
+													{
+														"name": "SelfParameter",
+														"from": 242,
+														"to": 247,
+														"children": [
+															{
+																"name": "&",
+																"from": 242,
+																"to": 243
+															},
+															{
+																"name": "self",
+																"from": 243,
+																"to": 247
+															}
+														]
+													},
+													{
+														"name": ",",
+														"from": 247,
+														"to": 248
+													},
+													{
+														"name": "Parameter",
+														"from": 249,
+														"to": 257,
+														"children": [
+															{
+																"name": "BoundIdentifier",
+																"from": 249,
+																"to": 254
+															},
+															{
+																"name": ":",
+																"from": 254,
+																"to": 255
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 256,
+																"to": 257
+															}
+														]
+													},
+													{
+														"name": ")",
+														"from": 257,
+														"to": 258
+													}
+												]
+											},
+											{
+												"name": "->",
+												"from": 259,
+												"to": 261
+											},
+											{
+												"name": "GenericType",
+												"from": 262,
+												"to": 284,
+												"children": [
+													{
+														"name": "TypeIdentifier",
+														"from": 262,
+														"to": 268
+													},
+													{
+														"name": "TypeArgList",
+														"from": 268,
+														"to": 284,
+														"children": [
+															{
+																"name": "<",
+																"from": 268,
+																"to": 269
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 269,
+																"to": 270
+															},
+															{
+																"name": ",",
+																"from": 270,
+																"to": 271
+															},
+															{
+																"name": "ScopedTypeIdentifier",
+																"from": 272,
+																"to": 283,
+																"children": [
+																	{
+																		"name": "ScopeIdentifier",
+																		"from": 272,
+																		"to": 276
+																	},
+																	{
+																		"name": "::",
+																		"from": 276,
+																		"to": 278
+																	},
+																	{
+																		"name": "TypeIdentifier",
+																		"from": 278,
+																		"to": 283
+																	}
+																]
+															},
+															{
+																"name": ">",
+																"from": 283,
+																"to": 284
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 284,
+												"to": 285
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 286,
+										"to": 287
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "ImplItem",
+						"from": 289,
+						"to": 390,
+						"children": [
+							{
+								"name": "impl",
+								"from": 289,
+								"to": 293
+							},
+							{
+								"name": "TypeParamList",
+								"from": 293,
+								"to": 315,
+								"children": [
+									{
+										"name": "<",
+										"from": 293,
+										"to": 294
+									},
+									{
+										"name": "Lifetime",
+										"from": 294,
+										"to": 296
+									},
+									{
+										"name": ",",
+										"from": 296,
+										"to": 297
+									},
+									{
+										"name": "ConstrainedTypeParameter",
+										"from": 298,
+										"to": 314,
+										"children": [
+											{
+												"name": "TypeIdentifier",
+												"from": 298,
+												"to": 299
+											},
+											{
+												"name": "TraitBounds",
+												"from": 299,
+												"to": 314,
+												"children": [
+													{
+														"name": ":",
+														"from": 299,
+														"to": 300
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 301,
+														"to": 306
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 309,
+														"to": 314
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ">",
+										"from": 314,
+										"to": 315
+									}
+								]
+							},
+							{
+								"name": "GenericType",
+								"from": 316,
+								"to": 327,
+								"children": [
+									{
+										"name": "TypeIdentifier",
+										"from": 316,
+										"to": 320
+									},
+									{
+										"name": "TypeArgList",
+										"from": 320,
+										"to": 327,
+										"children": [
+											{
+												"name": "<",
+												"from": 320,
+												"to": 321
+											},
+											{
+												"name": "Lifetime",
+												"from": 321,
+												"to": 323
+											},
+											{
+												"name": ",",
+												"from": 323,
+												"to": 324
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 325,
+												"to": 326
+											},
+											{
+												"name": ">",
+												"from": 326,
+												"to": 327
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "DeclarationList",
+								"from": 328,
+								"to": 390,
+								"children": [
+									{
+										"name": "{",
+										"from": 328,
+										"to": 329
+									},
+									{
+										"name": "FunctionItem",
+										"from": 334,
+										"to": 388,
+										"children": [
+											{
+												"name": "Vis",
+												"from": 334,
+												"to": 337,
+												"children": [
+													{
+														"name": "pub",
+														"from": 334,
+														"to": 337
+													}
+												]
+											},
+											{
+												"name": "fn",
+												"from": 338,
+												"to": 340
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 341,
+												"to": 346
+											},
+											{
+												"name": "ParamList",
+												"from": 346,
+												"to": 353,
+												"children": [
+													{
+														"name": "(",
+														"from": 346,
+														"to": 347
+													},
+													{
+														"name": "SelfParameter",
+														"from": 347,
+														"to": 352,
+														"children": [
+															{
+																"name": "&",
+																"from": 347,
+																"to": 348
+															},
+															{
+																"name": "self",
+																"from": 348,
+																"to": 352
+															}
+														]
+													},
+													{
+														"name": ")",
+														"from": 352,
+														"to": 353
+													}
+												]
+											},
+											{
+												"name": "->",
+												"from": 354,
+												"to": 356
+											},
+											{
+												"name": "ReferenceType",
+												"from": 357,
+												"to": 362,
+												"children": [
+													{
+														"name": "&",
+														"from": 357,
+														"to": 358
+													},
+													{
+														"name": "Lifetime",
+														"from": 358,
+														"to": 360
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 361,
+														"to": 362
+													}
+												]
+											},
+											{
+												"name": "Block",
+												"from": 363,
+												"to": 388,
+												"children": [
+													{
+														"name": "{",
+														"from": 363,
+														"to": 364
+													},
+													{
+														"name": "ExpressionStatement",
+														"from": 373,
+														"to": 382,
+														"children": [
+															{
+																"name": "FieldExpression",
+																"from": 373,
+																"to": 382,
+																"children": [
+																	{
+																		"name": "self",
+																		"from": 373,
+																		"to": 377
+																	},
+																	{
+																		"name": "FieldIdentifier",
+																		"from": 378,
+																		"to": 382
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 387,
+														"to": 388
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 389,
+										"to": 390
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "expressions-and-control-flow",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 338,
+				"children": [
+					{
+						"name": "FunctionItem",
+						"from": 0,
+						"to": 337,
+						"children": [
+							{
+								"name": "fn",
+								"from": 0,
+								"to": 2
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 3,
+								"to": 7
+							},
+							{
+								"name": "ParamList",
+								"from": 7,
+								"to": 23,
+								"children": [
+									{
+										"name": "(",
+										"from": 7,
+										"to": 8
+									},
+									{
+										"name": "Parameter",
+										"from": 8,
+										"to": 22,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 8,
+												"to": 14
+											},
+											{
+												"name": ":",
+												"from": 14,
+												"to": 15
+											},
+											{
+												"name": "ReferenceType",
+												"from": 16,
+												"to": 22,
+												"children": [
+													{
+														"name": "&",
+														"from": 16,
+														"to": 17
+													},
+													{
+														"name": "ArrayType",
+														"from": 17,
+														"to": 22,
+														"children": [
+															{
+																"name": "[",
+																"from": 17,
+																"to": 18
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 18,
+																"to": 21
+															},
+															{
+																"name": "]",
+																"from": 21,
+																"to": 22
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 22,
+										"to": 23
+									}
+								]
+							},
+							{
+								"name": "->",
+								"from": 24,
+								"to": 26
+							},
+							{
+								"name": "TypeIdentifier",
+								"from": 27,
+								"to": 30
+							},
+							{
+								"name": "Block",
+								"from": 31,
+								"to": 337,
+								"children": [
+									{
+										"name": "{",
+										"from": 31,
+										"to": 32
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 37,
+										"to": 55,
+										"children": [
+											{
+												"name": "let",
+												"from": 37,
+												"to": 40
+											},
+											{
+												"name": "mut",
+												"from": 41,
+												"to": 44
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 45,
+												"to": 50
+											},
+											{
+												"name": "=",
+												"from": 51,
+												"to": 52
+											},
+											{
+												"name": "Integer",
+												"from": 53,
+												"to": 54
+											},
+											{
+												"name": ";",
+												"from": 54,
+												"to": 55
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 60,
+										"to": 226,
+										"children": [
+											{
+												"name": "ForExpression",
+												"from": 60,
+												"to": 226,
+												"children": [
+													{
+														"name": "for",
+														"from": 60,
+														"to": 63
+													},
+													{
+														"name": "BoundIdentifier",
+														"from": 64,
+														"to": 69
+													},
+													{
+														"name": "in",
+														"from": 70,
+														"to": 72
+													},
+													{
+														"name": "CallExpression",
+														"from": 73,
+														"to": 86,
+														"children": [
+															{
+																"name": "FieldExpression",
+																"from": 73,
+																"to": 84,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 73,
+																		"to": 79
+																	},
+																	{
+																		"name": "FieldIdentifier",
+																		"from": 80,
+																		"to": 84
+																	}
+																]
+															},
+															{
+																"name": "ArgList",
+																"from": 84,
+																"to": 86,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 84,
+																		"to": 85
+																	},
+																	{
+																		"name": ")",
+																		"from": 85,
+																		"to": 86
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": "Block",
+														"from": 87,
+														"to": 226,
+														"children": [
+															{
+																"name": "{",
+																"from": 87,
+																"to": 88
+															},
+															{
+																"name": "ExpressionStatement",
+																"from": 97,
+																"to": 220,
+																"children": [
+																	{
+																		"name": "AssignmentExpression",
+																		"from": 97,
+																		"to": 219,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 97,
+																				"to": 102
+																			},
+																			{
+																				"name": "UpdateOp",
+																				"from": 103,
+																				"to": 105
+																			},
+																			{
+																				"name": "MatchExpression",
+																				"from": 106,
+																				"to": 219,
+																				"children": [
+																					{
+																						"name": "match",
+																						"from": 106,
+																						"to": 111
+																					},
+																					{
+																						"name": "Identifier",
+																						"from": 112,
+																						"to": 117
+																					},
+																					{
+																						"name": "MatchBlock",
+																						"from": 118,
+																						"to": 219,
+																						"children": [
+																							{
+																								"name": "{",
+																								"from": 118,
+																								"to": 119
+																							},
+																							{
+																								"name": "MatchArm",
+																								"from": 132,
+																								"to": 139,
+																								"children": [
+																									{
+																										"name": "LiteralPattern",
+																										"from": 132,
+																										"to": 133,
+																										"children": [
+																											{
+																												"name": "Integer",
+																												"from": 132,
+																												"to": 133
+																											}
+																										]
+																									},
+																									{
+																										"name": "=>",
+																										"from": 134,
+																										"to": 136
+																									},
+																									{
+																										"name": "Integer",
+																										"from": 137,
+																										"to": 138
+																									},
+																									{
+																										"name": ",",
+																										"from": 138,
+																										"to": 139
+																									}
+																								]
+																							},
+																							{
+																								"name": "MatchArm",
+																								"from": 152,
+																								"to": 182,
+																								"children": [
+																									{
+																										"name": "BoundIdentifier",
+																										"from": 152,
+																										"to": 157
+																									},
+																									{
+																										"name": "Guard",
+																										"from": 158,
+																										"to": 171,
+																										"children": [
+																											{
+																												"name": "if",
+																												"from": 158,
+																												"to": 160
+																											},
+																											{
+																												"name": "BinaryExpression",
+																												"from": 161,
+																												"to": 171,
+																												"children": [
+																													{
+																														"name": "UnaryExpression",
+																														"from": 161,
+																														"to": 167,
+																														"children": [
+																															{
+																																"name": "DerefOp",
+																																"from": 161,
+																																"to": 162
+																															},
+																															{
+																																"name": "Identifier",
+																																"from": 162,
+																																"to": 167
+																															}
+																														]
+																													},
+																													{
+																														"name": "CompareOp",
+																														"from": 168,
+																														"to": 169
+																													},
+																													{
+																														"name": "Integer",
+																														"from": 170,
+																														"to": 171
+																													}
+																												]
+																											}
+																										]
+																									},
+																									{
+																										"name": "=>",
+																										"from": 172,
+																										"to": 174
+																									},
+																									{
+																										"name": "UnaryExpression",
+																										"from": 175,
+																										"to": 181,
+																										"children": [
+																											{
+																												"name": "DerefOp",
+																												"from": 175,
+																												"to": 176
+																											},
+																											{
+																												"name": "Identifier",
+																												"from": 176,
+																												"to": 181
+																											}
+																										]
+																									},
+																									{
+																										"name": ",",
+																										"from": 181,
+																										"to": 182
+																									}
+																								]
+																							},
+																							{
+																								"name": "MatchArm",
+																								"from": 195,
+																								"to": 209,
+																								"children": [
+																									{
+																										"name": "_",
+																										"from": 195,
+																										"to": 196
+																									},
+																									{
+																										"name": "=>",
+																										"from": 197,
+																										"to": 199
+																									},
+																									{
+																										"name": "ContinueExpression",
+																										"from": 200,
+																										"to": 208,
+																										"children": [
+																											{
+																												"name": "continue",
+																												"from": 200,
+																												"to": 208
+																											}
+																										]
+																									},
+																									{
+																										"name": ",",
+																										"from": 208,
+																										"to": 209
+																									}
+																								]
+																							},
+																							{
+																								"name": "}",
+																								"from": 218,
+																								"to": 219
+																							}
+																						]
+																					}
+																				]
+																			}
+																		]
+																	},
+																	{
+																		"name": ";",
+																		"from": 219,
+																		"to": 220
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 225,
+																"to": 226
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 231,
+										"to": 276,
+										"children": [
+											{
+												"name": "WhileExpression",
+												"from": 231,
+												"to": 276,
+												"children": [
+													{
+														"name": "while",
+														"from": 231,
+														"to": 236
+													},
+													{
+														"name": "BinaryExpression",
+														"from": 237,
+														"to": 248,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 237,
+																"to": 242
+															},
+															{
+																"name": "CompareOp",
+																"from": 243,
+																"to": 244
+															},
+															{
+																"name": "Integer",
+																"from": 245,
+																"to": 248
+															}
+														]
+													},
+													{
+														"name": "Block",
+														"from": 249,
+														"to": 276,
+														"children": [
+															{
+																"name": "{",
+																"from": 249,
+																"to": 250
+															},
+															{
+																"name": "ExpressionStatement",
+																"from": 259,
+																"to": 270,
+																"children": [
+																	{
+																		"name": "AssignmentExpression",
+																		"from": 259,
+																		"to": 269,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 259,
+																				"to": 264
+																			},
+																			{
+																				"name": "UpdateOp",
+																				"from": 265,
+																				"to": 267
+																			},
+																			{
+																				"name": "Integer",
+																				"from": 268,
+																				"to": 269
+																			}
+																		]
+																	},
+																	{
+																		"name": ";",
+																		"from": 269,
+																		"to": 270
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 275,
+																"to": 276
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 281,
+										"to": 325,
+										"children": [
+											{
+												"name": "IfExpression",
+												"from": 281,
+												"to": 325,
+												"children": [
+													{
+														"name": "if",
+														"from": 281,
+														"to": 283
+													},
+													{
+														"name": "BinaryExpression",
+														"from": 284,
+														"to": 295,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 284,
+																"to": 289
+															},
+															{
+																"name": "CompareOp",
+																"from": 290,
+																"to": 292
+															},
+															{
+																"name": "Integer",
+																"from": 293,
+																"to": 295
+															}
+														]
+													},
+													{
+														"name": "Block",
+														"from": 296,
+														"to": 325,
+														"children": [
+															{
+																"name": "{",
+																"from": 296,
+																"to": 297
+															},
+															{
+																"name": "ExpressionStatement",
+																"from": 306,
+																"to": 319,
+																"children": [
+																	{
+																		"name": "ReturnExpression",
+																		"from": 306,
+																		"to": 318,
+																		"children": [
+																			{
+																				"name": "return",
+																				"from": 306,
+																				"to": 312
+																			},
+																			{
+																				"name": "Identifier",
+																				"from": 313,
+																				"to": 318
+																			}
+																		]
+																	},
+																	{
+																		"name": ";",
+																		"from": 318,
+																		"to": 319
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 324,
+																"to": 325
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 330,
+										"to": 335,
+										"children": [
+											{
+												"name": "Identifier",
+												"from": 330,
+												"to": 335
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 336,
+										"to": 337
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "macros-and-attributes",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 172,
+				"children": [
+					{
+						"name": "AttributeItem",
+						"from": 0,
+						"to": 55,
+						"children": [
+							{
+								"name": "Attribute",
+								"from": 0,
+								"to": 23,
+								"children": [
+									{
+										"name": "[",
+										"from": 1,
+										"to": 2
+									},
+									{
+										"name": "MetaItem",
+										"from": 2,
+										"to": 22,
+										"children": [
+											{
+												"name": "Identifier",
+												"from": 2,
+												"to": 8
+											},
+											{
+												"name": "ParenthesizedTokens",
+												"from": 8,
+												"to": 22,
+												"children": [
+													{
+														"name": "(",
+														"from": 8,
+														"to": 9
+													},
+													{
+														"name": "Identifier",
+														"from": 9,
+														"to": 14
+													},
+													{
+														"name": ",",
+														"from": 14,
+														"to": 15
+													},
+													{
+														"name": "Identifier",
+														"from": 16,
+														"to": 21
+													},
+													{
+														"name": ")",
+														"from": 21,
+														"to": 22
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "]",
+										"from": 22,
+										"to": 23
+									}
+								]
+							},
+							{
+								"name": "StructItem",
+								"from": 24,
+								"to": 55,
+								"children": [
+									{
+										"name": "struct",
+										"from": 24,
+										"to": 30
+									},
+									{
+										"name": "TypeIdentifier",
+										"from": 31,
+										"to": 35
+									},
+									{
+										"name": "FieldDeclarationList",
+										"from": 36,
+										"to": 55,
+										"children": [
+											{
+												"name": "{",
+												"from": 36,
+												"to": 37
+											},
+											{
+												"name": "FieldDeclaration",
+												"from": 42,
+												"to": 52,
+												"children": [
+													{
+														"name": "FieldIdentifier",
+														"from": 42,
+														"to": 47
+													},
+													{
+														"name": ":",
+														"from": 47,
+														"to": 48
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 49,
+														"to": 52
+													}
+												]
+											},
+											{
+												"name": ",",
+												"from": 52,
+												"to": 53
+											},
+											{
+												"name": "}",
+												"from": 54,
+												"to": 55
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "MacroDefinition",
+						"from": 57,
+						"to": 116,
+						"children": [
+							{
+								"name": "macro_rules",
+								"from": 57,
+								"to": 68
+							},
+							{
+								"name": "!",
+								"from": 68,
+								"to": 69
+							},
+							{
+								"name": "Identifier",
+								"from": 70,
+								"to": 75
+							},
+							{
+								"name": "{",
+								"from": 76,
+								"to": 77
+							},
+							{
+								"name": "MacroRule",
+								"from": 82,
+								"to": 113,
+								"children": [
+									{
+										"name": "ParenthesizedTokens",
+										"from": 82,
+										"to": 95,
+										"children": [
+											{
+												"name": "(",
+												"from": 82,
+												"to": 83
+											},
+											{
+												"name": "TokenBinding",
+												"from": 83,
+												"to": 94,
+												"children": [
+													{
+														"name": "Metavariable",
+														"from": 83,
+														"to": 89
+													},
+													{
+														"name": ":",
+														"from": 89,
+														"to": 90
+													},
+													{
+														"name": "Identifier",
+														"from": 90,
+														"to": 94
+													}
+												]
+											},
+											{
+												"name": ")",
+												"from": 94,
+												"to": 95
+											}
+										]
+									},
+									{
+										"name": "=>",
+										"from": 96,
+										"to": 98
+									},
+									{
+										"name": "BracedTokens",
+										"from": 99,
+										"to": 113,
+										"children": [
+											{
+												"name": "{",
+												"from": 99,
+												"to": 100
+											},
+											{
+												"name": "Metavariable",
+												"from": 101,
+												"to": 107
+											},
+											{
+												"name": "ArithOp",
+												"from": 108,
+												"to": 109
+											},
+											{
+												"name": "Integer",
+												"from": 110,
+												"to": 111
+											},
+											{
+												"name": "}",
+												"from": 112,
+												"to": 113
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": ";",
+								"from": 113,
+								"to": 114
+							},
+							{
+								"name": "}",
+								"from": 115,
+								"to": 116
+							}
+						]
+					},
+					{
+						"name": "FunctionItem",
+						"from": 118,
+						"to": 171,
+						"children": [
+							{
+								"name": "fn",
+								"from": 118,
+								"to": 120
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 121,
+								"to": 126
+							},
+							{
+								"name": "ParamList",
+								"from": 126,
+								"to": 128,
+								"children": [
+									{
+										"name": "(",
+										"from": 126,
+										"to": 127
+									},
+									{
+										"name": ")",
+										"from": 127,
+										"to": 128
+									}
+								]
+							},
+							{
+								"name": "->",
+								"from": 129,
+								"to": 131
+							},
+							{
+								"name": "TypeIdentifier",
+								"from": 132,
+								"to": 136
+							},
+							{
+								"name": "Block",
+								"from": 137,
+								"to": 171,
+								"children": [
+									{
+										"name": "{",
+										"from": 137,
+										"to": 138
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 143,
+										"to": 169,
+										"children": [
+											{
+												"name": "StructExpression",
+												"from": 143,
+												"to": 169,
+												"children": [
+													{
+														"name": "TypeIdentifier",
+														"from": 143,
+														"to": 147
+													},
+													{
+														"name": "FieldInitializerList",
+														"from": 148,
+														"to": 169,
+														"children": [
+															{
+																"name": "{",
+																"from": 148,
+																"to": 149
+															},
+															{
+																"name": "FieldInitializer",
+																"from": 150,
+																"to": 167,
+																"children": [
+																	{
+																		"name": "FieldIdentifier",
+																		"from": 150,
+																		"to": 155
+																	},
+																	{
+																		"name": ":",
+																		"from": 155,
+																		"to": 156
+																	},
+																	{
+																		"name": "MacroInvocation",
+																		"from": 157,
+																		"to": 167,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 157,
+																				"to": 162
+																			},
+																			{
+																				"name": "!",
+																				"from": 162,
+																				"to": 163
+																			},
+																			{
+																				"name": "ParenthesizedTokens",
+																				"from": 163,
+																				"to": 167,
+																				"children": [
+																					{
+																						"name": "(",
+																						"from": 163,
+																						"to": 164
+																					},
+																					{
+																						"name": "Integer",
+																						"from": 164,
+																						"to": 166
+																					},
+																					{
+																						"name": ")",
+																						"from": 166,
+																						"to": 167
+																					}
+																				]
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 168,
+																"to": 169
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 170,
+										"to": 171
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "external-tokenizers",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 232,
+				"children": [
+					{
+						"name": "FunctionItem",
+						"from": 0,
+						"to": 231,
+						"children": [
+							{
+								"name": "fn",
+								"from": 0,
+								"to": 2
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 3,
+								"to": 10
+							},
+							{
+								"name": "TypeParamList",
+								"from": 10,
+								"to": 19,
+								"children": [
+									{
+										"name": "<",
+										"from": 10,
+										"to": 11
+									},
+									{
+										"name": "ConstrainedTypeParameter",
+										"from": 11,
+										"to": 18,
+										"children": [
+											{
+												"name": "TypeIdentifier",
+												"from": 11,
+												"to": 12
+											},
+											{
+												"name": "TraitBounds",
+												"from": 12,
+												"to": 18,
+												"children": [
+													{
+														"name": ":",
+														"from": 12,
+														"to": 13
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 14,
+														"to": 18
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ">",
+										"from": 18,
+										"to": 19
+									}
+								]
+							},
+							{
+								"name": "ParamList",
+								"from": 19,
+								"to": 29,
+								"children": [
+									{
+										"name": "(",
+										"from": 19,
+										"to": 20
+									},
+									{
+										"name": "Parameter",
+										"from": 20,
+										"to": 28,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 20,
+												"to": 25
+											},
+											{
+												"name": ":",
+												"from": 25,
+												"to": 26
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 27,
+												"to": 28
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 28,
+										"to": 29
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 30,
+								"to": 231,
+								"children": [
+									{
+										"name": "{",
+										"from": 30,
+										"to": 31
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 36,
+										"to": 65,
+										"children": [
+											{
+												"name": "let",
+												"from": 36,
+												"to": 39
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 40,
+												"to": 47
+											},
+											{
+												"name": "=",
+												"from": 48,
+												"to": 49
+											},
+											{
+												"name": "Float",
+												"from": 50,
+												"to": 64
+											},
+											{
+												"name": ";",
+												"from": 64,
+												"to": 65
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 70,
+										"to": 102,
+										"children": [
+											{
+												"name": "let",
+												"from": 70,
+												"to": 73
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 74,
+												"to": 77
+											},
+											{
+												"name": "=",
+												"from": 78,
+												"to": 79
+											},
+											{
+												"name": "RawString",
+												"from": 80,
+												"to": 101
+											},
+											{
+												"name": ";",
+												"from": 101,
+												"to": 102
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 107,
+										"to": 131,
+										"children": [
+											{
+												"name": "let",
+												"from": 107,
+												"to": 110
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 111,
+												"to": 116
+											},
+											{
+												"name": "=",
+												"from": 117,
+												"to": 118
+											},
+											{
+												"name": "RawString",
+												"from": 119,
+												"to": 130
+											},
+											{
+												"name": ";",
+												"from": 130,
+												"to": 131
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 136,
+										"to": 187,
+										"children": [
+											{
+												"name": "let",
+												"from": 136,
+												"to": 139
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 140,
+												"to": 147
+											},
+											{
+												"name": "=",
+												"from": 148,
+												"to": 149
+											},
+											{
+												"name": "ClosureExpression",
+												"from": 150,
+												"to": 186,
+												"children": [
+													{
+														"name": "ParamList",
+														"from": 150,
+														"to": 173,
+														"children": [
+															{
+																"name": "|",
+																"from": 150,
+																"to": 151
+															},
+															{
+																"name": "Parameter",
+																"from": 151,
+																"to": 160,
+																"children": [
+																	{
+																		"name": "BoundIdentifier",
+																		"from": 151,
+																		"to": 155
+																	},
+																	{
+																		"name": ":",
+																		"from": 155,
+																		"to": 156
+																	},
+																	{
+																		"name": "TypeIdentifier",
+																		"from": 157,
+																		"to": 160
+																	}
+																]
+															},
+															{
+																"name": ",",
+																"from": 160,
+																"to": 161
+															},
+															{
+																"name": "Parameter",
+																"from": 162,
+																"to": 172,
+																"children": [
+																	{
+																		"name": "BoundIdentifier",
+																		"from": 162,
+																		"to": 167
+																	},
+																	{
+																		"name": ":",
+																		"from": 167,
+																		"to": 168
+																	},
+																	{
+																		"name": "TypeIdentifier",
+																		"from": 169,
+																		"to": 172
+																	}
+																]
+															},
+															{
+																"name": "|",
+																"from": 172,
+																"to": 173
+															}
+														]
+													},
+													{
+														"name": "BinaryExpression",
+														"from": 174,
+														"to": 186,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 174,
+																"to": 178
+															},
+															{
+																"name": "ArithOp",
+																"from": 179,
+																"to": 180
+															},
+															{
+																"name": "Identifier",
+																"from": 181,
+																"to": 186
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 186,
+												"to": 187
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 192,
+										"to": 229,
+										"children": [
+											{
+												"name": "let",
+												"from": 192,
+												"to": 195
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 196,
+												"to": 201
+											},
+											{
+												"name": ":",
+												"from": 201,
+												"to": 202
+											},
+											{
+												"name": "GenericType",
+												"from": 203,
+												"to": 216,
+												"children": [
+													{
+														"name": "TypeIdentifier",
+														"from": 203,
+														"to": 209
+													},
+													{
+														"name": "TypeArgList",
+														"from": 209,
+														"to": 216,
+														"children": [
+															{
+																"name": "<",
+																"from": 209,
+																"to": 210
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 210,
+																"to": 211
+															},
+															{
+																"name": ",",
+																"from": 211,
+																"to": 212
+															},
+															{
+																"name": "UnitType",
+																"from": 213,
+																"to": 215,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 213,
+																		"to": 214
+																	},
+																	{
+																		"name": ")",
+																		"from": 214,
+																		"to": 215
+																	}
+																]
+															},
+															{
+																"name": ">",
+																"from": 215,
+																"to": 216
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "=",
+												"from": 217,
+												"to": 218
+											},
+											{
+												"name": "CallExpression",
+												"from": 219,
+												"to": 228,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 219,
+														"to": 221
+													},
+													{
+														"name": "ArgList",
+														"from": 221,
+														"to": 228,
+														"children": [
+															{
+																"name": "(",
+																"from": 221,
+																"to": 222
+															},
+															{
+																"name": "Identifier",
+																"from": 222,
+																"to": 227
+															},
+															{
+																"name": ")",
+																"from": 227,
+																"to": 228
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 228,
+												"to": 229
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 230,
+										"to": 231
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "async-and-lifetimes",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 122,
+				"children": [
+					{
+						"name": "FunctionItem",
+						"from": 0,
+						"to": 121,
+						"children": [
+							{
+								"name": "async",
+								"from": 0,
+								"to": 5
+							},
+							{
+								"name": "fn",
+								"from": 6,
+								"to": 8
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 9,
+								"to": 14
+							},
+							{
+								"name": "TypeParamList",
+								"from": 14,
+								"to": 18,
+								"children": [
+									{
+										"name": "<",
+										"from": 14,
+										"to": 15
+									},
+									{
+										"name": "Lifetime",
+										"from": 15,
+										"to": 17
+									},
+									{
+										"name": ">",
+										"from": 17,
+										"to": 18
+									}
+								]
+							},
+							{
+								"name": "ParamList",
+								"from": 18,
+								"to": 34,
+								"children": [
+									{
+										"name": "(",
+										"from": 18,
+										"to": 19
+									},
+									{
+										"name": "Parameter",
+										"from": 19,
+										"to": 33,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 19,
+												"to": 24
+											},
+											{
+												"name": ":",
+												"from": 24,
+												"to": 25
+											},
+											{
+												"name": "ReferenceType",
+												"from": 26,
+												"to": 33,
+												"children": [
+													{
+														"name": "&",
+														"from": 26,
+														"to": 27
+													},
+													{
+														"name": "Lifetime",
+														"from": 27,
+														"to": 29
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 30,
+														"to": 33
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 33,
+										"to": 34
+									}
+								]
+							},
+							{
+								"name": "->",
+								"from": 35,
+								"to": 37
+							},
+							{
+								"name": "GenericType",
+								"from": 38,
+								"to": 57,
+								"children": [
+									{
+										"name": "TypeIdentifier",
+										"from": 38,
+										"to": 44
+									},
+									{
+										"name": "TypeArgList",
+										"from": 44,
+										"to": 57,
+										"children": [
+											{
+												"name": "<",
+												"from": 44,
+												"to": 45
+											},
+											{
+												"name": "ReferenceType",
+												"from": 45,
+												"to": 52,
+												"children": [
+													{
+														"name": "&",
+														"from": 45,
+														"to": 46
+													},
+													{
+														"name": "Lifetime",
+														"from": 46,
+														"to": 48
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 49,
+														"to": 52
+													}
+												]
+											},
+											{
+												"name": ",",
+												"from": 52,
+												"to": 53
+											},
+											{
+												"name": "UnitType",
+												"from": 54,
+												"to": 56,
+												"children": [
+													{
+														"name": "(",
+														"from": 54,
+														"to": 55
+													},
+													{
+														"name": ")",
+														"from": 55,
+														"to": 56
+													}
+												]
+											},
+											{
+												"name": ">",
+												"from": 56,
+												"to": 57
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 58,
+								"to": 121,
+								"children": [
+									{
+										"name": "{",
+										"from": 58,
+										"to": 59
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 64,
+										"to": 98,
+										"children": [
+											{
+												"name": "let",
+												"from": 64,
+												"to": 67
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 68,
+												"to": 74
+											},
+											{
+												"name": "=",
+												"from": 75,
+												"to": 76
+											},
+											{
+												"name": "AsyncBlock",
+												"from": 77,
+												"to": 97,
+												"children": [
+													{
+														"name": "async",
+														"from": 77,
+														"to": 82
+													},
+													{
+														"name": "move",
+														"from": 83,
+														"to": 87
+													},
+													{
+														"name": "Block",
+														"from": 88,
+														"to": 97,
+														"children": [
+															{
+																"name": "{",
+																"from": 88,
+																"to": 89
+															},
+															{
+																"name": "ExpressionStatement",
+																"from": 90,
+																"to": 95,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 90,
+																		"to": 95
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 96,
+																"to": 97
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 97,
+												"to": 98
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 103,
+										"to": 119,
+										"children": [
+											{
+												"name": "CallExpression",
+												"from": 103,
+												"to": 119,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 103,
+														"to": 105
+													},
+													{
+														"name": "ArgList",
+														"from": 105,
+														"to": 119,
+														"children": [
+															{
+																"name": "(",
+																"from": 105,
+																"to": 106
+															},
+															{
+																"name": "AwaitExpression",
+																"from": 106,
+																"to": 118,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 106,
+																		"to": 112
+																	},
+																	{
+																		"name": "await",
+																		"from": 113,
+																		"to": 118
+																	}
+																]
+															},
+															{
+																"name": ")",
+																"from": 118,
+																"to": 119
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 120,
+										"to": 121
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "rust-1-95-edition-2024-control-flow",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 606,
+				"children": [
+					{
+						"name": "InnerAttribute",
+						"from": 0,
+						"to": 20,
+						"children": [
+							{
+								"name": "!",
+								"from": 1,
+								"to": 2
+							},
+							{
+								"name": "[",
+								"from": 2,
+								"to": 3
+							},
+							{
+								"name": "MetaItem",
+								"from": 3,
+								"to": 19,
+								"children": [
+									{
+										"name": "Identifier",
+										"from": 3,
+										"to": 8
+									},
+									{
+										"name": "ParenthesizedTokens",
+										"from": 8,
+										"to": 19,
+										"children": [
+											{
+												"name": "(",
+												"from": 8,
+												"to": 9
+											},
+											{
+												"name": "Identifier",
+												"from": 9,
+												"to": 18
+											},
+											{
+												"name": ")",
+												"from": 18,
+												"to": 19
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "]",
+								"from": 19,
+								"to": 20
+							}
+						]
+					},
+					{
+						"name": "FunctionItem",
+						"from": 21,
+						"to": 605,
+						"children": [
+							{
+								"name": "async",
+								"from": 21,
+								"to": 26
+							},
+							{
+								"name": "fn",
+								"from": 27,
+								"to": 29
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 30,
+								"to": 36
+							},
+							{
+								"name": "ParamList",
+								"from": 36,
+								"to": 60,
+								"children": [
+									{
+										"name": "(",
+										"from": 36,
+										"to": 37
+									},
+									{
+										"name": "Parameter",
+										"from": 37,
+										"to": 59,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 37,
+												"to": 43
+											},
+											{
+												"name": ":",
+												"from": 43,
+												"to": 44
+											},
+											{
+												"name": "ReferenceType",
+												"from": 45,
+												"to": 59,
+												"children": [
+													{
+														"name": "&",
+														"from": 45,
+														"to": 46
+													},
+													{
+														"name": "ArrayType",
+														"from": 46,
+														"to": 59,
+														"children": [
+															{
+																"name": "[",
+																"from": 46,
+																"to": 47
+															},
+															{
+																"name": "GenericType",
+																"from": 47,
+																"to": 58,
+																"children": [
+																	{
+																		"name": "TypeIdentifier",
+																		"from": 47,
+																		"to": 53
+																	},
+																	{
+																		"name": "TypeArgList",
+																		"from": 53,
+																		"to": 58,
+																		"children": [
+																			{
+																				"name": "<",
+																				"from": 53,
+																				"to": 54
+																			},
+																			{
+																				"name": "TypeIdentifier",
+																				"from": 54,
+																				"to": 57
+																			},
+																			{
+																				"name": ">",
+																				"from": 57,
+																				"to": 58
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "]",
+																"from": 58,
+																"to": 59
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 59,
+										"to": 60
+									}
+								]
+							},
+							{
+								"name": "->",
+								"from": 61,
+								"to": 63
+							},
+							{
+								"name": "TypeIdentifier",
+								"from": 64,
+								"to": 67
+							},
+							{
+								"name": "Block",
+								"from": 68,
+								"to": 605,
+								"children": [
+									{
+										"name": "{",
+										"from": 68,
+										"to": 69
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 74,
+										"to": 132,
+										"children": [
+											{
+												"name": "let",
+												"from": 74,
+												"to": 77
+											},
+											{
+												"name": "TuplePattern",
+												"from": 78,
+												"to": 95,
+												"children": [
+													{
+														"name": "TypeIdentifier",
+														"from": 78,
+														"to": 82
+													},
+													{
+														"name": "(",
+														"from": 82,
+														"to": 83
+													},
+													{
+														"name": "TuplePattern",
+														"from": 83,
+														"to": 94,
+														"children": [
+															{
+																"name": "TypeIdentifier",
+																"from": 83,
+																"to": 87
+															},
+															{
+																"name": "(",
+																"from": 87,
+																"to": 88
+															},
+															{
+																"name": "BoundIdentifier",
+																"from": 88,
+																"to": 93
+															},
+															{
+																"name": ")",
+																"from": 93,
+																"to": 94
+															}
+														]
+													},
+													{
+														"name": ")",
+														"from": 94,
+														"to": 95
+													}
+												]
+											},
+											{
+												"name": "=",
+												"from": 96,
+												"to": 97
+											},
+											{
+												"name": "CallExpression",
+												"from": 98,
+												"to": 112,
+												"children": [
+													{
+														"name": "FieldExpression",
+														"from": 98,
+														"to": 110,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 98,
+																"to": 104
+															},
+															{
+																"name": "FieldIdentifier",
+																"from": 105,
+																"to": 110
+															}
+														]
+													},
+													{
+														"name": "ArgList",
+														"from": 110,
+														"to": 112,
+														"children": [
+															{
+																"name": "(",
+																"from": 110,
+																"to": 111
+															},
+															{
+																"name": ")",
+																"from": 111,
+																"to": 112
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "else",
+												"from": 113,
+												"to": 117
+											},
+											{
+												"name": "Block",
+												"from": 118,
+												"to": 131,
+												"children": [
+													{
+														"name": "{",
+														"from": 118,
+														"to": 119
+													},
+													{
+														"name": "ExpressionStatement",
+														"from": 120,
+														"to": 129,
+														"children": [
+															{
+																"name": "ReturnExpression",
+																"from": 120,
+																"to": 128,
+																"children": [
+																	{
+																		"name": "return",
+																		"from": 120,
+																		"to": 126
+																	},
+																	{
+																		"name": "Integer",
+																		"from": 127,
+																		"to": 128
+																	}
+																]
+															},
+															{
+																"name": ";",
+																"from": 128,
+																"to": 129
+															}
+														]
+													},
+													{
+														"name": "}",
+														"from": 130,
+														"to": 131
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 131,
+												"to": 132
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 137,
+										"to": 166,
+										"children": [
+											{
+												"name": "let",
+												"from": 137,
+												"to": 140
+											},
+											{
+												"name": "mut",
+												"from": 141,
+												"to": 144
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 145,
+												"to": 149
+											},
+											{
+												"name": "=",
+												"from": 150,
+												"to": 151
+											},
+											{
+												"name": "CallExpression",
+												"from": 152,
+												"to": 165,
+												"children": [
+													{
+														"name": "FieldExpression",
+														"from": 152,
+														"to": 163,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 152,
+																"to": 158
+															},
+															{
+																"name": "FieldIdentifier",
+																"from": 159,
+																"to": 163
+															}
+														]
+													},
+													{
+														"name": "ArgList",
+														"from": 163,
+														"to": 165,
+														"children": [
+															{
+																"name": "(",
+																"from": 163,
+																"to": 164
+															},
+															{
+																"name": ")",
+																"from": 164,
+																"to": 165
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 165,
+												"to": 166
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 171,
+										"to": 393,
+										"children": [
+											{
+												"name": "IfExpression",
+												"from": 171,
+												"to": 393,
+												"children": [
+													{
+														"name": "if",
+														"from": 171,
+														"to": 173
+													},
+													{
+														"name": "LetChain",
+														"from": 174,
+														"to": 279,
+														"children": [
+															{
+																"name": "LetCondition",
+																"from": 174,
+																"to": 208,
+																"children": [
+																	{
+																		"name": "let",
+																		"from": 174,
+																		"to": 177
+																	},
+																	{
+																		"name": "TuplePattern",
+																		"from": 178,
+																		"to": 194,
+																		"children": [
+																			{
+																				"name": "TypeIdentifier",
+																				"from": 178,
+																				"to": 182
+																			},
+																			{
+																				"name": "(",
+																				"from": 182,
+																				"to": 183
+																			},
+																			{
+																				"name": "TuplePattern",
+																				"from": 183,
+																				"to": 193,
+																				"children": [
+																					{
+																						"name": "TypeIdentifier",
+																						"from": 183,
+																						"to": 187
+																					},
+																					{
+																						"name": "(",
+																						"from": 187,
+																						"to": 188
+																					},
+																					{
+																						"name": "BoundIdentifier",
+																						"from": 188,
+																						"to": 192
+																					},
+																					{
+																						"name": ")",
+																						"from": 192,
+																						"to": 193
+																					}
+																				]
+																			},
+																			{
+																				"name": ")",
+																				"from": 193,
+																				"to": 194
+																			}
+																		]
+																	},
+																	{
+																		"name": "=",
+																		"from": 195,
+																		"to": 196
+																	},
+																	{
+																		"name": "CallExpression",
+																		"from": 197,
+																		"to": 208,
+																		"children": [
+																			{
+																				"name": "FieldExpression",
+																				"from": 197,
+																				"to": 206,
+																				"children": [
+																					{
+																						"name": "Identifier",
+																						"from": 197,
+																						"to": 201
+																					},
+																					{
+																						"name": "FieldIdentifier",
+																						"from": 202,
+																						"to": 206
+																					}
+																				]
+																			},
+																			{
+																				"name": "ArgList",
+																				"from": 206,
+																				"to": 208,
+																				"children": [
+																					{
+																						"name": "(",
+																						"from": 206,
+																						"to": 207
+																					},
+																					{
+																						"name": ")",
+																						"from": 207,
+																						"to": 208
+																					}
+																				]
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "LetCondition",
+																"from": 220,
+																"to": 255,
+																"children": [
+																	{
+																		"name": "let",
+																		"from": 220,
+																		"to": 223
+																	},
+																	{
+																		"name": "TuplePattern",
+																		"from": 224,
+																		"to": 241,
+																		"children": [
+																			{
+																				"name": "TypeIdentifier",
+																				"from": 224,
+																				"to": 228
+																			},
+																			{
+																				"name": "(",
+																				"from": 228,
+																				"to": 229
+																			},
+																			{
+																				"name": "TuplePattern",
+																				"from": 229,
+																				"to": 240,
+																				"children": [
+																					{
+																						"name": "TypeIdentifier",
+																						"from": 229,
+																						"to": 233
+																					},
+																					{
+																						"name": "(",
+																						"from": 233,
+																						"to": 234
+																					},
+																					{
+																						"name": "BoundIdentifier",
+																						"from": 234,
+																						"to": 239
+																					},
+																					{
+																						"name": ")",
+																						"from": 239,
+																						"to": 240
+																					}
+																				]
+																			},
+																			{
+																				"name": ")",
+																				"from": 240,
+																				"to": 241
+																			}
+																		]
+																	},
+																	{
+																		"name": "=",
+																		"from": 242,
+																		"to": 243
+																	},
+																	{
+																		"name": "CallExpression",
+																		"from": 244,
+																		"to": 255,
+																		"children": [
+																			{
+																				"name": "FieldExpression",
+																				"from": 244,
+																				"to": 253,
+																				"children": [
+																					{
+																						"name": "Identifier",
+																						"from": 244,
+																						"to": 248
+																					},
+																					{
+																						"name": "FieldIdentifier",
+																						"from": 249,
+																						"to": 253
+																					}
+																				]
+																			},
+																			{
+																				"name": "ArgList",
+																				"from": 253,
+																				"to": 255,
+																				"children": [
+																					{
+																						"name": "(",
+																						"from": 253,
+																						"to": 254
+																					},
+																					{
+																						"name": ")",
+																						"from": 254,
+																						"to": 255
+																					}
+																				]
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "BinaryExpression",
+																"from": 267,
+																"to": 279,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 267,
+																		"to": 271
+																	},
+																	{
+																		"name": "CompareOp",
+																		"from": 272,
+																		"to": 273
+																	},
+																	{
+																		"name": "Identifier",
+																		"from": 274,
+																		"to": 279
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": "Block",
+														"from": 284,
+														"to": 393,
+														"children": [
+															{
+																"name": "{",
+																"from": 284,
+																"to": 285
+															},
+															{
+																"name": "LetDeclaration",
+																"from": 294,
+																"to": 354,
+																"children": [
+																	{
+																		"name": "let",
+																		"from": 294,
+																		"to": 297
+																	},
+																	{
+																		"name": "BoundIdentifier",
+																		"from": 298,
+																		"to": 301
+																	},
+																	{
+																		"name": "=",
+																		"from": 302,
+																		"to": 303
+																	},
+																	{
+																		"name": "ClosureExpression",
+																		"from": 304,
+																		"to": 353,
+																		"children": [
+																			{
+																				"name": "async",
+																				"from": 304,
+																				"to": 309
+																			},
+																			{
+																				"name": "ParamList",
+																				"from": 310,
+																				"to": 322,
+																				"children": [
+																					{
+																						"name": "|",
+																						"from": 310,
+																						"to": 311
+																					},
+																					{
+																						"name": "Parameter",
+																						"from": 311,
+																						"to": 321,
+																						"children": [
+																							{
+																								"name": "BoundIdentifier",
+																								"from": 311,
+																								"to": 316
+																							},
+																							{
+																								"name": ":",
+																								"from": 316,
+																								"to": 317
+																							},
+																							{
+																								"name": "TypeIdentifier",
+																								"from": 318,
+																								"to": 321
+																							}
+																						]
+																					},
+																					{
+																						"name": "|",
+																						"from": 321,
+																						"to": 322
+																					}
+																				]
+																			},
+																			{
+																				"name": "->",
+																				"from": 323,
+																				"to": 325
+																			},
+																			{
+																				"name": "TypeIdentifier",
+																				"from": 326,
+																				"to": 329
+																			},
+																			{
+																				"name": "Block",
+																				"from": 330,
+																				"to": 353,
+																				"children": [
+																					{
+																						"name": "{",
+																						"from": 330,
+																						"to": 331
+																					},
+																					{
+																						"name": "ExpressionStatement",
+																						"from": 332,
+																						"to": 351,
+																						"children": [
+																							{
+																								"name": "BinaryExpression",
+																								"from": 332,
+																								"to": 351,
+																								"children": [
+																									{
+																										"name": "Identifier",
+																										"from": 332,
+																										"to": 337
+																									},
+																									{
+																										"name": "ArithOp",
+																										"from": 338,
+																										"to": 339
+																									},
+																									{
+																										"name": "ConstBlock",
+																										"from": 340,
+																										"to": 351,
+																										"children": [
+																											{
+																												"name": "const",
+																												"from": 340,
+																												"to": 345
+																											},
+																											{
+																												"name": "Block",
+																												"from": 346,
+																												"to": 351,
+																												"children": [
+																													{
+																														"name": "{",
+																														"from": 346,
+																														"to": 347
+																													},
+																													{
+																														"name": "ExpressionStatement",
+																														"from": 348,
+																														"to": 349,
+																														"children": [
+																															{
+																																"name": "Integer",
+																																"from": 348,
+																																"to": 349
+																															}
+																														]
+																													},
+																													{
+																														"name": "}",
+																														"from": 350,
+																														"to": 351
+																													}
+																												]
+																											}
+																										]
+																									}
+																								]
+																							}
+																						]
+																					},
+																					{
+																						"name": "}",
+																						"from": 352,
+																						"to": 353
+																					}
+																				]
+																			}
+																		]
+																	},
+																	{
+																		"name": ";",
+																		"from": 353,
+																		"to": 354
+																	}
+																]
+															},
+															{
+																"name": "ExpressionStatement",
+																"from": 363,
+																"to": 387,
+																"children": [
+																	{
+																		"name": "ReturnExpression",
+																		"from": 363,
+																		"to": 386,
+																		"children": [
+																			{
+																				"name": "return",
+																				"from": 363,
+																				"to": 369
+																			},
+																			{
+																				"name": "AwaitExpression",
+																				"from": 370,
+																				"to": 386,
+																				"children": [
+																					{
+																						"name": "CallExpression",
+																						"from": 370,
+																						"to": 380,
+																						"children": [
+																							{
+																								"name": "Identifier",
+																								"from": 370,
+																								"to": 373
+																							},
+																							{
+																								"name": "ArgList",
+																								"from": 373,
+																								"to": 380,
+																								"children": [
+																									{
+																										"name": "(",
+																										"from": 373,
+																										"to": 374
+																									},
+																									{
+																										"name": "UnaryExpression",
+																										"from": 374,
+																										"to": 379,
+																										"children": [
+																											{
+																												"name": "DerefOp",
+																												"from": 374,
+																												"to": 375
+																											},
+																											{
+																												"name": "Identifier",
+																												"from": 375,
+																												"to": 379
+																											}
+																										]
+																									},
+																									{
+																										"name": ")",
+																										"from": 379,
+																										"to": 380
+																									}
+																								]
+																							}
+																						]
+																					},
+																					{
+																						"name": "await",
+																						"from": 381,
+																						"to": 386
+																					}
+																				]
+																			}
+																		]
+																	},
+																	{
+																		"name": ";",
+																		"from": 386,
+																		"to": 387
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 392,
+																"to": 393
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 398,
+										"to": 477,
+										"children": [
+											{
+												"name": "WhileExpression",
+												"from": 398,
+												"to": 477,
+												"children": [
+													{
+														"name": "while",
+														"from": 398,
+														"to": 403
+													},
+													{
+														"name": "LetChain",
+														"from": 404,
+														"to": 454,
+														"children": [
+															{
+																"name": "LetCondition",
+																"from": 404,
+																"to": 439,
+																"children": [
+																	{
+																		"name": "let",
+																		"from": 404,
+																		"to": 407
+																	},
+																	{
+																		"name": "TuplePattern",
+																		"from": 408,
+																		"to": 425,
+																		"children": [
+																			{
+																				"name": "TypeIdentifier",
+																				"from": 408,
+																				"to": 412
+																			},
+																			{
+																				"name": "(",
+																				"from": 412,
+																				"to": 413
+																			},
+																			{
+																				"name": "TuplePattern",
+																				"from": 413,
+																				"to": 424,
+																				"children": [
+																					{
+																						"name": "TypeIdentifier",
+																						"from": 413,
+																						"to": 417
+																					},
+																					{
+																						"name": "(",
+																						"from": 417,
+																						"to": 418
+																					},
+																					{
+																						"name": "BoundIdentifier",
+																						"from": 418,
+																						"to": 423
+																					},
+																					{
+																						"name": ")",
+																						"from": 423,
+																						"to": 424
+																					}
+																				]
+																			},
+																			{
+																				"name": ")",
+																				"from": 424,
+																				"to": 425
+																			}
+																		]
+																	},
+																	{
+																		"name": "=",
+																		"from": 426,
+																		"to": 427
+																	},
+																	{
+																		"name": "CallExpression",
+																		"from": 428,
+																		"to": 439,
+																		"children": [
+																			{
+																				"name": "FieldExpression",
+																				"from": 428,
+																				"to": 437,
+																				"children": [
+																					{
+																						"name": "Identifier",
+																						"from": 428,
+																						"to": 432
+																					},
+																					{
+																						"name": "FieldIdentifier",
+																						"from": 433,
+																						"to": 437
+																					}
+																				]
+																			},
+																			{
+																				"name": "ArgList",
+																				"from": 437,
+																				"to": 439,
+																				"children": [
+																					{
+																						"name": "(",
+																						"from": 437,
+																						"to": 438
+																					},
+																					{
+																						"name": ")",
+																						"from": 438,
+																						"to": 439
+																					}
+																				]
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "BinaryExpression",
+																"from": 443,
+																"to": 454,
+																"children": [
+																	{
+																		"name": "UnaryExpression",
+																		"from": 443,
+																		"to": 449,
+																		"children": [
+																			{
+																				"name": "DerefOp",
+																				"from": 443,
+																				"to": 444
+																			},
+																			{
+																				"name": "Identifier",
+																				"from": 444,
+																				"to": 449
+																			}
+																		]
+																	},
+																	{
+																		"name": "CompareOp",
+																		"from": 450,
+																		"to": 451
+																	},
+																	{
+																		"name": "Integer",
+																		"from": 452,
+																		"to": 454
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": "Block",
+														"from": 455,
+														"to": 477,
+														"children": [
+															{
+																"name": "{",
+																"from": 455,
+																"to": 456
+															},
+															{
+																"name": "ExpressionStatement",
+																"from": 465,
+																"to": 471,
+																"children": [
+																	{
+																		"name": "BreakExpression",
+																		"from": 465,
+																		"to": 470,
+																		"children": [
+																			{
+																				"name": "break",
+																				"from": 465,
+																				"to": 470
+																			}
+																		]
+																	},
+																	{
+																		"name": ";",
+																		"from": 470,
+																		"to": 471
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 476,
+																"to": 477
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 482,
+										"to": 603,
+										"children": [
+											{
+												"name": "MatchExpression",
+												"from": 482,
+												"to": 603,
+												"children": [
+													{
+														"name": "match",
+														"from": 482,
+														"to": 487
+													},
+													{
+														"name": "CallExpression",
+														"from": 488,
+														"to": 502,
+														"children": [
+															{
+																"name": "FieldExpression",
+																"from": 488,
+																"to": 500,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 488,
+																		"to": 494
+																	},
+																	{
+																		"name": "FieldIdentifier",
+																		"from": 495,
+																		"to": 500
+																	}
+																]
+															},
+															{
+																"name": "ArgList",
+																"from": 500,
+																"to": 502,
+																"children": [
+																	{
+																		"name": "(",
+																		"from": 500,
+																		"to": 501
+																	},
+																	{
+																		"name": ")",
+																		"from": 501,
+																		"to": 502
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": "MatchBlock",
+														"from": 503,
+														"to": 603,
+														"children": [
+															{
+																"name": "{",
+																"from": 503,
+																"to": 504
+															},
+															{
+																"name": "MatchArm",
+																"from": 513,
+																"to": 576,
+																"children": [
+																	{
+																		"name": "TuplePattern",
+																		"from": 513,
+																		"to": 524,
+																		"children": [
+																			{
+																				"name": "TypeIdentifier",
+																				"from": 513,
+																				"to": 517
+																			},
+																			{
+																				"name": "(",
+																				"from": 517,
+																				"to": 518
+																			},
+																			{
+																				"name": "BoundIdentifier",
+																				"from": 518,
+																				"to": 523
+																			},
+																			{
+																				"name": ")",
+																				"from": 523,
+																				"to": 524
+																			}
+																		]
+																	},
+																	{
+																		"name": "Guard",
+																		"from": 525,
+																		"to": 565,
+																		"children": [
+																			{
+																				"name": "if",
+																				"from": 525,
+																				"to": 527
+																			},
+																			{
+																				"name": "LetChain",
+																				"from": 528,
+																				"to": 565,
+																				"children": [
+																					{
+																						"name": "LetCondition",
+																						"from": 528,
+																						"to": 551,
+																						"children": [
+																							{
+																								"name": "let",
+																								"from": 528,
+																								"to": 531
+																							},
+																							{
+																								"name": "TuplePattern",
+																								"from": 532,
+																								"to": 543,
+																								"children": [
+																									{
+																										"name": "TypeIdentifier",
+																										"from": 532,
+																										"to": 536
+																									},
+																									{
+																										"name": "(",
+																										"from": 536,
+																										"to": 537
+																									},
+																									{
+																										"name": "BoundIdentifier",
+																										"from": 537,
+																										"to": 542
+																									},
+																									{
+																										"name": ")",
+																										"from": 542,
+																										"to": 543
+																									}
+																								]
+																							},
+																							{
+																								"name": "=",
+																								"from": 544,
+																								"to": 545
+																							},
+																							{
+																								"name": "Identifier",
+																								"from": 546,
+																								"to": 551
+																							}
+																						]
+																					},
+																					{
+																						"name": "BinaryExpression",
+																						"from": 555,
+																						"to": 565,
+																						"children": [
+																							{
+																								"name": "UnaryExpression",
+																								"from": 555,
+																								"to": 561,
+																								"children": [
+																									{
+																										"name": "DerefOp",
+																										"from": 555,
+																										"to": 556
+																									},
+																									{
+																										"name": "Identifier",
+																										"from": 556,
+																										"to": 561
+																									}
+																								]
+																							},
+																							{
+																								"name": "CompareOp",
+																								"from": 562,
+																								"to": 563
+																							},
+																							{
+																								"name": "Integer",
+																								"from": 564,
+																								"to": 565
+																							}
+																						]
+																					}
+																				]
+																			}
+																		]
+																	},
+																	{
+																		"name": "=>",
+																		"from": 566,
+																		"to": 568
+																	},
+																	{
+																		"name": "UnaryExpression",
+																		"from": 569,
+																		"to": 575,
+																		"children": [
+																			{
+																				"name": "DerefOp",
+																				"from": 569,
+																				"to": 570
+																			},
+																			{
+																				"name": "Identifier",
+																				"from": 570,
+																				"to": 575
+																			}
+																		]
+																	},
+																	{
+																		"name": ",",
+																		"from": 575,
+																		"to": 576
+																	}
+																]
+															},
+															{
+																"name": "MatchArm",
+																"from": 585,
+																"to": 597,
+																"children": [
+																	{
+																		"name": "_",
+																		"from": 585,
+																		"to": 586
+																	},
+																	{
+																		"name": "=>",
+																		"from": 587,
+																		"to": 589
+																	},
+																	{
+																		"name": "UnaryExpression",
+																		"from": 590,
+																		"to": 596,
+																		"children": [
+																			{
+																				"name": "DerefOp",
+																				"from": 590,
+																				"to": 591
+																			},
+																			{
+																				"name": "Identifier",
+																				"from": 591,
+																				"to": 596
+																			}
+																		]
+																	},
+																	{
+																		"name": ",",
+																		"from": 596,
+																		"to": 597
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 602,
+																"to": 603
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 604,
+										"to": 605
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "unicode-and-comments",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 102,
+				"children": [
+					{
+						"name": "FunctionItem",
+						"from": 0,
+						"to": 101,
+						"children": [
+							{
+								"name": "fn",
+								"from": 0,
+								"to": 2
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 3,
+								"to": 10
+							},
+							{
+								"name": "ParamList",
+								"from": 10,
+								"to": 12,
+								"children": [
+									{
+										"name": "(",
+										"from": 10,
+										"to": 11
+									},
+									{
+										"name": ")",
+										"from": 11,
+										"to": 12
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 13,
+								"to": 101,
+								"children": [
+									{
+										"name": "{",
+										"from": 13,
+										"to": 14
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 19,
+										"to": 44,
+										"children": [
+											{
+												"name": "let",
+												"from": 19,
+												"to": 22
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 23,
+												"to": 27
+											},
+											{
+												"name": "=",
+												"from": 28,
+												"to": 29
+											},
+											{
+												"name": "String",
+												"from": 30,
+												"to": 43
+											},
+											{
+												"name": ";",
+												"from": 43,
+												"to": 44
+											}
+										]
+									},
+									{
+										"name": "BlockComment",
+										"from": 49,
+										"to": 81,
+										"children": [
+											{
+												"name": "BlockComment",
+												"from": 58,
+												"to": 70
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 86,
+										"to": 99,
+										"children": [
+											{
+												"name": "let",
+												"from": 86,
+												"to": 89
+											},
+											{
+												"name": "_",
+												"from": 90,
+												"to": 91
+											},
+											{
+												"name": "=",
+												"from": 92,
+												"to": 93
+											},
+											{
+												"name": "Identifier",
+												"from": 94,
+												"to": 98
+											},
+											{
+												"name": ";",
+												"from": 98,
+												"to": 99
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 100,
+										"to": 101
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		}
+	],
+	"recovering": [
+		{
+			"id": "missing-expression",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 34,
+				"children": [
+					{
+						"name": "FunctionItem",
+						"from": 0,
+						"to": 33,
+						"children": [
+							{
+								"name": "fn",
+								"from": 0,
+								"to": 2
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 3,
+								"to": 9
+							},
+							{
+								"name": "ParamList",
+								"from": 9,
+								"to": 11,
+								"children": [
+									{
+										"name": "(",
+										"from": 9,
+										"to": 10
+									},
+									{
+										"name": ")",
+										"from": 10,
+										"to": 11
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 12,
+								"to": 33,
+								"children": [
+									{
+										"name": "{",
+										"from": 12,
+										"to": 13
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 14,
+										"to": 31,
+										"children": [
+											{
+												"name": "let",
+												"from": 14,
+												"to": 17
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 18,
+												"to": 23
+											},
+											{
+												"name": "=",
+												"from": 24,
+												"to": 25
+											},
+											{
+												"name": "BinaryExpression",
+												"from": 26,
+												"to": 30,
+												"children": [
+													{
+														"name": "Integer",
+														"from": 26,
+														"to": 27
+													},
+													{
+														"name": "ArithOp",
+														"from": 28,
+														"to": 29
+													},
+													{
+														"name": "⚠",
+														"from": 30,
+														"to": 30
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 30,
+												"to": 31
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 32,
+										"to": 33
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "truncated-parameter-list",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 26,
+				"children": [
+					{
+						"name": "FunctionItem",
+						"from": 0,
+						"to": 26,
+						"children": [
+							{
+								"name": "fn",
+								"from": 0,
+								"to": 2
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 3,
+								"to": 9
+							},
+							{
+								"name": "ParamList",
+								"from": 9,
+								"to": 24,
+								"children": [
+									{
+										"name": "(",
+										"from": 9,
+										"to": 10
+									},
+									{
+										"name": "Parameter",
+										"from": 10,
+										"to": 24,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 10,
+												"to": 15
+											},
+											{
+												"name": ":",
+												"from": 15,
+												"to": 16
+											},
+											{
+												"name": "GenericType",
+												"from": 17,
+												"to": 23,
+												"children": [
+													{
+														"name": "TypeIdentifier",
+														"from": 17,
+														"to": 20
+													},
+													{
+														"name": "TypeArgList",
+														"from": 20,
+														"to": 23,
+														"children": [
+															{
+																"name": "<",
+																"from": 20,
+																"to": 21
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 21,
+																"to": 22
+															},
+															{
+																"name": ">",
+																"from": 22,
+																"to": 23
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "⚠",
+										"from": 24,
+										"to": 24
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 24,
+								"to": 26,
+								"children": [
+									{
+										"name": "{",
+										"from": 24,
+										"to": 25
+									},
+									{
+										"name": "⚠",
+										"from": 26,
+										"to": 26
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "truncated-type-arguments",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 35,
+				"children": [
+					{
+						"name": "StructItem",
+						"from": 0,
+						"to": 35,
+						"children": [
+							{
+								"name": "struct",
+								"from": 0,
+								"to": 6
+							},
+							{
+								"name": "TypeIdentifier",
+								"from": 7,
+								"to": 13
+							},
+							{
+								"name": "FieldDeclarationList",
+								"from": 14,
+								"to": 35,
+								"children": [
+									{
+										"name": "{",
+										"from": 14,
+										"to": 15
+									},
+									{
+										"name": "FieldDeclaration",
+										"from": 16,
+										"to": 35,
+										"children": [
+											{
+												"name": "FieldIdentifier",
+												"from": 16,
+												"to": 21
+											},
+											{
+												"name": ":",
+												"from": 21,
+												"to": 22
+											},
+											{
+												"name": "GenericType",
+												"from": 23,
+												"to": 35,
+												"children": [
+													{
+														"name": "TypeIdentifier",
+														"from": 23,
+														"to": 29
+													},
+													{
+														"name": "TypeArgList",
+														"from": 29,
+														"to": 35,
+														"children": [
+															{
+																"name": "<",
+																"from": 29,
+																"to": 30
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 30,
+																"to": 33
+															},
+															{
+																"name": ",",
+																"from": 33,
+																"to": 34
+															},
+															{
+																"name": "⚠",
+																"from": 35,
+																"to": 35
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "⚠",
+										"from": 35,
+										"to": 35
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "unclosed-block",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 34,
+				"children": [
+					{
+						"name": "FunctionItem",
+						"from": 0,
+						"to": 34,
+						"children": [
+							{
+								"name": "fn",
+								"from": 0,
+								"to": 2
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 3,
+								"to": 9
+							},
+							{
+								"name": "ParamList",
+								"from": 9,
+								"to": 11,
+								"children": [
+									{
+										"name": "(",
+										"from": 9,
+										"to": 10
+									},
+									{
+										"name": ")",
+										"from": 10,
+										"to": 11
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 12,
+								"to": 34,
+								"children": [
+									{
+										"name": "{",
+										"from": 12,
+										"to": 13
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 14,
+										"to": 33,
+										"children": [
+											{
+												"name": "IfExpression",
+												"from": 14,
+												"to": 33,
+												"children": [
+													{
+														"name": "if",
+														"from": 14,
+														"to": 16
+													},
+													{
+														"name": "Boolean",
+														"from": 17,
+														"to": 21
+													},
+													{
+														"name": "Block",
+														"from": 22,
+														"to": 33,
+														"children": [
+															{
+																"name": "{",
+																"from": 22,
+																"to": 23
+															},
+															{
+																"name": "ExpressionStatement",
+																"from": 24,
+																"to": 31,
+																"children": [
+																	{
+																		"name": "ReturnExpression",
+																		"from": 24,
+																		"to": 30,
+																		"children": [
+																			{
+																				"name": "return",
+																				"from": 24,
+																				"to": 30
+																			}
+																		]
+																	},
+																	{
+																		"name": ";",
+																		"from": 30,
+																		"to": 31
+																	}
+																]
+															},
+															{
+																"name": "}",
+																"from": 32,
+																"to": 33
+															}
+														]
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "⚠",
+										"from": 34,
+										"to": 34
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		}
+	]
+}

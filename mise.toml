@@ -47,6 +47,14 @@ run = "cargo run --locked --package rezel-codegen -- python --check"
 description = "Regenerate checked-in Python parser sources"
 run = "cargo run --locked --package rezel-codegen -- python --update"
 
+[tasks."codegen:rezel:rust"]
+description = "Verify checked-in Rust parser sources"
+run = "cargo run --locked --package rezel-codegen -- rust --check"
+
+[tasks."codegen:rezel:rust:update"]
+description = "Regenerate checked-in Rust parser sources"
+run = "cargo run --locked --package rezel-codegen -- rust --update"
+
 [tasks."codegen:rezel:fixtures"]
 description = "Verify checked-in rezel-generator test fixtures"
 run = "cargo run --locked --package rezel-codegen -- fixtures --check"
@@ -135,6 +143,14 @@ run = "java tools/references/javac/java/JavacReference.java --check"
 description = "Regenerate Java compiler-tree snapshots"
 run = "java tools/references/javac/java/JavacReference.java --update"
 
+[tasks."reference:rustc"]
+description = "Verify Rust 1.95 Edition 2024 compiler acceptance snapshots"
+run = "cargo run --locked --package rezel-rustc-reference -- --check"
+
+[tasks."reference:rustc:update"]
+description = "Regenerate Rust 1.95 Edition 2024 compiler acceptance snapshots"
+run = "cargo run --locked --package rezel-rustc-reference -- --update"
+
 [tasks."reference:lezer"]
 description = "Verify snapshots from the pinned Lezer reference"
 run = "npm --prefix tools/references/lezer run check"
@@ -204,6 +220,7 @@ depends = [
 	"codegen:rezel:java",
 	"codegen:rezel:go",
 	"codegen:rezel:python",
+	"codegen:rezel:rust",
 	"codegen:rezel:fixtures",
 	"codegen:java-identifiers",
 	"codegen:python-unicode",
@@ -219,6 +236,7 @@ depends = [
 	"test:full",
 	"reference:go",
 	"reference:javac",
+	"reference:rustc",
 	"reference:cpython",
 	"reference:lezer",
 	"reference:stdlib",

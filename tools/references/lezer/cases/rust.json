@@ -1,0 +1,51 @@
+{
+	"schema": "rezel.lezer-rust-reference-cases.v1",
+	"strict": [
+		{
+			"id": "declarations-and-types",
+			"source": "use std::{fmt::Debug, marker::PhantomData};\n\npub struct Pair<'a, T: Clone> {\n    left: &'a T,\n    right: Option<T>,\n}\n\nenum State<T> {\n    Ready(T),\n    Waiting { retries: u32 },\n    Done,\n}\n\ntrait Convert<T> {\n    type Error;\n    fn convert(&self, value: T) -> Result<T, Self::Error>;\n}\n\nimpl<'a, T: Clone + Debug> Pair<'a, T> {\n    pub fn first(&self) -> &'a T {\n        self.left\n    }\n}\n"
+		},
+		{
+			"id": "expressions-and-control-flow",
+			"source": "fn flow(values: &[i32]) -> i32 {\n    let mut total = 0;\n    for value in values.iter() {\n        total += match value {\n            0 => 1,\n            value if *value > 0 => *value,\n            _ => continue,\n        };\n    }\n    while total > 100 {\n        total /= 2;\n    }\n    if total == 42 {\n        return total;\n    }\n    total\n}\n"
+		},
+		{
+			"id": "macros-and-attributes",
+			"source": "#[derive(Clone, Debug)]\nstruct Item {\n    value: i32,\n}\n\nmacro_rules! twice {\n    ($value:expr) => { $value * 2 };\n}\n\nfn build() -> Item {\n    Item { value: twice!(21) }\n}\n"
+		},
+		{
+			"id": "external-tokenizers",
+			"source": "fn lexical<T: Copy>(value: T) {\n    let decimal = 1_000.25e+2f64;\n    let raw = r##\"text \"# inside\"##;\n    let bytes = br#\"bytes\"#;\n    let closure = |left: i32, right: i32| left + right;\n    let typed: Result<T, ()> = Ok(value);\n}\n"
+		},
+		{
+			"id": "async-and-lifetimes",
+			"source": "async fn fetch<'a>(input: &'a str) -> Result<&'a str, ()> {\n    let future = async move { input };\n    Ok(future.await)\n}\n"
+		},
+		{
+			"id": "rust-1-95-edition-2024-control-flow",
+			"source": "#![allow(dead_code)]\nasync fn modern(values: &[Option<i32>]) -> i32 {\n    let Some(Some(first)) = values.first() else { return 0; };\n    let mut iter = values.iter();\n    if let Some(Some(left)) = iter.next()\n        && let Some(Some(right)) = iter.next()\n        && left < right\n    {\n        let add = async |value: i32| -> i32 { value + const { 1 } };\n        return add(*left).await;\n    }\n    while let Some(Some(value)) = iter.next() && *value < 10 {\n        break;\n    }\n    match values.first() {\n        Some(value) if let Some(inner) = value && *inner > 0 => *inner,\n        _ => *first,\n    }\n}\n"
+		},
+		{
+			"id": "unicode-and-comments",
+			"source": "fn unicode() {\n    let αβ = \"你好 😀\";\n    /* outer /* nested */ comment */\n    let _ = αβ;\n}\n"
+		}
+	],
+	"recovering": [
+		{
+			"id": "missing-expression",
+			"source": "fn broken() { let value = 1 + ; }\n"
+		},
+		{
+			"id": "truncated-parameter-list",
+			"source": "fn broken(value: Vec<T> {\n"
+		},
+		{
+			"id": "truncated-type-arguments",
+			"source": "struct Broken { value: Result<i32,\n"
+		},
+		{
+			"id": "unclosed-block",
+			"source": "fn broken() { if true { return; }\n"
+		}
+	]
+}

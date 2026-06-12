@@ -1,0 +1,35 @@
+[package]
+name = "rezel-lang-rust"
+version.workspace = true
+categories = ["parser-implementations"]
+edition.workspace = true
+include = [
+	"/grammar/**",
+	"/src/**",
+	"/Cargo.toml",
+	"/README.md",
+	"/THIRD_PARTY_NOTICES.md",
+	"/LICENSE-APACHE",
+	"/LICENSE-MIT",
+]
+keywords = ["rust", "parser", "syntax-tree", "cst"]
+license.workspace = true
+repository.workspace = true
+description = "Rust 1.95 parser and typed syntax for Rezel"
+
+[features]
+default = []
+highlight = ["dep:rezel-highlight"]
+
+[dependencies]
+rezel-common.workspace = true
+rezel-highlight = { workspace = true, optional = true }
+rezel-lr.workspace = true
+zerocopy.workspace = true
+
+[dev-dependencies]
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

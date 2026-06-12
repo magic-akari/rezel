@@ -1,0 +1,23 @@
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "closureParam"
+rust_path = "crate::tokens::CLOSURE_PARAM"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "tpDelim"
+rust_path = "crate::tokens::TYPE_PARAMETER_DELIMITERS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "literalTokens"
+rust_path = "crate::tokens::LITERALS"
+
+[[binding]]
+kind = "property-source"
+source = "./highlight"
+name = "rustHighlighting"
+rust_path = "crate::rust_highlighting"

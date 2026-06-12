@@ -1,0 +1,36 @@
+{
+	"schema": "rezel.rustc-rust-reference-snapshot.v1",
+	"rustcVersion": "rustc 1.95.0 (59807616e 2026-04-14)",
+	"edition": "2024",
+	"coordinates": "raw-utf8-bytes",
+	"oracle": "rustc --crate-type=lib --emit=metadata",
+	"accepted": [
+		{
+			"id": "ControlFlow",
+			"sourceName": "ControlFlow.rs",
+			"source": "#![allow(dead_code)]\n\nasync fn modern(values: &[Option<i32>], fallback: Option<i32>) -> i32 {\n    let Some(Some(first)) = values.first() else {\n        return 0;\n    };\n    let mut iter = values.iter();\n\n    if (values.len() > 1 || fallback.is_some())\n        && let Some(Some(left)) = iter.next()\n        && let Some(Some(right)) = iter.next()\n        && left < right\n    {\n        let add = async |value: i32| -> i32 { value + const { 1 } };\n        return add(*left).await;\n    }\n\n    while let Some(Some(value)) = iter.next() && *value < 10 {\n        break;\n    }\n\n    match values.first() {\n        Some(value) if let Some(inner) = value && *inner > 0 => *inner,\n        _ => *first,\n    }\n}\n"
+		}
+	],
+	"rejected": [
+		{
+			"id": "AssignmentOperand",
+			"sourceName": "AssignmentOperand.rs",
+			"source": "fn invalid(value: Option<i32>, other: i32) {\n    if let Some(inner) = value && other = inner {\n        let _ = inner;\n    }\n}\n"
+		},
+		{
+			"id": "LetChainOr",
+			"sourceName": "LetChainOr.rs",
+			"source": "fn invalid(value: Option<i32>) {\n    if let Some(inner) = value || inner > 0 {\n        let _ = inner;\n    }\n}\n"
+		},
+		{
+			"id": "ParenthesizedLet",
+			"sourceName": "ParenthesizedLet.rs",
+			"source": "fn invalid(value: Option<i32>) {\n    if (let Some(inner) = value) {\n        let _ = inner;\n    }\n}\n"
+		},
+		{
+			"id": "RangeOperand",
+			"sourceName": "RangeOperand.rs",
+			"source": "fn invalid(value: Option<i32>) {\n    if let Some(inner) = value && 0..inner {\n        let _ = inner;\n    }\n}\n"
+		}
+	]
+}

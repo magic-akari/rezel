@@ -8,10 +8,12 @@ members = [
 	"languages/java",
 	"languages/json",
 	"languages/python",
+	"languages/rust",
 	"tools/codegen",
 	"tools/references/cpython/stdlib",
 	"tools/references/go/stdlib",
 	"tools/references/javac/stdlib",
+	"tools/references/rustc",
 	"tools/source-alignment",
 ]
 resolver = "3"

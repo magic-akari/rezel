@@ -1,0 +1,13 @@
+language = "RustLanguage"
+kind = "RustKind"
+language_path = "crate::generated::LANGUAGE"
+coverage = "partial"
+
+[kind_names]
+"_" = "Underscore"
+"self" = "SelfKeyword"
+"macro_rules" = "MacroRules"
+
+[[node]]
+name = "RustSourceFile"
+kind = "SourceFile"
