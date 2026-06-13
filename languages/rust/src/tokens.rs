@@ -4,6 +4,7 @@ use rezel_lr::{ExternalTokenizer, InputStream, Stack, TokenizerFlags};
 use crate::terms;
 
 const B: u32 = b'b' as u32;
+const C: u32 = b'c' as u32;
 const E: u32 = b'e' as u32;
 const F: u32 = b'f' as u32;
 const R: u32 = b'r' as u32;
@@ -40,7 +41,7 @@ pub(crate) static TYPE_PARAMETER_DELIMITERS: ExternalTokenizer =
 fn scan_literals(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     match current(input) {
         Some(value) if is_number(value) => scan_number(input),
-        Some(B | R) => scan_raw_string(input),
+        Some(B | C | R) => scan_raw_string(input),
         _ => Ok(()),
     }
 }
@@ -92,7 +93,7 @@ fn scan_number(input: &mut InputStream) -> Result<(), ParseError> {
 }
 
 fn scan_raw_string(input: &mut InputStream) -> Result<(), ParseError> {
-    if current(input) == Some(B) {
+    if matches!(current(input), Some(B | C)) {
         input.advance(1);
     }
     if current(input) != Some(R) {

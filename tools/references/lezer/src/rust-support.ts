@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type { NodePropSource } from "@lezer/common";
 import { buildParser } from "@lezer/generator";
-import { ExternalTokenizer, type InputStream } from "@lezer/lr";
+import { ExternalTokenizer, type InputStream, type Stack } from "@lezer/lr";
 
 interface BuildRustParserOptions {
 	grammar: string;
@@ -15,7 +15,20 @@ interface LiteralTerms {
 	rawString: number;
 }
 
+interface IdentifierTerms {
+	identifier: number;
+	metavariable: number;
+	quoteIdentifier: number;
+	tokenIdentifier: number;
+}
+
+interface CodePoint {
+	value: number;
+	width: number;
+}
+
 const LOWER_B = 98;
+const LOWER_C = 99;
 const LOWER_E = 101;
 const LOWER_F = 102;
 const LOWER_R = 114;
@@ -26,9 +39,15 @@ const PLUS = 43;
 const MINUS = 45;
 const HASH = 35;
 const QUOTE = 34;
+const SINGLE_QUOTE = 39;
+const DOLLAR = 36;
+const UNDERSCORE = 95;
 const PIPE = 124;
 const LESS_THAN = 60;
 const GREATER_THAN = 62;
+const XID_START = /^\p{XID_Start}$/u;
+const XID_CONTINUE = /^\p{XID_Continue}$/u;
+const RESERVED_RAW_NAMES = new Set(["_", "crate", "self", "Self", "super"]);
 
 export function buildRustParser(options: BuildRustParserOptions): ReturnType<typeof buildParser> {
 	const emptyProperties: NodePropSource = () => null;
@@ -50,6 +69,13 @@ export function buildRustParser(options: BuildRustParserOptions): ReturnType<typ
 						float: requiredTerm(terms, "Float"),
 						rawString: requiredTerm(terms, "RawString"),
 					});
+				case "rustIdentifiers":
+					return rustIdentifiers({
+						identifier: requiredTerm(terms, "identifier"),
+						metavariable: requiredTerm(terms, "Metavariable"),
+						quoteIdentifier: requiredTerm(terms, "quoteIdentifier"),
+						tokenIdentifier: requiredTerm(terms, "tokenIdentifier"),
+					});
 				default:
 					throw new Error(`unexpected Rust external tokenizer ${name}`);
 			}
@@ -66,10 +92,89 @@ function literalTokens(terms: LiteralTerms): ExternalTokenizer {
 		const character = next(input);
 		if (isNumber(character)) {
 			scanNumber(input, terms.float);
-		} else if (character === LOWER_B || character === LOWER_R) {
+		} else if (character === LOWER_B || character === LOWER_C || character === LOWER_R) {
 			scanRawString(input, terms.rawString);
 		}
 	});
+}
+
+function rustIdentifiers(terms: IdentifierTerms): ExternalTokenizer {
+	return new ExternalTokenizer(
+		(input, stack) => {
+			if (next(input) === DOLLAR && stack.canShift(terms.metavariable)) {
+				scanMetavariable(input, terms.metavariable);
+			} else if (next(input) === SINGLE_QUOTE && stack.canShift(terms.quoteIdentifier)) {
+				scanLifetime(input, terms.quoteIdentifier);
+			} else {
+				scanIdentifier(input, stack, terms);
+			}
+		},
+		{ contextual: true },
+	);
+}
+
+function scanIdentifier(input: InputStream, stack: Stack, terms: IdentifierTerms): void {
+	const raw = next(input) === LOWER_R && input.peek(1) === HASH;
+	if (raw) {
+		input.advance(2);
+	}
+
+	const name = scanIdentifierBody(input, raw);
+	if (name === undefined) {
+		return;
+	}
+	if (raw ? name !== null && RESERVED_RAW_NAMES.has(name) : isReservedPrefixDelimiter(next(input))) {
+		return;
+	}
+
+	input.acceptToken(stack.canShift(terms.tokenIdentifier) ? terms.tokenIdentifier : terms.identifier);
+}
+
+function scanMetavariable(input: InputStream, term: number): void {
+	input.advance();
+	if (scanIdentifierBody(input, false) !== undefined) {
+		input.acceptToken(term);
+	}
+}
+
+function scanLifetime(input: InputStream, term: number): void {
+	input.advance();
+	const raw = next(input) === LOWER_R && input.peek(1) === HASH;
+	if (raw) {
+		input.advance(2);
+	}
+
+	const name = scanIdentifierBody(input, raw);
+	if (name === undefined || next(input) === SINGLE_QUOTE) {
+		return;
+	}
+	if (raw ? name !== null && RESERVED_RAW_NAMES.has(name) : next(input) === HASH) {
+		return;
+	}
+	input.acceptToken(term);
+}
+
+function scanIdentifierBody(input: InputStream, captureAscii: boolean): string | null | undefined {
+	let character = codePoint(input.peek(0), input.peek(1));
+	if (character === null || (character.value !== UNDERSCORE && !isXidStart(character.value))) {
+		return undefined;
+	}
+
+	let spelling: string | null = captureAscii ? "" : null;
+	for (;;) {
+		if (spelling !== null) {
+			if (character.value > 0x7f) {
+				spelling = null;
+			} else {
+				spelling += String.fromCodePoint(character.value);
+			}
+		}
+		input.advance(character.width);
+		character = codePoint(input.peek(0), input.peek(1));
+		if (character === null || !isXidContinue(character.value)) {
+			return spelling;
+		}
+	}
 }
 
 function scanNumber(input: InputStream, float: number): void {
@@ -121,7 +226,7 @@ function scanNumber(input: InputStream, float: number): void {
 }
 
 function scanRawString(input: InputStream, rawString: number): void {
-	if (next(input) === LOWER_B) {
+	if (next(input) === LOWER_B || next(input) === LOWER_C) {
 		input.advance();
 	}
 	if (next(input) !== LOWER_R) {
@@ -179,6 +284,31 @@ function typeParameterDelimiters(open: number, close: number): ExternalTokenizer
 
 function next(input: InputStream): number {
 	return input.next;
+}
+
+function codePoint(first: number, second: number): CodePoint | null {
+	if (first < 0) {
+		return null;
+	}
+	if (first < 0xd800 || first > 0xdbff || second < 0xdc00 || second > 0xdfff) {
+		return { value: first, width: 1 };
+	}
+	return {
+		value: 0x1_0000 + ((first - 0xd800) << 10) + second - 0xdc00,
+		width: 2,
+	};
+}
+
+function isXidStart(character: number): boolean {
+	return XID_START.test(String.fromCodePoint(character));
+}
+
+function isXidContinue(character: number): boolean {
+	return XID_CONTINUE.test(String.fromCodePoint(character));
+}
+
+function isReservedPrefixDelimiter(character: number): boolean {
+	return character === HASH || character === SINGLE_QUOTE || character === QUOTE;
 }
 
 function isNumber(character: number): boolean {

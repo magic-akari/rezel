@@ -279,6 +279,7 @@ dependencies = [
  "rezel-lr",
  "serde",
  "serde_json",
+ "unicode-ident",
  "zerocopy",
 ]
 

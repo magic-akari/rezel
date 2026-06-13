@@ -43,6 +43,8 @@ const CASE_SCHEMA = "rezel.lezer-rust-reference-cases.v1";
 const SNAPSHOT_SCHEMA = "rezel.lezer-rust-reference-snapshot.v1";
 const REFERENCE_PACKAGES = ["@lezer/common", "@lezer/generator", "@lezer/lr"] as const;
 
+assert.equal(process.versions.unicode, "17.0", "Rust 1.95 identifiers require Unicode 17");
+
 const toolDirectory = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repository = join(toolDirectory, "..", "..", "..");
 const casesPath = join(toolDirectory, "cases", "rust.json");

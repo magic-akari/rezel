@@ -1,0 +1,3 @@
+fn rejected() {
+    let _ = '';
+}

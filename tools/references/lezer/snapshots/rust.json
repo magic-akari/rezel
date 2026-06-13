@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/rust/grammar/rust.grammar",
-				"sha256": "4ff742714a1d01f519a06efe311f97a02dd737f78b8db6ac735370547c3ef063"
+				"sha256": "9ebe6c7f93fd19db73fcbe99a0a4618e61903e7faed341c5cec918ba1b965ee0"
 			}
 		}
 	},
@@ -4319,6 +4319,1002 @@
 										"name": "}",
 										"from": 604,
 										"to": 605
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "rust-1-95-edition-2024-lexical",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 630,
+				"children": [
+					{
+						"name": "InnerAttribute",
+						"from": 0,
+						"to": 59,
+						"children": [
+							{
+								"name": "!",
+								"from": 1,
+								"to": 2
+							},
+							{
+								"name": "[",
+								"from": 2,
+								"to": 3
+							},
+							{
+								"name": "MetaItem",
+								"from": 3,
+								"to": 58,
+								"children": [
+									{
+										"name": "Identifier",
+										"from": 3,
+										"to": 8
+									},
+									{
+										"name": "ParenthesizedTokens",
+										"from": 8,
+										"to": 58,
+										"children": [
+											{
+												"name": "(",
+												"from": 8,
+												"to": 9
+											},
+											{
+												"name": "Identifier",
+												"from": 9,
+												"to": 18
+											},
+											{
+												"name": ",",
+												"from": 18,
+												"to": 19
+											},
+											{
+												"name": "Identifier",
+												"from": 20,
+												"to": 39
+											},
+											{
+												"name": ",",
+												"from": 39,
+												"to": 40
+											},
+											{
+												"name": "Identifier",
+												"from": 41,
+												"to": 57
+											},
+											{
+												"name": ")",
+												"from": 57,
+												"to": 58
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "]",
+								"from": 58,
+								"to": 59
+							}
+						]
+					},
+					{
+						"name": "MacroDefinition",
+						"from": 61,
+						"to": 109,
+						"children": [
+							{
+								"name": "macro_rules",
+								"from": 61,
+								"to": 72
+							},
+							{
+								"name": "!",
+								"from": 72,
+								"to": 73
+							},
+							{
+								"name": "Identifier",
+								"from": 74,
+								"to": 78
+							},
+							{
+								"name": "{",
+								"from": 79,
+								"to": 80
+							},
+							{
+								"name": "MacroRule",
+								"from": 85,
+								"to": 106,
+								"children": [
+									{
+										"name": "ParenthesizedTokens",
+										"from": 85,
+										"to": 100,
+										"children": [
+											{
+												"name": "(",
+												"from": 85,
+												"to": 86
+											},
+											{
+												"name": "TokenRepetition",
+												"from": 86,
+												"to": 99,
+												"children": [
+													{
+														"name": "(",
+														"from": 87,
+														"to": 88
+													},
+													{
+														"name": "TokenBinding",
+														"from": 88,
+														"to": 97,
+														"children": [
+															{
+																"name": "Metavariable",
+																"from": 88,
+																"to": 94
+															},
+															{
+																"name": ":",
+																"from": 94,
+																"to": 95
+															},
+															{
+																"name": "Identifier",
+																"from": 95,
+																"to": 97
+															}
+														]
+													},
+													{
+														"name": ")",
+														"from": 97,
+														"to": 98
+													}
+												]
+											},
+											{
+												"name": ")",
+												"from": 99,
+												"to": 100
+											}
+										]
+									},
+									{
+										"name": "=>",
+										"from": 101,
+										"to": 103
+									},
+									{
+										"name": "BracedTokens",
+										"from": 104,
+										"to": 106,
+										"children": [
+											{
+												"name": "{",
+												"from": 104,
+												"to": 105
+											},
+											{
+												"name": "}",
+												"from": 105,
+												"to": 106
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": ";",
+								"from": 106,
+								"to": 107
+							},
+							{
+								"name": "}",
+								"from": 108,
+								"to": 109
+							}
+						]
+					},
+					{
+						"name": "FunctionItem",
+						"from": 111,
+						"to": 629,
+						"children": [
+							{
+								"name": "fn",
+								"from": 111,
+								"to": 113
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 114,
+								"to": 121
+							},
+							{
+								"name": "TypeParamList",
+								"from": 121,
+								"to": 130,
+								"children": [
+									{
+										"name": "<",
+										"from": 121,
+										"to": 122
+									},
+									{
+										"name": "Lifetime",
+										"from": 122,
+										"to": 129
+									},
+									{
+										"name": ">",
+										"from": 129,
+										"to": 130
+									}
+								]
+							},
+							{
+								"name": "ParamList",
+								"from": 130,
+								"to": 154,
+								"children": [
+									{
+										"name": "(",
+										"from": 130,
+										"to": 131
+									},
+									{
+										"name": "Parameter",
+										"from": 131,
+										"to": 153,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 131,
+												"to": 139
+											},
+											{
+												"name": ":",
+												"from": 139,
+												"to": 140
+											},
+											{
+												"name": "ReferenceType",
+												"from": 141,
+												"to": 153,
+												"children": [
+													{
+														"name": "&",
+														"from": 141,
+														"to": 142
+													},
+													{
+														"name": "Lifetime",
+														"from": 142,
+														"to": 149
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 150,
+														"to": 153
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 153,
+										"to": 154
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 155,
+								"to": 629,
+								"children": [
+									{
+										"name": "{",
+										"from": 155,
+										"to": 156
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 161,
+										"to": 183,
+										"children": [
+											{
+												"name": "let",
+												"from": 161,
+												"to": 164
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 165,
+												"to": 171
+											},
+											{
+												"name": "=",
+												"from": 172,
+												"to": 173
+											},
+											{
+												"name": "Identifier",
+												"from": 174,
+												"to": 182
+											},
+											{
+												"name": ";",
+												"from": 182,
+												"to": 183
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 188,
+										"to": 207,
+										"children": [
+											{
+												"name": "let",
+												"from": 188,
+												"to": 191
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 192,
+												"to": 197
+											},
+											{
+												"name": "=",
+												"from": 198,
+												"to": 199
+											},
+											{
+												"name": "Integer",
+												"from": 200,
+												"to": 206
+											},
+											{
+												"name": ";",
+												"from": 206,
+												"to": 207
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 212,
+										"to": 229,
+										"children": [
+											{
+												"name": "let",
+												"from": 212,
+												"to": 215
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 216,
+												"to": 224
+											},
+											{
+												"name": "=",
+												"from": 225,
+												"to": 226
+											},
+											{
+												"name": "Integer",
+												"from": 227,
+												"to": 228
+											},
+											{
+												"name": ";",
+												"from": 228,
+												"to": 229
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 234,
+										"to": 260,
+										"children": [
+											{
+												"name": "let",
+												"from": 234,
+												"to": 237
+											},
+											{
+												"name": "_",
+												"from": 238,
+												"to": 239
+											},
+											{
+												"name": "=",
+												"from": 240,
+												"to": 241
+											},
+											{
+												"name": "String",
+												"from": 242,
+												"to": 259,
+												"children": [
+													{
+														"name": "Escape",
+														"from": 246,
+														"to": 250
+													},
+													{
+														"name": "Escape",
+														"from": 250,
+														"to": 258
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 259,
+												"to": 260
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 265,
+										"to": 290,
+										"children": [
+											{
+												"name": "let",
+												"from": 265,
+												"to": 268
+											},
+											{
+												"name": "_",
+												"from": 269,
+												"to": 270
+											},
+											{
+												"name": "=",
+												"from": 271,
+												"to": 272
+											},
+											{
+												"name": "RawString",
+												"from": 273,
+												"to": 289
+											},
+											{
+												"name": ";",
+												"from": 289,
+												"to": 290
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 295,
+										"to": 316,
+										"children": [
+											{
+												"name": "let",
+												"from": 295,
+												"to": 298
+											},
+											{
+												"name": "_",
+												"from": 299,
+												"to": 300
+											},
+											{
+												"name": "=",
+												"from": 301,
+												"to": 302
+											},
+											{
+												"name": "String",
+												"from": 303,
+												"to": 315,
+												"children": [
+													{
+														"name": "Escape",
+														"from": 310,
+														"to": 314
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 315,
+												"to": 316
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 321,
+										"to": 346,
+										"children": [
+											{
+												"name": "let",
+												"from": 321,
+												"to": 324
+											},
+											{
+												"name": "_",
+												"from": 325,
+												"to": 326
+											},
+											{
+												"name": "=",
+												"from": 327,
+												"to": 328
+											},
+											{
+												"name": "RawString",
+												"from": 329,
+												"to": 345
+											},
+											{
+												"name": ";",
+												"from": 345,
+												"to": 346
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 351,
+										"to": 371,
+										"children": [
+											{
+												"name": "let",
+												"from": 351,
+												"to": 354
+											},
+											{
+												"name": "_",
+												"from": 355,
+												"to": 356
+											},
+											{
+												"name": "=",
+												"from": 357,
+												"to": 358
+											},
+											{
+												"name": "Char",
+												"from": 359,
+												"to": 370
+											},
+											{
+												"name": ";",
+												"from": 370,
+												"to": 371
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 376,
+										"to": 392,
+										"children": [
+											{
+												"name": "let",
+												"from": 376,
+												"to": 379
+											},
+											{
+												"name": "_",
+												"from": 380,
+												"to": 381
+											},
+											{
+												"name": "=",
+												"from": 382,
+												"to": 383
+											},
+											{
+												"name": "Char",
+												"from": 384,
+												"to": 391
+											},
+											{
+												"name": ";",
+												"from": 391,
+												"to": 392
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 397,
+										"to": 417,
+										"children": [
+											{
+												"name": "let",
+												"from": 397,
+												"to": 400
+											},
+											{
+												"name": "_",
+												"from": 401,
+												"to": 402
+											},
+											{
+												"name": "=",
+												"from": 403,
+												"to": 404
+											},
+											{
+												"name": "Integer",
+												"from": 405,
+												"to": 416
+											},
+											{
+												"name": ";",
+												"from": 416,
+												"to": 417
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 422,
+										"to": 441,
+										"children": [
+											{
+												"name": "let",
+												"from": 422,
+												"to": 425
+											},
+											{
+												"name": "_",
+												"from": 426,
+												"to": 427
+											},
+											{
+												"name": "=",
+												"from": 428,
+												"to": 429
+											},
+											{
+												"name": "Integer",
+												"from": 430,
+												"to": 440
+											},
+											{
+												"name": ";",
+												"from": 440,
+												"to": 441
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 446,
+										"to": 463,
+										"children": [
+											{
+												"name": "let",
+												"from": 446,
+												"to": 449
+											},
+											{
+												"name": "_",
+												"from": 450,
+												"to": 451
+											},
+											{
+												"name": "=",
+												"from": 452,
+												"to": 453
+											},
+											{
+												"name": "Integer",
+												"from": 454,
+												"to": 462
+											},
+											{
+												"name": ";",
+												"from": 462,
+												"to": 463
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 468,
+										"to": 481,
+										"children": [
+											{
+												"name": "let",
+												"from": 468,
+												"to": 471
+											},
+											{
+												"name": "_",
+												"from": 472,
+												"to": 473
+											},
+											{
+												"name": "=",
+												"from": 474,
+												"to": 475
+											},
+											{
+												"name": "Integer",
+												"from": 476,
+												"to": 480
+											},
+											{
+												"name": ";",
+												"from": 480,
+												"to": 481
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 486,
+										"to": 497,
+										"children": [
+											{
+												"name": "let",
+												"from": 486,
+												"to": 489
+											},
+											{
+												"name": "_",
+												"from": 490,
+												"to": 491
+											},
+											{
+												"name": "=",
+												"from": 492,
+												"to": 493
+											},
+											{
+												"name": "Float",
+												"from": 494,
+												"to": 496
+											},
+											{
+												"name": ";",
+												"from": 496,
+												"to": 497
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 502,
+										"to": 520,
+										"children": [
+											{
+												"name": "let",
+												"from": 502,
+												"to": 505
+											},
+											{
+												"name": "_",
+												"from": 506,
+												"to": 507
+											},
+											{
+												"name": "=",
+												"from": 508,
+												"to": 509
+											},
+											{
+												"name": "Float",
+												"from": 510,
+												"to": 519
+											},
+											{
+												"name": ";",
+												"from": 519,
+												"to": 520
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 525,
+										"to": 544,
+										"children": [
+											{
+												"name": "let",
+												"from": 525,
+												"to": 528
+											},
+											{
+												"name": "_",
+												"from": 529,
+												"to": 530
+											},
+											{
+												"name": "=",
+												"from": 531,
+												"to": 532
+											},
+											{
+												"name": "Float",
+												"from": 533,
+												"to": 543
+											},
+											{
+												"name": ";",
+												"from": 543,
+												"to": 544
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 549,
+										"to": 564,
+										"children": [
+											{
+												"name": "let",
+												"from": 549,
+												"to": 552
+											},
+											{
+												"name": "_",
+												"from": 553,
+												"to": 554
+											},
+											{
+												"name": "=",
+												"from": 555,
+												"to": 556
+											},
+											{
+												"name": "Identifier",
+												"from": 557,
+												"to": 563
+											},
+											{
+												"name": ";",
+												"from": 563,
+												"to": 564
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 569,
+										"to": 583,
+										"children": [
+											{
+												"name": "let",
+												"from": 569,
+												"to": 572
+											},
+											{
+												"name": "_",
+												"from": 573,
+												"to": 574
+											},
+											{
+												"name": "=",
+												"from": 575,
+												"to": 576
+											},
+											{
+												"name": "Identifier",
+												"from": 577,
+												"to": 582
+											},
+											{
+												"name": ";",
+												"from": 582,
+												"to": 583
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 588,
+										"to": 605,
+										"children": [
+											{
+												"name": "let",
+												"from": 588,
+												"to": 591
+											},
+											{
+												"name": "_",
+												"from": 592,
+												"to": 593
+											},
+											{
+												"name": "=",
+												"from": 594,
+												"to": 595
+											},
+											{
+												"name": "Identifier",
+												"from": 596,
+												"to": 604
+											},
+											{
+												"name": ";",
+												"from": 604,
+												"to": 605
+											}
+										]
+									},
+									{
+										"name": "MacroInvocation",
+										"from": 610,
+										"to": 627,
+										"children": [
+											{
+												"name": "Identifier",
+												"from": 610,
+												"to": 614
+											},
+											{
+												"name": "!",
+												"from": 614,
+												"to": 615
+											},
+											{
+												"name": "ParenthesizedTokens",
+												"from": 615,
+												"to": 626,
+												"children": [
+													{
+														"name": "(",
+														"from": 615,
+														"to": 616
+													},
+													{
+														"name": "Identifier",
+														"from": 616,
+														"to": 621
+													},
+													{
+														"name": "Identifier",
+														"from": 622,
+														"to": 625
+													},
+													{
+														"name": ")",
+														"from": 625,
+														"to": 626
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 626,
+												"to": 627
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 628,
+										"to": 629
 									}
 								]
 							}

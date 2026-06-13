@@ -17,6 +17,12 @@ name = "literalTokens"
 rust_path = "crate::tokens::LITERALS"
 
 [[binding]]
+kind = "external-tokenizer"
+source = "./identifier"
+name = "rustIdentifiers"
+rust_path = "crate::identifier::TOKENIZER"
+
+[[binding]]
 kind = "property-source"
 source = "./highlight"
 name = "rustHighlighting"

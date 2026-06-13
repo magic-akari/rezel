@@ -53,6 +53,7 @@ narrowing the common parser surface.
 | `rezel-lang-go`     | Go 1.26 syntax calibrated against Lezer and the Go parser/public AST.    | Contextual semicolon handling, typed CST, private syntax views, owned AST, and optional highlighting.                                  |
 | `rezel-lang-java`   | Java SE 26 syntax calibrated against Lezer and javac.                    | Unicode-escape lexical translation, typed CST, private syntax views, compiler-tree-aligned owned AST, and optional highlighting.       |
 | `rezel-lang-python` | Python 3.14 syntax calibrated against Lezer and CPython.                 | Indentation and string tokenizers, strict syntax validation, complete typed CST, CPython-aligned owned AST, and optional highlighting. |
+| `rezel-lang-rust`   | Rust 1.95.0 Edition 2024 syntax calibrated against Lezer and rustc.      | Unicode 17 identifiers, strict lexical/syntax validation, partial typed CST, and optional highlighting.                                |
 
 Version details and package APIs belong in each language's README and generated
 Rust documentation.

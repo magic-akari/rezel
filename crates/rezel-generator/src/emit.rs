@@ -619,6 +619,7 @@ fn is_rust_keyword(name: &str) -> bool {
             | "box"
             | "do"
             | "final"
+            | "gen"
             | "macro"
             | "override"
             | "priv"
@@ -628,4 +629,17 @@ fn is_rust_keyword(name: &str) -> bool {
             | "yield"
             | "try"
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rust_2024_keywords_are_escaped_in_generated_identifiers() {
+        let mut used = BTreeSet::new();
+
+        assert_eq!(rust_identifier("gen", &mut used).to_string(), "_gen");
+        assert_eq!(rust_identifier("_gen", &mut used).to_string(), "_gen_1");
+    }
 }

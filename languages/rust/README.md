@@ -6,11 +6,14 @@ The package starts from the pinned `@lezer/rust` 1.0.2 grammar and preserves
 its CST and recovery behavior as a bootstrap baseline. The first maintained
 Rust 1.95.0 / Edition 2024 delta adds let-else statements, let chains,
 `if let` match guards, async closures, and inline const blocks.
+The maintained lexical layer uses Rust 1.95's Unicode 17 identifier profile
+and covers raw identifiers and lifetimes, C and raw C strings, literal escape
+and radix validation, and Edition 2024 reserved guards and prefixes.
 
 The parser does not yet claim complete Rust 1.95.0 language coverage. In
-particular, modern literals and identifiers, unsafe extern items, precise
-capturing bounds, raw borrows, and Edition 2024 reserved syntax remain to be
-aligned.
+particular, unsafe extern items, precise capturing bounds, raw borrows,
+source-file BOM and shebang removal, and the remaining grammar audit still
+need to be aligned.
 
 ## Parsing
 
@@ -31,8 +34,9 @@ assert_eq!(tree.to_string(), strict_tree.to_string());
 ```
 
 The parser accepts UTF-8 Rust strings and reports original UTF-8 byte offsets.
-The lexical layer currently mirrors the pinned Lezer tokenizer behavior and
-does not yet implement the complete Rust 1.95 lexical contract.
+Identifiers and lifetimes follow Unicode 17 `XID_Start` / `XID_Continue`.
+Recovering mode preserves editor CSTs for invalid literal contents; strict
+mode additionally enforces Rust's literal and reserved-token rules.
 
 Maintained fixtures are checked against the pinned Rust 1.95.0 compiler in
 Edition 2024 mode. The rustc snapshot is an acceptance oracle because stable

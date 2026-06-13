@@ -1,15 +1,14 @@
 #![forbid(unsafe_code)]
 #![doc = include_str!("../README.md")]
 
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
 
 use rezel_common::{
-    NodePropSource, ParseError, ParseErrorKind, ParseRequest, PartialParse, TextSize, Tree,
+    Input, NodePropSource, ParseError, ParseErrorKind, ParseRequest, PartialParse, TextRange,
+    TextSize, Tree,
 };
 use rezel_lr::LRParser;
 
-#[cfg(feature = "highlight")]
-use rezel_common::TextRange;
 #[cfg(feature = "highlight")]
 pub use rezel_highlight::HighlightSpan;
 #[cfg(feature = "highlight")]
@@ -17,6 +16,7 @@ use rezel_highlight::TagSet;
 
 #[rustfmt::skip]
 mod generated;
+mod identifier;
 mod syntax;
 mod tokens;
 #[rustfmt::skip]
@@ -28,11 +28,15 @@ pub mod terms;
 pub use rezel_common::TypedNode;
 pub use typed::*;
 
+/// Unicode version used for Rust identifiers and lifetimes.
+pub const UNICODE_VERSION: &str = identifier::UNICODE_VERSION;
+
 /// Rust parser with strict syntax validation.
 pub type RustParser = LRParser;
 
 struct RustValidatedParse {
     inner: Box<dyn PartialParse>,
+    input: Option<Arc<dyn Input>>,
 }
 
 impl PartialParse for RustValidatedParse {
@@ -40,7 +44,11 @@ impl PartialParse for RustValidatedParse {
         let Some(tree) = self.inner.advance()? else {
             return Ok(None);
         };
-        syntax::validate_syntax(&tree).map_err(|error| {
+        let source = self.input.as_ref().map(|input| {
+            let range = TextRange::new(TextSize::from(0), input.len());
+            input.read(range)
+        });
+        syntax::validate_syntax(&tree, source.as_deref()).map_err(|error| {
             ParseError::new(
                 ParseErrorKind::Syntax,
                 Some(error.position()),
@@ -86,12 +94,18 @@ fn create_rust_parse(
     parser: &LRParser,
     request: ParseRequest,
 ) -> Result<Box<dyn PartialParse>, ParseError> {
+    let full_source = matches!(
+        request.selected_ranges(),
+        [range]
+            if range.start() == TextSize::from(0) && range.end() == request.input().len()
+    );
     let strict = parser.is_strict();
+    let input = (strict && full_source).then(|| Arc::clone(request.input()));
     let inner = parser.create_lr_parse(request)?;
     if !strict {
         return Ok(inner);
     }
-    Ok(Box::new(RustValidatedParse { inner }))
+    Ok(Box::new(RustValidatedParse { inner, input }))
 }
 
 fn rust_highlighting() -> NodePropSource {
@@ -113,7 +127,10 @@ fn rust_highlighting() -> NodePropSource {
                 TagSet::from(tags.control_keyword),
             ),
             ("as in ref", TagSet::from(tags.operator_keyword)),
-            ("where _ crate super dyn", TagSet::from(tags.keyword)),
+            (
+                "where _ crate super dyn abstract become box do final gen macro override priv try typeof unsized virtual yield",
+                TagSet::from(tags.keyword),
+            ),
             ("self", TagSet::from(tags.self_)),
             ("String", TagSet::from(tags.string)),
             ("Char", TagSet::from(tags.character)),

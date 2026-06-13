@@ -5,11 +5,11 @@
 #[derive(zerocopy::FromBytes, zerocopy::Immutable)]
 struct GeneratedTables {
     states: [u32; 7440usize],
-    state_data: [u16; 16460usize],
-    goto: [u16; 8763usize],
-    token_states: [rezel_lr::TokenState; 134usize],
-    token_accepts: [rezel_lr::TokenAccept; 276usize],
-    token_edges: [rezel_lr::TokenEdge; 1568usize],
+    state_data: [u16; 16414usize],
+    goto: [u16; 8778usize],
+    token_states: [rezel_lr::TokenState; 128usize],
+    token_accepts: [rezel_lr::TokenAccept; 254usize],
+    token_edges: [rezel_lr::TokenEdge; 1363usize],
     token_eof: [rezel_lr::TokenEof; 0usize],
     dynamic_precedences: [i16; 0usize],
 }
@@ -37,127 +37,169 @@ fn specialize_0(
 ) -> Option<rezel_lr::SpecializedToken> {
     match value {
         "_" => {
-            Some(rezel_lr::SpecializedToken::new(101u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(115u16, rezel_lr::Specialize::Replace))
+        }
+        "abstract" => {
+            Some(rezel_lr::SpecializedToken::new(99u16, rezel_lr::Specialize::Replace))
         }
         "as" => {
-            Some(rezel_lr::SpecializedToken::new(126u16, rezel_lr::Specialize::Replace))
-        }
-        "async" => {
-            Some(rezel_lr::SpecializedToken::new(54u16, rezel_lr::Specialize::Replace))
-        }
-        "await" => {
-            Some(rezel_lr::SpecializedToken::new(133u16, rezel_lr::Specialize::Replace))
-        }
-        "break" => {
-            Some(rezel_lr::SpecializedToken::new(137u16, rezel_lr::Specialize::Replace))
-        }
-        "const" => {
-            Some(rezel_lr::SpecializedToken::new(48u16, rezel_lr::Specialize::Replace))
-        }
-        "continue" => {
             Some(rezel_lr::SpecializedToken::new(140u16, rezel_lr::Specialize::Replace))
         }
-        "crate" => {
-            Some(rezel_lr::SpecializedToken::new(17u16, rezel_lr::Specialize::Replace))
-        }
-        "default" => {
-            Some(rezel_lr::SpecializedToken::new(199u16, rezel_lr::Specialize::Extend))
-        }
-        "dyn" => {
-            Some(rezel_lr::SpecializedToken::new(240u16, rezel_lr::Specialize::Replace))
-        }
-        "else" => {
-            Some(rezel_lr::SpecializedToken::new(102u16, rezel_lr::Specialize::Replace))
-        }
-        "enum" => {
-            Some(rezel_lr::SpecializedToken::new(193u16, rezel_lr::Specialize::Replace))
-        }
-        "extern" => {
-            Some(rezel_lr::SpecializedToken::new(173u16, rezel_lr::Specialize::Replace))
-        }
-        "false" => {
-            Some(rezel_lr::SpecializedToken::new(36u16, rezel_lr::Specialize::Replace))
-        }
-        "fn" => {
-            Some(rezel_lr::SpecializedToken::new(200u16, rezel_lr::Specialize::Replace))
-        }
-        "for" => {
-            Some(rezel_lr::SpecializedToken::new(162u16, rezel_lr::Specialize::Replace))
-        }
-        "if" => {
-            Some(rezel_lr::SpecializedToken::new(58u16, rezel_lr::Specialize::Replace))
-        }
-        "impl" => {
-            Some(rezel_lr::SpecializedToken::new(23u16, rezel_lr::Specialize::Replace))
-        }
-        "in" => {
-            Some(rezel_lr::SpecializedToken::new(46u16, rezel_lr::Specialize::Replace))
-        }
-        "let" => {
-            Some(rezel_lr::SpecializedToken::new(61u16, rezel_lr::Specialize::Replace))
-        }
-        "loop" => {
-            Some(rezel_lr::SpecializedToken::new(160u16, rezel_lr::Specialize::Replace))
-        }
-        "macro_rules" => {
-            Some(rezel_lr::SpecializedToken::new(165u16, rezel_lr::Specialize::Extend))
-        }
-        "match" => {
-            Some(rezel_lr::SpecializedToken::new(104u16, rezel_lr::Specialize::Replace))
-        }
-        "mod" => {
-            Some(rezel_lr::SpecializedToken::new(169u16, rezel_lr::Specialize::Replace))
-        }
-        "move" => {
+        "async" => {
             Some(rezel_lr::SpecializedToken::new(55u16, rezel_lr::Specialize::Replace))
         }
+        "await" => {
+            Some(rezel_lr::SpecializedToken::new(147u16, rezel_lr::Specialize::Replace))
+        }
+        "become" => {
+            Some(rezel_lr::SpecializedToken::new(100u16, rezel_lr::Specialize::Replace))
+        }
+        "box" => {
+            Some(rezel_lr::SpecializedToken::new(101u16, rezel_lr::Specialize::Replace))
+        }
+        "break" => {
+            Some(rezel_lr::SpecializedToken::new(151u16, rezel_lr::Specialize::Replace))
+        }
+        "const" => {
+            Some(rezel_lr::SpecializedToken::new(49u16, rezel_lr::Specialize::Replace))
+        }
+        "continue" => {
+            Some(rezel_lr::SpecializedToken::new(154u16, rezel_lr::Specialize::Replace))
+        }
+        "crate" => {
+            Some(rezel_lr::SpecializedToken::new(18u16, rezel_lr::Specialize::Replace))
+        }
+        "default" => {
+            Some(rezel_lr::SpecializedToken::new(213u16, rezel_lr::Specialize::Extend))
+        }
+        "do" => {
+            Some(rezel_lr::SpecializedToken::new(102u16, rezel_lr::Specialize::Replace))
+        }
+        "dyn" => {
+            Some(rezel_lr::SpecializedToken::new(254u16, rezel_lr::Specialize::Replace))
+        }
+        "else" => {
+            Some(rezel_lr::SpecializedToken::new(116u16, rezel_lr::Specialize::Replace))
+        }
+        "enum" => {
+            Some(rezel_lr::SpecializedToken::new(207u16, rezel_lr::Specialize::Replace))
+        }
+        "extern" => {
+            Some(rezel_lr::SpecializedToken::new(187u16, rezel_lr::Specialize::Replace))
+        }
+        "false" => {
+            Some(rezel_lr::SpecializedToken::new(37u16, rezel_lr::Specialize::Replace))
+        }
+        "final" => {
+            Some(rezel_lr::SpecializedToken::new(103u16, rezel_lr::Specialize::Replace))
+        }
+        "fn" => {
+            Some(rezel_lr::SpecializedToken::new(214u16, rezel_lr::Specialize::Replace))
+        }
+        "for" => {
+            Some(rezel_lr::SpecializedToken::new(176u16, rezel_lr::Specialize::Replace))
+        }
+        "gen" => {
+            Some(rezel_lr::SpecializedToken::new(104u16, rezel_lr::Specialize::Replace))
+        }
+        "if" => {
+            Some(rezel_lr::SpecializedToken::new(59u16, rezel_lr::Specialize::Replace))
+        }
+        "impl" => {
+            Some(rezel_lr::SpecializedToken::new(24u16, rezel_lr::Specialize::Replace))
+        }
+        "in" => {
+            Some(rezel_lr::SpecializedToken::new(47u16, rezel_lr::Specialize::Replace))
+        }
+        "let" => {
+            Some(rezel_lr::SpecializedToken::new(62u16, rezel_lr::Specialize::Replace))
+        }
+        "loop" => {
+            Some(rezel_lr::SpecializedToken::new(174u16, rezel_lr::Specialize::Replace))
+        }
+        "macro" => {
+            Some(rezel_lr::SpecializedToken::new(105u16, rezel_lr::Specialize::Replace))
+        }
+        "macro_rules" => {
+            Some(rezel_lr::SpecializedToken::new(179u16, rezel_lr::Specialize::Extend))
+        }
+        "match" => {
+            Some(rezel_lr::SpecializedToken::new(118u16, rezel_lr::Specialize::Replace))
+        }
+        "mod" => {
+            Some(rezel_lr::SpecializedToken::new(183u16, rezel_lr::Specialize::Replace))
+        }
+        "move" => {
+            Some(rezel_lr::SpecializedToken::new(56u16, rezel_lr::Specialize::Replace))
+        }
         "mut" => {
-            Some(rezel_lr::SpecializedToken::new(74u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(75u16, rezel_lr::Specialize::Replace))
+        }
+        "override" => {
+            Some(rezel_lr::SpecializedToken::new(106u16, rezel_lr::Specialize::Replace))
+        }
+        "priv" => {
+            Some(rezel_lr::SpecializedToken::new(107u16, rezel_lr::Specialize::Replace))
         }
         "pub" => {
-            Some(rezel_lr::SpecializedToken::new(44u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(45u16, rezel_lr::Specialize::Replace))
         }
         "ref" => {
-            Some(rezel_lr::SpecializedToken::new(73u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(74u16, rezel_lr::Specialize::Replace))
         }
         "return" => {
-            Some(rezel_lr::SpecializedToken::new(128u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(142u16, rezel_lr::Specialize::Replace))
         }
         "self" => {
-            Some(rezel_lr::SpecializedToken::new(14u16, rezel_lr::Specialize::Replace))
-        }
-        "static" => {
-            Some(rezel_lr::SpecializedToken::new(221u16, rezel_lr::Specialize::Replace))
-        }
-        "struct" => {
-            Some(rezel_lr::SpecializedToken::new(175u16, rezel_lr::Specialize::Replace))
-        }
-        "super" => {
             Some(rezel_lr::SpecializedToken::new(16u16, rezel_lr::Specialize::Replace))
         }
+        "static" => {
+            Some(rezel_lr::SpecializedToken::new(235u16, rezel_lr::Specialize::Replace))
+        }
+        "struct" => {
+            Some(rezel_lr::SpecializedToken::new(189u16, rezel_lr::Specialize::Replace))
+        }
+        "super" => {
+            Some(rezel_lr::SpecializedToken::new(17u16, rezel_lr::Specialize::Replace))
+        }
         "trait" => {
-            Some(rezel_lr::SpecializedToken::new(208u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(222u16, rezel_lr::Specialize::Replace))
         }
         "true" => {
-            Some(rezel_lr::SpecializedToken::new(36u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(37u16, rezel_lr::Specialize::Replace))
+        }
+        "try" => {
+            Some(rezel_lr::SpecializedToken::new(108u16, rezel_lr::Specialize::Replace))
         }
         "type" => {
-            Some(rezel_lr::SpecializedToken::new(197u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(211u16, rezel_lr::Specialize::Replace))
+        }
+        "typeof" => {
+            Some(rezel_lr::SpecializedToken::new(109u16, rezel_lr::Specialize::Replace))
         }
         "union" => {
-            Some(rezel_lr::SpecializedToken::new(191u16, rezel_lr::Specialize::Extend))
+            Some(rezel_lr::SpecializedToken::new(205u16, rezel_lr::Specialize::Extend))
         }
         "unsafe" => {
-            Some(rezel_lr::SpecializedToken::new(52u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(53u16, rezel_lr::Specialize::Replace))
+        }
+        "unsized" => {
+            Some(rezel_lr::SpecializedToken::new(110u16, rezel_lr::Specialize::Replace))
         }
         "use" => {
-            Some(rezel_lr::SpecializedToken::new(212u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(226u16, rezel_lr::Specialize::Replace))
+        }
+        "virtual" => {
+            Some(rezel_lr::SpecializedToken::new(111u16, rezel_lr::Specialize::Replace))
         }
         "where" => {
-            Some(rezel_lr::SpecializedToken::new(184u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(198u16, rezel_lr::Specialize::Replace))
         }
         "while" => {
-            Some(rezel_lr::SpecializedToken::new(158u16, rezel_lr::Specialize::Replace))
+            Some(rezel_lr::SpecializedToken::new(172u16, rezel_lr::Specialize::Replace))
+        }
+        "yield" => {
+            Some(rezel_lr::SpecializedToken::new(112u16, rezel_lr::Specialize::Replace))
         }
         _ => None,
     }
@@ -233,103 +275,14 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     6u16,
-                    "LineComment",
-                    rezel_common::NodeFlags::SKIPPED,
+                    "Identifier",
+                    rezel_common::NodeFlags::default(),
                 );
-                let property = rezel_common::isolate_prop();
-                let value = property
-                    .deserialize("")
-                    .expect("generated grammar property must deserialize");
-                node = node.with_prop(property, value);
                 nodes.push(node);
             }
             {
                 let mut node = rezel_common::NodeType::new(
                     7u16,
-                    "BlockComment",
-                    rezel_common::NodeFlags::SKIPPED,
-                );
-                let property = rezel_common::isolate_prop();
-                let value = property
-                    .deserialize("")
-                    .expect("generated grammar property must deserialize");
-                node = node.with_prop(property, value);
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    8u16,
-                    "SourceFile",
-                    rezel_common::NodeFlags::TOP,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    9u16,
-                    "]",
-                    rezel_common::NodeFlags::default(),
-                );
-                let property = rezel_common::opened_by_prop();
-                let value = property
-                    .deserialize("[")
-                    .expect("generated grammar property must deserialize");
-                node = node.with_prop(property, value);
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    10u16,
-                    "InnerAttribute",
-                    rezel_common::NodeFlags::default(),
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    11u16,
-                    "!",
-                    rezel_common::NodeFlags::default(),
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    12u16,
-                    "[",
-                    rezel_common::NodeFlags::default(),
-                );
-                let property = rezel_common::closed_by_prop();
-                let value = property
-                    .deserialize("]")
-                    .expect("generated grammar property must deserialize");
-                node = node.with_prop(property, value);
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    13u16,
-                    "MetaItem",
-                    rezel_common::NodeFlags::default(),
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    14u16,
-                    "self",
-                    rezel_common::NodeFlags::default(),
-                );
-                let property = rezel_common::group_prop();
-                let value = property
-                    .deserialize("Expression")
-                    .expect("generated grammar property must deserialize");
-                node = node.with_prop(property, value);
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    15u16,
                     "Metavariable",
                     rezel_common::NodeFlags::default(),
                 );
@@ -342,8 +295,92 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
+                    8u16,
+                    "LineComment",
+                    rezel_common::NodeFlags::SKIPPED,
+                );
+                let property = rezel_common::isolate_prop();
+                let value = property
+                    .deserialize("")
+                    .expect("generated grammar property must deserialize");
+                node = node.with_prop(property, value);
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    9u16,
+                    "BlockComment",
+                    rezel_common::NodeFlags::SKIPPED,
+                );
+                let property = rezel_common::isolate_prop();
+                let value = property
+                    .deserialize("")
+                    .expect("generated grammar property must deserialize");
+                node = node.with_prop(property, value);
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    10u16,
+                    "SourceFile",
+                    rezel_common::NodeFlags::TOP,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    11u16,
+                    "]",
+                    rezel_common::NodeFlags::default(),
+                );
+                let property = rezel_common::opened_by_prop();
+                let value = property
+                    .deserialize("[")
+                    .expect("generated grammar property must deserialize");
+                node = node.with_prop(property, value);
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    12u16,
+                    "InnerAttribute",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    13u16,
+                    "!",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    14u16,
+                    "[",
+                    rezel_common::NodeFlags::default(),
+                );
+                let property = rezel_common::closed_by_prop();
+                let value = property
+                    .deserialize("]")
+                    .expect("generated grammar property must deserialize");
+                node = node.with_prop(property, value);
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    15u16,
+                    "MetaItem",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
                     16u16,
-                    "super",
+                    "self",
                     rezel_common::NodeFlags::default(),
                 );
                 let property = rezel_common::group_prop();
@@ -356,7 +393,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     17u16,
-                    "crate",
+                    "super",
                     rezel_common::NodeFlags::default(),
                 );
                 let property = rezel_common::group_prop();
@@ -369,7 +406,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     18u16,
-                    "Identifier",
+                    "crate",
                     rezel_common::NodeFlags::default(),
                 );
                 let property = rezel_common::group_prop();
@@ -382,7 +419,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     19u16,
-                    "ScopedIdentifier",
+                    "Identifier",
                     rezel_common::NodeFlags::default(),
                 );
                 let property = rezel_common::group_prop();
@@ -395,6 +432,19 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     20u16,
+                    "ScopedIdentifier",
+                    rezel_common::NodeFlags::default(),
+                );
+                let property = rezel_common::group_prop();
+                let value = property
+                    .deserialize("Expression")
+                    .expect("generated grammar property must deserialize");
+                node = node.with_prop(property, value);
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    21u16,
                     "::",
                     rezel_common::NodeFlags::default(),
                 );
@@ -402,7 +452,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    21u16,
+                    22u16,
                     "QualifiedScope",
                     rezel_common::NodeFlags::default(),
                 );
@@ -410,7 +460,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    22u16,
+                    23u16,
                     "AbstractType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -423,7 +473,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    23u16,
+                    24u16,
                     "impl",
                     rezel_common::NodeFlags::default(),
                 );
@@ -431,7 +481,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    24u16,
+                    25u16,
                     "SelfType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -444,7 +494,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    25u16,
+                    26u16,
                     "MetaType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -457,7 +507,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    26u16,
+                    27u16,
                     "TypeIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -470,7 +520,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    27u16,
+                    28u16,
                     "ScopedTypeIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -483,7 +533,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    28u16,
+                    29u16,
                     "ScopeIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -491,7 +541,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    29u16,
+                    30u16,
                     "TypeArgList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -499,7 +549,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    30u16,
+                    31u16,
                     "TypeBinding",
                     rezel_common::NodeFlags::default(),
                 );
@@ -507,7 +557,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    31u16,
+                    32u16,
                     "=",
                     rezel_common::NodeFlags::default(),
                 );
@@ -515,7 +565,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    32u16,
+                    33u16,
                     "Lifetime",
                     rezel_common::NodeFlags::default(),
                 );
@@ -523,7 +573,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    33u16,
+                    34u16,
                     "String",
                     rezel_common::NodeFlags::default(),
                 );
@@ -541,7 +591,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    34u16,
+                    35u16,
                     "Escape",
                     rezel_common::NodeFlags::default(),
                 );
@@ -549,7 +599,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    35u16,
+                    36u16,
                     "Char",
                     rezel_common::NodeFlags::default(),
                 );
@@ -562,7 +612,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    36u16,
+                    37u16,
                     "Boolean",
                     rezel_common::NodeFlags::default(),
                 );
@@ -575,7 +625,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    37u16,
+                    38u16,
                     "Integer",
                     rezel_common::NodeFlags::default(),
                 );
@@ -588,7 +638,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    38u16,
+                    39u16,
                     "}",
                     rezel_common::NodeFlags::default(),
                 );
@@ -601,7 +651,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    39u16,
+                    40u16,
                     "{",
                     rezel_common::NodeFlags::default(),
                 );
@@ -614,7 +664,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    40u16,
+                    41u16,
                     "Block",
                     rezel_common::NodeFlags::default(),
                 );
@@ -627,7 +677,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    41u16,
+                    42u16,
                     ";",
                     rezel_common::NodeFlags::default(),
                 );
@@ -635,7 +685,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    42u16,
+                    43u16,
                     "ConstItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -648,7 +698,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    43u16,
+                    44u16,
                     "Vis",
                     rezel_common::NodeFlags::default(),
                 );
@@ -656,7 +706,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    44u16,
+                    45u16,
                     "pub",
                     rezel_common::NodeFlags::default(),
                 );
@@ -664,7 +714,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    45u16,
+                    46u16,
                     "(",
                     rezel_common::NodeFlags::default(),
                 );
@@ -677,7 +727,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    46u16,
+                    47u16,
                     "in",
                     rezel_common::NodeFlags::default(),
                 );
@@ -685,7 +735,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    47u16,
+                    48u16,
                     ")",
                     rezel_common::NodeFlags::default(),
                 );
@@ -698,7 +748,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    48u16,
+                    49u16,
                     "const",
                     rezel_common::NodeFlags::default(),
                 );
@@ -706,7 +756,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    49u16,
+                    50u16,
                     "BoundIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -719,7 +769,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    50u16,
+                    51u16,
                     ":",
                     rezel_common::NodeFlags::default(),
                 );
@@ -727,7 +777,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    51u16,
+                    52u16,
                     "UnsafeBlock",
                     rezel_common::NodeFlags::default(),
                 );
@@ -740,7 +790,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    52u16,
+                    53u16,
                     "unsafe",
                     rezel_common::NodeFlags::default(),
                 );
@@ -748,7 +798,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    53u16,
+                    54u16,
                     "AsyncBlock",
                     rezel_common::NodeFlags::default(),
                 );
@@ -761,7 +811,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    54u16,
+                    55u16,
                     "async",
                     rezel_common::NodeFlags::default(),
                 );
@@ -769,7 +819,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    55u16,
+                    56u16,
                     "move",
                     rezel_common::NodeFlags::default(),
                 );
@@ -777,7 +827,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    56u16,
+                    57u16,
                     "ConstBlock",
                     rezel_common::NodeFlags::default(),
                 );
@@ -790,7 +840,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    57u16,
+                    58u16,
                     "IfExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -803,7 +853,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    58u16,
+                    59u16,
                     "if",
                     rezel_common::NodeFlags::default(),
                 );
@@ -811,7 +861,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    59u16,
+                    60u16,
                     "LetChain",
                     rezel_common::NodeFlags::default(),
                 );
@@ -819,7 +869,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    60u16,
+                    61u16,
                     "LetCondition",
                     rezel_common::NodeFlags::default(),
                 );
@@ -827,7 +877,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    61u16,
+                    62u16,
                     "let",
                     rezel_common::NodeFlags::default(),
                 );
@@ -835,7 +885,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    62u16,
+                    63u16,
                     "LiteralPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -848,7 +898,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    63u16,
+                    64u16,
                     "ArithOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -856,7 +906,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    64u16,
+                    65u16,
                     "MetaPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -869,7 +919,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    65u16,
+                    66u16,
                     "SelfPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -882,7 +932,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    66u16,
+                    67u16,
                     "ScopedIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -895,7 +945,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    67u16,
+                    68u16,
                     "TuplePattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -908,7 +958,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    68u16,
+                    69u16,
                     "ScopedTypeIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -916,7 +966,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    69u16,
+                    70u16,
                     ",",
                     rezel_common::NodeFlags::default(),
                 );
@@ -924,7 +974,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    70u16,
+                    71u16,
                     "StructPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -937,7 +987,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    71u16,
+                    72u16,
                     "FieldPatternList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -945,7 +995,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    72u16,
+                    73u16,
                     "FieldPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -953,7 +1003,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    73u16,
+                    74u16,
                     "ref",
                     rezel_common::NodeFlags::default(),
                 );
@@ -961,7 +1011,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    74u16,
+                    75u16,
                     "mut",
                     rezel_common::NodeFlags::default(),
                 );
@@ -969,7 +1019,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    75u16,
+                    76u16,
                     "FieldIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -977,7 +1027,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    76u16,
+                    77u16,
                     "..",
                     rezel_common::NodeFlags::default(),
                 );
@@ -990,7 +1040,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    77u16,
+                    78u16,
                     "RefPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1003,7 +1053,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    78u16,
+                    79u16,
                     "SlicePattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1016,7 +1066,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    79u16,
+                    80u16,
                     "CapturedPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1029,7 +1079,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    80u16,
+                    81u16,
                     "ReferencePattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1042,7 +1092,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    81u16,
+                    82u16,
                     "&",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1050,7 +1100,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    82u16,
+                    83u16,
                     "MutPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1063,7 +1113,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    83u16,
+                    84u16,
                     "RangePattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1076,7 +1126,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    84u16,
+                    85u16,
                     "...",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1084,7 +1134,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    85u16,
+                    86u16,
                     "OrPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1097,7 +1147,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    86u16,
+                    87u16,
                     "MacroPattern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1110,7 +1160,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    87u16,
+                    88u16,
                     "ParenthesizedTokens",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1118,16 +1168,8 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    88u16,
-                    "TokenBinding",
-                    rezel_common::NodeFlags::default(),
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
                     89u16,
-                    "Identifier",
+                    "TokenBinding",
                     rezel_common::NodeFlags::default(),
                 );
                 nodes.push(node);
@@ -1207,7 +1249,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     99u16,
-                    "BracketedTokens",
+                    "abstract",
                     rezel_common::NodeFlags::default(),
                 );
                 nodes.push(node);
@@ -1215,7 +1257,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     100u16,
-                    "BracedTokens",
+                    "become",
                     rezel_common::NodeFlags::default(),
                 );
                 nodes.push(node);
@@ -1223,6 +1265,118 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     101u16,
+                    "box",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    102u16,
+                    "do",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    103u16,
+                    "final",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    104u16,
+                    "gen",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    105u16,
+                    "macro",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    106u16,
+                    "override",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    107u16,
+                    "priv",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    108u16,
+                    "try",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    109u16,
+                    "typeof",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    110u16,
+                    "unsized",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    111u16,
+                    "virtual",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    112u16,
+                    "yield",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    113u16,
+                    "BracketedTokens",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    114u16,
+                    "BracedTokens",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    115u16,
                     "_",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1235,7 +1389,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    102u16,
+                    116u16,
                     "else",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1243,7 +1397,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    103u16,
+                    117u16,
                     "MatchExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1256,7 +1410,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    104u16,
+                    118u16,
                     "match",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1264,7 +1418,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    105u16,
+                    119u16,
                     "MatchBlock",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1272,7 +1426,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    106u16,
+                    120u16,
                     "MatchArm",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1280,7 +1434,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    107u16,
+                    121u16,
                     "Attribute",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1288,7 +1442,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    108u16,
+                    122u16,
                     "Guard",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1296,7 +1450,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    109u16,
+                    123u16,
                     "UnaryExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1309,7 +1463,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    110u16,
+                    124u16,
                     "ArithOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1317,7 +1471,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    111u16,
+                    125u16,
                     "DerefOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1325,7 +1479,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    112u16,
+                    126u16,
                     "LogicOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1333,7 +1487,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    113u16,
+                    127u16,
                     "ReferenceExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1346,7 +1500,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    114u16,
+                    128u16,
                     "TryExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1359,7 +1513,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    115u16,
+                    129u16,
                     "BinaryExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1372,7 +1526,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    116u16,
+                    130u16,
                     "ArithOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1380,7 +1534,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    117u16,
+                    131u16,
                     "ArithOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1388,7 +1542,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    118u16,
+                    132u16,
                     "BitOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1396,7 +1550,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    119u16,
+                    133u16,
                     "BitOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1404,7 +1558,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    120u16,
+                    134u16,
                     "BitOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1412,7 +1566,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    121u16,
+                    135u16,
                     "BitOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1420,7 +1574,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    122u16,
+                    136u16,
                     "LogicOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1428,7 +1582,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    123u16,
+                    137u16,
                     "LogicOp",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1436,7 +1590,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    124u16,
+                    138u16,
                     "AssignmentExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1449,7 +1603,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    125u16,
+                    139u16,
                     "TypeCastExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1462,7 +1616,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    126u16,
+                    140u16,
                     "as",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1470,7 +1624,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    127u16,
+                    141u16,
                     "ReturnExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1483,7 +1637,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    128u16,
+                    142u16,
                     "return",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1491,7 +1645,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    129u16,
+                    143u16,
                     "RangeExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1504,7 +1658,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    130u16,
+                    144u16,
                     "CallExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1517,7 +1671,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    131u16,
+                    145u16,
                     "ArgList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1525,7 +1679,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    132u16,
+                    146u16,
                     "AwaitExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1538,7 +1692,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    133u16,
+                    147u16,
                     "await",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1546,7 +1700,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    134u16,
+                    148u16,
                     "FieldExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1559,7 +1713,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    135u16,
+                    149u16,
                     "GenericFunction",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1572,7 +1726,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    136u16,
+                    150u16,
                     "BreakExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1585,7 +1739,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    137u16,
+                    151u16,
                     "break",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1593,7 +1747,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    138u16,
+                    152u16,
                     "LoopLabel",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1601,7 +1755,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    139u16,
+                    153u16,
                     "ContinueExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1614,7 +1768,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    140u16,
+                    154u16,
                     "continue",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1622,7 +1776,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    141u16,
+                    155u16,
                     "IndexExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1635,7 +1789,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    142u16,
+                    156u16,
                     "ArrayExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1648,7 +1802,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    143u16,
+                    157u16,
                     "TupleExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1661,7 +1815,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    144u16,
+                    158u16,
                     "MacroInvocation",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1674,7 +1828,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    145u16,
+                    159u16,
                     "UnitExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1687,7 +1841,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    146u16,
+                    160u16,
                     "ClosureExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1700,7 +1854,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    147u16,
+                    161u16,
                     "ParamList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1708,7 +1862,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    148u16,
+                    162u16,
                     "Parameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1716,7 +1870,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    149u16,
+                    163u16,
                     "Parameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1724,7 +1878,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    150u16,
+                    164u16,
                     "ParenthesizedExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1737,7 +1891,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    151u16,
+                    165u16,
                     "StructExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1750,7 +1904,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    152u16,
+                    166u16,
                     "FieldInitializerList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1758,7 +1912,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    153u16,
+                    167u16,
                     "ShorthandFieldInitializer",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1766,7 +1920,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    154u16,
+                    168u16,
                     "FieldInitializer",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1774,7 +1928,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    155u16,
+                    169u16,
                     "BaseFieldInitializer",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1782,7 +1936,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    156u16,
+                    170u16,
                     "MatchArm",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1790,7 +1944,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    157u16,
+                    171u16,
                     "WhileExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1803,7 +1957,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    158u16,
+                    172u16,
                     "while",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1811,7 +1965,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    159u16,
+                    173u16,
                     "LoopExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1824,7 +1978,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    160u16,
+                    174u16,
                     "loop",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1832,7 +1986,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    161u16,
+                    175u16,
                     "ForExpression",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1845,7 +1999,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    162u16,
+                    176u16,
                     "for",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1853,7 +2007,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    163u16,
+                    177u16,
                     "MacroInvocation",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1866,7 +2020,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    164u16,
+                    178u16,
                     "MacroDefinition",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1879,7 +2033,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    165u16,
+                    179u16,
                     "macro_rules",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1887,7 +2041,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    166u16,
+                    180u16,
                     "MacroRule",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1895,7 +2049,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    167u16,
+                    181u16,
                     "EmptyStatement",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1908,7 +2062,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    168u16,
+                    182u16,
                     "ModItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1921,7 +2075,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    169u16,
+                    183u16,
                     "mod",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1929,7 +2083,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    170u16,
+                    184u16,
                     "DeclarationList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1937,7 +2091,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    171u16,
+                    185u16,
                     "AttributeItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1950,7 +2104,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    172u16,
+                    186u16,
                     "ForeignModItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1963,7 +2117,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    173u16,
+                    187u16,
                     "extern",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1971,7 +2125,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    174u16,
+                    188u16,
                     "StructItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1984,7 +2138,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    175u16,
+                    189u16,
                     "struct",
                     rezel_common::NodeFlags::default(),
                 );
@@ -1992,7 +2146,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    176u16,
+                    190u16,
                     "TypeParamList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2000,7 +2154,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    177u16,
+                    191u16,
                     "ConstrainedTypeParameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2008,7 +2162,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    178u16,
+                    192u16,
                     "TraitBounds",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2016,7 +2170,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    179u16,
+                    193u16,
                     "HigherRankedTraitBound",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2024,7 +2178,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    180u16,
+                    194u16,
                     "RemovedTraitBound",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2032,7 +2186,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    181u16,
+                    195u16,
                     "OptionalTypeParameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2040,7 +2194,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    182u16,
+                    196u16,
                     "ConstParameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2048,7 +2202,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    183u16,
+                    197u16,
                     "WhereClause",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2056,7 +2210,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    184u16,
+                    198u16,
                     "where",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2064,7 +2218,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    185u16,
+                    199u16,
                     "LifetimeClause",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2072,7 +2226,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    186u16,
+                    200u16,
                     "TypeBoundClause",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2080,7 +2234,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    187u16,
+                    201u16,
                     "FieldDeclarationList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2088,7 +2242,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    188u16,
+                    202u16,
                     "FieldDeclaration",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2096,7 +2250,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    189u16,
+                    203u16,
                     "OrderedFieldDeclarationList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2104,7 +2258,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    190u16,
+                    204u16,
                     "UnionItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2117,7 +2271,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    191u16,
+                    205u16,
                     "union",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2125,7 +2279,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    192u16,
+                    206u16,
                     "EnumItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2138,7 +2292,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    193u16,
+                    207u16,
                     "enum",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2146,7 +2300,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    194u16,
+                    208u16,
                     "EnumVariantList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2154,7 +2308,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    195u16,
+                    209u16,
                     "EnumVariant",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2162,7 +2316,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    196u16,
+                    210u16,
                     "TypeItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2175,7 +2329,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    197u16,
+                    211u16,
                     "type",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2183,7 +2337,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    198u16,
+                    212u16,
                     "FunctionItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2196,7 +2350,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    199u16,
+                    213u16,
                     "default",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2204,7 +2358,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    200u16,
+                    214u16,
                     "fn",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2212,7 +2366,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    201u16,
+                    215u16,
                     "ParamList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2220,7 +2374,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    202u16,
+                    216u16,
                     "Parameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2228,7 +2382,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    203u16,
+                    217u16,
                     "SelfParameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2236,7 +2390,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    204u16,
+                    218u16,
                     "VariadicParameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2244,7 +2398,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    205u16,
+                    219u16,
                     "VariadicParameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2252,7 +2406,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    206u16,
+                    220u16,
                     "ImplItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2265,7 +2419,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    207u16,
+                    221u16,
                     "TraitItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2278,7 +2432,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    208u16,
+                    222u16,
                     "trait",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2286,7 +2440,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    209u16,
+                    223u16,
                     "AssociatedType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2299,7 +2453,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    210u16,
+                    224u16,
                     "LetDeclaration",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2312,7 +2466,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    211u16,
+                    225u16,
                     "UseDeclaration",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2325,7 +2479,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    212u16,
+                    226u16,
                     "use",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2333,7 +2487,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    213u16,
+                    227u16,
                     "ScopedIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2341,7 +2495,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    214u16,
+                    228u16,
                     "UseAsClause",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2349,7 +2503,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    215u16,
+                    229u16,
                     "ScopedIdentifier",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2357,7 +2511,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    216u16,
+                    230u16,
                     "UseList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2365,7 +2519,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    217u16,
+                    231u16,
                     "ScopedUseList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2373,7 +2527,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    218u16,
+                    232u16,
                     "UseWildcard",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2381,7 +2535,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    219u16,
+                    233u16,
                     "ExternCrateDeclaration",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2394,7 +2548,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    220u16,
+                    234u16,
                     "StaticItem",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2407,7 +2561,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    221u16,
+                    235u16,
                     "static",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2415,7 +2569,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    222u16,
+                    236u16,
                     "ExpressionStatement",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2428,7 +2582,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    223u16,
+                    237u16,
                     "ExpressionStatement",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2436,7 +2590,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    224u16,
+                    238u16,
                     "GenericType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2449,7 +2603,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    225u16,
+                    239u16,
                     "FunctionType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2462,7 +2616,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    226u16,
+                    240u16,
                     "ForLifetimes",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2470,7 +2624,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    227u16,
+                    241u16,
                     "ParamList",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2478,7 +2632,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    228u16,
+                    242u16,
                     "VariadicParameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2486,7 +2640,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    229u16,
+                    243u16,
                     "Parameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2494,7 +2648,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    230u16,
+                    244u16,
                     "VariadicParameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2502,7 +2656,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    231u16,
+                    245u16,
                     "Parameter",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2510,7 +2664,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    232u16,
+                    246u16,
                     "ReferenceType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2523,7 +2677,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    233u16,
+                    247u16,
                     "PointerType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2536,7 +2690,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    234u16,
+                    248u16,
                     "TupleType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2549,7 +2703,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    235u16,
+                    249u16,
                     "UnitType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2562,7 +2716,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    236u16,
+                    250u16,
                     "ArrayType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2575,7 +2729,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    237u16,
+                    251u16,
                     "MacroInvocation",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2588,7 +2742,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    238u16,
+                    252u16,
                     "EmptyType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2601,7 +2755,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    239u16,
+                    253u16,
                     "DynamicType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2614,7 +2768,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    240u16,
+                    254u16,
                     "dyn",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2622,7 +2776,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    241u16,
+                    255u16,
                     "BoundedType",
                     rezel_common::NodeFlags::default(),
                 );
@@ -2635,121 +2789,9 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             }
             {
                 let mut node = rezel_common::NodeType::new(
-                    242u16,
-                    "",
-                    rezel_common::NodeFlags::SKIPPED | rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    243u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    244u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    245u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    246u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    247u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    248u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    249u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    250u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    251u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    252u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    253u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    254u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    255u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
                     256u16,
                     "",
-                    rezel_common::NodeFlags::ANONYMOUS,
+                    rezel_common::NodeFlags::SKIPPED | rezel_common::NodeFlags::ANONYMOUS,
                 );
                 nodes.push(node);
             }
@@ -2897,6 +2939,118 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 );
                 nodes.push(node);
             }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    275u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    276u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    277u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    278u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    279u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    280u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    281u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    282u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    283u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    284u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    285u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    286u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    287u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    288u16,
+                    "",
+                    rezel_common::NodeFlags::ANONYMOUS,
+                );
+                nodes.push(node);
+            }
             std::sync::Arc::new(
                 rezel_common::NodeSet::new(nodes).extend(&[crate::rust_highlighting()]),
             )
@@ -2906,22 +3060,22 @@ static TOKENIZERS: &[rezel_lr::Tokenizer] = &[
     rezel_lr::Tokenizer::External(&crate::tokens::CLOSURE_PARAM),
     rezel_lr::Tokenizer::External(&crate::tokens::TYPE_PARAMETER_DELIMITERS),
     rezel_lr::Tokenizer::External(&crate::tokens::LITERALS),
+    rezel_lr::Tokenizer::External(&crate::identifier::TOKENIZER),
     rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(0u8)),
     rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(1u8)),
     rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(2u8)),
-    rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(3u8)),
 ];
 static TOP_RULES: &[rezel_lr::TopRule] = &[
     rezel_lr::TopRule {
         name: "SourceFile",
         state: 0u16,
-        term: 8u16,
+        term: 10u16,
     },
 ];
 static DIALECTS: &[rezel_lr::DialectSpec] = &[];
 static SPECIALIZERS: &[rezel_lr::SpecializerSpec] = &[
     rezel_lr::SpecializerSpec {
-        term: 284u16,
+        term: 290u16,
         get: specialize_0,
     },
 ];
@@ -2932,90 +3086,90 @@ static TERM_NAMES: &[(u16, &str)] = &[
     (3u16, "tpClose"),
     (4u16, "RawString"),
     (5u16, "Float"),
-    (6u16, "LineComment"),
-    (7u16, "BlockComment"),
-    (8u16, "@top"),
-    (9u16, "\"]\""),
-    (10u16, "InnerAttribute"),
-    (11u16, "\"!\""),
-    (12u16, "\"[\""),
-    (13u16, "MetaItem"),
-    (14u16, "identifier/\"self\""),
-    (15u16, "Metavariable"),
-    (16u16, "identifier/\"super\""),
-    (17u16, "identifier/\"crate\""),
-    (18u16, "Identifier"),
-    (19u16, "ScopedIdentifier"),
-    (20u16, "\"::\""),
-    (21u16, "QualifiedScope"),
-    (22u16, "AbstractType"),
-    (23u16, "identifier/\"impl\""),
-    (24u16, "SelfType"),
-    (25u16, "MetaType"),
-    (26u16, "TypeIdentifier"),
-    (27u16, "ScopedTypeIdentifier"),
-    (28u16, "ScopeIdentifier"),
-    (29u16, "TypeArgList"),
-    (30u16, "TypeBinding"),
-    (31u16, "\"=\""),
-    (32u16, "Lifetime"),
-    (33u16, "String"),
-    (34u16, "Escape"),
-    (35u16, "Char"),
-    (36u16, "identifier/\"true\""),
-    (37u16, "Integer"),
-    (38u16, "\"}\""),
-    (39u16, "\"{\""),
-    (40u16, "Block"),
-    (41u16, "\";\""),
-    (42u16, "ConstItem"),
-    (43u16, "Vis"),
-    (44u16, "identifier/\"pub\""),
-    (45u16, "\"(\""),
-    (46u16, "identifier/\"in\""),
-    (47u16, "\")\""),
-    (48u16, "identifier/\"const\""),
-    (49u16, "BoundIdentifier"),
-    (50u16, "\":\""),
-    (51u16, "UnsafeBlock"),
-    (52u16, "identifier/\"unsafe\""),
-    (53u16, "AsyncBlock"),
-    (54u16, "identifier/\"async\""),
-    (55u16, "identifier/\"move\""),
-    (56u16, "ConstBlock"),
-    (57u16, "IfExpression"),
-    (58u16, "identifier/\"if\""),
-    (59u16, "LetChain"),
-    (60u16, "LetCondition"),
-    (61u16, "identifier/\"let\""),
-    (62u16, "LiteralPattern"),
-    (63u16, "ArithOp"),
-    (64u16, "MetaPattern"),
-    (65u16, "SelfPattern"),
-    (66u16, "ScopedIdentifier-1"),
-    (67u16, "TuplePattern"),
-    (68u16, "ScopedTypeIdentifier-1"),
-    (69u16, "\",\""),
-    (70u16, "StructPattern"),
-    (71u16, "FieldPatternList"),
-    (72u16, "FieldPattern"),
-    (73u16, "identifier/\"ref\""),
-    (74u16, "identifier/\"mut\""),
-    (75u16, "FieldIdentifier"),
-    (76u16, "\"..\""),
-    (77u16, "RefPattern"),
-    (78u16, "SlicePattern"),
-    (79u16, "CapturedPattern"),
-    (80u16, "ReferencePattern"),
-    (81u16, "\"&\""),
-    (82u16, "MutPattern"),
-    (83u16, "RangePattern"),
-    (84u16, "\"...\""),
-    (85u16, "OrPattern"),
-    (86u16, "MacroPattern"),
-    (87u16, "ParenthesizedTokens"),
-    (88u16, "TokenBinding"),
-    (89u16, "tokenIdentifier"),
+    (6u16, "tokenIdentifier"),
+    (7u16, "Metavariable"),
+    (8u16, "LineComment"),
+    (9u16, "BlockComment"),
+    (10u16, "@top"),
+    (11u16, "\"]\""),
+    (12u16, "InnerAttribute"),
+    (13u16, "\"!\""),
+    (14u16, "\"[\""),
+    (15u16, "MetaItem"),
+    (16u16, "identifier/\"self\""),
+    (17u16, "identifier/\"super\""),
+    (18u16, "identifier/\"crate\""),
+    (19u16, "Identifier"),
+    (20u16, "ScopedIdentifier"),
+    (21u16, "\"::\""),
+    (22u16, "QualifiedScope"),
+    (23u16, "AbstractType"),
+    (24u16, "identifier/\"impl\""),
+    (25u16, "SelfType"),
+    (26u16, "MetaType"),
+    (27u16, "TypeIdentifier"),
+    (28u16, "ScopedTypeIdentifier"),
+    (29u16, "ScopeIdentifier"),
+    (30u16, "TypeArgList"),
+    (31u16, "TypeBinding"),
+    (32u16, "\"=\""),
+    (33u16, "Lifetime"),
+    (34u16, "String"),
+    (35u16, "Escape"),
+    (36u16, "Char"),
+    (37u16, "identifier/\"true\""),
+    (38u16, "Integer"),
+    (39u16, "\"}\""),
+    (40u16, "\"{\""),
+    (41u16, "Block"),
+    (42u16, "\";\""),
+    (43u16, "ConstItem"),
+    (44u16, "Vis"),
+    (45u16, "identifier/\"pub\""),
+    (46u16, "\"(\""),
+    (47u16, "identifier/\"in\""),
+    (48u16, "\")\""),
+    (49u16, "identifier/\"const\""),
+    (50u16, "BoundIdentifier"),
+    (51u16, "\":\""),
+    (52u16, "UnsafeBlock"),
+    (53u16, "identifier/\"unsafe\""),
+    (54u16, "AsyncBlock"),
+    (55u16, "identifier/\"async\""),
+    (56u16, "identifier/\"move\""),
+    (57u16, "ConstBlock"),
+    (58u16, "IfExpression"),
+    (59u16, "identifier/\"if\""),
+    (60u16, "LetChain"),
+    (61u16, "LetCondition"),
+    (62u16, "identifier/\"let\""),
+    (63u16, "LiteralPattern"),
+    (64u16, "ArithOp"),
+    (65u16, "MetaPattern"),
+    (66u16, "SelfPattern"),
+    (67u16, "ScopedIdentifier-1"),
+    (68u16, "TuplePattern"),
+    (69u16, "ScopedTypeIdentifier-1"),
+    (70u16, "\",\""),
+    (71u16, "StructPattern"),
+    (72u16, "FieldPatternList"),
+    (73u16, "FieldPattern"),
+    (74u16, "identifier/\"ref\""),
+    (75u16, "identifier/\"mut\""),
+    (76u16, "FieldIdentifier"),
+    (77u16, "\"..\""),
+    (78u16, "RefPattern"),
+    (79u16, "SlicePattern"),
+    (80u16, "CapturedPattern"),
+    (81u16, "ReferencePattern"),
+    (82u16, "\"&\""),
+    (83u16, "MutPattern"),
+    (84u16, "RangePattern"),
+    (85u16, "\"...\""),
+    (86u16, "OrPattern"),
+    (87u16, "MacroPattern"),
+    (88u16, "ParenthesizedTokens"),
+    (89u16, "TokenBinding"),
     (90u16, "TokenRepetition"),
     (91u16, "ArithOp-1"),
     (92u16, "BitOp"),
@@ -3025,289 +3179,304 @@ static TERM_NAMES: &[(u16, &str)] = &[
     (96u16, "\"->\""),
     (97u16, "\"=>\""),
     (98u16, "ArithOp-2"),
-    (99u16, "BracketedTokens"),
-    (100u16, "BracedTokens"),
-    (101u16, "identifier/\"_\""),
-    (102u16, "identifier/\"else\""),
-    (103u16, "MatchExpression"),
-    (104u16, "identifier/\"match\""),
-    (105u16, "MatchBlock"),
-    (106u16, "MatchArm<\",\">"),
-    (107u16, "Attribute"),
-    (108u16, "Guard"),
-    (109u16, "UnaryExpression"),
-    (110u16, "ArithOp-3"),
-    (111u16, "DerefOp"),
-    (112u16, "LogicOp-1"),
-    (113u16, "ReferenceExpression"),
-    (114u16, "TryExpression"),
-    (115u16, "BinaryExpression"),
-    (116u16, "ArithOp-4"),
-    (117u16, "ArithOp-5"),
-    (118u16, "BitOp-1"),
-    (119u16, "BitOp-2"),
-    (120u16, "BitOp-3"),
-    (121u16, "BitOp-4"),
-    (122u16, "LogicOp-2"),
-    (123u16, "LogicOp-3"),
-    (124u16, "AssignmentExpression"),
-    (125u16, "TypeCastExpression"),
-    (126u16, "identifier/\"as\""),
-    (127u16, "ReturnExpression"),
-    (128u16, "identifier/\"return\""),
-    (129u16, "RangeExpression"),
-    (130u16, "CallExpression"),
-    (131u16, "ArgList"),
-    (132u16, "AwaitExpression"),
-    (133u16, "identifier/\"await\""),
-    (134u16, "FieldExpression"),
-    (135u16, "GenericFunction"),
-    (136u16, "BreakExpression"),
-    (137u16, "identifier/\"break\""),
-    (138u16, "LoopLabel"),
-    (139u16, "ContinueExpression"),
-    (140u16, "identifier/\"continue\""),
-    (141u16, "IndexExpression"),
-    (142u16, "ArrayExpression"),
-    (143u16, "TupleExpression"),
-    (144u16, "MacroInvocation"),
-    (145u16, "UnitExpression"),
-    (146u16, "ClosureExpression"),
-    (147u16, "ClosureParamList"),
-    (148u16, "Parameter"),
-    (149u16, "Parameter-1"),
-    (150u16, "ParenthesizedExpression"),
-    (151u16, "StructExpression"),
-    (152u16, "FieldInitializerList"),
-    (153u16, "ShorthandFieldInitializer"),
-    (154u16, "FieldInitializer"),
-    (155u16, "BaseFieldInitializer"),
-    (156u16, "MatchArm<\",\"?>"),
-    (157u16, "WhileExpression"),
-    (158u16, "identifier/\"while\""),
-    (159u16, "LoopExpression"),
-    (160u16, "identifier/\"loop\""),
-    (161u16, "ForExpression"),
-    (162u16, "identifier/\"for\""),
-    (163u16, "MacroInvocationSemi"),
-    (164u16, "MacroDefinition"),
-    (165u16, "identifier/\"macro_rules\""),
-    (166u16, "MacroRule"),
-    (167u16, "EmptyStatement"),
-    (168u16, "ModItem"),
-    (169u16, "identifier/\"mod\""),
-    (170u16, "DeclarationList"),
-    (171u16, "AttributeItem"),
-    (172u16, "ForeignModItem"),
-    (173u16, "identifier/\"extern\""),
-    (174u16, "StructItem"),
-    (175u16, "identifier/\"struct\""),
-    (176u16, "TypeParamList"),
-    (177u16, "ConstrainedTypeParameter"),
-    (178u16, "TraitBounds"),
-    (179u16, "HigherRankedTraitBound"),
-    (180u16, "RemovedTraitBound"),
-    (181u16, "OptionalTypeParameter"),
-    (182u16, "ConstParameter"),
-    (183u16, "WhereClause"),
-    (184u16, "identifier/\"where\""),
-    (185u16, "LifetimeClause"),
-    (186u16, "TypeBoundClause"),
-    (187u16, "FieldDeclarationList"),
-    (188u16, "FieldDeclaration"),
-    (189u16, "OrderedFieldDeclarationList"),
-    (190u16, "UnionItem"),
-    (191u16, "identifier/\"union\""),
-    (192u16, "EnumItem"),
-    (193u16, "identifier/\"enum\""),
-    (194u16, "EnumVariantList"),
-    (195u16, "EnumVariant"),
-    (196u16, "TypeItem"),
-    (197u16, "identifier/\"type\""),
-    (198u16, "FunctionItem"),
-    (199u16, "identifier/\"default\""),
-    (200u16, "identifier/\"fn\""),
-    (201u16, "ParamList"),
-    (202u16, "Parameter-2"),
-    (203u16, "SelfParameter"),
-    (204u16, "VariadicParameter"),
-    (205u16, "VariadicParameter-1"),
-    (206u16, "ImplItem"),
-    (207u16, "TraitItem"),
-    (208u16, "identifier/\"trait\""),
-    (209u16, "AssociatedType"),
-    (210u16, "LetDeclaration"),
-    (211u16, "UseDeclaration"),
-    (212u16, "identifier/\"use\""),
-    (213u16, "ScopedIdentifier-2"),
-    (214u16, "UseAsClause"),
-    (215u16, "ScopedIdentifier-3"),
-    (216u16, "UseList"),
-    (217u16, "ScopedUseList"),
-    (218u16, "UseWildcard"),
-    (219u16, "ExternCrateDeclaration"),
-    (220u16, "StaticItem"),
-    (221u16, "identifier/\"static\""),
-    (222u16, "ExpressionStatement"),
-    (223u16, "ExpressionStatement-1"),
-    (224u16, "GenericType"),
-    (225u16, "FunctionType"),
-    (226u16, "ForLifetimes"),
-    (227u16, "ParamList-1"),
-    (228u16, "VariadicParameter-2"),
-    (229u16, "Parameter-3"),
-    (230u16, "VariadicParameter-3"),
-    (231u16, "Parameter-4"),
-    (232u16, "ReferenceType"),
-    (233u16, "PointerType"),
-    (234u16, "TupleType"),
-    (235u16, "UnitType"),
-    (236u16, "ArrayType"),
-    (237u16, "MacroInvocation-1"),
-    (238u16, "EmptyType"),
-    (239u16, "DynamicType"),
-    (240u16, "identifier/\"dyn\""),
-    (241u16, "BoundedType"),
-    (242u16, "BlockComment | blockCommentContent+"),
-    (243u16, "InnerAttribute+"),
-    (244u16, "typePathSegment+"),
-    (245u16, "Escape | stringContent+"),
-    (246u16, "statement+"),
-    (247u16, "pathSegment+"),
-    (248u16, "\",\" pattern?+"),
-    (249u16, "\",\" FieldPattern | \"..\"?+"),
-    (250u16, "tokenTree+"),
-    (251u16, "\"&&\" letChainOperand+"),
-    (252u16, "MatchArm<\",\">+"),
-    (253u16, "Attribute+"),
-    (254u16, "\",\" Attribute* expression?+"),
-    (255u16, "\",\" expression?+"),
-    (256u16, "\",\" Parameter?+"),
-    (257u16, "\",\" fieldInitializer?+"),
-    (258u16, "MacroRule \";\"+"),
-    (259u16, "declarationStatement | AttributeItem+"),
-    (260u16, "\"+\" type | Lifetime | HigherRankedTraitBound | RemovedTraitBound+"),
-    (261u16, "\",\" typeParam?+"),
-    (262u16, "\"+\" Lifetime+"),
-    (263u16, "\",\" LifetimeClause | TypeBoundClause?+"),
-    (264u16, "\",\" Attribute* FieldDeclaration?+"),
-    (265u16, "\",\" Attribute* Vis? type?+"),
-    (266u16, "\",\" Attribute* EnumVariant?+"),
-    (267u16, "functionModifier+"),
+    (99u16, "identifier/\"abstract\""),
+    (100u16, "identifier/\"become\""),
+    (101u16, "identifier/\"box\""),
+    (102u16, "identifier/\"do\""),
+    (103u16, "identifier/\"final\""),
+    (104u16, "identifier/\"gen\""),
+    (105u16, "identifier/\"macro\""),
+    (106u16, "identifier/\"override\""),
+    (107u16, "identifier/\"priv\""),
+    (108u16, "identifier/\"try\""),
+    (109u16, "identifier/\"typeof\""),
+    (110u16, "identifier/\"unsized\""),
+    (111u16, "identifier/\"virtual\""),
+    (112u16, "identifier/\"yield\""),
+    (113u16, "BracketedTokens"),
+    (114u16, "BracedTokens"),
+    (115u16, "identifier/\"_\""),
+    (116u16, "identifier/\"else\""),
+    (117u16, "MatchExpression"),
+    (118u16, "identifier/\"match\""),
+    (119u16, "MatchBlock"),
+    (120u16, "MatchArm<\",\">"),
+    (121u16, "Attribute"),
+    (122u16, "Guard"),
+    (123u16, "UnaryExpression"),
+    (124u16, "ArithOp-3"),
+    (125u16, "DerefOp"),
+    (126u16, "LogicOp-1"),
+    (127u16, "ReferenceExpression"),
+    (128u16, "TryExpression"),
+    (129u16, "BinaryExpression"),
+    (130u16, "ArithOp-4"),
+    (131u16, "ArithOp-5"),
+    (132u16, "BitOp-1"),
+    (133u16, "BitOp-2"),
+    (134u16, "BitOp-3"),
+    (135u16, "BitOp-4"),
+    (136u16, "LogicOp-2"),
+    (137u16, "LogicOp-3"),
+    (138u16, "AssignmentExpression"),
+    (139u16, "TypeCastExpression"),
+    (140u16, "identifier/\"as\""),
+    (141u16, "ReturnExpression"),
+    (142u16, "identifier/\"return\""),
+    (143u16, "RangeExpression"),
+    (144u16, "CallExpression"),
+    (145u16, "ArgList"),
+    (146u16, "AwaitExpression"),
+    (147u16, "identifier/\"await\""),
+    (148u16, "FieldExpression"),
+    (149u16, "GenericFunction"),
+    (150u16, "BreakExpression"),
+    (151u16, "identifier/\"break\""),
+    (152u16, "LoopLabel"),
+    (153u16, "ContinueExpression"),
+    (154u16, "identifier/\"continue\""),
+    (155u16, "IndexExpression"),
+    (156u16, "ArrayExpression"),
+    (157u16, "TupleExpression"),
+    (158u16, "MacroInvocation"),
+    (159u16, "UnitExpression"),
+    (160u16, "ClosureExpression"),
+    (161u16, "ClosureParamList"),
+    (162u16, "Parameter"),
+    (163u16, "Parameter-1"),
+    (164u16, "ParenthesizedExpression"),
+    (165u16, "StructExpression"),
+    (166u16, "FieldInitializerList"),
+    (167u16, "ShorthandFieldInitializer"),
+    (168u16, "FieldInitializer"),
+    (169u16, "BaseFieldInitializer"),
+    (170u16, "MatchArm<\",\"?>"),
+    (171u16, "WhileExpression"),
+    (172u16, "identifier/\"while\""),
+    (173u16, "LoopExpression"),
+    (174u16, "identifier/\"loop\""),
+    (175u16, "ForExpression"),
+    (176u16, "identifier/\"for\""),
+    (177u16, "MacroInvocationSemi"),
+    (178u16, "MacroDefinition"),
+    (179u16, "identifier/\"macro_rules\""),
+    (180u16, "MacroRule"),
+    (181u16, "EmptyStatement"),
+    (182u16, "ModItem"),
+    (183u16, "identifier/\"mod\""),
+    (184u16, "DeclarationList"),
+    (185u16, "AttributeItem"),
+    (186u16, "ForeignModItem"),
+    (187u16, "identifier/\"extern\""),
+    (188u16, "StructItem"),
+    (189u16, "identifier/\"struct\""),
+    (190u16, "TypeParamList"),
+    (191u16, "ConstrainedTypeParameter"),
+    (192u16, "TraitBounds"),
+    (193u16, "HigherRankedTraitBound"),
+    (194u16, "RemovedTraitBound"),
+    (195u16, "OptionalTypeParameter"),
+    (196u16, "ConstParameter"),
+    (197u16, "WhereClause"),
+    (198u16, "identifier/\"where\""),
+    (199u16, "LifetimeClause"),
+    (200u16, "TypeBoundClause"),
+    (201u16, "FieldDeclarationList"),
+    (202u16, "FieldDeclaration"),
+    (203u16, "OrderedFieldDeclarationList"),
+    (204u16, "UnionItem"),
+    (205u16, "identifier/\"union\""),
+    (206u16, "EnumItem"),
+    (207u16, "identifier/\"enum\""),
+    (208u16, "EnumVariantList"),
+    (209u16, "EnumVariant"),
+    (210u16, "TypeItem"),
+    (211u16, "identifier/\"type\""),
+    (212u16, "FunctionItem"),
+    (213u16, "identifier/\"default\""),
+    (214u16, "identifier/\"fn\""),
+    (215u16, "ParamList"),
+    (216u16, "Parameter-2"),
+    (217u16, "SelfParameter"),
+    (218u16, "VariadicParameter"),
+    (219u16, "VariadicParameter-1"),
+    (220u16, "ImplItem"),
+    (221u16, "TraitItem"),
+    (222u16, "identifier/\"trait\""),
+    (223u16, "AssociatedType"),
+    (224u16, "LetDeclaration"),
+    (225u16, "UseDeclaration"),
+    (226u16, "identifier/\"use\""),
+    (227u16, "ScopedIdentifier-2"),
+    (228u16, "UseAsClause"),
+    (229u16, "ScopedIdentifier-3"),
+    (230u16, "UseList"),
+    (231u16, "ScopedUseList"),
+    (232u16, "UseWildcard"),
+    (233u16, "ExternCrateDeclaration"),
+    (234u16, "StaticItem"),
+    (235u16, "identifier/\"static\""),
+    (236u16, "ExpressionStatement"),
+    (237u16, "ExpressionStatement-1"),
+    (238u16, "GenericType"),
+    (239u16, "FunctionType"),
+    (240u16, "ForLifetimes"),
+    (241u16, "ParamList-1"),
+    (242u16, "VariadicParameter-2"),
+    (243u16, "Parameter-3"),
+    (244u16, "VariadicParameter-3"),
+    (245u16, "Parameter-4"),
+    (246u16, "ReferenceType"),
+    (247u16, "PointerType"),
+    (248u16, "TupleType"),
+    (249u16, "UnitType"),
+    (250u16, "ArrayType"),
+    (251u16, "MacroInvocation-1"),
+    (252u16, "EmptyType"),
+    (253u16, "DynamicType"),
+    (254u16, "identifier/\"dyn\""),
+    (255u16, "BoundedType"),
+    (256u16, "BlockComment | blockCommentContent+"),
+    (257u16, "InnerAttribute+"),
+    (258u16, "typePathSegment+"),
+    (259u16, "Escape | stringContent+"),
+    (260u16, "statement+"),
+    (261u16, "pathSegment+"),
+    (262u16, "\",\" pattern?+"),
+    (263u16, "\",\" FieldPattern | \"..\"?+"),
+    (264u16, "tokenTree+"),
+    (265u16, "\"&&\" letChainOperand+"),
+    (266u16, "MatchArm<\",\">+"),
+    (267u16, "Attribute+"),
+    (268u16, "\",\" Attribute* expression?+"),
+    (269u16, "\",\" expression?+"),
+    (270u16, "\",\" Parameter?+"),
+    (271u16, "\",\" fieldInitializer?+"),
+    (272u16, "MacroRule \";\"+"),
+    (273u16, "declarationStatement | AttributeItem+"),
+    (274u16, "\"+\" type | Lifetime | HigherRankedTraitBound | RemovedTraitBound+"),
+    (275u16, "\",\" typeParam?+"),
+    (276u16, "\"+\" Lifetime+"),
+    (277u16, "\",\" LifetimeClause | TypeBoundClause?+"),
+    (278u16, "\",\" Attribute* FieldDeclaration?+"),
+    (279u16, "\",\" Attribute* Vis? type?+"),
+    (280u16, "\",\" Attribute* EnumVariant?+"),
+    (281u16, "functionModifier+"),
     (
-        268u16,
+        282u16,
         "\",\" Attribute* Parameter | SelfParameter | VariadicParameter | kw<\"_\">?+",
     ),
-    (269u16, "pathIdent<ScopeIdentifier> \"::\"+"),
-    (270u16, "\",\" useClause?+"),
-    (271u16, "\",\" type | TypeBinding | Lifetime | literal | Block?+"),
-    (272u16, "\",\" Lifetime?+"),
+    (283u16, "pathIdent<ScopeIdentifier> \"::\"+"),
+    (284u16, "\",\" useClause?+"),
+    (285u16, "\",\" type | TypeBinding | Lifetime | literal | Block?+"),
+    (286u16, "\",\" Lifetime?+"),
     (
-        273u16,
+        287u16,
         "\",\" Attribute* SelfParameter | VariadicParameter | kw<\"_\"> | Parameter?+",
     ),
-    (274u16, "\",\" type?+"),
-    (275u16, "␄"),
-    (276u16, "%mainskip-1"),
-    (277u16, "whitespace"),
-    (278u16, "\"/*\""),
-    (279u16, "blockCommentContent"),
-    (280u16, "blockCommentEnd"),
-    (281u16, "\"#\""),
-    (282u16, "path-1"),
-    (283u16, "pathIdent<Identifier>-1"),
-    (284u16, "identifier"),
-    (285u16, "type-1"),
-    (286u16, "typePath-1"),
-    (287u16, "typePathSegment-1"),
-    (288u16, "pathIdent<ScopeIdentifier>-1"),
-    (289u16, "commaSep1<type | TypeBinding | Lifetime | literal | Block>-1"),
-    (290u16, "quoteIdentifier"),
-    (291u16, "literal-1"),
-    (292u16, "stringEnd"),
-    (293u16, "stringStart"),
-    (294u16, "stringContent"),
-    (295u16, "\"'\""),
-    (296u16, "statement-1"),
-    (297u16, "declarationStatement-1"),
-    (298u16, "expression-1"),
-    (299u16, "blockExpression-1"),
-    (300u16, "cond-1"),
-    (301u16, "pattern-1"),
-    (302u16, "literalPattern-1"),
-    (303u16, "\"-\""),
-    (304u16, "patternPath-1"),
-    (305u16, "pathSegment-1"),
-    (306u16, "structName-1"),
-    (307u16, "pathIdent<TypeIdentifier>-1"),
-    (308u16, "commaSep<pattern>-1"),
-    (309u16, "commaSep1<pattern>-1"),
-    (310u16, "commaSep<FieldPattern | \"..\">-1"),
-    (311u16, "commaSep1<FieldPattern | \"..\">-1"),
-    (312u16, "\"@\""),
-    (313u16, "\"..=\""),
-    (314u16, "\"|\""),
-    (315u16, "macroInvocation-1"),
-    (316u16, "delimitedTokenTree-1"),
-    (317u16, "tokenTree-1"),
-    (318u16, "\"$\""),
-    (319u16, "separatorToken-1"),
-    (320u16, "\"/\""),
-    (321u16, "\"<<\""),
-    (322u16, "\">>\""),
-    (323u16, "\"^\""),
-    (324u16, "\"||\""),
-    (325u16, "\"&&\""),
-    (326u16, "\".\""),
-    (327u16, "\"+\""),
-    (328u16, "\"*\""),
-    (329u16, "\"?\""),
-    (330u16, "nonBlockExpression-1"),
-    (331u16, "\"%\""),
-    (332u16, "commaSep<Attribute* expression>-1"),
-    (333u16, "commaSep1<Attribute* expression>-1"),
-    (334u16, "commaSep1<expression>-1"),
-    (335u16, "commaSep<Parameter>-1"),
-    (336u16, "commaSep1<Parameter>-1"),
-    (337u16, "commaSep<fieldInitializer>-1"),
-    (338u16, "commaSep1<fieldInitializer>-1"),
-    (339u16, "fieldInitializer-1"),
-    (340u16, "externModifier-1"),
-    (341u16, "plusSep<type | Lifetime | HigherRankedTraitBound | RemovedTraitBound>-1"),
-    (342u16, "commaSep<LifetimeClause | TypeBoundClause>-1"),
-    (343u16, "commaSep1<LifetimeClause | TypeBoundClause>-1"),
-    (344u16, "plusSep<Lifetime>-1"),
-    (345u16, "commaSep<Attribute* FieldDeclaration>-1"),
-    (346u16, "commaSep1<Attribute* FieldDeclaration>-1"),
-    (347u16, "commaSep<Attribute* Vis? type>-1"),
-    (348u16, "commaSep1<Attribute* Vis? type>-1"),
-    (349u16, "commaSep<Attribute* EnumVariant>-1"),
-    (350u16, "commaSep1<Attribute* EnumVariant>-1"),
-    (351u16, "functionModifier-1"),
+    (288u16, "\",\" type?+"),
+    (289u16, "␄"),
+    (290u16, "identifier"),
+    (291u16, "quoteIdentifier"),
+    (292u16, "%mainskip-1"),
+    (293u16, "whitespace"),
+    (294u16, "\"/*\""),
+    (295u16, "blockCommentContent"),
+    (296u16, "blockCommentEnd"),
+    (297u16, "\"#\""),
+    (298u16, "path-1"),
+    (299u16, "pathIdent<Identifier>-1"),
+    (300u16, "type-1"),
+    (301u16, "typePath-1"),
+    (302u16, "typePathSegment-1"),
+    (303u16, "pathIdent<ScopeIdentifier>-1"),
+    (304u16, "commaSep1<type | TypeBinding | Lifetime | literal | Block>-1"),
+    (305u16, "literal-1"),
+    (306u16, "stringEnd"),
+    (307u16, "stringStart"),
+    (308u16, "stringContent"),
+    (309u16, "\"'\""),
+    (310u16, "statement-1"),
+    (311u16, "declarationStatement-1"),
+    (312u16, "expression-1"),
+    (313u16, "blockExpression-1"),
+    (314u16, "cond-1"),
+    (315u16, "pattern-1"),
+    (316u16, "literalPattern-1"),
+    (317u16, "\"-\""),
+    (318u16, "patternPath-1"),
+    (319u16, "pathSegment-1"),
+    (320u16, "structName-1"),
+    (321u16, "pathIdent<TypeIdentifier>-1"),
+    (322u16, "commaSep<pattern>-1"),
+    (323u16, "commaSep1<pattern>-1"),
+    (324u16, "commaSep<FieldPattern | \"..\">-1"),
+    (325u16, "commaSep1<FieldPattern | \"..\">-1"),
+    (326u16, "\"@\""),
+    (327u16, "\"..=\""),
+    (328u16, "\"|\""),
+    (329u16, "macroInvocation-1"),
+    (330u16, "delimitedTokenTree-1"),
+    (331u16, "tokenTree-1"),
+    (332u16, "\"$\""),
+    (333u16, "separatorToken-1"),
+    (334u16, "\"/\""),
+    (335u16, "\"<<\""),
+    (336u16, "\">>\""),
+    (337u16, "\"^\""),
+    (338u16, "\"||\""),
+    (339u16, "\"&&\""),
+    (340u16, "\".\""),
+    (341u16, "\"+\""),
+    (342u16, "\"*\""),
+    (343u16, "\"?\""),
+    (344u16, "reservedKeyword-1"),
+    (345u16, "nonBlockExpression-1"),
+    (346u16, "\"%\""),
+    (347u16, "commaSep<Attribute* expression>-1"),
+    (348u16, "commaSep1<Attribute* expression>-1"),
+    (349u16, "commaSep1<expression>-1"),
+    (350u16, "commaSep<Parameter>-1"),
+    (351u16, "commaSep1<Parameter>-1"),
+    (352u16, "commaSep<fieldInitializer>-1"),
+    (353u16, "commaSep1<fieldInitializer>-1"),
+    (354u16, "fieldInitializer-1"),
+    (355u16, "externModifier-1"),
+    (356u16, "plusSep<type | Lifetime | HigherRankedTraitBound | RemovedTraitBound>-1"),
+    (357u16, "commaSep<LifetimeClause | TypeBoundClause>-1"),
+    (358u16, "commaSep1<LifetimeClause | TypeBoundClause>-1"),
+    (359u16, "plusSep<Lifetime>-1"),
+    (360u16, "commaSep<Attribute* FieldDeclaration>-1"),
+    (361u16, "commaSep1<Attribute* FieldDeclaration>-1"),
+    (362u16, "commaSep<Attribute* Vis? type>-1"),
+    (363u16, "commaSep1<Attribute* Vis? type>-1"),
+    (364u16, "commaSep<Attribute* EnumVariant>-1"),
+    (365u16, "commaSep1<Attribute* EnumVariant>-1"),
+    (366u16, "functionModifier-1"),
     (
-        352u16,
+        367u16,
         "commaSep<Attribute* Parameter | SelfParameter | VariadicParameter | kw<\"_\">>-1",
     ),
     (
-        353u16,
+        368u16,
         "commaSep1<Attribute* Parameter | SelfParameter | VariadicParameter | kw<\"_\">>-1",
     ),
-    (354u16, "useClause-1"),
-    (355u16, "pathIdent<BoundIdentifier>-1"),
-    (356u16, "simplePath-1"),
-    (357u16, "commaSep<useClause>-1"),
-    (358u16, "commaSep1<useClause>-1"),
-    (359u16, "commaSep<Lifetime>-1"),
-    (360u16, "commaSep1<Lifetime>-1"),
+    (369u16, "useClause-1"),
+    (370u16, "pathIdent<BoundIdentifier>-1"),
+    (371u16, "simplePath-1"),
+    (372u16, "commaSep<useClause>-1"),
+    (373u16, "commaSep1<useClause>-1"),
+    (374u16, "commaSep<Lifetime>-1"),
+    (375u16, "commaSep1<Lifetime>-1"),
     (
-        361u16,
+        376u16,
         "commaSep<Attribute* SelfParameter | VariadicParameter | kw<\"_\"> | Parameter>-1",
     ),
     (
-        362u16,
+        377u16,
         "commaSep1<Attribute* SelfParameter | VariadicParameter | kw<\"_\"> | Parameter>-1",
     ),
-    (363u16, "commaSep1<type>-1"),
+    (378u16, "commaSep1<type>-1"),
 ];
 pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: &TABLES.states,
@@ -3316,9 +3485,9 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
-    max_term: 363u16,
-    min_repeat_term: 242u16,
-    token_precedence: 16448usize,
+    max_term: 378u16,
+    min_repeat_term: 256u16,
+    token_precedence: 16409usize,
     node_set,
     context: None,
     dialects: DIALECTS,

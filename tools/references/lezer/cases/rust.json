@@ -26,6 +26,10 @@
 			"source": "#![allow(dead_code)]\nasync fn modern(values: &[Option<i32>]) -> i32 {\n    let Some(Some(first)) = values.first() else { return 0; };\n    let mut iter = values.iter();\n    if let Some(Some(left)) = iter.next()\n        && let Some(Some(right)) = iter.next()\n        && left < right\n    {\n        let add = async |value: i32| -> i32 { value + const { 1 } };\n        return add(*left).await;\n    }\n    while let Some(Some(value)) = iter.next() && *value < 10 {\n        break;\n    }\n    match values.first() {\n        Some(value) if let Some(inner) = value && *inner > 0 => *inner,\n        _ => *first,\n    }\n}\n"
 		},
 		{
+			"id": "rust-1-95-edition-2024-lexical",
+			"source": "#![allow(dead_code, uncommon_codepoints, unused_variables)]\n\nmacro_rules! sink {\n    ($($token:tt)*) => {};\n}\n\nfn lexical<'r#type>(࢏value: &'r#type str) {\n    let 東京 = ࢏value;\n    let r#gen = 1usize;\n    let value2em = 1;\n    let _ = c\"æ\\xC3\\u{00E6}\";\n    let _ = cr##\"raw \\\" C\"##;\n    let _ = b\"ASCII\\xFF\";\n    let _ = br#\"ASCII only\"#;\n    let _ = '\\u{1F980}';\n    let _ = b'\\xFF';\n    let _ = 0b________1;\n    let _ = 0o__70_i16;\n    let _ = 0x01_f32;\n    let _ = 123_;\n    let _ = 2.;\n    let _ = 1e+__2f64;\n    let _ = 12E+99_f64;\n    let _ = 東京;\n    let _ = r#gen;\n    let _ = value2em;\n    sink!(r#let#foo);\n}\n"
+		},
+		{
 			"id": "unicode-and-comments",
 			"source": "fn unicode() {\n    let αβ = \"你好 😀\";\n    /* outer /* nested */ comment */\n    let _ = αβ;\n}\n"
 		}

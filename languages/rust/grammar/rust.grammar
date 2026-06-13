@@ -135,7 +135,25 @@ tokenTree {
   } |
   ArithOp { "*" | "+" } |
   "?" |
+  reservedKeyword |
   separatorToken
+}
+
+reservedKeyword {
+  kw<"abstract"> |
+  kw<"become"> |
+  kw<"box"> |
+  kw<"do"> |
+  kw<"final"> |
+  kw<"gen"> |
+  kw<"macro"> |
+  kw<"override"> |
+  kw<"priv"> |
+  kw<"try"> |
+  kw<"typeof"> |
+  kw<"unsized"> |
+  kw<"virtual"> |
+  kw<"yield">
 }
 
 separatorToken {
@@ -572,6 +590,13 @@ plusSep<expr> { expr (!plusSep "+" expr)* }
 
 @external tokens literalTokens from "./tokens" { RawString[isolate], Float }
 
+@external tokens rustIdentifiers from "./identifier" {
+  identifier
+  tokenIdentifier[@name=Identifier]
+  quoteIdentifier
+  Metavariable
+}
+
 @tokens {
   whitespace { $[ \t\r\n] }
 
@@ -606,20 +631,9 @@ plusSep<expr> { expr (!plusSep "+" expr)* }
 
   @precedence { blockCommentEnd, blockCommentContent }
 
-  stringStart { "b"? '"' }
+  stringStart { ("b" | "c")? '"' }
   stringContent { !["\\\n]* "\n" | !["\\\n]+ }
   stringEnd { '"' }
-
-  identBase { $[a-zA-Zα-ωΑ-Ωµ_] $[a-zA-Zα-ωΑ-Ωµ0-9_]* }
-  identifier { ("r#")? identBase }
-  tokenIdentifier[@name=Identifier] { identBase }
-  quoteIdentifier { "'" identBase }
-  Metavariable { "$" identBase }
-
-  @precedence { stringStart, Char, identifier }
-  @precedence { stringStart, Char, tokenIdentifier }
-  @precedence { Char, quoteIdentifier }
-  @precedence { Metavariable, "$" }
 
   "[" "]" "{" "}" "(" ")"
   ";" ":" "::" ","
