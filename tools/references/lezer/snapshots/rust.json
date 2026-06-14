@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/rust/grammar/rust.grammar",
-				"sha256": "9ebe6c7f93fd19db73fcbe99a0a4618e61903e7faed341c5cec918ba1b965ee0"
+				"sha256": "97b67647707fb414f36cbde212bcd65d14d7903e392d9a331566769d8ad6dbce"
 			}
 		}
 	},
@@ -572,7 +572,7 @@
 									},
 									{
 										"name": "FunctionItem",
-										"from": 231,
+										"from": 226,
 										"to": 285,
 										"children": [
 											{
@@ -1907,7 +1907,7 @@
 					},
 					{
 						"name": "FunctionItem",
-						"from": 118,
+						"from": 116,
 						"to": 171,
 						"children": [
 							{
@@ -4534,7 +4534,7 @@
 					},
 					{
 						"name": "FunctionItem",
-						"from": 111,
+						"from": 109,
 						"to": 629,
 						"children": [
 							{
@@ -5315,6 +5315,1664 @@
 										"name": "}",
 										"from": 628,
 										"to": 629
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "rust-1-95-edition-2024-modern-syntax",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 822,
+				"children": [
+					{
+						"name": "InnerAttribute",
+						"from": 0,
+						"to": 20,
+						"children": [
+							{
+								"name": "!",
+								"from": 1,
+								"to": 2
+							},
+							{
+								"name": "[",
+								"from": 2,
+								"to": 3
+							},
+							{
+								"name": "MetaItem",
+								"from": 3,
+								"to": 19,
+								"children": [
+									{
+										"name": "Identifier",
+										"from": 3,
+										"to": 8
+									},
+									{
+										"name": "ParenthesizedTokens",
+										"from": 8,
+										"to": 19,
+										"children": [
+											{
+												"name": "(",
+												"from": 8,
+												"to": 9
+											},
+											{
+												"name": "Identifier",
+												"from": 9,
+												"to": 18
+											},
+											{
+												"name": ")",
+												"from": 18,
+												"to": 19
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "]",
+								"from": 19,
+								"to": 20
+							}
+						]
+					},
+					{
+						"name": "ForeignModItem",
+						"from": 22,
+						"to": 355,
+						"children": [
+							{
+								"name": "unsafe",
+								"from": 22,
+								"to": 28
+							},
+							{
+								"name": "extern",
+								"from": 29,
+								"to": 35
+							},
+							{
+								"name": "String",
+								"from": 36,
+								"to": 39
+							},
+							{
+								"name": "DeclarationList",
+								"from": 40,
+								"to": 355,
+								"children": [
+									{
+										"name": "{",
+										"from": 40,
+										"to": 41
+									},
+									{
+										"name": "FunctionItem",
+										"from": 46,
+										"to": 90,
+										"children": [
+											{
+												"name": "Vis",
+												"from": 46,
+												"to": 49,
+												"children": [
+													{
+														"name": "pub",
+														"from": 46,
+														"to": 49
+													}
+												]
+											},
+											{
+												"name": "safe",
+												"from": 50,
+												"to": 54
+											},
+											{
+												"name": "fn",
+												"from": 55,
+												"to": 57
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 58,
+												"to": 70
+											},
+											{
+												"name": "ParamList",
+												"from": 70,
+												"to": 82,
+												"children": [
+													{
+														"name": "(",
+														"from": 70,
+														"to": 71
+													},
+													{
+														"name": "Parameter",
+														"from": 71,
+														"to": 81,
+														"children": [
+															{
+																"name": "BoundIdentifier",
+																"from": 71,
+																"to": 76
+															},
+															{
+																"name": ":",
+																"from": 76,
+																"to": 77
+															},
+															{
+																"name": "TypeIdentifier",
+																"from": 78,
+																"to": 81
+															}
+														]
+													},
+													{
+														"name": ")",
+														"from": 81,
+														"to": 82
+													}
+												]
+											},
+											{
+												"name": "->",
+												"from": 83,
+												"to": 85
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 86,
+												"to": 89
+											},
+											{
+												"name": ";",
+												"from": 89,
+												"to": 90
+											}
+										]
+									},
+									{
+										"name": "FunctionItem",
+										"from": 95,
+										"to": 151,
+										"children": [
+											{
+												"name": "Vis",
+												"from": 95,
+												"to": 98,
+												"children": [
+													{
+														"name": "pub",
+														"from": 95,
+														"to": 98
+													}
+												]
+											},
+											{
+												"name": "unsafe",
+												"from": 99,
+												"to": 105
+											},
+											{
+												"name": "fn",
+												"from": 106,
+												"to": 108
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 109,
+												"to": 123
+											},
+											{
+												"name": "ParamList",
+												"from": 123,
+												"to": 141,
+												"children": [
+													{
+														"name": "(",
+														"from": 123,
+														"to": 124
+													},
+													{
+														"name": "Parameter",
+														"from": 124,
+														"to": 140,
+														"children": [
+															{
+																"name": "BoundIdentifier",
+																"from": 124,
+																"to": 129
+															},
+															{
+																"name": ":",
+																"from": 129,
+																"to": 130
+															},
+															{
+																"name": "PointerType",
+																"from": 131,
+																"to": 140,
+																"children": [
+																	{
+																		"name": "const",
+																		"from": 132,
+																		"to": 137
+																	},
+																	{
+																		"name": "TypeIdentifier",
+																		"from": 138,
+																		"to": 140
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": ")",
+														"from": 140,
+														"to": 141
+													}
+												]
+											},
+											{
+												"name": "->",
+												"from": 142,
+												"to": 144
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 145,
+												"to": 150
+											},
+											{
+												"name": ";",
+												"from": 150,
+												"to": 151
+											}
+										]
+									},
+									{
+										"name": "FunctionItem",
+										"from": 156,
+										"to": 181,
+										"children": [
+											{
+												"name": "Vis",
+												"from": 156,
+												"to": 159,
+												"children": [
+													{
+														"name": "pub",
+														"from": 156,
+														"to": 159
+													}
+												]
+											},
+											{
+												"name": "fn",
+												"from": 160,
+												"to": 162
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 163,
+												"to": 178
+											},
+											{
+												"name": "ParamList",
+												"from": 178,
+												"to": 180,
+												"children": [
+													{
+														"name": "(",
+														"from": 178,
+														"to": 179
+													},
+													{
+														"name": ")",
+														"from": 179,
+														"to": 180
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 180,
+												"to": 181
+											}
+										]
+									},
+									{
+										"name": "FunctionItem",
+										"from": 186,
+										"to": 239,
+										"children": [
+											{
+												"name": "Vis",
+												"from": 186,
+												"to": 189,
+												"children": [
+													{
+														"name": "pub",
+														"from": 186,
+														"to": 189
+													}
+												]
+											},
+											{
+												"name": "unsafe",
+												"from": 190,
+												"to": 196
+											},
+											{
+												"name": "fn",
+												"from": 197,
+												"to": 199
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 200,
+												"to": 208
+											},
+											{
+												"name": "ParamList",
+												"from": 208,
+												"to": 238,
+												"children": [
+													{
+														"name": "(",
+														"from": 208,
+														"to": 209
+													},
+													{
+														"name": "Parameter",
+														"from": 209,
+														"to": 226,
+														"children": [
+															{
+																"name": "BoundIdentifier",
+																"from": 209,
+																"to": 215
+															},
+															{
+																"name": ":",
+																"from": 215,
+																"to": 216
+															},
+															{
+																"name": "PointerType",
+																"from": 217,
+																"to": 226,
+																"children": [
+																	{
+																		"name": "const",
+																		"from": 218,
+																		"to": 223
+																	},
+																	{
+																		"name": "TypeIdentifier",
+																		"from": 224,
+																		"to": 226
+																	}
+																]
+															}
+														]
+													},
+													{
+														"name": ",",
+														"from": 226,
+														"to": 227
+													},
+													{
+														"name": "VariadicParameter",
+														"from": 228,
+														"to": 237,
+														"children": [
+															{
+																"name": "BoundIdentifier",
+																"from": 228,
+																"to": 232
+															},
+															{
+																"name": ":",
+																"from": 232,
+																"to": 233
+															},
+															{
+																"name": "...",
+																"from": 234,
+																"to": 237
+															}
+														]
+													},
+													{
+														"name": ")",
+														"from": 237,
+														"to": 238
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 238,
+												"to": 239
+											}
+										]
+									},
+									{
+										"name": "StaticItem",
+										"from": 245,
+										"to": 276,
+										"children": [
+											{
+												"name": "Vis",
+												"from": 245,
+												"to": 248,
+												"children": [
+													{
+														"name": "pub",
+														"from": 245,
+														"to": 248
+													}
+												]
+											},
+											{
+												"name": "safe",
+												"from": 249,
+												"to": 253
+											},
+											{
+												"name": "static",
+												"from": 254,
+												"to": 260
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 261,
+												"to": 270
+											},
+											{
+												"name": ":",
+												"from": 270,
+												"to": 271
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 272,
+												"to": 275
+											},
+											{
+												"name": ";",
+												"from": 275,
+												"to": 276
+											}
+										]
+									},
+									{
+										"name": "StaticItem",
+										"from": 281,
+										"to": 320,
+										"children": [
+											{
+												"name": "Vis",
+												"from": 281,
+												"to": 284,
+												"children": [
+													{
+														"name": "pub",
+														"from": 281,
+														"to": 284
+													}
+												]
+											},
+											{
+												"name": "unsafe",
+												"from": 285,
+												"to": 291
+											},
+											{
+												"name": "static",
+												"from": 292,
+												"to": 298
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 299,
+												"to": 314
+											},
+											{
+												"name": ":",
+												"from": 314,
+												"to": 315
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 316,
+												"to": 319
+											},
+											{
+												"name": ";",
+												"from": 319,
+												"to": 320
+											}
+										]
+									},
+									{
+										"name": "StaticItem",
+										"from": 325,
+										"to": 353,
+										"children": [
+											{
+												"name": "Vis",
+												"from": 325,
+												"to": 328,
+												"children": [
+													{
+														"name": "pub",
+														"from": 325,
+														"to": 328
+													}
+												]
+											},
+											{
+												"name": "static",
+												"from": 329,
+												"to": 335
+											},
+											{
+												"name": "mut",
+												"from": 336,
+												"to": 339
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 340,
+												"to": 347
+											},
+											{
+												"name": ":",
+												"from": 347,
+												"to": 348
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 349,
+												"to": 352
+											},
+											{
+												"name": ";",
+												"from": 352,
+												"to": 353
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 354,
+										"to": 355
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "FunctionItem",
+						"from": 355,
+						"to": 549,
+						"children": [
+							{
+								"name": "fn",
+								"from": 357,
+								"to": 359
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 360,
+								"to": 371
+							},
+							{
+								"name": "ParamList",
+								"from": 371,
+								"to": 388,
+								"children": [
+									{
+										"name": "(",
+										"from": 371,
+										"to": 372
+									},
+									{
+										"name": "Parameter",
+										"from": 372,
+										"to": 387,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 372,
+												"to": 377
+											},
+											{
+												"name": ":",
+												"from": 377,
+												"to": 378
+											},
+											{
+												"name": "ReferenceType",
+												"from": 379,
+												"to": 387,
+												"children": [
+													{
+														"name": "&",
+														"from": 379,
+														"to": 380
+													},
+													{
+														"name": "mut",
+														"from": 380,
+														"to": 383
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 384,
+														"to": 387
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 387,
+										"to": 388
+									}
+								]
+							},
+							{
+								"name": "->",
+								"from": 389,
+								"to": 391
+							},
+							{
+								"name": "TupleType",
+								"from": 392,
+								"to": 414,
+								"children": [
+									{
+										"name": "(",
+										"from": 392,
+										"to": 393
+									},
+									{
+										"name": "PointerType",
+										"from": 393,
+										"to": 403,
+										"children": [
+											{
+												"name": "const",
+												"from": 394,
+												"to": 399
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 400,
+												"to": 403
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 403,
+										"to": 404
+									},
+									{
+										"name": "PointerType",
+										"from": 405,
+										"to": 413,
+										"children": [
+											{
+												"name": "mut",
+												"from": 406,
+												"to": 409
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 410,
+												"to": 413
+											}
+										]
+									},
+									{
+										"name": ")",
+										"from": 413,
+										"to": 414
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 415,
+								"to": 549,
+								"children": [
+									{
+										"name": "{",
+										"from": 415,
+										"to": 416
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 421,
+										"to": 452,
+										"children": [
+											{
+												"name": "let",
+												"from": 421,
+												"to": 424
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 425,
+												"to": 431
+											},
+											{
+												"name": "=",
+												"from": 432,
+												"to": 433
+											},
+											{
+												"name": "ReferenceExpression",
+												"from": 434,
+												"to": 451,
+												"children": [
+													{
+														"name": "&",
+														"from": 434,
+														"to": 435
+													},
+													{
+														"name": "raw",
+														"from": 435,
+														"to": 438
+													},
+													{
+														"name": "const",
+														"from": 439,
+														"to": 444
+													},
+													{
+														"name": "UnaryExpression",
+														"from": 445,
+														"to": 451,
+														"children": [
+															{
+																"name": "DerefOp",
+																"from": 445,
+																"to": 446
+															},
+															{
+																"name": "Identifier",
+																"from": 446,
+																"to": 451
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 451,
+												"to": 452
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 457,
+										"to": 487,
+										"children": [
+											{
+												"name": "let",
+												"from": 457,
+												"to": 460
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 461,
+												"to": 468
+											},
+											{
+												"name": "=",
+												"from": 469,
+												"to": 470
+											},
+											{
+												"name": "ReferenceExpression",
+												"from": 471,
+												"to": 486,
+												"children": [
+													{
+														"name": "&",
+														"from": 471,
+														"to": 472
+													},
+													{
+														"name": "raw",
+														"from": 472,
+														"to": 475
+													},
+													{
+														"name": "mut",
+														"from": 476,
+														"to": 479
+													},
+													{
+														"name": "UnaryExpression",
+														"from": 480,
+														"to": 486,
+														"children": [
+															{
+																"name": "DerefOp",
+																"from": 480,
+																"to": 481
+															},
+															{
+																"name": "Identifier",
+																"from": 481,
+																"to": 486
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 486,
+												"to": 487
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 492,
+										"to": 525,
+										"children": [
+											{
+												"name": "let",
+												"from": 492,
+												"to": 495
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 496,
+												"to": 503
+											},
+											{
+												"name": "=",
+												"from": 504,
+												"to": 505
+											},
+											{
+												"name": "ReferenceExpression",
+												"from": 506,
+												"to": 524,
+												"children": [
+													{
+														"name": "raw",
+														"from": 508,
+														"to": 511
+													},
+													{
+														"name": "const",
+														"from": 512,
+														"to": 517
+													},
+													{
+														"name": "UnaryExpression",
+														"from": 518,
+														"to": 524,
+														"children": [
+															{
+																"name": "DerefOp",
+																"from": 518,
+																"to": 519
+															},
+															{
+																"name": "Identifier",
+																"from": 519,
+																"to": 524
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 524,
+												"to": 525
+											}
+										]
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 530,
+										"to": 547,
+										"children": [
+											{
+												"name": "TupleExpression",
+												"from": 530,
+												"to": 547,
+												"children": [
+													{
+														"name": "(",
+														"from": 530,
+														"to": 531
+													},
+													{
+														"name": "Identifier",
+														"from": 531,
+														"to": 537
+													},
+													{
+														"name": ",",
+														"from": 537,
+														"to": 538
+													},
+													{
+														"name": "Identifier",
+														"from": 539,
+														"to": 546
+													},
+													{
+														"name": ")",
+														"from": 546,
+														"to": 547
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 548,
+										"to": 549
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "FunctionItem",
+						"from": 549,
+						"to": 683,
+						"children": [
+							{
+								"name": "fn",
+								"from": 551,
+								"to": 553
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 554,
+								"to": 561
+							},
+							{
+								"name": "TypeParamList",
+								"from": 561,
+								"to": 588,
+								"children": [
+									{
+										"name": "<",
+										"from": 561,
+										"to": 562
+									},
+									{
+										"name": "Lifetime",
+										"from": 562,
+										"to": 564
+									},
+									{
+										"name": ",",
+										"from": 564,
+										"to": 565
+									},
+									{
+										"name": "Lifetime",
+										"from": 566,
+										"to": 568
+									},
+									{
+										"name": ",",
+										"from": 568,
+										"to": 569
+									},
+									{
+										"name": "TypeIdentifier",
+										"from": 570,
+										"to": 571
+									},
+									{
+										"name": ",",
+										"from": 571,
+										"to": 572
+									},
+									{
+										"name": "ConstParameter",
+										"from": 573,
+										"to": 587,
+										"children": [
+											{
+												"name": "const",
+												"from": 573,
+												"to": 578
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 579,
+												"to": 580
+											},
+											{
+												"name": ":",
+												"from": 580,
+												"to": 581
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 582,
+												"to": 587
+											}
+										]
+									},
+									{
+										"name": ">",
+										"from": 587,
+										"to": 588
+									}
+								]
+							},
+							{
+								"name": "ParamList",
+								"from": 588,
+								"to": 629,
+								"children": [
+									{
+										"name": "(",
+										"from": 588,
+										"to": 589
+									},
+									{
+										"name": "Parameter",
+										"from": 594,
+										"to": 606,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 594,
+												"to": 599
+											},
+											{
+												"name": ":",
+												"from": 599,
+												"to": 600
+											},
+											{
+												"name": "ReferenceType",
+												"from": 601,
+												"to": 606,
+												"children": [
+													{
+														"name": "&",
+														"from": 601,
+														"to": 602
+													},
+													{
+														"name": "Lifetime",
+														"from": 602,
+														"to": 604
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 605,
+														"to": 606
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 606,
+										"to": 607
+									},
+									{
+										"name": "Parameter",
+										"from": 612,
+										"to": 626,
+										"children": [
+											{
+												"name": "BoundIdentifier",
+												"from": 612,
+												"to": 617
+											},
+											{
+												"name": ":",
+												"from": 617,
+												"to": 618
+											},
+											{
+												"name": "ArrayType",
+												"from": 619,
+												"to": 626,
+												"children": [
+													{
+														"name": "[",
+														"from": 619,
+														"to": 620
+													},
+													{
+														"name": "TypeIdentifier",
+														"from": 620,
+														"to": 622
+													},
+													{
+														"name": ";",
+														"from": 622,
+														"to": 623
+													},
+													{
+														"name": "Identifier",
+														"from": 624,
+														"to": 625
+													},
+													{
+														"name": "]",
+														"from": 625,
+														"to": 626
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": ",",
+										"from": 626,
+										"to": 627
+									},
+									{
+										"name": ")",
+										"from": 628,
+										"to": 629
+									}
+								]
+							},
+							{
+								"name": "->",
+								"from": 630,
+								"to": 632
+							},
+							{
+								"name": "BoundedType",
+								"from": 633,
+								"to": 660,
+								"children": [
+									{
+										"name": "AbstractType",
+										"from": 633,
+										"to": 643,
+										"children": [
+											{
+												"name": "impl",
+												"from": 633,
+												"to": 637
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 638,
+												"to": 643
+											}
+										]
+									},
+									{
+										"name": "UseBound",
+										"from": 646,
+										"to": 660,
+										"children": [
+											{
+												"name": "use",
+												"from": 646,
+												"to": 649
+											},
+											{
+												"name": "<",
+												"from": 649,
+												"to": 650
+											},
+											{
+												"name": "Lifetime",
+												"from": 650,
+												"to": 652
+											},
+											{
+												"name": ",",
+												"from": 652,
+												"to": 653
+											},
+											{
+												"name": "Identifier",
+												"from": 654,
+												"to": 655
+											},
+											{
+												"name": ",",
+												"from": 655,
+												"to": 656
+											},
+											{
+												"name": "Identifier",
+												"from": 657,
+												"to": 658
+											},
+											{
+												"name": ",",
+												"from": 658,
+												"to": 659
+											},
+											{
+												"name": ">",
+												"from": 659,
+												"to": 660
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 661,
+								"to": 683,
+								"children": [
+									{
+										"name": "{",
+										"from": 661,
+										"to": 662
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 667,
+										"to": 681,
+										"children": [
+											{
+												"name": "TupleExpression",
+												"from": 667,
+												"to": 681,
+												"children": [
+													{
+														"name": "(",
+														"from": 667,
+														"to": 668
+													},
+													{
+														"name": "Identifier",
+														"from": 668,
+														"to": 673
+													},
+													{
+														"name": ",",
+														"from": 673,
+														"to": 674
+													},
+													{
+														"name": "Identifier",
+														"from": 675,
+														"to": 680
+													},
+													{
+														"name": ")",
+														"from": 680,
+														"to": 681
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 682,
+										"to": 683
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "FunctionItem",
+						"from": 683,
+						"to": 735,
+						"children": [
+							{
+								"name": "fn",
+								"from": 685,
+								"to": 687
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 688,
+								"to": 700
+							},
+							{
+								"name": "ParamList",
+								"from": 700,
+								"to": 702,
+								"children": [
+									{
+										"name": "(",
+										"from": 700,
+										"to": 701
+									},
+									{
+										"name": ")",
+										"from": 701,
+										"to": 702
+									}
+								]
+							},
+							{
+								"name": "->",
+								"from": 703,
+								"to": 705
+							},
+							{
+								"name": "BoundedType",
+								"from": 706,
+								"to": 724,
+								"children": [
+									{
+										"name": "AbstractType",
+										"from": 706,
+										"to": 716,
+										"children": [
+											{
+												"name": "impl",
+												"from": 706,
+												"to": 710
+											},
+											{
+												"name": "TypeIdentifier",
+												"from": 711,
+												"to": 716
+											}
+										]
+									},
+									{
+										"name": "UseBound",
+										"from": 719,
+										"to": 724,
+										"children": [
+											{
+												"name": "use",
+												"from": 719,
+												"to": 722
+											},
+											{
+												"name": "<",
+												"from": 722,
+												"to": 723
+											},
+											{
+												"name": ">",
+												"from": 723,
+												"to": 724
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 725,
+								"to": 735,
+								"children": [
+									{
+										"name": "{",
+										"from": 725,
+										"to": 726
+									},
+									{
+										"name": "ExpressionStatement",
+										"from": 731,
+										"to": 733,
+										"children": [
+											{
+												"name": "UnitExpression",
+												"from": 731,
+												"to": 733,
+												"children": [
+													{
+														"name": "(",
+														"from": 731,
+														"to": 732
+													},
+													{
+														"name": ")",
+														"from": 732,
+														"to": 733
+													}
+												]
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 734,
+										"to": 735
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "FunctionItem",
+						"from": 735,
+						"to": 821,
+						"children": [
+							{
+								"name": "fn",
+								"from": 737,
+								"to": 739
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 740,
+								"to": 753
+							},
+							{
+								"name": "ParamList",
+								"from": 753,
+								"to": 755,
+								"children": [
+									{
+										"name": "(",
+										"from": 753,
+										"to": 754
+									},
+									{
+										"name": ")",
+										"from": 754,
+										"to": 755
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 756,
+								"to": 821,
+								"children": [
+									{
+										"name": "{",
+										"from": 756,
+										"to": 757
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 762,
+										"to": 774,
+										"children": [
+											{
+												"name": "let",
+												"from": 762,
+												"to": 765
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 766,
+												"to": 769
+											},
+											{
+												"name": "=",
+												"from": 770,
+												"to": 771
+											},
+											{
+												"name": "Integer",
+												"from": 772,
+												"to": 773
+											},
+											{
+												"name": ";",
+												"from": 773,
+												"to": 774
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 779,
+										"to": 792,
+										"children": [
+											{
+												"name": "let",
+												"from": 779,
+												"to": 782
+											},
+											{
+												"name": "BoundIdentifier",
+												"from": 783,
+												"to": 787
+											},
+											{
+												"name": "=",
+												"from": 788,
+												"to": 789
+											},
+											{
+												"name": "Integer",
+												"from": 790,
+												"to": 791
+											},
+											{
+												"name": ";",
+												"from": 791,
+												"to": 792
+											}
+										]
+									},
+									{
+										"name": "LetDeclaration",
+										"from": 797,
+										"to": 819,
+										"children": [
+											{
+												"name": "let",
+												"from": 797,
+												"to": 800
+											},
+											{
+												"name": "_",
+												"from": 801,
+												"to": 802
+											},
+											{
+												"name": "=",
+												"from": 803,
+												"to": 804
+											},
+											{
+												"name": "TupleExpression",
+												"from": 805,
+												"to": 818,
+												"children": [
+													{
+														"name": "(",
+														"from": 805,
+														"to": 806
+													},
+													{
+														"name": "ReferenceExpression",
+														"from": 806,
+														"to": 810,
+														"children": [
+															{
+																"name": "&",
+																"from": 806,
+																"to": 807
+															},
+															{
+																"name": "Identifier",
+																"from": 807,
+																"to": 810
+															}
+														]
+													},
+													{
+														"name": ",",
+														"from": 810,
+														"to": 811
+													},
+													{
+														"name": "ReferenceExpression",
+														"from": 812,
+														"to": 817,
+														"children": [
+															{
+																"name": "&",
+																"from": 812,
+																"to": 813
+															},
+															{
+																"name": "Identifier",
+																"from": 813,
+																"to": 817
+															}
+														]
+													},
+													{
+														"name": ")",
+														"from": 817,
+														"to": 818
+													}
+												]
+											},
+											{
+												"name": ";",
+												"from": 818,
+												"to": 819
+											}
+										]
+									},
+									{
+										"name": "}",
+										"from": 820,
+										"to": 821
 									}
 								]
 							}

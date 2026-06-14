@@ -9,11 +9,13 @@ Rust 1.95.0 / Edition 2024 delta adds let-else statements, let chains,
 The maintained lexical layer uses Rust 1.95's Unicode 17 identifier profile
 and covers raw identifiers and lifetimes, C and raw C strings, literal escape
 and radix validation, and Edition 2024 reserved guards and prefixes.
+The maintained grammar also covers Edition 2024 unsafe extern blocks and
+foreign-item safety qualifiers, raw borrow expressions, and precise capturing
+`use<...>` bounds.
 
 The parser does not yet claim complete Rust 1.95.0 language coverage. In
-particular, unsafe extern items, precise capturing bounds, raw borrows,
-source-file BOM and shebang removal, and the remaining grammar audit still
-need to be aligned.
+particular, source-file BOM and shebang removal, broad-corpus validation, and
+the remaining grammar audit still need to be aligned.
 
 ## Parsing
 
@@ -38,10 +40,23 @@ Identifiers and lifetimes follow Unicode 17 `XID_Start` / `XID_Continue`.
 Recovering mode preserves editor CSTs for invalid literal contents; strict
 mode additionally enforces Rust's literal and reserved-token rules.
 
-Maintained fixtures are checked against the pinned Rust 1.95.0 compiler in
-Edition 2024 mode. The rustc snapshot is an acceptance oracle because stable
-rustc does not expose a supported parse-only AST API. Concrete syntax trees are
-compared separately with the pinned Lezer implementation.
+The Rust Reference defines language membership. Small maintained cases cover
+the local grammar contract, selected cases are compared with the pinned Rust
+1.95.0 compiler in Edition 2024 mode, and concrete syntax trees are compared
+separately with the pinned Lezer implementation. The rustc runner emits
+metadata because stable rustc does not expose a supported parse-only AST API;
+its result is implementation evidence rather than the parser's sole
+specification.
+
+Non-obvious implementation behavior is cross-checked against
+`rust-lang/rust` revision
+`59807616e1fa2540724bfbac14d7976d7e4a3860` (tag `1.95.0`).
+Relevant entry points are `rustc_parse::parser::item::parse_item_kind` and
+`parse_foreign_item`, `rustc_parse::parser::expr::parse_borrow_modifiers`,
+`rustc_parse::parser::ty::parse_use_bound`, and
+`rustc_ast_passes::ast_validation::AstValidator::walk_ty`. Rezel normalizes
+those decisions into LR productions and strict CST validation; it does not
+transcribe rustc's recursive-descent control flow or recovery diagnostics.
 
 ## Typed CST
 

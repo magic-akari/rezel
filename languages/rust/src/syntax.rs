@@ -30,8 +30,11 @@ pub(crate) fn validate_syntax(tree: &Tree, source: Option<&str>) -> Result<(), R
 }
 
 fn validate_node(node: &SyntaxNode, source: Option<&str>) -> Result<(), RustSyntaxError> {
-    if node.name().as_ref() == "LetChain" {
-        validate_let_chain(node)?;
+    match node.name().as_ref() {
+        "BoundedType" => validate_precise_capture_bounds(node)?,
+        "LetChain" => validate_let_chain(node)?,
+        "UseBound" => validate_use_bound(node)?,
+        _ => {}
     }
     if let Some(source) = source {
         match node.name().as_ref() {
@@ -652,6 +655,50 @@ fn node_text<'source>(
 fn text_position(offset: usize) -> TextSize {
     let offset = u32::try_from(offset).expect("Rezel source offsets fit in u32");
     TextSize::from(offset)
+}
+
+fn validate_precise_capture_bounds(bounds: &SyntaxNode) -> Result<(), RustSyntaxError> {
+    let mut found = false;
+    if let Some(position) = duplicate_use_bound(bounds, &mut found) {
+        return Err(RustSyntaxError::new(
+            position,
+            "at most one precise capturing `use<...>` bound",
+        ));
+    }
+    Ok(())
+}
+
+fn duplicate_use_bound(node: &SyntaxNode, found: &mut bool) -> Option<TextSize> {
+    for child in node.children() {
+        match child.name().as_ref() {
+            "BoundedType" => {
+                if let Some(position) = duplicate_use_bound(&child, found) {
+                    return Some(position);
+                }
+            }
+            "UseBound" if *found => return Some(child.from()),
+            "UseBound" => *found = true,
+            _ => {}
+        }
+    }
+    None
+}
+
+fn validate_use_bound(bound: &SyntaxNode) -> Result<(), RustSyntaxError> {
+    let mut found_identifier = false;
+    for child in bound.children() {
+        match child.name().as_ref() {
+            "Identifier" => found_identifier = true,
+            "Lifetime" if found_identifier => {
+                return Err(RustSyntaxError::new(
+                    child.from(),
+                    "lifetimes before type and const parameters in a precise capturing bound",
+                ));
+            }
+            _ => {}
+        }
+    }
+    Ok(())
 }
 
 fn validate_let_chain(chain: &SyntaxNode) -> Result<(), RustSyntaxError> {

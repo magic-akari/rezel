@@ -119,14 +119,14 @@ fn rust_highlighting() -> NodePropSource {
             ),
             ("mod use crate", TagSet::from(tags.module_keyword)),
             (
-                "pub unsafe async mut extern default move",
+                "pub unsafe safe async mut extern default move",
                 TagSet::from(tags.modifier),
             ),
             (
                 "for if else loop while match continue break return await",
                 TagSet::from(tags.control_keyword),
             ),
-            ("as in ref", TagSet::from(tags.operator_keyword)),
+            ("as in ref raw", TagSet::from(tags.operator_keyword)),
             (
                 "where _ crate super dyn abstract become box do final gen macro override priv try typeof unsized virtual yield",
                 TagSet::from(tags.keyword),

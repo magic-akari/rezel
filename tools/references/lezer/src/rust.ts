@@ -62,12 +62,7 @@ const parser = buildRustParser({
 	grammarPath,
 	warnings,
 });
-assert.equal(warnings.length, 1, "the pinned Rust grammar warning set changed");
-assert.match(
-	warnings[0],
-	/^Rule FunctionItem is generating a lot \(128\) of choices\.\n  Consider splitting it up or reducing the amount of \? or \| operator uses\./u,
-	"the pinned Rust grammar produced an unexpected reference-generator warning",
-);
+assert.deepEqual(warnings, [], "the maintained Rust grammar must generate without warnings");
 
 const strictParser = parser.configure({ strict: true });
 const recoveringParser = parser.configure({ strict: false });

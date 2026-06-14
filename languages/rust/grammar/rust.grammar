@@ -71,7 +71,7 @@ declarationStatement {
     Vis? kw<"mod"> BoundIdentifier (";" | DeclarationList)
   } |
   ForeignModItem {
-    Vis? externModifier (";" | DeclarationList)
+    kw<"unsafe"> externModifier ForeignDeclarationList
   } |
   StructItem {
     Vis? kw<"struct">
@@ -90,7 +90,7 @@ declarationStatement {
     Vis? kw<"type"> TypeIdentifier TypeParamList? "=" type ";"
   } |
   FunctionItem {
-    Vis? functionModifier* kw<"fn">
+    Vis? functionQualifiers kw<"fn">
     (BoundIdentifier | Metavariable) TypeParamList? ParamList ("->" type)?
     WhereClause?
     (Block | ";")
@@ -119,6 +119,22 @@ declarationStatement {
   StaticItem {
     Vis? kw<"static"> kw<"ref">? kw<"mut">? BoundIdentifier ":" type ("=" expression)? ";"
   }
+}
+
+functionQualifiers {
+  ckw<"default">? constFunctionQualifiers
+}
+
+constFunctionQualifiers {
+  kw<"const">? asyncFunctionQualifiers
+}
+
+asyncFunctionQualifiers {
+  kw<"async">? unsafeFunctionQualifiers
+}
+
+unsafeFunctionQualifiers {
+  kw<"unsafe">? externModifier?
 }
 
 delimitedTokenTree { ParenthesizedTokens | BracketedTokens | BracedTokens }
@@ -192,6 +208,35 @@ DeclarationList {
   "{" InnerAttribute* (declarationStatement | AttributeItem)* "}"
 }
 
+ForeignDeclarationList[@name=DeclarationList] {
+  "{" InnerAttribute* (Attribute* foreignDeclaration)* "}"
+}
+
+foreignDeclaration {
+  MacroInvocationSemi |
+  FunctionItem {
+    Vis? (ckw<"safe"> | kw<"unsafe">)? kw<"fn">
+    BoundIdentifier TypeParamList? ForeignParamList ("->" type)?
+    WhereClause? ";"
+  } |
+  StaticItem {
+    Vis? (ckw<"safe"> | kw<"unsafe">)? kw<"static"> kw<"mut">?
+    BoundIdentifier ":" type ";"
+  }
+}
+
+ForeignParamList[@name=ParamList] {
+  "(" commaSep<Attribute* (ForeignParameter | ForeignVariadicParameter)> ")"
+}
+
+ForeignParameter[@name=Parameter] {
+  (BoundIdentifier | kw<"_">) ":" type
+}
+
+ForeignVariadicParameter[@name=VariadicParameter] {
+  (BoundIdentifier ":")? "..."
+}
+
 EnumVariant {
   Vis? Identifier (FieldDeclarationList | OrderedFieldDeclarationList)? ("=" expression)?
 }
@@ -206,10 +251,6 @@ FieldDeclaration {
 
 OrderedFieldDeclarationList {
   "(" commaSep<Attribute* Vis? type> ")"
-}
-
-functionModifier {
-  kw<"async"> | ckw<"default"> | kw<"const"> | kw<"unsafe"> | externModifier
 }
 
 WhereClause {
@@ -304,12 +345,19 @@ type[@isGroup=Type] {
   MacroInvocation { typePath !macro "!" delimitedTokenTree } |
   EmptyType { "!" } |
   DynamicType { kw<"dyn"> (typePath | GenericType | FunctionType) } |
-  BoundedType { Lifetime !bound "+" type | type !bound "+" type | type !bound "+" Lifetime }
+  BoundedType {
+    Lifetime !bound "+" type |
+    type !bound "+" (type | Lifetime | UseBound)
+  }
+}
+
+UseBound {
+  kw<"use"> !typeArgs tpOpen commaSep<Lifetime | Identifier> tpClose
 }
 
 FunctionType {
   ForLifetimes { kw<"for"> tpOpen commaSep<Lifetime> tpClose }?
-  (typePath | functionModifier* kw<"fn">)
+  (typePath | kw<"unsafe">? externModifier? kw<"fn">)
   !params ParamList {
     "(" commaSep<Attribute* SelfParameter | VariadicParameter { "..." } | kw<"_"> | Parameter { type }> ")"
   }
@@ -332,7 +380,9 @@ expression[@isGroup=Expression] { blockExpression | nonBlockExpression }
 
 nonBlockExpression {
   UnaryExpression { (ArithOp { "-" } | DerefOp { "*" } | LogicOp { "!" }) !unary expression } |
-  ReferenceExpression { "&" kw<"mut">? expression } |
+  ReferenceExpression {
+    ("&" | "&&") (kw<"mut"> | ckw<"raw"> (kw<"const"> | kw<"mut">))? expression
+  } |
   TryExpression { expression !try "?" } |
   BinaryExpression |
   AssignmentExpression { expression !assign ("=" | UpdateOp) expression } |
