@@ -296,8 +296,13 @@ ArgumentList {
 }
 
 MethodReference {
-  (type | baseExpression | SuperExpression) "::" TypeArguments? (kw<"new"> | Identifier)
+  (methodReferenceType | baseExpression | SuperExpression)
+  "::" TypeArguments? (kw<"new"> | MethodReferenceName)
 }
+
+methodReferenceType[@dynamicPrecedence=1] { type }
+
+MethodReferenceName { Identifier }
 
 TypeArguments {
   "<" commaSep<type | Wildcard> ">"

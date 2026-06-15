@@ -207,6 +207,7 @@ pub enum JavaKind {
     ArrayAccess,
     MethodReference,
     DoubleColon,
+    MethodReferenceName,
     ArrayCreationExpression,
     ArrayCreationType,
     DimExpr,
@@ -345,7 +346,7 @@ impl rezel_common::SyntaxLanguage for JavaLanguage {
             72u16 => JavaKind::VariableDeclarator,
             73u16 => JavaKind::Definition,
             74u16 => JavaKind::AssignOp,
-            208u16 => JavaKind::AssignOp,
+            209u16 => JavaKind::AssignOp,
             75u16 => JavaKind::ArrayInitializer,
             76u16 => JavaKind::MethodDeclaration,
             77u16 => JavaKind::TypeParameters,
@@ -397,8 +398,8 @@ impl rezel_common::SyntaxLanguage for JavaLanguage {
             123u16 => JavaKind::ExpressionStatement,
             124u16 => JavaKind::StatementExpression,
             125u16 => JavaKind::UpdateExpression,
-            239u16 => JavaKind::UpdateExpression,
             240u16 => JavaKind::UpdateExpression,
+            241u16 => JavaKind::UpdateExpression,
             126u16 => JavaKind::UpdateOp,
             127u16 => JavaKind::MethodInvocation,
             128u16 => JavaKind::MethodName,
@@ -478,68 +479,69 @@ impl rezel_common::SyntaxLanguage for JavaLanguage {
             202u16 => JavaKind::ArrayAccess,
             203u16 => JavaKind::MethodReference,
             204u16 => JavaKind::DoubleColon,
-            205u16 => JavaKind::ArrayCreationExpression,
-            206u16 => JavaKind::ArrayCreationType,
-            207u16 => JavaKind::DimExpr,
-            209u16 => JavaKind::BinaryExpression,
-            210u16 => JavaKind::CompareOp,
+            205u16 => JavaKind::MethodReferenceName,
+            206u16 => JavaKind::ArrayCreationExpression,
+            207u16 => JavaKind::ArrayCreationType,
+            208u16 => JavaKind::DimExpr,
+            210u16 => JavaKind::BinaryExpression,
             211u16 => JavaKind::CompareOp,
             212u16 => JavaKind::CompareOp,
-            213u16 => JavaKind::LogicOp,
+            213u16 => JavaKind::CompareOp,
             214u16 => JavaKind::LogicOp,
-            234u16 => JavaKind::LogicOp,
-            236u16 => JavaKind::LogicOp,
-            215u16 => JavaKind::BitOp,
+            215u16 => JavaKind::LogicOp,
+            235u16 => JavaKind::LogicOp,
+            237u16 => JavaKind::LogicOp,
             216u16 => JavaKind::BitOp,
             217u16 => JavaKind::BitOp,
-            221u16 => JavaKind::BitOp,
-            237u16 => JavaKind::BitOp,
-            218u16 => JavaKind::ArithOp,
+            218u16 => JavaKind::BitOp,
+            222u16 => JavaKind::BitOp,
+            238u16 => JavaKind::BitOp,
             219u16 => JavaKind::ArithOp,
             220u16 => JavaKind::ArithOp,
-            222u16 => JavaKind::InstanceofExpression,
-            223u16 => JavaKind::Instanceof,
-            224u16 => JavaKind::InstanceofPattern,
-            225u16 => JavaKind::LambdaExpression,
-            226u16 => JavaKind::LambdaFormalParameters,
-            227u16 => JavaKind::LambdaVarParameter,
-            228u16 => JavaKind::InferredLambdaType,
-            229u16 => JavaKind::InferredParameters,
-            230u16 => JavaKind::SwitchExpression,
-            231u16 => JavaKind::SwitchExpressionBlock,
-            232u16 => JavaKind::SwitchExpressionRule,
-            233u16 => JavaKind::TernaryExpression,
-            235u16 => JavaKind::UnaryExpression,
-            241u16 => JavaKind::UnaryExpression,
-            238u16 => JavaKind::CastExpression,
-            242u16 => JavaKind::ElementValueArrayInitializer,
-            243u16 => JavaKind::ElementValuePair,
-            244u16 => JavaKind::Package,
-            245u16 => JavaKind::ImportDeclaration,
-            246u16 => JavaKind::ModuleImportDeclaration,
-            247u16 => JavaKind::Import,
-            248u16 => JavaKind::Module,
-            249u16 => JavaKind::TypeOrStaticImportDeclaration,
-            250u16 => JavaKind::Asterisk,
-            251u16 => JavaKind::TopLevelDeclaration,
-            252u16 => JavaKind::UnnamedCompilationUnit,
-            253u16 => JavaKind::ModuleDeclaration,
-            254u16 => JavaKind::Open,
-            255u16 => JavaKind::ModuleBody,
-            256u16 => JavaKind::ModuleDirective,
-            257u16 => JavaKind::Requires,
-            258u16 => JavaKind::Transitive,
-            259u16 => JavaKind::Exports,
-            260u16 => JavaKind::To,
-            261u16 => JavaKind::Opens,
-            262u16 => JavaKind::Uses,
-            263u16 => JavaKind::Provides,
-            264u16 => JavaKind::With,
-            265u16 => JavaKind::UnitBeforeFirstMethod,
-            266u16 => JavaKind::CompactBeforeFirstMethod,
-            267u16 => JavaKind::CompactMemberDeclarationNoMethod,
-            268u16 => JavaKind::CompactMemberDeclaration,
-            269u16 => JavaKind::ClassContent,
+            221u16 => JavaKind::ArithOp,
+            223u16 => JavaKind::InstanceofExpression,
+            224u16 => JavaKind::Instanceof,
+            225u16 => JavaKind::InstanceofPattern,
+            226u16 => JavaKind::LambdaExpression,
+            227u16 => JavaKind::LambdaFormalParameters,
+            228u16 => JavaKind::LambdaVarParameter,
+            229u16 => JavaKind::InferredLambdaType,
+            230u16 => JavaKind::InferredParameters,
+            231u16 => JavaKind::SwitchExpression,
+            232u16 => JavaKind::SwitchExpressionBlock,
+            233u16 => JavaKind::SwitchExpressionRule,
+            234u16 => JavaKind::TernaryExpression,
+            236u16 => JavaKind::UnaryExpression,
+            242u16 => JavaKind::UnaryExpression,
+            239u16 => JavaKind::CastExpression,
+            243u16 => JavaKind::ElementValueArrayInitializer,
+            244u16 => JavaKind::ElementValuePair,
+            245u16 => JavaKind::Package,
+            246u16 => JavaKind::ImportDeclaration,
+            247u16 => JavaKind::ModuleImportDeclaration,
+            248u16 => JavaKind::Import,
+            249u16 => JavaKind::Module,
+            250u16 => JavaKind::TypeOrStaticImportDeclaration,
+            251u16 => JavaKind::Asterisk,
+            252u16 => JavaKind::TopLevelDeclaration,
+            253u16 => JavaKind::UnnamedCompilationUnit,
+            254u16 => JavaKind::ModuleDeclaration,
+            255u16 => JavaKind::Open,
+            256u16 => JavaKind::ModuleBody,
+            257u16 => JavaKind::ModuleDirective,
+            258u16 => JavaKind::Requires,
+            259u16 => JavaKind::Transitive,
+            260u16 => JavaKind::Exports,
+            261u16 => JavaKind::To,
+            262u16 => JavaKind::Opens,
+            263u16 => JavaKind::Uses,
+            264u16 => JavaKind::Provides,
+            265u16 => JavaKind::With,
+            266u16 => JavaKind::UnitBeforeFirstMethod,
+            267u16 => JavaKind::CompactBeforeFirstMethod,
+            268u16 => JavaKind::CompactMemberDeclarationNoMethod,
+            269u16 => JavaKind::CompactMemberDeclaration,
+            270u16 => JavaKind::ClassContent,
             _ => return None,
         };
         Some(kind)
@@ -6711,11 +6713,12 @@ impl JavaMethodReference {
             .nth(0)
     }
     #[must_use]
-    pub fn name(&self) -> Option<JavaIdentifier> {
+    pub fn member_name(&self) -> Option<JavaMethodReferenceName> {
         self.syntax
             .children()
             .filter_map(|node| {
-                <JavaIdentifier as rezel_common::TypedNode>::downcast_from(node).ok()
+                <JavaMethodReferenceName as rezel_common::TypedNode>::downcast_from(node)
+                    .ok()
             })
             .nth(0)
     }
@@ -6726,6 +6729,40 @@ impl JavaMethodReference {
             .filter(|node| {
                 <JavaLanguage as rezel_common::SyntaxLanguage>::kind(node)
                     == Some(JavaKind::New)
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct JavaMethodReferenceName {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for JavaMethodReferenceName {
+    type Language = JavaLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <JavaLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(JavaKind::MethodReferenceName) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl JavaMethodReferenceName {
+    #[must_use]
+    pub fn identifier(&self) -> Option<JavaIdentifier> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <JavaIdentifier as rezel_common::TypedNode>::downcast_from(node).ok()
             })
             .nth(0)
     }

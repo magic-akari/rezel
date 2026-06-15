@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/java/grammar/java.grammar",
-				"sha256": "b6d41d2a9c32de5a653db04d11f567087fa95b22a36ccae49b0fc78476839d63"
+				"sha256": "5863cd6ca9652692d7150333cbdbdfc72f82f8d9f66ddac7d5e57ad8bde38ec6"
 			},
 			"identifierTables": {
 				"path": "languages/java/src/unicode17.rs",
@@ -2319,6 +2319,451 @@
 			}
 		},
 		{
+			"id": "method-references",
+			"tree": {
+				"name": "Program",
+				"from": 0,
+				"to": 174,
+				"children": [
+					{
+						"name": "CompilationUnit",
+						"from": 0,
+						"to": 174,
+						"children": [
+							{
+								"name": "UnnamedCompilationUnit",
+								"from": 0,
+								"to": 174,
+								"children": [
+									{
+										"name": "UnitBeforeFirstMethod",
+										"from": 0,
+										"to": 174,
+										"children": [
+											{
+												"name": "TopLevelDeclaration",
+												"from": 0,
+												"to": 174,
+												"children": [
+													{
+														"name": "ClassDeclaration",
+														"from": 0,
+														"to": 174,
+														"children": [
+															{
+																"name": "ClassDeclarationCore",
+																"from": 0,
+																"to": 174,
+																"children": [
+																	{
+																		"name": "class",
+																		"from": 0,
+																		"to": 5
+																	},
+																	{
+																		"name": "Definition",
+																		"from": 6,
+																		"to": 16
+																	},
+																	{
+																		"name": "ClassBody",
+																		"from": 17,
+																		"to": 174,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 17,
+																				"to": 18
+																			},
+																			{
+																				"name": "MethodDeclaration",
+																				"from": 19,
+																				"to": 94,
+																				"children": [
+																					{
+																						"name": "GenericType",
+																						"from": 19,
+																						"to": 62,
+																						"children": [
+																							{
+																								"name": "ScopedTypeName",
+																								"from": 19,
+																								"to": 46,
+																								"children": [
+																									{
+																										"name": "ScopedTypeName",
+																										"from": 19,
+																										"to": 37,
+																										"children": [
+																											{
+																												"name": "ScopedTypeName",
+																												"from": 19,
+																												"to": 28,
+																												"children": [
+																													{
+																														"name": "TypeName",
+																														"from": 19,
+																														"to": 23
+																													},
+																													{
+																														"name": ".",
+																														"from": 23,
+																														"to": 24
+																													},
+																													{
+																														"name": "TypeName",
+																														"from": 24,
+																														"to": 28
+																													}
+																												]
+																											},
+																											{
+																												"name": ".",
+																												"from": 28,
+																												"to": 29
+																											},
+																											{
+																												"name": "TypeName",
+																												"from": 29,
+																												"to": 37
+																											}
+																										]
+																									},
+																									{
+																										"name": ".",
+																										"from": 37,
+																										"to": 38
+																									},
+																									{
+																										"name": "TypeName",
+																										"from": 38,
+																										"to": 46
+																									}
+																								]
+																							},
+																							{
+																								"name": "TypeArguments",
+																								"from": 46,
+																								"to": 62,
+																								"children": [
+																									{
+																										"name": "TypeName",
+																										"from": 47,
+																										"to": 53
+																									},
+																									{
+																										"name": ",",
+																										"from": 53,
+																										"to": 54
+																									},
+																									{
+																										"name": "TypeName",
+																										"from": 55,
+																										"to": 61
+																									}
+																								]
+																							}
+																						]
+																					},
+																					{
+																						"name": "Definition",
+																						"from": 63,
+																						"to": 67
+																					},
+																					{
+																						"name": "FormalParameters",
+																						"from": 67,
+																						"to": 69,
+																						"children": [
+																							{
+																								"name": "(",
+																								"from": 67,
+																								"to": 68
+																							},
+																							{
+																								"name": ")",
+																								"from": 68,
+																								"to": 69
+																							}
+																						]
+																					},
+																					{
+																						"name": "Block",
+																						"from": 70,
+																						"to": 94,
+																						"children": [
+																							{
+																								"name": "{",
+																								"from": 70,
+																								"to": 71
+																							},
+																							{
+																								"name": "ReturnStatement",
+																								"from": 72,
+																								"to": 92,
+																								"children": [
+																									{
+																										"name": "return",
+																										"from": 72,
+																										"to": 78
+																									},
+																									{
+																										"name": "MethodReference",
+																										"from": 79,
+																										"to": 91,
+																										"children": [
+																											{
+																												"name": "TypeName",
+																												"from": 79,
+																												"to": 85
+																											},
+																											{
+																												"name": "::",
+																												"from": 85,
+																												"to": 87
+																											},
+																											{
+																												"name": "MethodReferenceName",
+																												"from": 87,
+																												"to": 91,
+																												"children": [
+																													{
+																														"name": "Identifier",
+																														"from": 87,
+																														"to": 91
+																													}
+																												]
+																											}
+																										]
+																									},
+																									{
+																										"name": ";",
+																										"from": 91,
+																										"to": 92
+																									}
+																								]
+																							},
+																							{
+																								"name": "}",
+																								"from": 93,
+																								"to": 94
+																							}
+																						]
+																					}
+																				]
+																			},
+																			{
+																				"name": "MethodDeclaration",
+																				"from": 95,
+																				"to": 172,
+																				"children": [
+																					{
+																						"name": "GenericType",
+																						"from": 95,
+																						"to": 130,
+																						"children": [
+																							{
+																								"name": "ScopedTypeName",
+																								"from": 95,
+																								"to": 122,
+																								"children": [
+																									{
+																										"name": "ScopedTypeName",
+																										"from": 95,
+																										"to": 113,
+																										"children": [
+																											{
+																												"name": "ScopedTypeName",
+																												"from": 95,
+																												"to": 104,
+																												"children": [
+																													{
+																														"name": "TypeName",
+																														"from": 95,
+																														"to": 99
+																													},
+																													{
+																														"name": ".",
+																														"from": 99,
+																														"to": 100
+																													},
+																													{
+																														"name": "TypeName",
+																														"from": 100,
+																														"to": 104
+																													}
+																												]
+																											},
+																											{
+																												"name": ".",
+																												"from": 104,
+																												"to": 105
+																											},
+																											{
+																												"name": "TypeName",
+																												"from": 105,
+																												"to": 113
+																											}
+																										]
+																									},
+																									{
+																										"name": ".",
+																										"from": 113,
+																										"to": 114
+																									},
+																									{
+																										"name": "TypeName",
+																										"from": 114,
+																										"to": 122
+																									}
+																								]
+																							},
+																							{
+																								"name": "TypeArguments",
+																								"from": 122,
+																								"to": 130,
+																								"children": [
+																									{
+																										"name": "TypeName",
+																										"from": 123,
+																										"to": 129
+																									}
+																								]
+																							}
+																						]
+																					},
+																					{
+																						"name": "Definition",
+																						"from": 131,
+																						"to": 136
+																					},
+																					{
+																						"name": "FormalParameters",
+																						"from": 136,
+																						"to": 149,
+																						"children": [
+																							{
+																								"name": "(",
+																								"from": 136,
+																								"to": 137
+																							},
+																							{
+																								"name": "FormalParameter",
+																								"from": 137,
+																								"to": 148,
+																								"children": [
+																									{
+																										"name": "TypeName",
+																										"from": 137,
+																										"to": 143
+																									},
+																									{
+																										"name": "Definition",
+																										"from": 144,
+																										"to": 148
+																									}
+																								]
+																							},
+																							{
+																								"name": ")",
+																								"from": 148,
+																								"to": 149
+																							}
+																						]
+																					},
+																					{
+																						"name": "Block",
+																						"from": 150,
+																						"to": 172,
+																						"children": [
+																							{
+																								"name": "{",
+																								"from": 150,
+																								"to": 151
+																							},
+																							{
+																								"name": "ReturnStatement",
+																								"from": 152,
+																								"to": 170,
+																								"children": [
+																									{
+																										"name": "return",
+																										"from": 152,
+																										"to": 158
+																									},
+																									{
+																										"name": "MethodReference",
+																										"from": 159,
+																										"to": 169,
+																										"children": [
+																											{
+																												"name": "TypeName",
+																												"from": 159,
+																												"to": 163
+																											},
+																											{
+																												"name": "::",
+																												"from": 163,
+																												"to": 165
+																											},
+																											{
+																												"name": "MethodReferenceName",
+																												"from": 165,
+																												"to": 169,
+																												"children": [
+																													{
+																														"name": "Identifier",
+																														"from": 165,
+																														"to": 169
+																													}
+																												]
+																											}
+																										]
+																									},
+																									{
+																										"name": ";",
+																										"from": 169,
+																										"to": 170
+																									}
+																								]
+																							},
+																							{
+																								"name": "}",
+																								"from": 171,
+																								"to": 172
+																							}
+																						]
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 173,
+																				"to": 174
+																			}
+																		]
+																	}
+																]
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "UnitBeforeFirstMethod",
+												"from": 174,
+												"to": 174
+											}
+										]
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
 			"id": "unicode-translation",
 			"tree": {
 				"name": "Program",
@@ -4022,9 +4467,16 @@
 																																				"to": 246
 																																			},
 																																			{
-																																				"name": "Identifier",
+																																				"name": "MethodReferenceName",
 																																				"from": 246,
-																																				"to": 250
+																																				"to": 250,
+																																				"children": [
+																																					{
+																																						"name": "Identifier",
+																																						"from": 246,
+																																						"to": 250
+																																					}
+																																				]
 																																			}
 																																		]
 																																	},

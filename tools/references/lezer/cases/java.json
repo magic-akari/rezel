@@ -10,6 +10,10 @@
 			"source": "class Flow { int run(Object input, int[] values) { int total = 0; outer: for (int value : values) { if (value < 0) continue outer; total += value; } try (var stream = java.util.stream.Stream.of(input)) { return switch (input) { case String text when !text.isEmpty() -> text.length(); case Integer number -> number.intValue(); default -> total; }; } catch (RuntimeException error) { throw error; } finally { total++; } } java.util.function.IntUnaryOperator op() { return value -> value * 2; } }"
 		},
 		{
+			"id": "method-references",
+			"source": "class References { java.util.function.Function<String, String> type() { return String::trim; } java.util.function.Supplier<String> value(String text) { return text::trim; } }"
+		},
+		{
 			"id": "unicode-translation",
 			"source": "cl\\u0061ss Café { String value = \"raw\"; \\u0069nt 变量 = 1; \\u002f\\u002f translated comment\\u000a int next = 2; }"
 		},

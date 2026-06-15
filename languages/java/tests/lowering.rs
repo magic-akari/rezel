@@ -79,3 +79,34 @@ fn lowering_rejects_recovery_trees() {
         Err(AstError::RecoveryTree)
     ));
 }
+
+#[test]
+fn method_reference_lowering_uses_the_member_identifier() {
+    let source = r"
+        class References {
+            java.util.function.Function<String, String> trim() {
+                return String::trim;
+            }
+        }
+    ";
+    let tree = rezel_lang_java::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let ast = JavaAst::lower(&tree, source).unwrap();
+    let reference = ast
+        .nodes()
+        .iter()
+        .position(|node| node.kind() == JavaAstKind::MemberReference)
+        .and_then(rezel_lang_java::ast::AstNodeId::from_index)
+        .expect("the source contains one method reference");
+    let name = ast
+        .properties(reference)
+        .unwrap()
+        .iter()
+        .find_map(|property| match property {
+            JavaAstProperty::Name(name) => ast.string(*name),
+            _ => None,
+        });
+    assert_eq!(name, Some("trim"));
+}

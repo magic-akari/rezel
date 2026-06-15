@@ -3485,10 +3485,14 @@ impl<'source> Lowerer<'source> {
         let reference = self
             .ast
             .push_node(JavaAstKind::MemberReference, node.range().into())?;
-        let (name, name_range, is_new) = if let Some(name) = shape.name() {
+        let (name, name_range, is_new) = if let Some(name) = shape.member_name() {
+            let identifier = name.identifier().ok_or(AstError::InconsistentCst {
+                context: "MethodReference",
+                expected: "Identifier",
+            })?;
             (
-                self.cooked_name(name.syntax())?,
-                name.syntax().range(),
+                self.cooked_name(identifier.syntax())?,
+                identifier.syntax().range(),
                 false,
             )
         } else if let Some(new_token) = shape.new_token() {

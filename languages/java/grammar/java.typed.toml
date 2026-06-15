@@ -2439,15 +2439,25 @@ cardinality = "optional"
 selector = { node = "TypeArguments" }
 
 [[node.field]]
-name = "name"
-type = "JavaIdentifier"
+name = "member_name"
+type = "JavaMethodReferenceName"
 cardinality = "optional"
-selector = { node = "Identifier" }
+selector = { node = "MethodReferenceName" }
 
 [[node.field]]
 name = "new_token"
 cardinality = "optional"
 selector = { token = "new" }
+
+[[node]]
+name = "JavaMethodReferenceName"
+kind = "MethodReferenceName"
+
+[[node.field]]
+name = "identifier"
+type = "JavaIdentifier"
+cardinality = "one"
+selector = { node = "Identifier" }
 
 [[node]]
 name = "JavaArrayCreationExpression"
