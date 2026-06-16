@@ -1,5 +1,7 @@
 use rezel_common::{SyntaxNode, TextSize, Tree};
 
+use crate::terms;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct RustSyntaxError {
     position: TextSize,
@@ -215,9 +217,13 @@ fn validate_integer(node: &SyntaxNode, source: &str) -> Result<(), RustSyntaxErr
 
 fn validate_float(node: &SyntaxNode, source: &str) -> Result<(), RustSyntaxError> {
     let spelling = node_text(node, source)?;
-    let (body, has_suffix) = if let Some(body) = spelling.strip_suffix("f32") {
+    let (body, has_suffix) = if let Some(body) = spelling.strip_suffix("f16") {
+        (body, true)
+    } else if let Some(body) = spelling.strip_suffix("f32") {
         (body, true)
     } else if let Some(body) = spelling.strip_suffix("f64") {
+        (body, true)
+    } else if let Some(body) = spelling.strip_suffix("f128") {
         (body, true)
     } else {
         (spelling, false)
@@ -718,13 +724,15 @@ fn validate_let_chain(chain: &SyntaxNode) -> Result<(), RustSyntaxError> {
 fn validate_let_chain_operand(operand: &SyntaxNode) -> Result<(), RustSyntaxError> {
     let excluded = match operand.name().as_ref() {
         "AssignmentExpression" | "RangeExpression" | "StructExpression" => true,
-        "BinaryExpression" => operand.child_by_name("LogicOp").is_some(),
+        "BinaryExpression" => operand
+            .child_by_name("LogicOp")
+            .is_some_and(|operator| operator.node_type().id() == terms::OrOp),
         _ => false,
     };
     if excluded {
         return Err(RustSyntaxError::new(
             operand.from(),
-            "a let-chain operand without a top-level lazy boolean, range, assignment, or struct expression",
+            "a let-chain operand without a top-level `||`, range, assignment, or struct expression",
         ));
     }
     Ok(())

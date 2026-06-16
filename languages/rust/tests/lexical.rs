@@ -35,6 +35,23 @@ fn lexical() {
 }
 
 #[test]
+fn block_comments_keep_searching_for_the_end_after_repeated_slashes() {
+    let source = r"
+fn comments() {
+    /*
+     * https://example.com/reference
+     * integer division // inside quoted source
+     */
+    consume();
+}
+";
+    rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .expect("slashes inside a block comment do not hide its closing delimiter");
+}
+
+#[test]
 fn crlf_normalization_preserves_raw_source_coordinates() {
     let source = "fn lexical() {\r\n    let _ = \"left\r\nright\";\r\n}\r\n";
     let tree = rezel_lang_rust::parser()
@@ -56,6 +73,22 @@ fn recovering_mode_keeps_a_tree_for_strict_literal_errors() {
     rezel_lang_rust::parser()
         .parse(source)
         .expect("recovering Rust parsing preserves an editor CST");
+}
+
+#[test]
+fn unstable_float_width_suffixes_follow_rust_1_95_lexing() {
+    let source = r"
+fn floats() {
+    let _: f16 = 1f16;
+    let _: f16 = 10000.0_f16;
+    let _: f128 = 1f128;
+    let _: f128 = 3.14159265358979323846264338327950288419716939937510_f128;
+}
+";
+    rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .expect("Rust 1.95 lexes f16 and f128 suffixes as floating-point literals");
 }
 
 fn raw_string_source(hash_count: usize) -> String {

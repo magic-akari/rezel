@@ -23,6 +23,7 @@ const QUOTE: u32 = b'"' as u32;
 const PIPE: u32 = b'|' as u32;
 const LESS_THAN: u32 = b'<' as u32;
 const GREATER_THAN: u32 = b'>' as u32;
+const EQUAL: u32 = b'=' as u32;
 
 const FLAGS: TokenizerFlags = TokenizerFlags {
     contextual: false,
@@ -76,14 +77,24 @@ fn scan_number(input: &mut InputStream) -> Result<(), ParseError> {
     if current(input) == Some(F) {
         let after = peek(input, 1);
         let after_after = peek(input, 2);
-        if (after == Some(ZERO + 3) && after_after == Some(ZERO + 2))
-            || (after == Some(ZERO + 6) && after_after == Some(ZERO + 4))
+        let after_after_after = peek(input, 3);
+        let suffix_width = if matches!(
+            (after, after_after),
+            (Some(value), Some(next))
+                if (value == ZERO + 1 && next == ZERO + 6)
+                    || (value == ZERO + 3 && next == ZERO + 2)
+                    || (value == ZERO + 6 && next == ZERO + 4)
+        ) {
+            3
+        } else if (after, after_after, after_after_after)
+            == (Some(ZERO + 1), Some(ZERO + 2), Some(ZERO + 8))
         {
-            input.advance(3);
-            is_float = true;
+            4
         } else {
             return Ok(());
-        }
+        };
+        input.advance(suffix_width);
+        is_float = true;
     }
 
     if is_float {
@@ -144,7 +155,7 @@ fn scan_type_parameter_delimiters(
     _stack: &Stack,
 ) -> Result<(), ParseError> {
     match current(input) {
-        Some(LESS_THAN) => {
+        Some(LESS_THAN) if peek(input, 1) != Some(EQUAL) => {
             input.advance(1);
             input.accept_token(terms::tpOpen)?;
         }

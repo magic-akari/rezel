@@ -13,9 +13,10 @@ The maintained grammar also covers Edition 2024 unsafe extern blocks and
 foreign-item safety qualifiers, raw borrow expressions, and precise capturing
 `use<...>` bounds.
 
-The parser does not yet claim complete Rust 1.95.0 language coverage. In
-particular, source-file BOM and shebang removal, broad-corpus validation, and
-the remaining grammar audit still need to be aligned.
+The parser does not yet claim complete Rust 1.95.0 language coverage. The
+remaining work is a Reference-driven grammar and negative-conformance audit;
+the standard-library corpus is broad positive evidence, not a substitute for
+that audit. Source-file BOM and shebang removal also remain outside the parser.
 
 ## Parsing
 
@@ -52,11 +53,32 @@ Non-obvious implementation behavior is cross-checked against
 `rust-lang/rust` revision
 `59807616e1fa2540724bfbac14d7976d7e4a3860` (tag `1.95.0`).
 Relevant entry points are `rustc_parse::parser::item::parse_item_kind` and
-`parse_foreign_item`, `rustc_parse::parser::expr::parse_borrow_modifiers`,
+`is_macro_rules_item`, `parse_foreign_item`,
+`rustc_parse::parser::expr::parse_borrow_modifiers`,
 `rustc_parse::parser::ty::parse_use_bound`, and
 `rustc_ast_passes::ast_validation::AstValidator::walk_ty`. Rezel normalizes
 those decisions into LR productions and strict CST validation; it does not
 transcribe rustc's recursive-descent control flow or recovery diagnostics.
+In particular, `macro_rules` uses contextual tokenization with finite
+token-level lookahead for `!` and the definition name. That keeps the LR
+grammar deterministic at this boundary while preserving `macro_rules! {}`
+as an ordinary same-named macro invocation.
+
+## Standard-library corpus
+
+`mise run reference:stdlib:rust` recursively parses every `.rs` file under the
+`rust-src` standard-library `library` tree from Rust 1.95.0 revision
+`59807616e1fa2540724bfbac14d7976d7e4a3860`. The pinned inventory contains
+1,964 files, has no exclusions, uses the complete `SourceFile` entry point in
+strict mode with the parser's default resource limits, and expects every file
+to be accepted with no recovery or known-rejection allowance.
+
+The runner verifies both the toolchain release and commit before collecting
+source, then verifies the exact file count. This makes corpus drift explicit.
+It establishes practical coverage over the Rust 1.95 standard library,
+including large macro token trees, but it does not establish rejection
+behavior, semantic validity, Edition-specific name resolution, or syntax that
+the standard library does not exercise.
 
 ## Typed CST
 

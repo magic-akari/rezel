@@ -17,6 +17,7 @@ interface LiteralTerms {
 
 interface IdentifierTerms {
 	identifier: number;
+	macroRulesKeyword: number;
 	metavariable: number;
 	quoteIdentifier: number;
 	tokenIdentifier: number;
@@ -31,6 +32,7 @@ const LOWER_B = 98;
 const LOWER_C = 99;
 const LOWER_E = 101;
 const LOWER_F = 102;
+const LOWER_M = 109;
 const LOWER_R = 114;
 const UPPER_E = 69;
 const ZERO = 48;
@@ -45,8 +47,14 @@ const UNDERSCORE = 95;
 const PIPE = 124;
 const LESS_THAN = 60;
 const GREATER_THAN = 62;
+const EQUAL = 61;
+const BANG = 33;
+const SLASH = 47;
+const STAR = 42;
+const LINE_FEED = 10;
 const XID_START = /^\p{XID_Start}$/u;
 const XID_CONTINUE = /^\p{XID_Continue}$/u;
+const MACRO_RULES = "macro_rules";
 const RESERVED_RAW_NAMES = new Set(["_", "crate", "self", "Self", "super"]);
 
 export function buildRustParser(options: BuildRustParserOptions): ReturnType<typeof buildParser> {
@@ -72,6 +80,7 @@ export function buildRustParser(options: BuildRustParserOptions): ReturnType<typ
 				case "rustIdentifiers":
 					return rustIdentifiers({
 						identifier: requiredTerm(terms, "identifier"),
+						macroRulesKeyword: requiredTerm(terms, "macroRulesKeyword"),
 						metavariable: requiredTerm(terms, "Metavariable"),
 						quoteIdentifier: requiredTerm(terms, "quoteIdentifier"),
 						tokenIdentifier: requiredTerm(terms, "tokenIdentifier"),
@@ -119,7 +128,8 @@ function scanIdentifier(input: InputStream, stack: Stack, terms: IdentifierTerms
 		input.advance(2);
 	}
 
-	const name = scanIdentifierBody(input, raw);
+	const macroRulesCandidate = !raw && next(input) === LOWER_M && stack.canShift(terms.macroRulesKeyword);
+	const name = scanIdentifierBody(input, raw || macroRulesCandidate);
 	if (name === undefined) {
 		return;
 	}
@@ -127,7 +137,123 @@ function scanIdentifier(input: InputStream, stack: Stack, terms: IdentifierTerms
 		return;
 	}
 
-	input.acceptToken(stack.canShift(terms.tokenIdentifier) ? terms.tokenIdentifier : terms.identifier);
+	const term =
+		macroRulesCandidate && name === MACRO_RULES && macroRulesDefinitionFollows(input)
+			? terms.macroRulesKeyword
+			: stack.canShift(terms.tokenIdentifier)
+				? terms.tokenIdentifier
+				: terms.identifier;
+	input.acceptToken(term);
+}
+
+function macroRulesDefinitionFollows(input: InputStream): boolean {
+	// Keep the reference tokenizer aligned with rustc's `is_macro_rules_item`
+	// decision and the native tokenizer's deterministic LR boundary.
+	const lookahead = { input, offset: 0 };
+	if (!skipTrivia(lookahead) || advanceLookahead(lookahead) !== BANG) {
+		return false;
+	}
+	return skipTrivia(lookahead) && nextLookaheadTokenIsIdentifier(lookahead);
+}
+
+interface Lookahead {
+	input: InputStream;
+	offset: number;
+}
+
+function peekLookahead(lookahead: Lookahead): CodePoint | null {
+	return codePoint(lookahead.input.peek(lookahead.offset), lookahead.input.peek(lookahead.offset + 1));
+}
+
+function advanceLookahead(lookahead: Lookahead): number | null {
+	const character = peekLookahead(lookahead);
+	if (character === null) {
+		return null;
+	}
+	lookahead.offset += character.width;
+	return character.value;
+}
+
+function skipTrivia(lookahead: Lookahead): boolean {
+	for (;;) {
+		let character = peekLookahead(lookahead);
+		while (character !== null && isWhitespace(character.value)) {
+			advanceLookahead(lookahead);
+			character = peekLookahead(lookahead);
+		}
+		if (character?.value !== SLASH) {
+			return true;
+		}
+
+		advanceLookahead(lookahead);
+		character = peekLookahead(lookahead);
+		if (character?.value === SLASH) {
+			do {
+				advanceLookahead(lookahead);
+				character = peekLookahead(lookahead);
+			} while (character !== null && character.value !== LINE_FEED);
+		} else if (character?.value === STAR) {
+			advanceLookahead(lookahead);
+			if (!skipBlockComment(lookahead)) {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+}
+
+function skipBlockComment(lookahead: Lookahead): boolean {
+	let depth = 1;
+	for (;;) {
+		const character = advanceLookahead(lookahead);
+		if (character === null) {
+			return false;
+		}
+		const nextCharacter = peekLookahead(lookahead)?.value;
+		if (character === SLASH && nextCharacter === STAR) {
+			advanceLookahead(lookahead);
+			depth += 1;
+		} else if (character === STAR && nextCharacter === SLASH) {
+			advanceLookahead(lookahead);
+			depth -= 1;
+			if (depth === 0) {
+				return true;
+			}
+		}
+	}
+}
+
+function nextLookaheadTokenIsIdentifier(lookahead: Lookahead): boolean {
+	let first = advanceLookahead(lookahead);
+	if (first === null) {
+		return false;
+	}
+	const raw = first === LOWER_R && peekLookahead(lookahead)?.value === HASH;
+	if (raw) {
+		advanceLookahead(lookahead);
+		first = advanceLookahead(lookahead);
+	}
+	if (first === null || (first !== UNDERSCORE && !isXidStart(first))) {
+		return false;
+	}
+
+	let spelling: string | null = raw ? "" : null;
+	if (spelling !== null) {
+		spelling += String.fromCodePoint(first);
+	}
+	let character = peekLookahead(lookahead);
+	while (character !== null && isXidContinue(character.value)) {
+		advanceLookahead(lookahead);
+		if (spelling !== null) {
+			spelling = character.value > 0x7f ? null : spelling + String.fromCodePoint(character.value);
+		}
+		character = peekLookahead(lookahead);
+	}
+
+	return raw
+		? spelling === null || !RESERVED_RAW_NAMES.has(spelling)
+		: character === null || !isReservedPrefixDelimiter(character.value);
 }
 
 function scanMetavariable(input: InputStream, term: number): void {
@@ -211,12 +337,14 @@ function scanNumber(input: InputStream, float: number): void {
 
 	if (next(input) === LOWER_F) {
 		const after = input.peek(1);
+		const f16 = after === ZERO + 1 && input.peek(2) === ZERO + 6;
 		const f32 = after === ZERO + 3 && input.peek(2) === ZERO + 2;
 		const f64 = after === ZERO + 6 && input.peek(2) === ZERO + 4;
-		if (!f32 && !f64) {
+		const f128 = after === ZERO + 1 && input.peek(2) === ZERO + 2 && input.peek(3) === ZERO + 8;
+		if (!f16 && !f32 && !f64 && !f128) {
 			return;
 		}
-		input.advance(3);
+		input.advance(f128 ? 4 : 3);
 		isFloat = true;
 	}
 
@@ -274,7 +402,7 @@ function closureParam(term: number): ExternalTokenizer {
 
 function typeParameterDelimiters(open: number, close: number): ExternalTokenizer {
 	return new ExternalTokenizer((input) => {
-		if (next(input) === LESS_THAN) {
+		if (next(input) === LESS_THAN && input.peek(1) !== EQUAL) {
 			input.acceptToken(open, 1);
 		} else if (next(input) === GREATER_THAN) {
 			input.acceptToken(close, 1);
@@ -309,6 +437,10 @@ function isXidContinue(character: number): boolean {
 
 function isReservedPrefixDelimiter(character: number): boolean {
 	return character === HASH || character === SINGLE_QUOTE || character === QUOTE;
+}
+
+function isWhitespace(character: number): boolean {
+	return character === 32 || character === 9 || character === 13 || character === 10;
 }
 
 function isNumber(character: number): boolean {

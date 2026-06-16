@@ -14,6 +14,7 @@ members = [
 	"tools/references/go/stdlib",
 	"tools/references/javac/stdlib",
 	"tools/references/rustc",
+	"tools/references/rustc/stdlib",
 	"tools/source-alignment",
 ]
 resolver = "3"

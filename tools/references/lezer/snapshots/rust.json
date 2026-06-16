@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/rust/grammar/rust.grammar",
-				"sha256": "97b67647707fb414f36cbde212bcd65d14d7903e392d9a331566769d8ad6dbce"
+				"sha256": "624c2eb3b0b26e2b498f45f661d953cf8cf03cc010d8fc25fe1599029aafe832"
 			}
 		}
 	},
@@ -572,7 +572,7 @@
 									},
 									{
 										"name": "FunctionItem",
-										"from": 226,
+										"from": 231,
 										"to": 285,
 										"children": [
 											{
@@ -1907,7 +1907,7 @@
 					},
 					{
 						"name": "FunctionItem",
-						"from": 116,
+						"from": 118,
 						"to": 171,
 						"children": [
 							{
@@ -4534,7 +4534,7 @@
 					},
 					{
 						"name": "FunctionItem",
-						"from": 109,
+						"from": 111,
 						"to": 629,
 						"children": [
 							{
@@ -5930,7 +5930,7 @@
 					},
 					{
 						"name": "FunctionItem",
-						"from": 355,
+						"from": 357,
 						"to": 549,
 						"children": [
 							{
@@ -6313,7 +6313,7 @@
 					},
 					{
 						"name": "FunctionItem",
-						"from": 549,
+						"from": 551,
 						"to": 683,
 						"children": [
 							{
@@ -6656,7 +6656,7 @@
 					},
 					{
 						"name": "FunctionItem",
-						"from": 683,
+						"from": 685,
 						"to": 735,
 						"children": [
 							{
@@ -6782,7 +6782,7 @@
 					},
 					{
 						"name": "FunctionItem",
-						"from": 735,
+						"from": 737,
 						"to": 821,
 						"children": [
 							{

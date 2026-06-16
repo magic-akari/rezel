@@ -301,6 +301,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rezel-rust-stdlib-reference"
+version = "0.0.0"
+dependencies = [
+ "rezel-lang-rust",
+]
+
+[[package]]
 name = "rezel-rustc-reference"
 version = "0.0.0"
 dependencies = [

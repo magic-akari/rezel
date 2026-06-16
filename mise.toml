@@ -169,7 +169,12 @@ run = "python tools/references/cpython/reference.py --update"
 
 [tasks."reference:stdlib"]
 description = "Verify Rezel against standard-library sources"
-depends = ["reference:stdlib:go", "reference:stdlib:java", "reference:stdlib:python"]
+depends = [
+	"reference:stdlib:go",
+	"reference:stdlib:java",
+	"reference:stdlib:python",
+	"reference:stdlib:rust",
+]
 
 [tasks."reference:stdlib:go"]
 description = "Verify Go standard-library source acceptance"
@@ -196,6 +201,10 @@ run = "cargo run --locked --package rezel-python-stdlib-reference"
 [tasks."reference:stdlib:python:ast"]
 description = "Compare all Python standard-library ASTs with CPython"
 run = "cargo run --locked --package rezel-python-stdlib-reference -- --ast-oracle"
+
+[tasks."reference:stdlib:rust"]
+description = "Verify Rust 1.95 standard-library source acceptance"
+run = "cargo run --locked --package rezel-rust-stdlib-reference"
 
 [tasks.test]
 description = "Run Rust tests"
