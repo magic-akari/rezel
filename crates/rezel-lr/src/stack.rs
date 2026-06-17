@@ -148,9 +148,9 @@ pub struct Stack {
     score: i32,
     buffer: Vec<u32>,
     buffer_base: usize,
-    // Absolute base at which this logical branch started writing. Physical
-    // prefix chunks may be frozen later, but Lezer's pruning policy ranks
-    // branches by the equivalent local-buffer length.
+    // Absolute buffer position at the most recent split. Both siblings reset
+    // this to the same logical end, so pruning measures only records produced
+    // after divergence and shared prefix chunks do not age either branch.
     branch_buffer_base: usize,
     parent_buffer: Option<Arc<BufferChunk>>,
     context: Option<StackContext>,
@@ -576,6 +576,8 @@ impl Stack {
             self.parent_buffer = Some(parent);
             self.buffer = suffix;
         }
+        let branch_buffer_base = self.buffer_base + self.buffer.len();
+        self.branch_buffer_base = branch_buffer_base;
         Self {
             core: Arc::clone(&self.core),
             frames: self.frames.clone(),
@@ -585,7 +587,7 @@ impl Stack {
             score: self.score,
             buffer: self.buffer.clone(),
             buffer_base: self.buffer_base,
-            branch_buffer_base: self.buffer_base,
+            branch_buffer_base,
             parent_buffer: self.parent_buffer.clone(),
             context: self.context.clone(),
             parse_start: self.parse_start,
