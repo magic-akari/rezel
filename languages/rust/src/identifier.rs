@@ -2,10 +2,9 @@ use rezel_common::{CodePoint, ParseError};
 use rezel_lr::{ExternalTokenizer, InputStream, Stack, TokenizerFlags};
 use std::iter::Peekable;
 
-use crate::terms;
+use crate::{input::is_whitespace, terms};
 
 const BANG: u32 = b'!' as u32;
-const CARRIAGE_RETURN: u32 = b'\r' as u32;
 const DOLLAR: u32 = b'$' as u32;
 const HASH: u32 = b'#' as u32;
 const LINE_FEED: u32 = b'\n' as u32;
@@ -14,9 +13,7 @@ const QUOTE: u32 = b'\'' as u32;
 const DOUBLE_QUOTE: u32 = b'"' as u32;
 const LOWER_R: u32 = b'r' as u32;
 const SLASH: u32 = b'/' as u32;
-const SPACE: u32 = b' ' as u32;
 const STAR: u32 = b'*' as u32;
-const TAB: u32 = b'\t' as u32;
 const UNDERSCORE: u32 = b'_' as u32;
 const MACRO_RULES: &str = "macro_rules";
 
@@ -273,10 +270,6 @@ fn is_reserved_raw_name(name: &str) -> bool {
 
 fn is_reserved_prefix_delimiter(value: u32) -> bool {
     matches!(value, HASH | QUOTE | DOUBLE_QUOTE)
-}
-
-fn is_whitespace(value: u32) -> bool {
-    matches!(value, SPACE | TAB | CARRIAGE_RETURN | LINE_FEED)
 }
 
 fn is_xid_start(value: u32) -> bool {

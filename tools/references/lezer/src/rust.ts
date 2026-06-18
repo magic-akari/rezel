@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { IterMode, type Tree, type TreeCursor } from "@lezer/common";
 
-import { buildRustParser } from "./rust-support.ts";
+import { buildRustParser, rustSourceInput } from "./rust-support.ts";
 
 interface ReferenceCase {
 	id: string;
@@ -104,7 +104,7 @@ if (process.argv.includes("--update")) {
 }
 
 function parseCase(activeParser: ReturnType<typeof parser.configure>, testCase: ReferenceCase): ReferenceNode {
-	const tree = activeParser.parse(testCase.source);
+	const tree = activeParser.parse(rustSourceInput(testCase.source));
 	assert.equal(tree.length, testCase.source.length);
 	const projected = project(tree, utf8Boundaries(testCase.source));
 	assert.equal(projected.from, 0);

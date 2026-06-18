@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/rust/grammar/rust.grammar",
-				"sha256": "624c2eb3b0b26e2b498f45f661d953cf8cf03cc010d8fc25fe1599029aafe832"
+				"sha256": "1f594b9ac6c9c6b22df3111a982a0dc0fe78280dd51d264dcb420565ca370adf"
 			}
 		}
 	},
@@ -5315,6 +5315,135 @@
 										"name": "}",
 										"from": 628,
 										"to": 629
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "rust-1-95-source-input",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 119,
+				"children": [
+					{
+						"name": "InnerAttribute",
+						"from": 25,
+						"to": 78,
+						"children": [
+							{
+								"name": "!",
+								"from": 26,
+								"to": 27
+							},
+							{
+								"name": "BlockComment",
+								"from": 28,
+								"to": 56,
+								"children": [
+									{
+										"name": "BlockComment",
+										"from": 37,
+										"to": 48
+									}
+								]
+							},
+							{
+								"name": "[",
+								"from": 60,
+								"to": 61
+							},
+							{
+								"name": "MetaItem",
+								"from": 61,
+								"to": 77,
+								"children": [
+									{
+										"name": "Identifier",
+										"from": 61,
+										"to": 66
+									},
+									{
+										"name": "ParenthesizedTokens",
+										"from": 66,
+										"to": 77,
+										"children": [
+											{
+												"name": "(",
+												"from": 66,
+												"to": 67
+											},
+											{
+												"name": "Identifier",
+												"from": 67,
+												"to": 76
+											},
+											{
+												"name": ")",
+												"from": 76,
+												"to": 77
+											}
+										]
+									}
+								]
+							},
+							{
+								"name": "]",
+								"from": 77,
+								"to": 78
+							}
+						]
+					},
+					{
+						"name": "FunctionItem",
+						"from": 79,
+						"to": 118,
+						"children": [
+							{
+								"name": "fn",
+								"from": 79,
+								"to": 81
+							},
+							{
+								"name": "BoundIdentifier",
+								"from": 101,
+								"to": 113
+							},
+							{
+								"name": "ParamList",
+								"from": 113,
+								"to": 115,
+								"children": [
+									{
+										"name": "(",
+										"from": 113,
+										"to": 114
+									},
+									{
+										"name": ")",
+										"from": 114,
+										"to": 115
+									}
+								]
+							},
+							{
+								"name": "Block",
+								"from": 116,
+								"to": 118,
+								"children": [
+									{
+										"name": "{",
+										"from": 116,
+										"to": 117
+									},
+									{
+										"name": "}",
+										"from": 117,
+										"to": 118
 									}
 								]
 							}

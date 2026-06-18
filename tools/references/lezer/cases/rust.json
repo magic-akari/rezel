@@ -30,6 +30,10 @@
 			"source": "#![allow(dead_code, uncommon_codepoints, unused_variables)]\n\nmacro_rules! sink {\n    ($($token:tt)*) => {};\n}\n\nfn lexical<'r#type>(࢏value: &'r#type str) {\n    let 東京 = ࢏value;\n    let r#gen = 1usize;\n    let value2em = 1;\n    let _ = c\"æ\\xC3\\u{00E6}\";\n    let _ = cr##\"raw \\\" C\"##;\n    let _ = b\"ASCII\\xFF\";\n    let _ = br#\"ASCII only\"#;\n    let _ = '\\u{1F980}';\n    let _ = b'\\xFF';\n    let _ = 0b________1;\n    let _ = 0o__70_i16;\n    let _ = 0x01_f32;\n    let _ = 123_;\n    let _ = 2.;\n    let _ = 1e+__2f64;\n    let _ = 12E+99_f64;\n    let _ = 東京;\n    let _ = r#gen;\n    let _ = value2em;\n    sink!(r#let#foo);\n}\n"
 		},
 		{
+			"id": "rust-1-95-source-input",
+			"source": "﻿#!/usr/bin/env rustx\r\n#! /* outer /* inner */ tail */ ‎[allow(dead_code)]\nfn\t\n\u000b\f\r ‎‏  source_input() {}\n"
+		},
+		{
 			"id": "rust-1-95-edition-2024-modern-syntax",
 			"source": "#![allow(dead_code)]\n\nunsafe extern \"C\" {\n    pub safe fn safe_foreign(value: i32) -> i32;\n    pub unsafe fn unsafe_foreign(value: *const u8) -> usize;\n    pub fn implicit_unsafe();\n    pub unsafe fn variadic(format: *const u8, args: ...);\n\n    pub safe static READ_ONLY: i32;\n    pub unsafe static EXPLICIT_UNSAFE: i32;\n    pub static mut MUTABLE: i32;\n}\n\nfn raw_borrows(value: &mut i32) -> (*const i32, *mut i32) {\n    let shared = &raw const *value;\n    let mutable = &raw mut *value;\n    let _nested = &&raw const *value;\n    (shared, mutable)\n}\n\nfn precise<'a, 'b, T, const N: usize>(\n    value: &'a T,\n    bytes: [u8; N],\n) -> impl Sized + use<'a, T, N,> {\n    (value, bytes)\n}\n\nfn capture_none() -> impl Sized + use<> {\n    ()\n}\n\nfn weak_keywords() {\n    let raw = 1;\n    let safe = 2;\n    let _ = (&raw, &safe);\n}\n"
 		},

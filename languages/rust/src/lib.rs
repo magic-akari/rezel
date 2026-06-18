@@ -17,6 +17,7 @@ use rezel_highlight::TagSet;
 #[rustfmt::skip]
 mod generated;
 mod identifier;
+mod input;
 mod syntax;
 mod tokens;
 #[rustfmt::skip]
@@ -31,7 +32,7 @@ pub use typed::*;
 /// Unicode version used for Rust identifiers and lifetimes.
 pub const UNICODE_VERSION: &str = identifier::UNICODE_VERSION;
 
-/// Rust parser with strict syntax validation.
+/// Rust parser with source-prefix normalization and strict syntax validation.
 pub type RustParser = LRParser;
 
 struct RustValidatedParse {
@@ -94,6 +95,7 @@ fn create_rust_parse(
     parser: &LRParser,
     request: ParseRequest,
 ) -> Result<Box<dyn PartialParse>, ParseError> {
+    let request = request.into_validated()?;
     let full_source = matches!(
         request.selected_ranges(),
         [range]
@@ -101,6 +103,8 @@ fn create_rust_parse(
     );
     let strict = parser.is_strict();
     let input = (strict && full_source).then(|| Arc::clone(request.input()));
+    let lexical_input = Arc::new(input::RustInput::new(Arc::clone(request.input())));
+    let request = request.with_lexical_input(lexical_input)?;
     let inner = parser.create_lr_parse(request)?;
     if !strict {
         return Ok(inner);

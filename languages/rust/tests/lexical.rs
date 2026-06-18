@@ -1,6 +1,80 @@
 #![forbid(unsafe_code)]
 
-use rezel_common::ParseErrorKind;
+use rezel_common::{IterMode, ParseErrorKind, TextRange};
+
+#[test]
+fn source_file_prefix_and_pattern_whitespace_preserve_raw_coordinates() {
+    let whitespace =
+        "\u{0009}\u{000a}\u{000b}\u{000c}\u{000d}\u{0020}\u{0085}\u{200e}\u{200f}\u{2028}\u{2029}";
+    let source = format!("\u{feff}#!/usr/bin/env rustx\r\nfn{whitespace}source_input() {{}}\r\n");
+    let tree = rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(&source)
+        .expect("Rust removes a leading BOM and shebang and recognizes Pattern_White_Space");
+
+    assert_eq!(usize::from(tree.len()), source.len());
+    assert!(tree.to_string().contains("FunctionItem"));
+
+    let expected = source.find("\nfn").unwrap() + 1;
+    let mut function_keyword = None;
+    tree.iterate(
+        TextRange::new(0.into(), tree.len()),
+        IterMode::INCLUDE_ANONYMOUS,
+        |node| {
+            if node.name().as_ref() == "fn" {
+                function_keyword = Some(node.range());
+                return false;
+            }
+            true
+        },
+        |_| {},
+    );
+    let function_keyword = function_keyword.expect("the source contains a function keyword");
+    assert_eq!(usize::from(function_keyword.start()), expected);
+    assert_eq!(
+        &source[usize::from(function_keyword.start())..usize::from(function_keyword.end())],
+        "fn"
+    );
+}
+
+#[test]
+fn inner_attributes_are_not_misclassified_as_shebangs() {
+    for source in [
+        "#! /* outer /* inner */ tail */ \u{200e} [allow(dead_code)]\nfn retained() {}",
+        "#! // ordinary comment\n \u{2028}[allow(dead_code)]\nfn retained() {}",
+        "#! /// documentation comment\n [allow(dead_code)]\nfn retained() {}",
+    ] {
+        let tree = rezel_lang_rust::parser()
+            .with_strict(true)
+            .parse(source)
+            .unwrap_or_else(|error| panic!("inner attribute source failed: {source:?}: {error}"));
+        let shape = tree.to_string();
+        assert!(shape.contains("InnerAttribute"), "{source:?}: {shape}");
+        assert!(shape.contains("FunctionItem"), "{source:?}: {shape}");
+    }
+}
+
+#[test]
+fn source_prefix_transformations_only_apply_at_the_absolute_start() {
+    for source in [
+        " #!/usr/bin/env rustx\nfn misplaced() {}",
+        "\n#!/usr/bin/env rustx\nfn misplaced() {}",
+        "\u{feff}\u{feff}fn misplaced() {}",
+    ] {
+        let error = rezel_lang_rust::parser()
+            .with_strict(true)
+            .parse(source)
+            .expect_err("a misplaced source prefix must remain syntax");
+        assert_eq!(error.kind(), ParseErrorKind::Syntax, "{source:?}");
+    }
+
+    let shebang = "#!/usr/bin/env rustx";
+    let tree = rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(shebang)
+        .expect("a shebang may extend through EOF");
+    assert_eq!(usize::from(tree.len()), shebang.len());
+}
 
 #[test]
 fn raw_strings_enforce_the_255_hash_boundary() {

@@ -51,11 +51,125 @@ const EQUAL = 61;
 const BANG = 33;
 const SLASH = 47;
 const STAR = 42;
+const LEFT_BRACKET = 91;
 const LINE_FEED = 10;
+const BYTE_ORDER_MARK = 0xfeff;
 const XID_START = /^\p{XID_Start}$/u;
 const XID_CONTINUE = /^\p{XID_Continue}$/u;
 const MACRO_RULES = "macro_rules";
 const RESERVED_RAW_NAMES = new Set(["_", "crate", "self", "Self", "super"]);
+
+export function rustSourceInput(source: string): string {
+	const hiddenRanges: Array<readonly [number, number]> = [];
+	let shebangStart = 0;
+	const first = sourceCodePoint(source, shebangStart);
+	if (first?.value === BYTE_ORDER_MARK) {
+		shebangStart += first.width;
+		hiddenRanges.push([0, shebangStart]);
+	}
+
+	const shebangEnd = sourceShebangEnd(source, shebangStart);
+	if (shebangEnd !== null) {
+		hiddenRanges.push([shebangStart, shebangEnd]);
+	}
+	if (hiddenRanges.length === 0) {
+		return source;
+	}
+
+	let result = "";
+	let position = 0;
+	for (const [start, end] of hiddenRanges) {
+		result += source.slice(position, start);
+		for (const character of source.slice(start, end)) {
+			result += " ".repeat(character.length);
+		}
+		position = end;
+	}
+	result += source.slice(position);
+	return result;
+}
+
+function sourceShebangEnd(source: string, start: number): number | null {
+	if (source.codePointAt(start) !== HASH || source.codePointAt(start + 1) !== BANG) {
+		return null;
+	}
+	if (nextSourceTokenIsLeftBracket(source, start + 2)) {
+		return null;
+	}
+	const lineFeed = source.indexOf("\n", start);
+	return lineFeed === -1 ? source.length : lineFeed;
+}
+
+function nextSourceTokenIsLeftBracket(source: string, start: number): boolean {
+	let position = start;
+	for (;;) {
+		let character = sourceCodePoint(source, position);
+		while (character !== null && isWhitespace(character.value)) {
+			position += character.width;
+			character = sourceCodePoint(source, position);
+		}
+		if (character?.value !== SLASH) {
+			return character?.value === LEFT_BRACKET;
+		}
+
+		const comment = sourceCodePoint(source, position + character.width);
+		if (comment?.value === SLASH) {
+			position += character.width + comment.width;
+			for (;;) {
+				character = sourceCodePoint(source, position);
+				if (character === null || character.value === LINE_FEED) {
+					break;
+				}
+				position += character.width;
+			}
+		} else if (comment?.value === STAR) {
+			position += character.width + comment.width;
+			const end = sourceBlockCommentEnd(source, position);
+			if (end === null) {
+				return false;
+			}
+			position = end;
+		} else {
+			return false;
+		}
+	}
+}
+
+function sourceBlockCommentEnd(source: string, start: number): number | null {
+	let depth = 1;
+	let position = start;
+	for (;;) {
+		const character = sourceCodePoint(source, position);
+		if (character === null) {
+			return null;
+		}
+		const nextPosition = position + character.width;
+		const nextCharacter = sourceCodePoint(source, nextPosition);
+		if (character.value === SLASH && nextCharacter?.value === STAR) {
+			depth += 1;
+			position = nextPosition + nextCharacter.width;
+		} else if (character.value === STAR && nextCharacter?.value === SLASH) {
+			depth -= 1;
+			position = nextPosition + nextCharacter.width;
+			if (depth === 0) {
+				return position;
+			}
+		} else {
+			position = nextPosition;
+		}
+	}
+}
+
+function sourceCodePoint(source: string, position: number): CodePoint | null {
+	const value = source.codePointAt(position);
+	if (value === undefined) {
+		return null;
+	}
+	return {
+		value,
+		width: value > 0xffff ? 2 : 1,
+	};
+}
 
 export function buildRustParser(options: BuildRustParserOptions): ReturnType<typeof buildParser> {
 	const emptyProperties: NodePropSource = () => null;
@@ -440,7 +554,15 @@ function isReservedPrefixDelimiter(character: number): boolean {
 }
 
 function isWhitespace(character: number): boolean {
-	return character === 32 || character === 9 || character === 13 || character === 10;
+	return (
+		(character >= 0x0009 && character <= 0x000d) ||
+		character === 0x0020 ||
+		character === 0x0085 ||
+		character === 0x200e ||
+		character === 0x200f ||
+		character === 0x2028 ||
+		character === 0x2029
+	);
 }
 
 function isNumber(character: number): boolean {

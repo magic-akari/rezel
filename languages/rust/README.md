@@ -8,7 +8,10 @@ Rust 1.95.0 / Edition 2024 delta adds let-else statements, let chains,
 `if let` match guards, async closures, and inline const blocks.
 The maintained lexical layer uses Rust 1.95's Unicode 17 identifier profile
 and covers raw identifiers and lifetimes, C and raw C strings, literal escape
-and radix validation, and Edition 2024 reserved guards and prefixes.
+and radix validation, Edition 2024 reserved guards and prefixes, and the full
+Rust `Pattern_White_Space` set. The source-file input view removes an optional
+leading UTF-8 byte order mark and shebang before tokenization while retaining
+original UTF-8 byte coordinates.
 The maintained grammar also covers Edition 2024 unsafe extern blocks and
 foreign-item safety qualifiers, raw borrow expressions, and precise capturing
 `use<...>` bounds.
@@ -16,7 +19,7 @@ foreign-item safety qualifiers, raw borrow expressions, and precise capturing
 The parser does not yet claim complete Rust 1.95.0 language coverage. The
 remaining work is a Reference-driven grammar and negative-conformance audit;
 the standard-library corpus is broad positive evidence, not a substitute for
-that audit. Source-file BOM and shebang removal also remain outside the parser.
+that audit.
 
 ## Parsing
 
@@ -38,6 +41,7 @@ assert_eq!(tree.to_string(), strict_tree.to_string());
 
 The parser accepts UTF-8 Rust strings and reports original UTF-8 byte offsets.
 Identifiers and lifetimes follow Unicode 17 `XID_Start` / `XID_Continue`.
+`SourceFile` applies Rust's leading BOM and shebang rules before tokenization.
 Recovering mode preserves editor CSTs for invalid literal contents; strict
 mode additionally enforces Rust's literal and reserved-token rules.
 

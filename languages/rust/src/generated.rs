@@ -9,7 +9,7 @@ struct GeneratedTables {
     goto: [u16; 10356usize],
     token_states: [rezel_lr::TokenState; 122usize],
     token_accepts: [rezel_lr::TokenAccept; 251usize],
-    token_edges: [rezel_lr::TokenEdge; 1325usize],
+    token_edges: [rezel_lr::TokenEdge; 1332usize],
     token_eof: [rezel_lr::TokenEof; 0usize],
     dynamic_precedences: [i16; 421usize],
 }
