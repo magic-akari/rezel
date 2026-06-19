@@ -3,10 +3,10 @@
 #![allow(clippy::all, clippy::pedantic, missing_docs)]
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum RustKind {
-    Term0,
-    Term1,
-    Term2,
-    Term3,
+    Error,
+    Pipe,
+    LeftAngle,
+    RightAngle,
     RawString,
     Float,
     Identifier,
@@ -15,16 +15,16 @@ pub enum RustKind {
     LineComment,
     BlockComment,
     SourceFile,
-    Term12,
+    RightBracket,
     InnerAttribute,
-    Term14,
-    Term15,
+    Bang,
+    LeftBracket,
     MetaItem,
     SelfKeyword,
     Super,
     Crate,
     ScopedIdentifier,
-    Term22,
+    PathSeparator,
     QualifiedScope,
     AbstractType,
     Impl,
@@ -36,9 +36,9 @@ pub enum RustKind {
     TypeArgList,
     TypeBinding,
     GenericType,
-    Term34,
+    Equals,
     TraitBounds,
-    Term36,
+    Colon,
     Lifetime,
     HigherRankedTraitBound,
     For,
@@ -49,16 +49,16 @@ pub enum RustKind {
     ConstParameter,
     Const,
     BoundIdentifier,
-    Term47,
-    Term48,
+    RightBrace,
+    LeftBrace,
     Block,
-    Term50,
+    Semicolon,
     ConstItem,
     Vis,
     Pub,
-    Term54,
+    LeftParen,
     In,
-    Term56,
+    RightParen,
     Underscore,
     UnsafeBlock,
     Unsafe,
@@ -85,22 +85,22 @@ pub enum RustKind {
     MetaPattern,
     SelfPattern,
     TuplePattern,
-    Term85,
+    Comma,
     StructPattern,
     FieldPatternList,
     FieldPattern,
     Ref,
     Mut,
     FieldIdentifier,
-    Term92,
+    DotDot,
     RefPattern,
     SlicePattern,
     CapturedPattern,
     ReferencePattern,
-    Term97,
+    Ampersand,
     MutPattern,
     RangePattern,
-    Term100,
+    DotDotDot,
     OrPattern,
     MacroPattern,
     ParenthesizedTokens,
@@ -110,8 +110,8 @@ pub enum RustKind {
     LogicOp,
     UpdateOp,
     CompareOp,
-    Term111,
-    Term112,
+    ThinArrow,
+    FatArrow,
     MetavariableExpression,
     BracedTokens,
     Abstract,
@@ -258,10 +258,10 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             return None;
         }
         let kind = match node_type.id() {
-            0u16 => RustKind::Term0,
-            1u16 => RustKind::Term1,
-            2u16 => RustKind::Term2,
-            3u16 => RustKind::Term3,
+            0u16 => RustKind::Error,
+            1u16 => RustKind::Pipe,
+            2u16 => RustKind::LeftAngle,
+            3u16 => RustKind::RightAngle,
             4u16 => RustKind::RawString,
             5u16 => RustKind::Float,
             6u16 => RustKind::Identifier,
@@ -271,10 +271,10 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             9u16 => RustKind::LineComment,
             10u16 => RustKind::BlockComment,
             11u16 => RustKind::SourceFile,
-            12u16 => RustKind::Term12,
+            12u16 => RustKind::RightBracket,
             13u16 => RustKind::InnerAttribute,
-            14u16 => RustKind::Term14,
-            15u16 => RustKind::Term15,
+            14u16 => RustKind::Bang,
+            15u16 => RustKind::LeftBracket,
             16u16 => RustKind::MetaItem,
             17u16 => RustKind::SelfKeyword,
             18u16 => RustKind::Super,
@@ -283,7 +283,7 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             82u16 => RustKind::ScopedIdentifier,
             244u16 => RustKind::ScopedIdentifier,
             246u16 => RustKind::ScopedIdentifier,
-            22u16 => RustKind::Term22,
+            22u16 => RustKind::PathSeparator,
             23u16 => RustKind::QualifiedScope,
             24u16 => RustKind::AbstractType,
             25u16 => RustKind::Impl,
@@ -296,9 +296,9 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             31u16 => RustKind::TypeArgList,
             32u16 => RustKind::TypeBinding,
             33u16 => RustKind::GenericType,
-            34u16 => RustKind::Term34,
+            34u16 => RustKind::Equals,
             35u16 => RustKind::TraitBounds,
-            36u16 => RustKind::Term36,
+            36u16 => RustKind::Colon,
             37u16 => RustKind::Lifetime,
             38u16 => RustKind::HigherRankedTraitBound,
             39u16 => RustKind::For,
@@ -309,16 +309,16 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             44u16 => RustKind::ConstParameter,
             45u16 => RustKind::Const,
             46u16 => RustKind::BoundIdentifier,
-            47u16 => RustKind::Term47,
-            48u16 => RustKind::Term48,
+            47u16 => RustKind::RightBrace,
+            48u16 => RustKind::LeftBrace,
             49u16 => RustKind::Block,
-            50u16 => RustKind::Term50,
+            50u16 => RustKind::Semicolon,
             51u16 => RustKind::ConstItem,
             52u16 => RustKind::Vis,
             53u16 => RustKind::Pub,
-            54u16 => RustKind::Term54,
+            54u16 => RustKind::LeftParen,
             55u16 => RustKind::In,
-            56u16 => RustKind::Term56,
+            56u16 => RustKind::RightParen,
             57u16 => RustKind::Underscore,
             58u16 => RustKind::UnsafeBlock,
             59u16 => RustKind::Unsafe,
@@ -352,22 +352,22 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             80u16 => RustKind::MetaPattern,
             81u16 => RustKind::SelfPattern,
             83u16 => RustKind::TuplePattern,
-            85u16 => RustKind::Term85,
+            85u16 => RustKind::Comma,
             86u16 => RustKind::StructPattern,
             87u16 => RustKind::FieldPatternList,
             88u16 => RustKind::FieldPattern,
             89u16 => RustKind::Ref,
             90u16 => RustKind::Mut,
             91u16 => RustKind::FieldIdentifier,
-            92u16 => RustKind::Term92,
+            92u16 => RustKind::DotDot,
             93u16 => RustKind::RefPattern,
             94u16 => RustKind::SlicePattern,
             95u16 => RustKind::CapturedPattern,
             96u16 => RustKind::ReferencePattern,
-            97u16 => RustKind::Term97,
+            97u16 => RustKind::Ampersand,
             98u16 => RustKind::MutPattern,
             99u16 => RustKind::RangePattern,
-            100u16 => RustKind::Term100,
+            100u16 => RustKind::DotDotDot,
             101u16 => RustKind::OrPattern,
             102u16 => RustKind::MacroPattern,
             103u16 => RustKind::ParenthesizedTokens,
@@ -384,8 +384,8 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             151u16 => RustKind::LogicOp,
             109u16 => RustKind::UpdateOp,
             110u16 => RustKind::CompareOp,
-            111u16 => RustKind::Term111,
-            112u16 => RustKind::Term112,
+            111u16 => RustKind::ThinArrow,
+            112u16 => RustKind::FatArrow,
             113u16 => RustKind::MetavariableExpression,
             114u16 => RustKind::BracedTokens,
             116u16 => RustKind::Abstract,
@@ -567,4 +567,5791 @@ impl rezel_common::TypedNode for RustSourceFile {
         self.syntax
     }
 }
-impl RustSourceFile {}
+impl RustSourceFile {
+    #[must_use]
+    pub fn inner_attributes(&self) -> rezel_common::TypedChildren<RustInnerAttribute> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+    #[must_use]
+    pub fn statements(&self) -> rezel_common::TypedChildren<RustStatement> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustLineComment {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLineComment {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LineComment) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLineComment {}
+#[derive(Clone, Debug)]
+pub struct RustBlockComment {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBlockComment {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BlockComment) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBlockComment {}
+#[derive(Clone, Debug)]
+pub struct RustAttribute {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustAttribute {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Attribute) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustAttribute {
+    #[must_use]
+    pub fn meta(&self) -> Option<RustMetaItem> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustMetaItem as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn left_bracket_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::LeftBracket)
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn right_bracket_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::RightBracket)
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustInnerAttribute {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustInnerAttribute {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::InnerAttribute) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustInnerAttribute {
+    #[must_use]
+    pub fn meta(&self) -> Option<RustMetaItem> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustMetaItem as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn left_bracket_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::LeftBracket)
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn right_bracket_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::RightBracket)
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustMetaItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMetaItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MetaItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMetaItem {}
+#[derive(Clone, Debug)]
+pub struct RustUnsafeAttribute {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUnsafeAttribute {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UnsafeAttribute) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUnsafeAttribute {}
+#[derive(Clone, Debug)]
+pub struct RustIdentifier {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustIdentifier {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Identifier) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustIdentifier {}
+#[derive(Clone, Debug)]
+pub struct RustBoundIdentifier {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBoundIdentifier {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BoundIdentifier) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBoundIdentifier {}
+#[derive(Clone, Debug)]
+pub struct RustTypeIdentifier {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTypeIdentifier {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TypeIdentifier) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTypeIdentifier {}
+#[derive(Clone, Debug)]
+pub struct RustFieldIdentifier {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFieldIdentifier {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FieldIdentifier) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFieldIdentifier {}
+#[derive(Clone, Debug)]
+pub struct RustScopeIdentifier {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustScopeIdentifier {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ScopeIdentifier) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustScopeIdentifier {}
+#[derive(Clone, Debug)]
+pub struct RustScopedIdentifier {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustScopedIdentifier {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ScopedIdentifier) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustScopedIdentifier {}
+#[derive(Clone, Debug)]
+pub struct RustScopedTypeIdentifier {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustScopedTypeIdentifier {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ScopedTypeIdentifier) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustScopedTypeIdentifier {}
+#[derive(Clone, Debug)]
+pub struct RustMetavariable {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMetavariable {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Metavariable) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMetavariable {}
+#[derive(Clone, Debug)]
+pub struct RustSelfKeyword {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustSelfKeyword {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::SelfKeyword) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustSelfKeyword {}
+#[derive(Clone, Debug)]
+pub struct RustSuperKeyword {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustSuperKeyword {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Super) { Ok(Self { syntax: node }) } else { Err(node) }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustSuperKeyword {}
+#[derive(Clone, Debug)]
+pub struct RustCrateKeyword {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustCrateKeyword {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Crate) { Ok(Self { syntax: node }) } else { Err(node) }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustCrateKeyword {}
+#[derive(Clone, Debug)]
+pub struct RustLifetime {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLifetime {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Lifetime) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLifetime {}
+#[derive(Clone, Debug)]
+pub struct RustLoopLabel {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLoopLabel {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LoopLabel) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLoopLabel {}
+#[derive(Clone, Debug)]
+pub struct RustQualifiedScope {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustQualifiedScope {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::QualifiedScope) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustQualifiedScope {}
+#[derive(Clone, Debug)]
+pub struct RustVisibility {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustVisibility {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Vis) { Ok(Self { syntax: node }) } else { Err(node) }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustVisibility {}
+#[derive(Clone, Debug)]
+pub struct RustUnderscore {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUnderscore {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Underscore) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUnderscore {}
+#[derive(Clone, Debug)]
+pub struct RustString {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustString {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::String) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustString {}
+#[derive(Clone, Debug)]
+pub struct RustRawString {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustRawString {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::RawString) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustRawString {}
+#[derive(Clone, Debug)]
+pub struct RustEscape {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustEscape {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Escape) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustEscape {}
+#[derive(Clone, Debug)]
+pub struct RustChar {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustChar {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Char) { Ok(Self { syntax: node }) } else { Err(node) }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustChar {}
+#[derive(Clone, Debug)]
+pub struct RustBoolean {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBoolean {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Boolean) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBoolean {}
+#[derive(Clone, Debug)]
+pub struct RustInteger {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustInteger {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Integer) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustInteger {}
+#[derive(Clone, Debug)]
+pub struct RustFloat {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFloat {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Float) { Ok(Self { syntax: node }) } else { Err(node) }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFloat {}
+#[derive(Clone, Debug)]
+pub struct RustArithmeticOperator {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustArithmeticOperator {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ArithOp) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustArithmeticOperator {}
+#[derive(Clone, Debug)]
+pub struct RustBitOperator {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBitOperator {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BitOp) { Ok(Self { syntax: node }) } else { Err(node) }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBitOperator {}
+#[derive(Clone, Debug)]
+pub struct RustLogicOperator {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLogicOperator {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LogicOp) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLogicOperator {}
+#[derive(Clone, Debug)]
+pub struct RustUpdateOperator {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUpdateOperator {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UpdateOp) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUpdateOperator {}
+#[derive(Clone, Debug)]
+pub struct RustCompareOperator {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustCompareOperator {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::CompareOp) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustCompareOperator {}
+#[derive(Clone, Debug)]
+pub struct RustDereferenceOperator {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustDereferenceOperator {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::DerefOp) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustDereferenceOperator {}
+#[derive(Clone, Debug)]
+pub struct RustTypeArgumentList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTypeArgumentList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TypeArgList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTypeArgumentList {}
+#[derive(Clone, Debug)]
+pub struct RustTypeBinding {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTypeBinding {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TypeBinding) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTypeBinding {}
+#[derive(Clone, Debug)]
+pub struct RustGenericType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustGenericType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::GenericType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustGenericType {}
+#[derive(Clone, Debug)]
+pub struct RustTraitBounds {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTraitBounds {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TraitBounds) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTraitBounds {}
+#[derive(Clone, Debug)]
+pub struct RustHigherRankedTraitBound {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustHigherRankedTraitBound {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::HigherRankedTraitBound) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustHigherRankedTraitBound {}
+#[derive(Clone, Debug)]
+pub struct RustTypeParameterList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTypeParameterList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TypeParamList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTypeParameterList {}
+#[derive(Clone, Debug)]
+pub struct RustConstrainedTypeParameter {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustConstrainedTypeParameter {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ConstrainedTypeParameter) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustConstrainedTypeParameter {}
+#[derive(Clone, Debug)]
+pub struct RustOptionalTypeParameter {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustOptionalTypeParameter {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::OptionalTypeParameter) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustOptionalTypeParameter {}
+#[derive(Clone, Debug)]
+pub struct RustConstParameter {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustConstParameter {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ConstParameter) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustConstParameter {}
+#[derive(Clone, Debug)]
+pub struct RustWhereClause {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustWhereClause {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::WhereClause) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustWhereClause {}
+#[derive(Clone, Debug)]
+pub struct RustLifetimeClause {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLifetimeClause {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LifetimeClause) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLifetimeClause {}
+#[derive(Clone, Debug)]
+pub struct RustTypeBoundClause {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTypeBoundClause {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TypeBoundClause) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTypeBoundClause {}
+#[derive(Clone, Debug)]
+pub struct RustRemovedTraitBound {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustRemovedTraitBound {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::RemovedTraitBound) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustRemovedTraitBound {}
+#[derive(Clone, Debug)]
+pub struct RustConstTraitBound {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustConstTraitBound {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ConstTraitBound) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustConstTraitBound {}
+#[derive(Clone, Debug)]
+pub struct RustParenthesizedTraitBound {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustParenthesizedTraitBound {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ParenthesizedTraitBound) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustParenthesizedTraitBound {}
+#[derive(Clone, Debug)]
+pub struct RustForLifetimes {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustForLifetimes {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ForLifetimes) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustForLifetimes {}
+#[derive(Clone, Debug)]
+pub struct RustUseBound {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUseBound {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UseBound) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUseBound {}
+#[derive(Clone, Debug)]
+pub struct RustNegativeConstArgument {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustNegativeConstArgument {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::NegativeConstArgument) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustNegativeConstArgument {}
+#[derive(Clone, Debug)]
+pub struct RustAbstractType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustAbstractType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::AbstractType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustAbstractType {}
+#[derive(Clone, Debug)]
+pub struct RustSelfType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustSelfType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::SelfType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustSelfType {}
+#[derive(Clone, Debug)]
+pub struct RustMetaType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMetaType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MetaType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMetaType {}
+#[derive(Clone, Debug)]
+pub struct RustFunctionType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFunctionType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FunctionType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFunctionType {}
+#[derive(Clone, Debug)]
+pub struct RustInferredType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustInferredType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::InferredType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustInferredType {}
+#[derive(Clone, Debug)]
+pub struct RustReferenceType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustReferenceType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ReferenceType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustReferenceType {}
+#[derive(Clone, Debug)]
+pub struct RustPointerType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustPointerType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::PointerType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustPointerType {}
+#[derive(Clone, Debug)]
+pub struct RustTupleType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTupleType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TupleType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTupleType {}
+#[derive(Clone, Debug)]
+pub struct RustUnitType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUnitType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UnitType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUnitType {}
+#[derive(Clone, Debug)]
+pub struct RustArrayType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustArrayType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ArrayType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustArrayType {}
+#[derive(Clone, Debug)]
+pub struct RustEmptyType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustEmptyType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::EmptyType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustEmptyType {}
+#[derive(Clone, Debug)]
+pub struct RustDynamicType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustDynamicType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::DynamicType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustDynamicType {}
+#[derive(Clone, Debug)]
+pub struct RustBoundedType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBoundedType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BoundedType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBoundedType {}
+#[derive(Clone, Debug)]
+pub struct RustLiteralPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLiteralPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LiteralPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLiteralPattern {}
+#[derive(Clone, Debug)]
+pub struct RustMetaPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMetaPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MetaPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMetaPattern {}
+#[derive(Clone, Debug)]
+pub struct RustSelfPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustSelfPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::SelfPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustSelfPattern {}
+#[derive(Clone, Debug)]
+pub struct RustTuplePattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTuplePattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TuplePattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTuplePattern {}
+#[derive(Clone, Debug)]
+pub struct RustStructPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustStructPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::StructPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustStructPattern {}
+#[derive(Clone, Debug)]
+pub struct RustFieldPatternList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFieldPatternList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FieldPatternList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFieldPatternList {}
+#[derive(Clone, Debug)]
+pub struct RustFieldPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFieldPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FieldPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFieldPattern {}
+#[derive(Clone, Debug)]
+pub struct RustRefPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustRefPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::RefPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustRefPattern {}
+#[derive(Clone, Debug)]
+pub struct RustSlicePattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustSlicePattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::SlicePattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustSlicePattern {}
+#[derive(Clone, Debug)]
+pub struct RustCapturedPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustCapturedPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::CapturedPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustCapturedPattern {}
+#[derive(Clone, Debug)]
+pub struct RustReferencePattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustReferencePattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ReferencePattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustReferencePattern {}
+#[derive(Clone, Debug)]
+pub struct RustMutPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMutPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MutPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMutPattern {}
+#[derive(Clone, Debug)]
+pub struct RustRangePattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustRangePattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::RangePattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustRangePattern {}
+#[derive(Clone, Debug)]
+pub struct RustOrPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustOrPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::OrPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustOrPattern {}
+#[derive(Clone, Debug)]
+pub struct RustMacroPattern {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMacroPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MacroPattern) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMacroPattern {}
+#[derive(Clone, Debug)]
+pub struct RustBlock {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBlock {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Block) { Ok(Self { syntax: node }) } else { Err(node) }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBlock {
+    #[must_use]
+    pub fn left_brace_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::LeftBrace)
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn inner_attributes(&self) -> rezel_common::TypedChildren<RustInnerAttribute> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+    #[must_use]
+    pub fn statements(&self) -> rezel_common::TypedChildren<RustStatement> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+    #[must_use]
+    pub fn right_brace_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::RightBrace)
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustUnsafeBlock {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUnsafeBlock {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UnsafeBlock) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUnsafeBlock {}
+#[derive(Clone, Debug)]
+pub struct RustAsyncBlock {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustAsyncBlock {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::AsyncBlock) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustAsyncBlock {}
+#[derive(Clone, Debug)]
+pub struct RustConstBlock {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustConstBlock {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ConstBlock) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustConstBlock {}
+#[derive(Clone, Debug)]
+pub struct RustTryBlock {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTryBlock {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TryBlock) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTryBlock {}
+#[derive(Clone, Debug)]
+pub struct RustLabeledBlock {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLabeledBlock {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LabeledBlock) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLabeledBlock {}
+#[derive(Clone, Debug)]
+pub struct RustIfExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustIfExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::IfExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustIfExpression {}
+#[derive(Clone, Debug)]
+pub struct RustLetChain {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLetChain {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LetChain) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLetChain {}
+#[derive(Clone, Debug)]
+pub struct RustLetCondition {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLetCondition {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LetCondition) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLetCondition {}
+#[derive(Clone, Debug)]
+pub struct RustMatchExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMatchExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MatchExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMatchExpression {}
+#[derive(Clone, Debug)]
+pub struct RustMatchBlock {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMatchBlock {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MatchBlock) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMatchBlock {}
+#[derive(Clone, Debug)]
+pub struct RustMatchArm {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMatchArm {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MatchArm) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMatchArm {}
+#[derive(Clone, Debug)]
+pub struct RustGuard {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustGuard {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Guard) { Ok(Self { syntax: node }) } else { Err(node) }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustGuard {}
+#[derive(Clone, Debug)]
+pub struct RustUnaryExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUnaryExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UnaryExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUnaryExpression {}
+#[derive(Clone, Debug)]
+pub struct RustReferenceExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustReferenceExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ReferenceExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustReferenceExpression {}
+#[derive(Clone, Debug)]
+pub struct RustTryExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTryExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TryExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTryExpression {}
+#[derive(Clone, Debug)]
+pub struct RustBinaryExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBinaryExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BinaryExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBinaryExpression {}
+#[derive(Clone, Debug)]
+pub struct RustAssignmentExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustAssignmentExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::AssignmentExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustAssignmentExpression {}
+#[derive(Clone, Debug)]
+pub struct RustTypeCastExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTypeCastExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TypeCastExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTypeCastExpression {}
+#[derive(Clone, Debug)]
+pub struct RustReturnExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustReturnExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ReturnExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustReturnExpression {}
+#[derive(Clone, Debug)]
+pub struct RustRangeExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustRangeExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::RangeExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustRangeExpression {}
+#[derive(Clone, Debug)]
+pub struct RustCallExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustCallExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::CallExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustCallExpression {}
+#[derive(Clone, Debug)]
+pub struct RustArgumentList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustArgumentList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ArgList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustArgumentList {}
+#[derive(Clone, Debug)]
+pub struct RustAwaitExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustAwaitExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::AwaitExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustAwaitExpression {}
+#[derive(Clone, Debug)]
+pub struct RustFieldExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFieldExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FieldExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFieldExpression {}
+#[derive(Clone, Debug)]
+pub struct RustGenericFunction {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustGenericFunction {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::GenericFunction) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustGenericFunction {}
+#[derive(Clone, Debug)]
+pub struct RustBreakExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBreakExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BreakExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBreakExpression {}
+#[derive(Clone, Debug)]
+pub struct RustContinueExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustContinueExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ContinueExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustContinueExpression {}
+#[derive(Clone, Debug)]
+pub struct RustIndexExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustIndexExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::IndexExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustIndexExpression {}
+#[derive(Clone, Debug)]
+pub struct RustArrayExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustArrayExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ArrayExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustArrayExpression {}
+#[derive(Clone, Debug)]
+pub struct RustInferredConst {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustInferredConst {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::InferredConst) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustInferredConst {}
+#[derive(Clone, Debug)]
+pub struct RustTupleExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTupleExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TupleExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTupleExpression {}
+#[derive(Clone, Debug)]
+pub struct RustUnitExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUnitExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UnitExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUnitExpression {}
+#[derive(Clone, Debug)]
+pub struct RustClosureExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustClosureExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ClosureExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustClosureExpression {}
+#[derive(Clone, Debug)]
+pub struct RustParenthesizedExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustParenthesizedExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ParenthesizedExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustParenthesizedExpression {}
+#[derive(Clone, Debug)]
+pub struct RustStructExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustStructExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::StructExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustStructExpression {}
+#[derive(Clone, Debug)]
+pub struct RustFieldInitializerList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFieldInitializerList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FieldInitializerList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFieldInitializerList {}
+#[derive(Clone, Debug)]
+pub struct RustShorthandFieldInitializer {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustShorthandFieldInitializer {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ShorthandFieldInitializer) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustShorthandFieldInitializer {}
+#[derive(Clone, Debug)]
+pub struct RustFieldInitializer {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFieldInitializer {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FieldInitializer) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFieldInitializer {}
+#[derive(Clone, Debug)]
+pub struct RustBaseFieldInitializer {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBaseFieldInitializer {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BaseFieldInitializer) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBaseFieldInitializer {}
+#[derive(Clone, Debug)]
+pub struct RustWhileExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustWhileExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::WhileExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustWhileExpression {}
+#[derive(Clone, Debug)]
+pub struct RustLoopExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLoopExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LoopExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLoopExpression {}
+#[derive(Clone, Debug)]
+pub struct RustForExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustForExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ForExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustForExpression {}
+#[derive(Clone, Debug)]
+pub struct RustParenthesizedTokens {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustParenthesizedTokens {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ParenthesizedTokens) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustParenthesizedTokens {}
+#[derive(Clone, Debug)]
+pub struct RustBracketedTokens {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBracketedTokens {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BracketedTokens) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBracketedTokens {}
+#[derive(Clone, Debug)]
+pub struct RustBracedTokens {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustBracedTokens {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::BracedTokens) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustBracedTokens {}
+#[derive(Clone, Debug)]
+pub struct RustTokenBinding {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTokenBinding {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TokenBinding) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTokenBinding {}
+#[derive(Clone, Debug)]
+pub struct RustTokenRepetition {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTokenRepetition {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TokenRepetition) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTokenRepetition {}
+#[derive(Clone, Debug)]
+pub struct RustMetavariableExpression {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMetavariableExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MetavariableExpression) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMetavariableExpression {}
+#[derive(Clone, Debug)]
+pub struct RustMacroInvocation {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMacroInvocation {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MacroInvocation) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMacroInvocation {}
+#[derive(Clone, Debug)]
+pub struct RustMacroDefinition {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMacroDefinition {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MacroDefinition) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMacroDefinition {}
+#[derive(Clone, Debug)]
+pub struct RustMacroRule {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustMacroRule {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::MacroRule) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustMacroRule {}
+#[derive(Clone, Debug)]
+pub struct RustDeclarativeMacroItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustDeclarativeMacroItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::DeclarativeMacroItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustDeclarativeMacroItem {}
+#[derive(Clone, Debug)]
+pub struct RustConstItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustConstItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ConstItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustConstItem {}
+#[derive(Clone, Debug)]
+pub struct RustAttributeItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustAttributeItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::AttributeItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustAttributeItem {
+    #[must_use]
+    pub fn attributes(&self) -> rezel_common::TypedChildren<RustAttribute> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+    #[must_use]
+    pub fn declaration(&self) -> Option<RustDeclarationStatement> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustDeclarationStatement as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .ok()
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustAttributeStatement {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustAttributeStatement {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::AttributeStatement) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustAttributeStatement {
+    #[must_use]
+    pub fn attributes(&self) -> rezel_common::TypedChildren<RustAttribute> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+    #[must_use]
+    pub fn expression_statement(&self) -> Option<RustExpressionStatement> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustExpressionStatement as rezel_common::TypedNode>::downcast_from(node)
+                    .ok()
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustEmptyStatement {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustEmptyStatement {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::EmptyStatement) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustEmptyStatement {}
+#[derive(Clone, Debug)]
+pub struct RustExpressionStatement {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustExpressionStatement {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ExpressionStatement) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustExpressionStatement {
+    #[must_use]
+    pub fn expression(&self) -> Option<RustExpression> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustExpression as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustModuleItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustModuleItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ModItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustModuleItem {}
+#[derive(Clone, Debug)]
+pub struct RustDeclarationList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustDeclarationList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::DeclarationList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustDeclarationList {
+    #[must_use]
+    pub fn left_brace_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::LeftBrace)
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn inner_attributes(&self) -> rezel_common::TypedChildren<RustInnerAttribute> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+    #[must_use]
+    pub fn items(&self) -> rezel_common::TypedChildren<RustDeclarationListItem> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+    #[must_use]
+    pub fn right_brace_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::RightBrace)
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustForeignModuleItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustForeignModuleItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ForeignModItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustForeignModuleItem {}
+#[derive(Clone, Debug)]
+pub struct RustFunctionItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFunctionItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FunctionItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFunctionItem {
+    #[must_use]
+    pub fn visibility(&self) -> Option<RustVisibility> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustVisibility as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn fn_token(&self) -> Option<rezel_common::SyntaxNode> {
+        self.syntax
+            .children()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::Fn)
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn name(&self) -> Option<RustFunctionName> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustFunctionName as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn type_parameters(&self) -> Option<RustTypeParameterList> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustTypeParameterList as rezel_common::TypedNode>::downcast_from(node)
+                    .ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn parameters(&self) -> Option<RustParameterList> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustParameterList as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn return_type(&self) -> Option<RustType> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustType as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn where_clause(&self) -> Option<RustWhereClause> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustWhereClause as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
+    pub fn body(&self) -> Option<RustBlock> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustBlock as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustParameterList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustParameterList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ParamList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustParameterList {
+    #[must_use]
+    pub fn parameters(&self) -> rezel_common::TypedChildren<RustFunctionParameter> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustParameter {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustParameter {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::Parameter) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustParameter {}
+#[derive(Clone, Debug)]
+pub struct RustSelfParameter {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustSelfParameter {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::SelfParameter) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustSelfParameter {}
+#[derive(Clone, Debug)]
+pub struct RustVariadicParameter {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustVariadicParameter {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::VariadicParameter) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustVariadicParameter {}
+#[derive(Clone, Debug)]
+pub struct RustStaticItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustStaticItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::StaticItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustStaticItem {}
+#[derive(Clone, Debug)]
+pub struct RustForeignTypeItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustForeignTypeItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ForeignTypeItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustForeignTypeItem {}
+#[derive(Clone, Debug)]
+pub struct RustStructItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustStructItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::StructItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustStructItem {}
+#[derive(Clone, Debug)]
+pub struct RustFieldDeclarationList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFieldDeclarationList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FieldDeclarationList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFieldDeclarationList {}
+#[derive(Clone, Debug)]
+pub struct RustFieldDeclaration {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustFieldDeclaration {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::FieldDeclaration) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustFieldDeclaration {}
+#[derive(Clone, Debug)]
+pub struct RustOrderedFieldDeclarationList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustOrderedFieldDeclarationList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::OrderedFieldDeclarationList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustOrderedFieldDeclarationList {}
+#[derive(Clone, Debug)]
+pub struct RustUnionItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUnionItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UnionItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUnionItem {}
+#[derive(Clone, Debug)]
+pub struct RustEnumItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustEnumItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::EnumItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustEnumItem {}
+#[derive(Clone, Debug)]
+pub struct RustEnumVariantList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustEnumVariantList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::EnumVariantList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustEnumVariantList {}
+#[derive(Clone, Debug)]
+pub struct RustEnumVariant {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustEnumVariant {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::EnumVariant) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustEnumVariant {}
+#[derive(Clone, Debug)]
+pub struct RustTypeItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTypeItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TypeItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTypeItem {}
+#[derive(Clone, Debug)]
+pub struct RustImplementationItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustImplementationItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ImplItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustImplementationItem {}
+#[derive(Clone, Debug)]
+pub struct RustTraitItem {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustTraitItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::TraitItem) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustTraitItem {}
+#[derive(Clone, Debug)]
+pub struct RustAssociatedType {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustAssociatedType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::AssociatedType) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustAssociatedType {}
+#[derive(Clone, Debug)]
+pub struct RustLetDeclaration {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustLetDeclaration {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::LetDeclaration) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustLetDeclaration {}
+#[derive(Clone, Debug)]
+pub struct RustUseDeclaration {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUseDeclaration {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UseDeclaration) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUseDeclaration {}
+#[derive(Clone, Debug)]
+pub struct RustUseAsClause {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUseAsClause {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UseAsClause) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUseAsClause {}
+#[derive(Clone, Debug)]
+pub struct RustUseList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUseList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UseList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUseList {}
+#[derive(Clone, Debug)]
+pub struct RustScopedUseList {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustScopedUseList {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ScopedUseList) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustScopedUseList {}
+#[derive(Clone, Debug)]
+pub struct RustUseWildcard {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustUseWildcard {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::UseWildcard) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustUseWildcard {}
+#[derive(Clone, Debug)]
+pub struct RustExternCrateDeclaration {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustExternCrateDeclaration {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ExternCrateDeclaration) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustExternCrateDeclaration {}
+#[derive(Clone, Debug)]
+pub enum RustComment {
+    Line(RustLineComment),
+    Block(RustBlockComment),
+}
+impl rezel_common::TypedNode for RustComment {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::LineComment) => {
+                let typed = <RustLineComment as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Line(typed))
+            }
+            Some(RustKind::BlockComment) => {
+                let typed = <RustBlockComment as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Block(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Line(node) => rezel_common::TypedNode::syntax(node),
+            Self::Block(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Line(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Block(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustLiteral {
+    String(RustString),
+    RawString(RustRawString),
+    Char(RustChar),
+    Boolean(RustBoolean),
+    Integer(RustInteger),
+    Float(RustFloat),
+}
+impl rezel_common::TypedNode for RustLiteral {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::String) => {
+                let typed = <RustString as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::String(typed))
+            }
+            Some(RustKind::RawString) => {
+                let typed = <RustRawString as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::RawString(typed))
+            }
+            Some(RustKind::Char) => {
+                let typed = <RustChar as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Char(typed))
+            }
+            Some(RustKind::Boolean) => {
+                let typed = <RustBoolean as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Boolean(typed))
+            }
+            Some(RustKind::Integer) => {
+                let typed = <RustInteger as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Integer(typed))
+            }
+            Some(RustKind::Float) => {
+                let typed = <RustFloat as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Float(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::String(node) => rezel_common::TypedNode::syntax(node),
+            Self::RawString(node) => rezel_common::TypedNode::syntax(node),
+            Self::Char(node) => rezel_common::TypedNode::syntax(node),
+            Self::Boolean(node) => rezel_common::TypedNode::syntax(node),
+            Self::Integer(node) => rezel_common::TypedNode::syntax(node),
+            Self::Float(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::String(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::RawString(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Char(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Boolean(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Integer(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Float(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustPath {
+    Identifier(RustIdentifier),
+    Scoped(RustScopedIdentifier),
+    Metavariable(RustMetavariable),
+    SelfKeyword(RustSelfKeyword),
+    SuperKeyword(RustSuperKeyword),
+    CrateKeyword(RustCrateKeyword),
+}
+impl rezel_common::TypedNode for RustPath {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::Identifier) => {
+                let typed = <RustIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Identifier(typed))
+            }
+            Some(RustKind::ScopedIdentifier) => {
+                let typed = <RustScopedIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Scoped(typed))
+            }
+            Some(RustKind::Metavariable) => {
+                let typed = <RustMetavariable as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Metavariable(typed))
+            }
+            Some(RustKind::SelfKeyword) => {
+                let typed = <RustSelfKeyword as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::SelfKeyword(typed))
+            }
+            Some(RustKind::Super) => {
+                let typed = <RustSuperKeyword as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::SuperKeyword(typed))
+            }
+            Some(RustKind::Crate) => {
+                let typed = <RustCrateKeyword as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::CrateKeyword(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Identifier(node) => rezel_common::TypedNode::syntax(node),
+            Self::Scoped(node) => rezel_common::TypedNode::syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::syntax(node),
+            Self::SelfKeyword(node) => rezel_common::TypedNode::syntax(node),
+            Self::SuperKeyword(node) => rezel_common::TypedNode::syntax(node),
+            Self::CrateKeyword(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Identifier(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Scoped(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::SelfKeyword(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::SuperKeyword(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::CrateKeyword(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustTypePath {
+    SelfType(RustSelfType),
+    Metavariable(RustMetaType),
+    Identifier(RustTypeIdentifier),
+    Scoped(RustScopedTypeIdentifier),
+}
+impl rezel_common::TypedNode for RustTypePath {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::SelfType) => {
+                let typed = <RustSelfType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::SelfType(typed))
+            }
+            Some(RustKind::MetaType) => {
+                let typed = <RustMetaType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Metavariable(typed))
+            }
+            Some(RustKind::TypeIdentifier) => {
+                let typed = <RustTypeIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Identifier(typed))
+            }
+            Some(RustKind::ScopedTypeIdentifier) => {
+                let typed = <RustScopedTypeIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Scoped(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::SelfType(node) => rezel_common::TypedNode::syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::syntax(node),
+            Self::Identifier(node) => rezel_common::TypedNode::syntax(node),
+            Self::Scoped(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::SelfType(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Identifier(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Scoped(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustType {
+    Abstract(RustAbstractType),
+    Path(RustTypePath),
+    Generic(RustGenericType),
+    Tuple(RustTupleType),
+    Unit(RustUnitType),
+    Array(RustArrayType),
+    Function(RustFunctionType),
+    Macro(RustMacroInvocation),
+    Never(RustEmptyType),
+    Dynamic(RustDynamicType),
+    Bounded(RustBoundedType),
+    Inferred(RustInferredType),
+    Reference(RustReferenceType),
+    Pointer(RustPointerType),
+}
+impl rezel_common::TypedNode for RustType {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::AbstractType) => {
+                let typed = <RustAbstractType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Abstract(typed))
+            }
+            Some(RustKind::SelfType)
+            | Some(RustKind::MetaType)
+            | Some(RustKind::TypeIdentifier)
+            | Some(RustKind::ScopedTypeIdentifier) => {
+                let typed = <RustTypePath as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Path(typed))
+            }
+            Some(RustKind::GenericType) => {
+                let typed = <RustGenericType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Generic(typed))
+            }
+            Some(RustKind::TupleType) => {
+                let typed = <RustTupleType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Tuple(typed))
+            }
+            Some(RustKind::UnitType) => {
+                let typed = <RustUnitType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Unit(typed))
+            }
+            Some(RustKind::ArrayType) => {
+                let typed = <RustArrayType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Array(typed))
+            }
+            Some(RustKind::FunctionType) => {
+                let typed = <RustFunctionType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Function(typed))
+            }
+            Some(RustKind::MacroInvocation) => {
+                let typed = <RustMacroInvocation as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Macro(typed))
+            }
+            Some(RustKind::EmptyType) => {
+                let typed = <RustEmptyType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Never(typed))
+            }
+            Some(RustKind::DynamicType) => {
+                let typed = <RustDynamicType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Dynamic(typed))
+            }
+            Some(RustKind::BoundedType) => {
+                let typed = <RustBoundedType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Bounded(typed))
+            }
+            Some(RustKind::InferredType) => {
+                let typed = <RustInferredType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Inferred(typed))
+            }
+            Some(RustKind::ReferenceType) => {
+                let typed = <RustReferenceType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Reference(typed))
+            }
+            Some(RustKind::PointerType) => {
+                let typed = <RustPointerType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Pointer(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Abstract(node) => rezel_common::TypedNode::syntax(node),
+            Self::Path(node) => rezel_common::TypedNode::syntax(node),
+            Self::Generic(node) => rezel_common::TypedNode::syntax(node),
+            Self::Tuple(node) => rezel_common::TypedNode::syntax(node),
+            Self::Unit(node) => rezel_common::TypedNode::syntax(node),
+            Self::Array(node) => rezel_common::TypedNode::syntax(node),
+            Self::Function(node) => rezel_common::TypedNode::syntax(node),
+            Self::Macro(node) => rezel_common::TypedNode::syntax(node),
+            Self::Never(node) => rezel_common::TypedNode::syntax(node),
+            Self::Dynamic(node) => rezel_common::TypedNode::syntax(node),
+            Self::Bounded(node) => rezel_common::TypedNode::syntax(node),
+            Self::Inferred(node) => rezel_common::TypedNode::syntax(node),
+            Self::Reference(node) => rezel_common::TypedNode::syntax(node),
+            Self::Pointer(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Abstract(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Path(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Generic(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Tuple(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Unit(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Array(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Function(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Macro(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Never(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Dynamic(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Bounded(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Inferred(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Reference(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Pointer(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustPattern {
+    Literal(RustLiteralPattern),
+    Metavariable(RustMetaPattern),
+    Binding(RustBoundIdentifier),
+    SelfPattern(RustSelfPattern),
+    Path(RustScopedIdentifier),
+    Tuple(RustTuplePattern),
+    Struct(RustStructPattern),
+    RefBinding(RustRefPattern),
+    Slice(RustSlicePattern),
+    Captured(RustCapturedPattern),
+    Reference(RustReferencePattern),
+    Mutable(RustMutPattern),
+    Range(RustRangePattern),
+    Or(RustOrPattern),
+    Macro(RustMacroPattern),
+    Wildcard(RustUnderscore),
+}
+impl rezel_common::TypedNode for RustPattern {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::LiteralPattern) => {
+                let typed = <RustLiteralPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Literal(typed))
+            }
+            Some(RustKind::MetaPattern) => {
+                let typed = <RustMetaPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Metavariable(typed))
+            }
+            Some(RustKind::BoundIdentifier) => {
+                let typed = <RustBoundIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Binding(typed))
+            }
+            Some(RustKind::SelfPattern) => {
+                let typed = <RustSelfPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::SelfPattern(typed))
+            }
+            Some(RustKind::ScopedIdentifier) => {
+                let typed = <RustScopedIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Path(typed))
+            }
+            Some(RustKind::TuplePattern) => {
+                let typed = <RustTuplePattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Tuple(typed))
+            }
+            Some(RustKind::StructPattern) => {
+                let typed = <RustStructPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Struct(typed))
+            }
+            Some(RustKind::RefPattern) => {
+                let typed = <RustRefPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::RefBinding(typed))
+            }
+            Some(RustKind::SlicePattern) => {
+                let typed = <RustSlicePattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Slice(typed))
+            }
+            Some(RustKind::CapturedPattern) => {
+                let typed = <RustCapturedPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Captured(typed))
+            }
+            Some(RustKind::ReferencePattern) => {
+                let typed = <RustReferencePattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Reference(typed))
+            }
+            Some(RustKind::MutPattern) => {
+                let typed = <RustMutPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Mutable(typed))
+            }
+            Some(RustKind::RangePattern) => {
+                let typed = <RustRangePattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Range(typed))
+            }
+            Some(RustKind::OrPattern) => {
+                let typed = <RustOrPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Or(typed))
+            }
+            Some(RustKind::MacroPattern) => {
+                let typed = <RustMacroPattern as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Macro(typed))
+            }
+            Some(RustKind::Underscore) => {
+                let typed = <RustUnderscore as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Wildcard(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Literal(node) => rezel_common::TypedNode::syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::syntax(node),
+            Self::Binding(node) => rezel_common::TypedNode::syntax(node),
+            Self::SelfPattern(node) => rezel_common::TypedNode::syntax(node),
+            Self::Path(node) => rezel_common::TypedNode::syntax(node),
+            Self::Tuple(node) => rezel_common::TypedNode::syntax(node),
+            Self::Struct(node) => rezel_common::TypedNode::syntax(node),
+            Self::RefBinding(node) => rezel_common::TypedNode::syntax(node),
+            Self::Slice(node) => rezel_common::TypedNode::syntax(node),
+            Self::Captured(node) => rezel_common::TypedNode::syntax(node),
+            Self::Reference(node) => rezel_common::TypedNode::syntax(node),
+            Self::Mutable(node) => rezel_common::TypedNode::syntax(node),
+            Self::Range(node) => rezel_common::TypedNode::syntax(node),
+            Self::Or(node) => rezel_common::TypedNode::syntax(node),
+            Self::Macro(node) => rezel_common::TypedNode::syntax(node),
+            Self::Wildcard(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Literal(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Binding(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::SelfPattern(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Path(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Tuple(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Struct(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::RefBinding(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Slice(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Captured(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Reference(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Mutable(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Range(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Or(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Macro(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Wildcard(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustDelimitedTokenTree {
+    Parenthesized(RustParenthesizedTokens),
+    Bracketed(RustBracketedTokens),
+    Braced(RustBracedTokens),
+}
+impl rezel_common::TypedNode for RustDelimitedTokenTree {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::ParenthesizedTokens) => {
+                let typed = <RustParenthesizedTokens as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Parenthesized(typed))
+            }
+            Some(RustKind::BracketedTokens) => {
+                let typed = <RustBracketedTokens as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Bracketed(typed))
+            }
+            Some(RustKind::BracedTokens) => {
+                let typed = <RustBracedTokens as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Braced(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Parenthesized(node) => rezel_common::TypedNode::syntax(node),
+            Self::Bracketed(node) => rezel_common::TypedNode::syntax(node),
+            Self::Braced(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Parenthesized(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Bracketed(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Braced(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustExpression {
+    Unary(RustUnaryExpression),
+    Reference(RustReferenceExpression),
+    Try(RustTryExpression),
+    Binary(RustBinaryExpression),
+    Assignment(RustAssignmentExpression),
+    Cast(RustTypeCastExpression),
+    Return(RustReturnExpression),
+    Range(RustRangeExpression),
+    Call(RustCallExpression),
+    Literal(RustLiteral),
+    Path(RustPath),
+    Await(RustAwaitExpression),
+    Field(RustFieldExpression),
+    GenericFunction(RustGenericFunction),
+    Break(RustBreakExpression),
+    Continue(RustContinueExpression),
+    Index(RustIndexExpression),
+    Array(RustArrayExpression),
+    Tuple(RustTupleExpression),
+    Macro(RustMacroInvocation),
+    Unit(RustUnitExpression),
+    Closure(RustClosureExpression),
+    Parenthesized(RustParenthesizedExpression),
+    Struct(RustStructExpression),
+    UnsafeBlock(RustUnsafeBlock),
+    AsyncBlock(RustAsyncBlock),
+    ConstBlock(RustConstBlock),
+    TryBlock(RustTryBlock),
+    LabeledBlock(RustLabeledBlock),
+    Block(RustBlock),
+    If(RustIfExpression),
+    Match(RustMatchExpression),
+    While(RustWhileExpression),
+    Loop(RustLoopExpression),
+    For(RustForExpression),
+}
+impl rezel_common::TypedNode for RustExpression {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::UnaryExpression) => {
+                let typed = <RustUnaryExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Unary(typed))
+            }
+            Some(RustKind::ReferenceExpression) => {
+                let typed = <RustReferenceExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Reference(typed))
+            }
+            Some(RustKind::TryExpression) => {
+                let typed = <RustTryExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Try(typed))
+            }
+            Some(RustKind::BinaryExpression) => {
+                let typed = <RustBinaryExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Binary(typed))
+            }
+            Some(RustKind::AssignmentExpression) => {
+                let typed = <RustAssignmentExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Assignment(typed))
+            }
+            Some(RustKind::TypeCastExpression) => {
+                let typed = <RustTypeCastExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Cast(typed))
+            }
+            Some(RustKind::ReturnExpression) => {
+                let typed = <RustReturnExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Return(typed))
+            }
+            Some(RustKind::RangeExpression) => {
+                let typed = <RustRangeExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Range(typed))
+            }
+            Some(RustKind::CallExpression) => {
+                let typed = <RustCallExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Call(typed))
+            }
+            Some(RustKind::RawString)
+            | Some(RustKind::Float)
+            | Some(RustKind::String)
+            | Some(RustKind::Char)
+            | Some(RustKind::Boolean)
+            | Some(RustKind::Integer) => {
+                let typed = <RustLiteral as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Literal(typed))
+            }
+            Some(RustKind::Identifier)
+            | Some(RustKind::Metavariable)
+            | Some(RustKind::SelfKeyword)
+            | Some(RustKind::Super)
+            | Some(RustKind::Crate)
+            | Some(RustKind::ScopedIdentifier) => {
+                let typed = <RustPath as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Path(typed))
+            }
+            Some(RustKind::AwaitExpression) => {
+                let typed = <RustAwaitExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Await(typed))
+            }
+            Some(RustKind::FieldExpression) => {
+                let typed = <RustFieldExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Field(typed))
+            }
+            Some(RustKind::GenericFunction) => {
+                let typed = <RustGenericFunction as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::GenericFunction(typed))
+            }
+            Some(RustKind::BreakExpression) => {
+                let typed = <RustBreakExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Break(typed))
+            }
+            Some(RustKind::ContinueExpression) => {
+                let typed = <RustContinueExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Continue(typed))
+            }
+            Some(RustKind::IndexExpression) => {
+                let typed = <RustIndexExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Index(typed))
+            }
+            Some(RustKind::ArrayExpression) => {
+                let typed = <RustArrayExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Array(typed))
+            }
+            Some(RustKind::TupleExpression) => {
+                let typed = <RustTupleExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Tuple(typed))
+            }
+            Some(RustKind::MacroInvocation) => {
+                let typed = <RustMacroInvocation as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Macro(typed))
+            }
+            Some(RustKind::UnitExpression) => {
+                let typed = <RustUnitExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Unit(typed))
+            }
+            Some(RustKind::ClosureExpression) => {
+                let typed = <RustClosureExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Closure(typed))
+            }
+            Some(RustKind::ParenthesizedExpression) => {
+                let typed = <RustParenthesizedExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Parenthesized(typed))
+            }
+            Some(RustKind::StructExpression) => {
+                let typed = <RustStructExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Struct(typed))
+            }
+            Some(RustKind::UnsafeBlock) => {
+                let typed = <RustUnsafeBlock as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::UnsafeBlock(typed))
+            }
+            Some(RustKind::AsyncBlock) => {
+                let typed = <RustAsyncBlock as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::AsyncBlock(typed))
+            }
+            Some(RustKind::ConstBlock) => {
+                let typed = <RustConstBlock as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::ConstBlock(typed))
+            }
+            Some(RustKind::TryBlock) => {
+                let typed = <RustTryBlock as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::TryBlock(typed))
+            }
+            Some(RustKind::LabeledBlock) => {
+                let typed = <RustLabeledBlock as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::LabeledBlock(typed))
+            }
+            Some(RustKind::Block) => {
+                let typed = <RustBlock as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Block(typed))
+            }
+            Some(RustKind::IfExpression) => {
+                let typed = <RustIfExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::If(typed))
+            }
+            Some(RustKind::MatchExpression) => {
+                let typed = <RustMatchExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Match(typed))
+            }
+            Some(RustKind::WhileExpression) => {
+                let typed = <RustWhileExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::While(typed))
+            }
+            Some(RustKind::LoopExpression) => {
+                let typed = <RustLoopExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Loop(typed))
+            }
+            Some(RustKind::ForExpression) => {
+                let typed = <RustForExpression as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::For(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Unary(node) => rezel_common::TypedNode::syntax(node),
+            Self::Reference(node) => rezel_common::TypedNode::syntax(node),
+            Self::Try(node) => rezel_common::TypedNode::syntax(node),
+            Self::Binary(node) => rezel_common::TypedNode::syntax(node),
+            Self::Assignment(node) => rezel_common::TypedNode::syntax(node),
+            Self::Cast(node) => rezel_common::TypedNode::syntax(node),
+            Self::Return(node) => rezel_common::TypedNode::syntax(node),
+            Self::Range(node) => rezel_common::TypedNode::syntax(node),
+            Self::Call(node) => rezel_common::TypedNode::syntax(node),
+            Self::Literal(node) => rezel_common::TypedNode::syntax(node),
+            Self::Path(node) => rezel_common::TypedNode::syntax(node),
+            Self::Await(node) => rezel_common::TypedNode::syntax(node),
+            Self::Field(node) => rezel_common::TypedNode::syntax(node),
+            Self::GenericFunction(node) => rezel_common::TypedNode::syntax(node),
+            Self::Break(node) => rezel_common::TypedNode::syntax(node),
+            Self::Continue(node) => rezel_common::TypedNode::syntax(node),
+            Self::Index(node) => rezel_common::TypedNode::syntax(node),
+            Self::Array(node) => rezel_common::TypedNode::syntax(node),
+            Self::Tuple(node) => rezel_common::TypedNode::syntax(node),
+            Self::Macro(node) => rezel_common::TypedNode::syntax(node),
+            Self::Unit(node) => rezel_common::TypedNode::syntax(node),
+            Self::Closure(node) => rezel_common::TypedNode::syntax(node),
+            Self::Parenthesized(node) => rezel_common::TypedNode::syntax(node),
+            Self::Struct(node) => rezel_common::TypedNode::syntax(node),
+            Self::UnsafeBlock(node) => rezel_common::TypedNode::syntax(node),
+            Self::AsyncBlock(node) => rezel_common::TypedNode::syntax(node),
+            Self::ConstBlock(node) => rezel_common::TypedNode::syntax(node),
+            Self::TryBlock(node) => rezel_common::TypedNode::syntax(node),
+            Self::LabeledBlock(node) => rezel_common::TypedNode::syntax(node),
+            Self::Block(node) => rezel_common::TypedNode::syntax(node),
+            Self::If(node) => rezel_common::TypedNode::syntax(node),
+            Self::Match(node) => rezel_common::TypedNode::syntax(node),
+            Self::While(node) => rezel_common::TypedNode::syntax(node),
+            Self::Loop(node) => rezel_common::TypedNode::syntax(node),
+            Self::For(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Unary(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Reference(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Try(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Binary(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Assignment(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Cast(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Return(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Range(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Call(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Literal(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Path(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Await(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Field(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::GenericFunction(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Break(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Continue(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Index(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Array(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Tuple(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Macro(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Unit(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Closure(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Parenthesized(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Struct(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::UnsafeBlock(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::AsyncBlock(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::ConstBlock(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::TryBlock(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::LabeledBlock(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Block(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::If(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Match(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::While(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Loop(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::For(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustFunctionName {
+    Identifier(RustBoundIdentifier),
+    Metavariable(RustMetavariable),
+}
+impl rezel_common::TypedNode for RustFunctionName {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::BoundIdentifier) => {
+                let typed = <RustBoundIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Identifier(typed))
+            }
+            Some(RustKind::Metavariable) => {
+                let typed = <RustMetavariable as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Metavariable(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Identifier(node) => rezel_common::TypedNode::syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Identifier(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustFunctionParameter {
+    Parameter(RustParameter),
+    SelfParameter(RustSelfParameter),
+    Variadic(RustVariadicParameter),
+    Wildcard(RustUnderscore),
+}
+impl rezel_common::TypedNode for RustFunctionParameter {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::Parameter) => {
+                let typed = <RustParameter as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Parameter(typed))
+            }
+            Some(RustKind::SelfParameter) => {
+                let typed = <RustSelfParameter as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::SelfParameter(typed))
+            }
+            Some(RustKind::VariadicParameter) => {
+                let typed = <RustVariadicParameter as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Variadic(typed))
+            }
+            Some(RustKind::Underscore) => {
+                let typed = <RustUnderscore as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Wildcard(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Parameter(node) => rezel_common::TypedNode::syntax(node),
+            Self::SelfParameter(node) => rezel_common::TypedNode::syntax(node),
+            Self::Variadic(node) => rezel_common::TypedNode::syntax(node),
+            Self::Wildcard(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Parameter(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::SelfParameter(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Variadic(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Wildcard(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustDeclaration {
+    Const(RustConstItem),
+    MacroInvocation(RustMacroInvocation),
+    MacroDefinition(RustMacroDefinition),
+    DeclarativeMacro(RustDeclarativeMacroItem),
+    Module(RustModuleItem),
+    ForeignModule(RustForeignModuleItem),
+    Struct(RustStructItem),
+    Union(RustUnionItem),
+    Enum(RustEnumItem),
+    Type(RustTypeItem),
+    Function(RustFunctionItem),
+    Implementation(RustImplementationItem),
+    Trait(RustTraitItem),
+    AssociatedType(RustAssociatedType),
+    Use(RustUseDeclaration),
+    ExternCrate(RustExternCrateDeclaration),
+    Static(RustStaticItem),
+    ForeignType(RustForeignTypeItem),
+}
+impl rezel_common::TypedNode for RustDeclaration {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::ConstItem) => {
+                let typed = <RustConstItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Const(typed))
+            }
+            Some(RustKind::MacroInvocation) => {
+                let typed = <RustMacroInvocation as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::MacroInvocation(typed))
+            }
+            Some(RustKind::MacroDefinition) => {
+                let typed = <RustMacroDefinition as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::MacroDefinition(typed))
+            }
+            Some(RustKind::DeclarativeMacroItem) => {
+                let typed = <RustDeclarativeMacroItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::DeclarativeMacro(typed))
+            }
+            Some(RustKind::ModItem) => {
+                let typed = <RustModuleItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Module(typed))
+            }
+            Some(RustKind::ForeignModItem) => {
+                let typed = <RustForeignModuleItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::ForeignModule(typed))
+            }
+            Some(RustKind::StructItem) => {
+                let typed = <RustStructItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Struct(typed))
+            }
+            Some(RustKind::UnionItem) => {
+                let typed = <RustUnionItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Union(typed))
+            }
+            Some(RustKind::EnumItem) => {
+                let typed = <RustEnumItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Enum(typed))
+            }
+            Some(RustKind::TypeItem) => {
+                let typed = <RustTypeItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Type(typed))
+            }
+            Some(RustKind::FunctionItem) => {
+                let typed = <RustFunctionItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Function(typed))
+            }
+            Some(RustKind::ImplItem) => {
+                let typed = <RustImplementationItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Implementation(typed))
+            }
+            Some(RustKind::TraitItem) => {
+                let typed = <RustTraitItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Trait(typed))
+            }
+            Some(RustKind::AssociatedType) => {
+                let typed = <RustAssociatedType as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::AssociatedType(typed))
+            }
+            Some(RustKind::UseDeclaration) => {
+                let typed = <RustUseDeclaration as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Use(typed))
+            }
+            Some(RustKind::ExternCrateDeclaration) => {
+                let typed = <RustExternCrateDeclaration as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::ExternCrate(typed))
+            }
+            Some(RustKind::StaticItem) => {
+                let typed = <RustStaticItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Static(typed))
+            }
+            Some(RustKind::ForeignTypeItem) => {
+                let typed = <RustForeignTypeItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::ForeignType(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Const(node) => rezel_common::TypedNode::syntax(node),
+            Self::MacroInvocation(node) => rezel_common::TypedNode::syntax(node),
+            Self::MacroDefinition(node) => rezel_common::TypedNode::syntax(node),
+            Self::DeclarativeMacro(node) => rezel_common::TypedNode::syntax(node),
+            Self::Module(node) => rezel_common::TypedNode::syntax(node),
+            Self::ForeignModule(node) => rezel_common::TypedNode::syntax(node),
+            Self::Struct(node) => rezel_common::TypedNode::syntax(node),
+            Self::Union(node) => rezel_common::TypedNode::syntax(node),
+            Self::Enum(node) => rezel_common::TypedNode::syntax(node),
+            Self::Type(node) => rezel_common::TypedNode::syntax(node),
+            Self::Function(node) => rezel_common::TypedNode::syntax(node),
+            Self::Implementation(node) => rezel_common::TypedNode::syntax(node),
+            Self::Trait(node) => rezel_common::TypedNode::syntax(node),
+            Self::AssociatedType(node) => rezel_common::TypedNode::syntax(node),
+            Self::Use(node) => rezel_common::TypedNode::syntax(node),
+            Self::ExternCrate(node) => rezel_common::TypedNode::syntax(node),
+            Self::Static(node) => rezel_common::TypedNode::syntax(node),
+            Self::ForeignType(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Const(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::MacroInvocation(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::MacroDefinition(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::DeclarativeMacro(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Module(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::ForeignModule(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Struct(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Union(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Enum(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Type(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Function(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Implementation(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Trait(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::AssociatedType(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Use(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::ExternCrate(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Static(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::ForeignType(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustStatement {
+    Declaration(RustDeclarationStatement),
+    AttributedItem(RustAttributeItem),
+    AttributedExpression(RustAttributeStatement),
+    Expression(RustExpressionStatement),
+}
+impl rezel_common::TypedNode for RustStatement {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::ConstItem)
+            | Some(RustKind::MacroInvocation)
+            | Some(RustKind::MacroDefinition)
+            | Some(RustKind::DeclarativeMacroItem)
+            | Some(RustKind::EmptyStatement)
+            | Some(RustKind::ModItem)
+            | Some(RustKind::ForeignModItem)
+            | Some(RustKind::FunctionItem)
+            | Some(RustKind::StaticItem)
+            | Some(RustKind::ForeignTypeItem)
+            | Some(RustKind::StructItem)
+            | Some(RustKind::UnionItem)
+            | Some(RustKind::EnumItem)
+            | Some(RustKind::TypeItem)
+            | Some(RustKind::ImplItem)
+            | Some(RustKind::TraitItem)
+            | Some(RustKind::AssociatedType)
+            | Some(RustKind::LetDeclaration)
+            | Some(RustKind::UseDeclaration)
+            | Some(RustKind::ExternCrateDeclaration) => {
+                let typed = <RustDeclarationStatement as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Declaration(typed))
+            }
+            Some(RustKind::AttributeItem) => {
+                let typed = <RustAttributeItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::AttributedItem(typed))
+            }
+            Some(RustKind::AttributeStatement) => {
+                let typed = <RustAttributeStatement as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::AttributedExpression(typed))
+            }
+            Some(RustKind::ExpressionStatement) => {
+                let typed = <RustExpressionStatement as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Expression(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Declaration(node) => rezel_common::TypedNode::syntax(node),
+            Self::AttributedItem(node) => rezel_common::TypedNode::syntax(node),
+            Self::AttributedExpression(node) => rezel_common::TypedNode::syntax(node),
+            Self::Expression(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Declaration(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::AttributedItem(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::AttributedExpression(node) => {
+                rezel_common::TypedNode::into_syntax(node)
+            }
+            Self::Expression(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustDeclarationStatement {
+    Item(RustDeclaration),
+    Empty(RustEmptyStatement),
+    Let(RustLetDeclaration),
+}
+impl rezel_common::TypedNode for RustDeclarationStatement {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::ConstItem)
+            | Some(RustKind::MacroInvocation)
+            | Some(RustKind::MacroDefinition)
+            | Some(RustKind::DeclarativeMacroItem)
+            | Some(RustKind::ModItem)
+            | Some(RustKind::ForeignModItem)
+            | Some(RustKind::FunctionItem)
+            | Some(RustKind::StaticItem)
+            | Some(RustKind::ForeignTypeItem)
+            | Some(RustKind::StructItem)
+            | Some(RustKind::UnionItem)
+            | Some(RustKind::EnumItem)
+            | Some(RustKind::TypeItem)
+            | Some(RustKind::ImplItem)
+            | Some(RustKind::TraitItem)
+            | Some(RustKind::AssociatedType)
+            | Some(RustKind::UseDeclaration)
+            | Some(RustKind::ExternCrateDeclaration) => {
+                let typed = <RustDeclaration as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Item(typed))
+            }
+            Some(RustKind::EmptyStatement) => {
+                let typed = <RustEmptyStatement as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Empty(typed))
+            }
+            Some(RustKind::LetDeclaration) => {
+                let typed = <RustLetDeclaration as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Let(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Item(node) => rezel_common::TypedNode::syntax(node),
+            Self::Empty(node) => rezel_common::TypedNode::syntax(node),
+            Self::Let(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Item(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Empty(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Let(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustDeclarationListItem {
+    Declaration(RustDeclarationStatement),
+    Attributed(RustAttributeItem),
+}
+impl rezel_common::TypedNode for RustDeclarationListItem {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::ConstItem)
+            | Some(RustKind::MacroInvocation)
+            | Some(RustKind::MacroDefinition)
+            | Some(RustKind::DeclarativeMacroItem)
+            | Some(RustKind::EmptyStatement)
+            | Some(RustKind::ModItem)
+            | Some(RustKind::ForeignModItem)
+            | Some(RustKind::FunctionItem)
+            | Some(RustKind::StaticItem)
+            | Some(RustKind::ForeignTypeItem)
+            | Some(RustKind::StructItem)
+            | Some(RustKind::UnionItem)
+            | Some(RustKind::EnumItem)
+            | Some(RustKind::TypeItem)
+            | Some(RustKind::ImplItem)
+            | Some(RustKind::TraitItem)
+            | Some(RustKind::AssociatedType)
+            | Some(RustKind::LetDeclaration)
+            | Some(RustKind::UseDeclaration)
+            | Some(RustKind::ExternCrateDeclaration) => {
+                let typed = <RustDeclarationStatement as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Declaration(typed))
+            }
+            Some(RustKind::AttributeItem) => {
+                let typed = <RustAttributeItem as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Attributed(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Declaration(node) => rezel_common::TypedNode::syntax(node),
+            Self::Attributed(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Declaration(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Attributed(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}

@@ -1,13 +1,1159 @@
 language = "RustLanguage"
 kind = "RustKind"
 language_path = "crate::generated::LANGUAGE"
-coverage = "partial"
+coverage = "complete"
+ignore = [
+	"⚠",
+	"!",
+	"&",
+	"(",
+	")",
+	",",
+	"->",
+	"..",
+	"...",
+	":",
+	"::",
+	";",
+	"<",
+	"=",
+	"=>",
+	">",
+	"[",
+	"]",
+	"{",
+	"|",
+	"}",
+	"abstract",
+	"as",
+	"async",
+	"auto",
+	"await",
+	"become",
+	"box",
+	"break",
+	"const",
+	"continue",
+	"default",
+	"do",
+	"dyn",
+	"else",
+	"enum",
+	"extern",
+	"final",
+	"fn",
+	"for",
+	"gen",
+	"if",
+	"impl",
+	"in",
+	"let",
+	"loop",
+	"macro",
+	"macro_rules",
+	"match",
+	"mod",
+	"move",
+	"mut",
+	"override",
+	"priv",
+	"pub",
+	"raw",
+	"ref",
+	"return",
+	"safe",
+	"static",
+	"struct",
+	"trait",
+	"try",
+	"type",
+	"typeof",
+	"union",
+	"unsafe",
+	"unsized",
+	"use",
+	"virtual",
+	"where",
+	"while",
+	"yield",
+]
 
 [kind_names]
+"⚠" = "Error"
+"!" = "Bang"
+"&" = "Ampersand"
+"(" = "LeftParen"
+")" = "RightParen"
+"," = "Comma"
+"->" = "ThinArrow"
+".." = "DotDot"
+"..." = "DotDotDot"
+":" = "Colon"
+"::" = "PathSeparator"
+";" = "Semicolon"
+"<" = "LeftAngle"
+"=" = "Equals"
+"=>" = "FatArrow"
+">" = "RightAngle"
+"[" = "LeftBracket"
+"]" = "RightBracket"
+"{" = "LeftBrace"
+"|" = "Pipe"
+"}" = "RightBrace"
 "_" = "Underscore"
 "self" = "SelfKeyword"
 "macro_rules" = "MacroRules"
 
+# Source files, trivia, attributes, and names.
+
 [[node]]
 name = "RustSourceFile"
 kind = "SourceFile"
+
+[[node.field]]
+name = "inner_attributes"
+type = "RustInnerAttribute"
+cardinality = "many"
+selector = { node = "InnerAttribute" }
+
+[[node.field]]
+name = "statements"
+type = "RustStatement"
+cardinality = "many"
+selector = { union = "RustStatement" }
+
+[[node]]
+name = "RustLineComment"
+kind = "LineComment"
+
+[[node]]
+name = "RustBlockComment"
+kind = "BlockComment"
+
+[[node]]
+name = "RustAttribute"
+kind = "Attribute"
+
+[[node.field]]
+name = "meta"
+type = "RustMetaItem"
+cardinality = "one"
+selector = { node = "MetaItem" }
+
+[[node.field]]
+name = "left_bracket_token"
+cardinality = "one"
+selector = { token = "[" }
+
+[[node.field]]
+name = "right_bracket_token"
+cardinality = "one"
+selector = { token = "]" }
+
+[[node]]
+name = "RustInnerAttribute"
+kind = "InnerAttribute"
+
+[[node.field]]
+name = "meta"
+type = "RustMetaItem"
+cardinality = "one"
+selector = { node = "MetaItem" }
+
+[[node.field]]
+name = "left_bracket_token"
+cardinality = "one"
+selector = { token = "[" }
+
+[[node.field]]
+name = "right_bracket_token"
+cardinality = "one"
+selector = { token = "]" }
+
+[[node]]
+name = "RustMetaItem"
+kind = "MetaItem"
+
+[[node]]
+name = "RustUnsafeAttribute"
+kind = "UnsafeAttribute"
+
+[[node]]
+name = "RustIdentifier"
+kind = "Identifier"
+
+[[node]]
+name = "RustBoundIdentifier"
+kind = "BoundIdentifier"
+
+[[node]]
+name = "RustTypeIdentifier"
+kind = "TypeIdentifier"
+
+[[node]]
+name = "RustFieldIdentifier"
+kind = "FieldIdentifier"
+
+[[node]]
+name = "RustScopeIdentifier"
+kind = "ScopeIdentifier"
+
+[[node]]
+name = "RustScopedIdentifier"
+kind = "ScopedIdentifier"
+
+[[node]]
+name = "RustScopedTypeIdentifier"
+kind = "ScopedTypeIdentifier"
+
+[[node]]
+name = "RustMetavariable"
+kind = "Metavariable"
+
+[[node]]
+name = "RustSelfKeyword"
+kind = "self"
+
+[[node]]
+name = "RustSuperKeyword"
+kind = "super"
+
+[[node]]
+name = "RustCrateKeyword"
+kind = "crate"
+
+[[node]]
+name = "RustLifetime"
+kind = "Lifetime"
+
+[[node]]
+name = "RustLoopLabel"
+kind = "LoopLabel"
+
+[[node]]
+name = "RustQualifiedScope"
+kind = "QualifiedScope"
+
+[[node]]
+name = "RustVisibility"
+kind = "Vis"
+
+[[node]]
+name = "RustUnderscore"
+kind = "_"
+
+# Literals and operators.
+
+[[node]]
+name = "RustString"
+kind = "String"
+
+[[node]]
+name = "RustRawString"
+kind = "RawString"
+
+[[node]]
+name = "RustEscape"
+kind = "Escape"
+
+[[node]]
+name = "RustChar"
+kind = "Char"
+
+[[node]]
+name = "RustBoolean"
+kind = "Boolean"
+
+[[node]]
+name = "RustInteger"
+kind = "Integer"
+
+[[node]]
+name = "RustFloat"
+kind = "Float"
+
+[[node]]
+name = "RustArithmeticOperator"
+kind = "ArithOp"
+
+[[node]]
+name = "RustBitOperator"
+kind = "BitOp"
+
+[[node]]
+name = "RustLogicOperator"
+kind = "LogicOp"
+
+[[node]]
+name = "RustUpdateOperator"
+kind = "UpdateOp"
+
+[[node]]
+name = "RustCompareOperator"
+kind = "CompareOp"
+
+[[node]]
+name = "RustDereferenceOperator"
+kind = "DerefOp"
+
+# Generic parameters, bounds, and paths.
+
+[[node]]
+name = "RustTypeArgumentList"
+kind = "TypeArgList"
+
+[[node]]
+name = "RustTypeBinding"
+kind = "TypeBinding"
+
+[[node]]
+name = "RustGenericType"
+kind = "GenericType"
+
+[[node]]
+name = "RustTraitBounds"
+kind = "TraitBounds"
+
+[[node]]
+name = "RustHigherRankedTraitBound"
+kind = "HigherRankedTraitBound"
+
+[[node]]
+name = "RustTypeParameterList"
+kind = "TypeParamList"
+
+[[node]]
+name = "RustConstrainedTypeParameter"
+kind = "ConstrainedTypeParameter"
+
+[[node]]
+name = "RustOptionalTypeParameter"
+kind = "OptionalTypeParameter"
+
+[[node]]
+name = "RustConstParameter"
+kind = "ConstParameter"
+
+[[node]]
+name = "RustWhereClause"
+kind = "WhereClause"
+
+[[node]]
+name = "RustLifetimeClause"
+kind = "LifetimeClause"
+
+[[node]]
+name = "RustTypeBoundClause"
+kind = "TypeBoundClause"
+
+[[node]]
+name = "RustRemovedTraitBound"
+kind = "RemovedTraitBound"
+
+[[node]]
+name = "RustConstTraitBound"
+kind = "ConstTraitBound"
+
+[[node]]
+name = "RustParenthesizedTraitBound"
+kind = "ParenthesizedTraitBound"
+
+[[node]]
+name = "RustForLifetimes"
+kind = "ForLifetimes"
+
+[[node]]
+name = "RustUseBound"
+kind = "UseBound"
+
+[[node]]
+name = "RustNegativeConstArgument"
+kind = "NegativeConstArgument"
+
+# Types.
+
+[[node]]
+name = "RustAbstractType"
+kind = "AbstractType"
+
+[[node]]
+name = "RustSelfType"
+kind = "SelfType"
+
+[[node]]
+name = "RustMetaType"
+kind = "MetaType"
+
+[[node]]
+name = "RustFunctionType"
+kind = "FunctionType"
+
+[[node]]
+name = "RustInferredType"
+kind = "InferredType"
+
+[[node]]
+name = "RustReferenceType"
+kind = "ReferenceType"
+
+[[node]]
+name = "RustPointerType"
+kind = "PointerType"
+
+[[node]]
+name = "RustTupleType"
+kind = "TupleType"
+
+[[node]]
+name = "RustUnitType"
+kind = "UnitType"
+
+[[node]]
+name = "RustArrayType"
+kind = "ArrayType"
+
+[[node]]
+name = "RustEmptyType"
+kind = "EmptyType"
+
+[[node]]
+name = "RustDynamicType"
+kind = "DynamicType"
+
+[[node]]
+name = "RustBoundedType"
+kind = "BoundedType"
+
+# Patterns.
+
+[[node]]
+name = "RustLiteralPattern"
+kind = "LiteralPattern"
+
+[[node]]
+name = "RustMetaPattern"
+kind = "MetaPattern"
+
+[[node]]
+name = "RustSelfPattern"
+kind = "SelfPattern"
+
+[[node]]
+name = "RustTuplePattern"
+kind = "TuplePattern"
+
+[[node]]
+name = "RustStructPattern"
+kind = "StructPattern"
+
+[[node]]
+name = "RustFieldPatternList"
+kind = "FieldPatternList"
+
+[[node]]
+name = "RustFieldPattern"
+kind = "FieldPattern"
+
+[[node]]
+name = "RustRefPattern"
+kind = "RefPattern"
+
+[[node]]
+name = "RustSlicePattern"
+kind = "SlicePattern"
+
+[[node]]
+name = "RustCapturedPattern"
+kind = "CapturedPattern"
+
+[[node]]
+name = "RustReferencePattern"
+kind = "ReferencePattern"
+
+[[node]]
+name = "RustMutPattern"
+kind = "MutPattern"
+
+[[node]]
+name = "RustRangePattern"
+kind = "RangePattern"
+
+[[node]]
+name = "RustOrPattern"
+kind = "OrPattern"
+
+[[node]]
+name = "RustMacroPattern"
+kind = "MacroPattern"
+
+# Expressions and blocks.
+
+[[node]]
+name = "RustBlock"
+kind = "Block"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "inner_attributes"
+type = "RustInnerAttribute"
+cardinality = "many"
+selector = { node = "InnerAttribute" }
+
+[[node.field]]
+name = "statements"
+type = "RustStatement"
+cardinality = "many"
+selector = { union = "RustStatement" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "RustUnsafeBlock"
+kind = "UnsafeBlock"
+
+[[node]]
+name = "RustAsyncBlock"
+kind = "AsyncBlock"
+
+[[node]]
+name = "RustConstBlock"
+kind = "ConstBlock"
+
+[[node]]
+name = "RustTryBlock"
+kind = "TryBlock"
+
+[[node]]
+name = "RustLabeledBlock"
+kind = "LabeledBlock"
+
+[[node]]
+name = "RustIfExpression"
+kind = "IfExpression"
+
+[[node]]
+name = "RustLetChain"
+kind = "LetChain"
+
+[[node]]
+name = "RustLetCondition"
+kind = "LetCondition"
+
+[[node]]
+name = "RustMatchExpression"
+kind = "MatchExpression"
+
+[[node]]
+name = "RustMatchBlock"
+kind = "MatchBlock"
+
+[[node]]
+name = "RustMatchArm"
+kind = "MatchArm"
+
+[[node]]
+name = "RustGuard"
+kind = "Guard"
+
+[[node]]
+name = "RustUnaryExpression"
+kind = "UnaryExpression"
+
+[[node]]
+name = "RustReferenceExpression"
+kind = "ReferenceExpression"
+
+[[node]]
+name = "RustTryExpression"
+kind = "TryExpression"
+
+[[node]]
+name = "RustBinaryExpression"
+kind = "BinaryExpression"
+
+[[node]]
+name = "RustAssignmentExpression"
+kind = "AssignmentExpression"
+
+[[node]]
+name = "RustTypeCastExpression"
+kind = "TypeCastExpression"
+
+[[node]]
+name = "RustReturnExpression"
+kind = "ReturnExpression"
+
+[[node]]
+name = "RustRangeExpression"
+kind = "RangeExpression"
+
+[[node]]
+name = "RustCallExpression"
+kind = "CallExpression"
+
+[[node]]
+name = "RustArgumentList"
+kind = "ArgList"
+
+[[node]]
+name = "RustAwaitExpression"
+kind = "AwaitExpression"
+
+[[node]]
+name = "RustFieldExpression"
+kind = "FieldExpression"
+
+[[node]]
+name = "RustGenericFunction"
+kind = "GenericFunction"
+
+[[node]]
+name = "RustBreakExpression"
+kind = "BreakExpression"
+
+[[node]]
+name = "RustContinueExpression"
+kind = "ContinueExpression"
+
+[[node]]
+name = "RustIndexExpression"
+kind = "IndexExpression"
+
+[[node]]
+name = "RustArrayExpression"
+kind = "ArrayExpression"
+
+[[node]]
+name = "RustInferredConst"
+kind = "InferredConst"
+
+[[node]]
+name = "RustTupleExpression"
+kind = "TupleExpression"
+
+[[node]]
+name = "RustUnitExpression"
+kind = "UnitExpression"
+
+[[node]]
+name = "RustClosureExpression"
+kind = "ClosureExpression"
+
+[[node]]
+name = "RustParenthesizedExpression"
+kind = "ParenthesizedExpression"
+
+[[node]]
+name = "RustStructExpression"
+kind = "StructExpression"
+
+[[node]]
+name = "RustFieldInitializerList"
+kind = "FieldInitializerList"
+
+[[node]]
+name = "RustShorthandFieldInitializer"
+kind = "ShorthandFieldInitializer"
+
+[[node]]
+name = "RustFieldInitializer"
+kind = "FieldInitializer"
+
+[[node]]
+name = "RustBaseFieldInitializer"
+kind = "BaseFieldInitializer"
+
+[[node]]
+name = "RustWhileExpression"
+kind = "WhileExpression"
+
+[[node]]
+name = "RustLoopExpression"
+kind = "LoopExpression"
+
+[[node]]
+name = "RustForExpression"
+kind = "ForExpression"
+
+# Macro token trees.
+
+[[node]]
+name = "RustParenthesizedTokens"
+kind = "ParenthesizedTokens"
+
+[[node]]
+name = "RustBracketedTokens"
+kind = "BracketedTokens"
+
+[[node]]
+name = "RustBracedTokens"
+kind = "BracedTokens"
+
+[[node]]
+name = "RustTokenBinding"
+kind = "TokenBinding"
+
+[[node]]
+name = "RustTokenRepetition"
+kind = "TokenRepetition"
+
+[[node]]
+name = "RustMetavariableExpression"
+kind = "MetavariableExpression"
+
+[[node]]
+name = "RustMacroInvocation"
+kind = "MacroInvocation"
+
+[[node]]
+name = "RustMacroDefinition"
+kind = "MacroDefinition"
+
+[[node]]
+name = "RustMacroRule"
+kind = "MacroRule"
+
+[[node]]
+name = "RustDeclarativeMacroItem"
+kind = "DeclarativeMacroItem"
+
+# Items, declarations, and statements.
+
+[[node]]
+name = "RustConstItem"
+kind = "ConstItem"
+
+[[node]]
+name = "RustAttributeItem"
+kind = "AttributeItem"
+
+[[node.field]]
+name = "attributes"
+type = "RustAttribute"
+cardinality = "many"
+selector = { node = "Attribute" }
+
+[[node.field]]
+name = "declaration"
+type = "RustDeclarationStatement"
+cardinality = "one"
+selector = { union = "RustDeclarationStatement" }
+
+[[node]]
+name = "RustAttributeStatement"
+kind = "AttributeStatement"
+
+[[node.field]]
+name = "attributes"
+type = "RustAttribute"
+cardinality = "many"
+selector = { node = "Attribute" }
+
+[[node.field]]
+name = "expression_statement"
+type = "RustExpressionStatement"
+cardinality = "one"
+selector = { node = "ExpressionStatement" }
+
+[[node]]
+name = "RustEmptyStatement"
+kind = "EmptyStatement"
+
+[[node]]
+name = "RustExpressionStatement"
+kind = "ExpressionStatement"
+
+[[node.field]]
+name = "expression"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
+[[node]]
+name = "RustModuleItem"
+kind = "ModItem"
+
+[[node]]
+name = "RustDeclarationList"
+kind = "DeclarationList"
+
+[[node.field]]
+name = "left_brace_token"
+cardinality = "one"
+selector = { token = "{" }
+
+[[node.field]]
+name = "inner_attributes"
+type = "RustInnerAttribute"
+cardinality = "many"
+selector = { node = "InnerAttribute" }
+
+[[node.field]]
+name = "items"
+type = "RustDeclarationListItem"
+cardinality = "many"
+selector = { union = "RustDeclarationListItem" }
+
+[[node.field]]
+name = "right_brace_token"
+cardinality = "one"
+selector = { token = "}" }
+
+[[node]]
+name = "RustForeignModuleItem"
+kind = "ForeignModItem"
+
+[[node]]
+name = "RustFunctionItem"
+kind = "FunctionItem"
+
+[[node.field]]
+name = "visibility"
+type = "RustVisibility"
+cardinality = "optional"
+selector = { node = "Vis" }
+
+[[node.field]]
+name = "fn_token"
+cardinality = "one"
+selector = { token = "fn" }
+
+[[node.field]]
+name = "name"
+type = "RustFunctionName"
+cardinality = "one"
+selector = { union = "RustFunctionName" }
+
+[[node.field]]
+name = "type_parameters"
+type = "RustTypeParameterList"
+cardinality = "optional"
+selector = { node = "TypeParamList" }
+
+[[node.field]]
+name = "parameters"
+type = "RustParameterList"
+cardinality = "one"
+selector = { node = "ParamList" }
+
+[[node.field]]
+name = "return_type"
+type = "RustType"
+cardinality = "optional"
+selector = { union = "RustType" }
+
+[[node.field]]
+name = "where_clause"
+type = "RustWhereClause"
+cardinality = "optional"
+selector = { node = "WhereClause" }
+
+[[node.field]]
+name = "body"
+type = "RustBlock"
+cardinality = "optional"
+selector = { node = "Block" }
+
+[[node]]
+name = "RustParameterList"
+kind = "ParamList"
+
+[[node.field]]
+name = "parameters"
+type = "RustFunctionParameter"
+cardinality = "many"
+selector = { union = "RustFunctionParameter" }
+
+[[node]]
+name = "RustParameter"
+kind = "Parameter"
+
+[[node]]
+name = "RustSelfParameter"
+kind = "SelfParameter"
+
+[[node]]
+name = "RustVariadicParameter"
+kind = "VariadicParameter"
+
+[[node]]
+name = "RustStaticItem"
+kind = "StaticItem"
+
+[[node]]
+name = "RustForeignTypeItem"
+kind = "ForeignTypeItem"
+
+[[node]]
+name = "RustStructItem"
+kind = "StructItem"
+
+[[node]]
+name = "RustFieldDeclarationList"
+kind = "FieldDeclarationList"
+
+[[node]]
+name = "RustFieldDeclaration"
+kind = "FieldDeclaration"
+
+[[node]]
+name = "RustOrderedFieldDeclarationList"
+kind = "OrderedFieldDeclarationList"
+
+[[node]]
+name = "RustUnionItem"
+kind = "UnionItem"
+
+[[node]]
+name = "RustEnumItem"
+kind = "EnumItem"
+
+[[node]]
+name = "RustEnumVariantList"
+kind = "EnumVariantList"
+
+[[node]]
+name = "RustEnumVariant"
+kind = "EnumVariant"
+
+[[node]]
+name = "RustTypeItem"
+kind = "TypeItem"
+
+[[node]]
+name = "RustImplementationItem"
+kind = "ImplItem"
+
+[[node]]
+name = "RustTraitItem"
+kind = "TraitItem"
+
+[[node]]
+name = "RustAssociatedType"
+kind = "AssociatedType"
+
+[[node]]
+name = "RustLetDeclaration"
+kind = "LetDeclaration"
+
+[[node]]
+name = "RustUseDeclaration"
+kind = "UseDeclaration"
+
+[[node]]
+name = "RustUseAsClause"
+kind = "UseAsClause"
+
+[[node]]
+name = "RustUseList"
+kind = "UseList"
+
+[[node]]
+name = "RustScopedUseList"
+kind = "ScopedUseList"
+
+[[node]]
+name = "RustUseWildcard"
+kind = "UseWildcard"
+
+[[node]]
+name = "RustExternCrateDeclaration"
+kind = "ExternCrateDeclaration"
+
+# Closed syntax roles.
+
+[[union]]
+name = "RustComment"
+variants = [
+	{ name = "Line", type = "RustLineComment" },
+	{ name = "Block", type = "RustBlockComment" },
+]
+
+[[union]]
+name = "RustLiteral"
+variants = [
+	{ name = "String", type = "RustString" },
+	{ name = "RawString", type = "RustRawString" },
+	{ name = "Char", type = "RustChar" },
+	{ name = "Boolean", type = "RustBoolean" },
+	{ name = "Integer", type = "RustInteger" },
+	{ name = "Float", type = "RustFloat" },
+]
+
+[[union]]
+name = "RustPath"
+variants = [
+	{ name = "Identifier", type = "RustIdentifier" },
+	{ name = "Scoped", type = "RustScopedIdentifier" },
+	{ name = "Metavariable", type = "RustMetavariable" },
+	{ name = "SelfKeyword", type = "RustSelfKeyword" },
+	{ name = "SuperKeyword", type = "RustSuperKeyword" },
+	{ name = "CrateKeyword", type = "RustCrateKeyword" },
+]
+
+[[union]]
+name = "RustTypePath"
+variants = [
+	{ name = "SelfType", type = "RustSelfType" },
+	{ name = "Metavariable", type = "RustMetaType" },
+	{ name = "Identifier", type = "RustTypeIdentifier" },
+	{ name = "Scoped", type = "RustScopedTypeIdentifier" },
+]
+
+[[union]]
+name = "RustType"
+variants = [
+	{ name = "Abstract", type = "RustAbstractType" },
+	{ name = "Path", type = "RustTypePath" },
+	{ name = "Generic", type = "RustGenericType" },
+	{ name = "Tuple", type = "RustTupleType" },
+	{ name = "Unit", type = "RustUnitType" },
+	{ name = "Array", type = "RustArrayType" },
+	{ name = "Function", type = "RustFunctionType" },
+	{ name = "Macro", type = "RustMacroInvocation" },
+	{ name = "Never", type = "RustEmptyType" },
+	{ name = "Dynamic", type = "RustDynamicType" },
+	{ name = "Bounded", type = "RustBoundedType" },
+	{ name = "Inferred", type = "RustInferredType" },
+	{ name = "Reference", type = "RustReferenceType" },
+	{ name = "Pointer", type = "RustPointerType" },
+]
+
+[[union]]
+name = "RustPattern"
+variants = [
+	{ name = "Literal", type = "RustLiteralPattern" },
+	{ name = "Metavariable", type = "RustMetaPattern" },
+	{ name = "Binding", type = "RustBoundIdentifier" },
+	{ name = "SelfPattern", type = "RustSelfPattern" },
+	{ name = "Path", type = "RustScopedIdentifier" },
+	{ name = "Tuple", type = "RustTuplePattern" },
+	{ name = "Struct", type = "RustStructPattern" },
+	{ name = "RefBinding", type = "RustRefPattern" },
+	{ name = "Slice", type = "RustSlicePattern" },
+	{ name = "Captured", type = "RustCapturedPattern" },
+	{ name = "Reference", type = "RustReferencePattern" },
+	{ name = "Mutable", type = "RustMutPattern" },
+	{ name = "Range", type = "RustRangePattern" },
+	{ name = "Or", type = "RustOrPattern" },
+	{ name = "Macro", type = "RustMacroPattern" },
+	{ name = "Wildcard", type = "RustUnderscore" },
+]
+
+[[union]]
+name = "RustDelimitedTokenTree"
+variants = [
+	{ name = "Parenthesized", type = "RustParenthesizedTokens" },
+	{ name = "Bracketed", type = "RustBracketedTokens" },
+	{ name = "Braced", type = "RustBracedTokens" },
+]
+
+[[union]]
+name = "RustExpression"
+variants = [
+	{ name = "Unary", type = "RustUnaryExpression" },
+	{ name = "Reference", type = "RustReferenceExpression" },
+	{ name = "Try", type = "RustTryExpression" },
+	{ name = "Binary", type = "RustBinaryExpression" },
+	{ name = "Assignment", type = "RustAssignmentExpression" },
+	{ name = "Cast", type = "RustTypeCastExpression" },
+	{ name = "Return", type = "RustReturnExpression" },
+	{ name = "Range", type = "RustRangeExpression" },
+	{ name = "Call", type = "RustCallExpression" },
+	{ name = "Literal", type = "RustLiteral" },
+	{ name = "Path", type = "RustPath" },
+	{ name = "Await", type = "RustAwaitExpression" },
+	{ name = "Field", type = "RustFieldExpression" },
+	{ name = "GenericFunction", type = "RustGenericFunction" },
+	{ name = "Break", type = "RustBreakExpression" },
+	{ name = "Continue", type = "RustContinueExpression" },
+	{ name = "Index", type = "RustIndexExpression" },
+	{ name = "Array", type = "RustArrayExpression" },
+	{ name = "Tuple", type = "RustTupleExpression" },
+	{ name = "Macro", type = "RustMacroInvocation" },
+	{ name = "Unit", type = "RustUnitExpression" },
+	{ name = "Closure", type = "RustClosureExpression" },
+	{ name = "Parenthesized", type = "RustParenthesizedExpression" },
+	{ name = "Struct", type = "RustStructExpression" },
+	{ name = "UnsafeBlock", type = "RustUnsafeBlock" },
+	{ name = "AsyncBlock", type = "RustAsyncBlock" },
+	{ name = "ConstBlock", type = "RustConstBlock" },
+	{ name = "TryBlock", type = "RustTryBlock" },
+	{ name = "LabeledBlock", type = "RustLabeledBlock" },
+	{ name = "Block", type = "RustBlock" },
+	{ name = "If", type = "RustIfExpression" },
+	{ name = "Match", type = "RustMatchExpression" },
+	{ name = "While", type = "RustWhileExpression" },
+	{ name = "Loop", type = "RustLoopExpression" },
+	{ name = "For", type = "RustForExpression" },
+]
+
+[[union]]
+name = "RustFunctionName"
+variants = [
+	{ name = "Identifier", type = "RustBoundIdentifier" },
+	{ name = "Metavariable", type = "RustMetavariable" },
+]
+
+[[union]]
+name = "RustFunctionParameter"
+variants = [
+	{ name = "Parameter", type = "RustParameter" },
+	{ name = "SelfParameter", type = "RustSelfParameter" },
+	{ name = "Variadic", type = "RustVariadicParameter" },
+	{ name = "Wildcard", type = "RustUnderscore" },
+]
+
+[[union]]
+name = "RustDeclaration"
+variants = [
+	{ name = "Const", type = "RustConstItem" },
+	{ name = "MacroInvocation", type = "RustMacroInvocation" },
+	{ name = "MacroDefinition", type = "RustMacroDefinition" },
+	{ name = "DeclarativeMacro", type = "RustDeclarativeMacroItem" },
+	{ name = "Module", type = "RustModuleItem" },
+	{ name = "ForeignModule", type = "RustForeignModuleItem" },
+	{ name = "Struct", type = "RustStructItem" },
+	{ name = "Union", type = "RustUnionItem" },
+	{ name = "Enum", type = "RustEnumItem" },
+	{ name = "Type", type = "RustTypeItem" },
+	{ name = "Function", type = "RustFunctionItem" },
+	{ name = "Implementation", type = "RustImplementationItem" },
+	{ name = "Trait", type = "RustTraitItem" },
+	{ name = "AssociatedType", type = "RustAssociatedType" },
+	{ name = "Use", type = "RustUseDeclaration" },
+	{ name = "ExternCrate", type = "RustExternCrateDeclaration" },
+	{ name = "Static", type = "RustStaticItem" },
+	{ name = "ForeignType", type = "RustForeignTypeItem" },
+]
+
+[[union]]
+name = "RustStatement"
+variants = [
+	{ name = "Declaration", type = "RustDeclarationStatement" },
+	{ name = "AttributedItem", type = "RustAttributeItem" },
+	{ name = "AttributedExpression", type = "RustAttributeStatement" },
+	{ name = "Expression", type = "RustExpressionStatement" },
+]
+
+[[union]]
+name = "RustDeclarationStatement"
+variants = [
+	{ name = "Item", type = "RustDeclaration" },
+	{ name = "Empty", type = "RustEmptyStatement" },
+	{ name = "Let", type = "RustLetDeclaration" },
+]
+
+[[union]]
+name = "RustDeclarationListItem"
+variants = [
+	{ name = "Declaration", type = "RustDeclarationStatement" },
+	{ name = "Attributed", type = "RustAttributeItem" },
+]

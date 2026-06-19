@@ -86,24 +86,43 @@ the standard library does not exercise.
 
 ## Typed CST
 
-The initial typed schema exposes the root while the grammar stabilizes:
+The typed schema accounts for every visible Rust grammar kind. Syntax nodes
+have zero-copy wrappers, closed grammatical roles use generated unions, and
+punctuation or keyword kinds without standalone wrappers are listed explicitly
+by the complete-coverage schema.
 
 ```rust
-use rezel_lang_rust::{RustSourceFile, TypedNode};
+use rezel_lang_rust::{
+    RustDeclaration, RustDeclarationStatement, RustSourceFile, RustStatement,
+    TypedNode,
+};
 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
+let source = "fn main() {}";
 let tree = rezel_lang_rust::parser()
     .with_strict(true)
-    .parse("fn main() {}")?;
+    .parse(source)?;
 let file = RustSourceFile::downcast_from(tree.top_node())
     .expect("the Rust parser returns a SourceFile top node");
-assert_eq!(file.text("fn main() {}"), Some("fn main() {}"));
+let RustStatement::Declaration(RustDeclarationStatement::Item(
+    RustDeclaration::Function(function),
+)) = file.statements().next().expect("one function statement")
+else {
+    panic!("expected a function declaration");
+};
+assert_eq!(
+    function.name().and_then(|name| name.text(source)),
+    Some("main"),
+);
 # Ok(())
 # }
 ```
 
-The typed API is intentionally partial during the bootstrap phase. It remains
-a zero-copy CST view and does not construct an owned Rust AST.
+Core source-file, attribute, block, declaration, function, expression, type,
+pattern, literal, path, and token-tree roles are navigable through generated
+fields and unions. Wrappers remain generic where the grammar has not yet
+declared a stable direct-child accessor. The typed API is a zero-copy CST view
+and does not construct an owned Rust AST.
 
 ## Highlighting
 
