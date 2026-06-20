@@ -1,8 +1,9 @@
 #![forbid(unsafe_code)]
 
 use rezel_lang_rust::{
-    RustDeclaration, RustDeclarationStatement, RustExpression, RustFunctionItem, RustFunctionName,
-    RustPath, RustSourceFile, RustStatement, RustType, TypedNode,
+    RustDeclaration, RustDeclarationStatement, RustDelimitedTokenTree, RustExpression,
+    RustFieldList, RustFunctionItem, RustFunctionName, RustPath, RustSourceFile, RustStatement,
+    RustTokenTreeElement, RustType, RustTypeParameter, RustUseTree, TypedNode,
 };
 
 fn syntax_text<'source>(node: &rezel_common::SyntaxNode, source: &'source str) -> &'source str {
@@ -95,6 +96,110 @@ fn typed_downcasts_reject_the_wrong_kind() {
     let file = RustSourceFile::downcast_from(tree.top_node()).unwrap();
 
     assert!(RustFunctionItem::downcast_from(file.syntax().clone()).is_err());
+}
+
+#[test]
+fn typed_syntax_navigates_items_generics_uses_and_macros() {
+    let source = r"
+pub struct Pair<T: Copy, U = T>
+where
+    T: Send,
+{
+    pub left: T,
+    right: U,
+}
+
+use crate::module::{Thing as AliasThing, *};
+
+macro_rules! choose {
+    ($value:expr) => { $value }
+}
+
+pub macro identity($value:expr) { $value }
+";
+    let tree = rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let file = RustSourceFile::downcast_from(tree.top_node()).unwrap();
+    let declarations = file
+        .statements()
+        .map(|statement| {
+            let RustStatement::Declaration(RustDeclarationStatement::Item(declaration)) = statement
+            else {
+                panic!("expected an item declaration");
+            };
+            declaration
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(declarations.len(), 4);
+
+    let RustDeclaration::Struct(structure) = &declarations[0] else {
+        panic!("expected a struct");
+    };
+    assert!(structure.visibility().is_some());
+    assert_eq!(structure.name().unwrap().text(source), Some("Pair"));
+    let parameters = structure
+        .type_parameters()
+        .unwrap()
+        .parameters()
+        .collect::<Vec<_>>();
+    assert!(matches!(
+        parameters.as_slice(),
+        [
+            RustTypeParameter::Constrained(_),
+            RustTypeParameter::Optional(_)
+        ]
+    ));
+    assert_eq!(structure.where_clause().unwrap().predicates().count(), 1);
+    let RustFieldList::Named(fields) = structure.fields().unwrap() else {
+        panic!("expected named struct fields");
+    };
+    let fields = fields.fields().collect::<Vec<_>>();
+    assert_eq!(fields.len(), 2);
+    assert_eq!(fields[0].name().unwrap().text(source), Some("left"));
+    assert!(fields[0].visibility().is_some());
+    assert_eq!(fields[1].name().unwrap().text(source), Some("right"));
+    assert!(fields[1].visibility().is_none());
+
+    let RustDeclaration::Use(use_declaration) = &declarations[1] else {
+        panic!("expected a use declaration");
+    };
+    let RustUseTree::ScopedList(scoped) = use_declaration.tree().unwrap() else {
+        panic!("expected a scoped use list");
+    };
+    assert_eq!(scoped.segments().count(), 2);
+    let use_trees = scoped.list().unwrap().trees().collect::<Vec<_>>();
+    assert!(matches!(
+        use_trees.as_slice(),
+        [RustUseTree::Alias(_), RustUseTree::Wildcard(_)]
+    ));
+
+    let RustDeclaration::MacroDefinition(definition) = &declarations[2] else {
+        panic!("expected a macro_rules definition");
+    };
+    assert_eq!(definition.name().unwrap().text(source), Some("choose"));
+    let rules = definition.rules().collect::<Vec<_>>();
+    assert_eq!(rules.len(), 1);
+    let delimited_tokens = rules[0].delimited_tokens().collect::<Vec<_>>();
+    assert_eq!(delimited_tokens.len(), 2);
+    let RustDelimitedTokenTree::Parenthesized(pattern) = &delimited_tokens[0] else {
+        panic!("expected a parenthesized macro pattern");
+    };
+    let elements = pattern.elements().collect::<Vec<_>>();
+    let [RustTokenTreeElement::Binding(binding)] = elements.as_slice() else {
+        panic!("expected one macro fragment binding");
+    };
+    assert_eq!(binding.metavariable().unwrap().text(source), Some("$value"));
+    assert_eq!(binding.fragment().unwrap().text(source), Some("expr"));
+
+    let RustDeclaration::DeclarativeMacro(declaration) = &declarations[3] else {
+        panic!("expected a declarative macro item");
+    };
+    assert!(declaration.visibility().is_some());
+    assert_eq!(declaration.name().unwrap().text(source), Some("identity"));
+    assert!(declaration.arguments().is_some());
+    assert_eq!(declaration.body().unwrap().text(source), Some("{ $value }"));
 }
 
 #[test]
