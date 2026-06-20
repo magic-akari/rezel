@@ -22,6 +22,28 @@ rezel generate grammar.grammar --output generated.rs --terms terms.rs
 rezel terms grammar.grammar --output terms.rs
 ```
 
+### Workspace development profile
+
+When repeatedly checking or generating a grammar in this workspace, prefer
+the `generator-dev` aliases:
+
+```console
+cargo rezel check languages/json/grammar/json.grammar
+cargo rezel-codegen json --check
+cargo rezel-codegen json --update
+```
+
+The profile inherits the normal development settings and optimizes only
+`rezel-generator`. This keeps grammar construction responsive without changing
+the default profile used by tests and ordinary workspace builds. Continue to
+use the normal `cargo test`, `cargo check`, and Clippy commands when developing
+the generator itself, and use `--release` only for generator performance
+measurements or release binaries.
+
+The named profile is defined in the workspace `.cargo/config.toml`. Cargo reads
+profiles from the workspace root and configuration files, not from a member
+crate manifest, so it cannot live in `crates/rezel-generator/Cargo.toml`.
+
 `generate` always writes two parser-table blobs next to its Rust output:
 `generated.le.bin` and `generated.be.bin`. The Rust glue selects the
 native-endian representation at compile time.
