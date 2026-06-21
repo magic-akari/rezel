@@ -1083,12 +1083,23 @@ impl CollapseContext<'_> {
     }
 
     fn can_merge(&self, left: &State, right: &State, mapping: &[usize]) -> bool {
-        for goto in &left.gotos {
-            for other in &right.gotos {
-                if goto.term() == other.term()
-                    && !goto.equivalent_mapped(other, mapping, self.rules, self.terms)
-                {
-                    return false;
+        let mut left_goto = 0;
+        let mut right_goto = 0;
+        while left_goto < left.gotos.len() && right_goto < right.gotos.len() {
+            let goto = &left.gotos[left_goto];
+            let other = &right.gotos[right_goto];
+            let goto_term = self.terms.output_id(goto.term());
+            let other_term = self.terms.output_id(other.term());
+            match goto_term.cmp(&other_term) {
+                std::cmp::Ordering::Less => left_goto += 1,
+                std::cmp::Ordering::Greater => right_goto += 1,
+                std::cmp::Ordering::Equal => {
+                    debug_assert_eq!(goto.term(), other.term());
+                    if !goto.equivalent_mapped(other, mapping, self.rules, self.terms) {
+                        return false;
+                    }
+                    left_goto += 1;
+                    right_goto += 1;
                 }
             }
         }
