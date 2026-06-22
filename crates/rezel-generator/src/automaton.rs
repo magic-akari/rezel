@@ -149,33 +149,41 @@ impl ActionTermRanges {
         (self.shift_end - self.shift_start + self.reduce_end - self.reduce_start) as usize
     }
 
-    fn any_index(&self, mut predicate: impl FnMut(usize) -> bool) -> bool {
-        for index in self.shift_start as usize..self.shift_end as usize {
-            if predicate(index) {
-                return true;
-            }
-        }
-        for index in self.reduce_start as usize..self.reduce_end as usize {
-            if predicate(index) {
-                return true;
-            }
-        }
-        false
+    #[inline]
+    fn indices(&self) -> impl Iterator<Item = usize> {
+        (self.shift_start as usize..self.shift_end as usize)
+            .chain(self.reduce_start as usize..self.reduce_end as usize)
     }
+}
 
-    fn all_indices(&self, mut predicate: impl FnMut(usize) -> bool) -> bool {
-        for index in self.shift_start as usize..self.shift_end as usize {
-            if !predicate(index) {
-                return false;
+// Both slices must have strictly increasing, unique keys. Entries present on
+// only one side are skipped because they cannot conflict during state merging.
+#[inline]
+fn common_entries_match_by_key<Entry, Key>(
+    left: &[Entry],
+    right: &[Entry],
+    key: impl Fn(&Entry) -> Key,
+    mut predicate: impl FnMut(&Entry, &Entry) -> bool,
+) -> bool
+where
+    Key: Ord,
+{
+    let mut left_index = 0;
+    let mut right_index = 0;
+    while left_index < left.len() && right_index < right.len() {
+        match key(&left[left_index]).cmp(&key(&right[right_index])) {
+            std::cmp::Ordering::Less => left_index += 1,
+            std::cmp::Ordering::Greater => right_index += 1,
+            std::cmp::Ordering::Equal => {
+                if !predicate(&left[left_index], &right[right_index]) {
+                    return false;
+                }
+                left_index += 1;
+                right_index += 1;
             }
         }
-        for index in self.reduce_start as usize..self.reduce_end as usize {
-            if !predicate(index) {
-                return false;
-            }
-        }
-        true
     }
+    true
 }
 
 fn action_offset(value: usize) -> u32 {
@@ -1083,60 +1091,88 @@ impl CollapseContext<'_> {
     }
 
     fn can_merge(&self, left: &State, right: &State, mapping: &[usize]) -> bool {
-        let mut left_goto = 0;
-        let mut right_goto = 0;
-        while left_goto < left.gotos.len() && right_goto < right.gotos.len() {
-            let goto = &left.gotos[left_goto];
-            let other = &right.gotos[right_goto];
-            let goto_term = self.terms.output_id(goto.term());
-            let other_term = self.terms.output_id(other.term());
-            match goto_term.cmp(&other_term) {
-                std::cmp::Ordering::Less => left_goto += 1,
-                std::cmp::Ordering::Greater => right_goto += 1,
-                std::cmp::Ordering::Equal => {
-                    debug_assert_eq!(goto.term(), other.term());
-                    if !goto.equivalent_mapped(other, mapping, self.rules, self.terms) {
-                        return false;
-                    }
-                    left_goto += 1;
-                    right_goto += 1;
+        self.gotos_are_compatible(left, right, mapping)
+            && self.actions_are_compatible(left, right, mapping)
+    }
+
+    #[inline]
+    fn gotos_are_compatible(&self, left: &State, right: &State, mapping: &[usize]) -> bool {
+        common_entries_match_by_key(
+            &left.gotos,
+            &right.gotos,
+            |action| self.terms.output_id(action.term()),
+            |goto, other| {
+                debug_assert_eq!(goto.term(), other.term());
+                goto.equivalent_mapped(other, mapping, self.rules, self.terms)
+            },
+        )
+    }
+
+    #[inline]
+    fn actions_are_compatible(&self, left: &State, right: &State, mapping: &[usize]) -> bool {
+        let left_actions_by_term = self.action_indexes.actions_by_term(left);
+        let right_actions_by_term = self.action_indexes.actions_by_term(right);
+        common_entries_match_by_key(
+            left_actions_by_term,
+            right_actions_by_term,
+            |ranges| ranges.term,
+            |left_actions, right_actions| {
+                self.action_ranges_are_compatible(
+                    left,
+                    *left_actions,
+                    right,
+                    *right_actions,
+                    mapping,
+                )
+            },
+        )
+    }
+
+    #[inline]
+    fn action_ranges_are_compatible(
+        &self,
+        left: &State,
+        left_actions: ActionTermRanges,
+        right: &State,
+        right_actions: ActionTermRanges,
+        mapping: &[usize],
+    ) -> bool {
+        let mut all_cross_equivalent = true;
+        'cross: for left_index in left_actions.indices() {
+            let action = &left.actions[left_index];
+            for right_index in right_actions.indices() {
+                if !right.actions[right_index]
+                    .equivalent_mapped(action, mapping, self.rules, self.terms)
+                {
+                    all_cross_equivalent = false;
+                    break 'cross;
                 }
             }
         }
-        let right_actions_by_term = self.action_indexes.actions_by_term(right);
-        for action in &left.actions {
-            let Ok(right_index) =
-                right_actions_by_term.binary_search_by_key(&action.term(), |ranges| ranges.term)
-            else {
-                continue;
-            };
-            let right_actions = right_actions_by_term[right_index];
-            let has_conflict = right_actions.any_index(|index| {
-                !right.actions[index].equivalent_mapped(action, mapping, self.rules, self.terms)
-            });
-            if !has_conflict {
-                continue;
+        if all_cross_equivalent {
+            return true;
+        }
+        // Mapping can make distinct raw actions equivalent, so unequal lengths
+        // are compatible only when every cross-pair matched above.
+        if right_actions.len() == 1 || left_actions.len() != right_actions.len() {
+            return false;
+        }
+
+        for left_index in left_actions.indices() {
+            let candidate = &left.actions[left_index];
+            let mut found = false;
+            for right_index in right_actions.indices() {
+                if candidate.equivalent_mapped(
+                    &right.actions[right_index],
+                    mapping,
+                    self.rules,
+                    self.terms,
+                ) {
+                    found = true;
+                    break;
+                }
             }
-            if right_actions.len() == 1 {
-                return false;
-            }
-            let left_actions_by_term = self.action_indexes.actions_by_term(left);
-            let left_index = left_actions_by_term
-                .binary_search_by_key(&action.term(), |ranges| ranges.term)
-                .expect("each action is indexed by its term");
-            let left_actions = left_actions_by_term[left_index];
-            let equal = left_actions.len() == right_actions.len()
-                && left_actions.all_indices(|left_index| {
-                    right_actions.any_index(|right_index| {
-                        left.actions[left_index].equivalent_mapped(
-                            &right.actions[right_index],
-                            mapping,
-                            self.rules,
-                            self.terms,
-                        )
-                    })
-                });
-            if !equal {
+            if !found {
                 return false;
             }
         }
