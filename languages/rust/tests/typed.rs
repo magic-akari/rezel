@@ -1,13 +1,34 @@
 #![forbid(unsafe_code)]
 
 use rezel_lang_rust::{
-    RustDeclaration, RustDeclarationStatement, RustDelimitedTokenTree, RustExpression,
-    RustFieldList, RustFunctionItem, RustFunctionName, RustPath, RustSourceFile, RustStatement,
-    RustTokenTreeElement, RustType, RustTypeParameter, RustUseTree, TypedNode,
+    RustAssignmentOperand, RustBinaryOperator, RustCondition, RustDeclaration,
+    RustDeclarationStatement, RustDelimitedTokenTree, RustExpression, RustFieldList,
+    RustFunctionItem, RustFunctionName, RustFunctionParameter, RustLiteral, RustPath, RustPattern,
+    RustPrefixOperator, RustSourceFile, RustStatement, RustTokenTreeElement, RustType,
+    RustTypeParameter, RustUseTree, TypedNode,
 };
 
 fn syntax_text<'source>(node: &rezel_common::SyntaxNode, source: &'source str) -> &'source str {
     &source[usize::from(node.from())..usize::from(node.to())]
+}
+
+fn parse_function(source: &str) -> RustFunctionItem {
+    let tree = rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let file = RustSourceFile::downcast_from(tree.top_node()).unwrap();
+    file.statements()
+        .find_map(|statement| {
+            let RustStatement::Declaration(RustDeclarationStatement::Item(
+                RustDeclaration::Function(function),
+            )) = statement
+            else {
+                return None;
+            };
+            Some(function)
+        })
+        .expect("expected a function declaration")
 }
 
 #[test]
@@ -200,6 +221,200 @@ pub macro identity($value:expr) { $value }
     assert_eq!(declaration.name().unwrap().text(source), Some("identity"));
     assert!(declaration.arguments().is_some());
     assert_eq!(declaration.body().unwrap().text(source), Some("{ $value }"));
+}
+
+#[test]
+fn typed_syntax_navigates_composite_types() {
+    let source = r"
+type Layout<'a, T> = &'a ([T; 3], *const T);
+
+fn inspect<T>(items: &[T], fallback: T) {}
+";
+    let tree = rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let file = RustSourceFile::downcast_from(tree.top_node()).unwrap();
+    let declarations = file
+        .statements()
+        .map(|statement| {
+            let RustStatement::Declaration(RustDeclarationStatement::Item(declaration)) = statement
+            else {
+                panic!("expected an item declaration");
+            };
+            declaration
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(declarations.len(), 2);
+
+    let RustDeclaration::Type(layout) = &declarations[0] else {
+        panic!("expected a type alias");
+    };
+    let RustType::Reference(reference) = layout.ty().unwrap() else {
+        panic!("expected a reference type");
+    };
+    assert_eq!(reference.lifetime().unwrap().text(source), Some("'a"));
+    let RustType::Tuple(tuple) = reference.ty().unwrap() else {
+        panic!("expected a tuple type");
+    };
+    let elements = tuple.elements().collect::<Vec<_>>();
+    let [RustType::Array(array), RustType::Pointer(pointer)] = elements.as_slice() else {
+        panic!("expected array and pointer tuple elements");
+    };
+    assert!(matches!(array.element_type(), Some(RustType::Path(_))));
+    assert_eq!(array.length().unwrap().text(source), Some("3"));
+    assert!(matches!(pointer.ty(), Some(RustType::Path(_))));
+
+    let RustDeclaration::Function(function) = &declarations[1] else {
+        panic!("expected a function");
+    };
+    let parameters = function
+        .parameters()
+        .unwrap()
+        .parameters()
+        .collect::<Vec<_>>();
+    let [
+        RustFunctionParameter::Parameter(items),
+        RustFunctionParameter::Parameter(fallback),
+    ] = parameters.as_slice()
+    else {
+        panic!("expected two ordinary parameters");
+    };
+    let RustType::Reference(items_reference) = items.ty().unwrap() else {
+        panic!("expected a reference parameter");
+    };
+    let RustType::Array(slice) = items_reference.ty().unwrap() else {
+        panic!("expected the slice-shaped array type");
+    };
+    assert!(slice.length().is_none());
+    assert!(matches!(fallback.ty(), Some(RustType::Path(_))));
+}
+
+#[test]
+fn typed_syntax_navigates_patterns_literals_and_assignments() {
+    let source = r#"
+fn bind(items: &[u8], fallback: u8) {
+    let [first, rest @ ..] = items else { return; };
+    "line\n";
+    _ = fallback;
+}
+"#;
+    let function = parse_function(source);
+    let mut statements = function.body().unwrap().statements();
+    let Some(RustStatement::Declaration(RustDeclarationStatement::Let(binding))) =
+        statements.next()
+    else {
+        panic!("expected a let-else declaration");
+    };
+    let RustPattern::Slice(slice_pattern) = binding.pattern().unwrap() else {
+        panic!("expected a slice pattern");
+    };
+    let patterns = slice_pattern.patterns().collect::<Vec<_>>();
+    let [RustPattern::Binding(first), RustPattern::Captured(rest)] = patterns.as_slice() else {
+        panic!("expected a binding followed by a captured rest pattern");
+    };
+    assert_eq!(first.text(source), Some("first"));
+    assert_eq!(rest.binding().unwrap().text(source), Some("rest"));
+    let RustPattern::Rest(rest_pattern) = rest.pattern().unwrap() else {
+        panic!("expected a rest subpattern");
+    };
+    assert_eq!(rest_pattern.text(source), Some(".."));
+
+    let Some(RustStatement::Expression(string_statement)) = statements.next() else {
+        panic!("expected a string expression statement");
+    };
+    let RustExpression::Literal(RustLiteral::String(string)) =
+        string_statement.expression().unwrap()
+    else {
+        panic!("expected a string literal");
+    };
+    assert_eq!(string.escapes().count(), 1);
+
+    let Some(RustStatement::Expression(assignment_statement)) = statements.next() else {
+        panic!("expected an assignment statement");
+    };
+    let RustExpression::Assignment(assignment) = assignment_statement.expression().unwrap() else {
+        panic!("expected an underscore assignment");
+    };
+    let operands = assignment.operands().collect::<Vec<_>>();
+    assert!(matches!(
+        operands.as_slice(),
+        [
+            RustAssignmentOperand::Discard(_),
+            RustAssignmentOperand::Expression(_)
+        ]
+    ));
+    assert!(assignment.operator().is_none());
+    assert!(statements.next().is_none());
+}
+
+#[test]
+fn typed_syntax_navigates_control_flow_and_operators() {
+    let source = r"
+fn choose(first: &i32, fallback: i32) -> Option<i32> {
+    match if *first > fallback { *first } else { fallback } {
+        value if value >= fallback => Some(value),
+        _ => None,
+    }
+}
+";
+    let function = parse_function(source);
+    let mut statements = function.body().unwrap().statements();
+    let Some(RustStatement::Expression(tail)) = statements.next() else {
+        panic!("expected a tail expression");
+    };
+    let RustExpression::Match(match_expression) = tail.expression().unwrap() else {
+        panic!("expected a match expression");
+    };
+    let RustExpression::If(if_expression) = match_expression.scrutinee().unwrap() else {
+        panic!("expected an if scrutinee");
+    };
+    let RustCondition::Expression(RustExpression::Binary(condition)) =
+        if_expression.condition().unwrap()
+    else {
+        panic!("expected a binary if condition");
+    };
+    assert!(matches!(
+        condition.operator(),
+        Some(RustBinaryOperator::Compare(_))
+    ));
+    let RustExpression::Unary(dereference) = condition.left().unwrap() else {
+        panic!("expected a dereference on the left");
+    };
+    assert!(matches!(
+        dereference.operator(),
+        Some(RustPrefixOperator::Dereference(_))
+    ));
+    assert!(matches!(
+        dereference.operand(),
+        Some(RustExpression::Path(_))
+    ));
+    assert!(matches!(condition.right(), Some(RustExpression::Path(_))));
+    assert_eq!(if_expression.blocks().count(), 2);
+
+    let arms = match_expression.body().unwrap().arms().collect::<Vec<_>>();
+    assert_eq!(arms.len(), 2);
+    assert!(matches!(arms[0].pattern(), Some(RustPattern::Binding(_))));
+    let RustCondition::Expression(RustExpression::Binary(guard_condition)) =
+        arms[0].guard().unwrap().condition().unwrap()
+    else {
+        panic!("expected a binary match guard");
+    };
+    assert!(matches!(
+        guard_condition.operator(),
+        Some(RustBinaryOperator::Compare(_))
+    ));
+    let RustExpression::Call(call) = arms[0].expression().unwrap() else {
+        panic!("expected a call expression");
+    };
+    assert!(matches!(call.callee(), Some(RustExpression::Path(_))));
+    assert_eq!(call.arguments().unwrap().arguments().count(), 1);
+    assert!(matches!(arms[1].pattern(), Some(RustPattern::Wildcard(_))));
+    assert!(matches!(
+        arms[1].expression(),
+        Some(RustExpression::Path(_))
+    ));
+    assert!(statements.next().is_none());
 }
 
 #[test]

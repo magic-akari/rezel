@@ -129,6 +129,12 @@ kind = "LineComment"
 name = "RustBlockComment"
 kind = "BlockComment"
 
+[[node.field]]
+name = "nested_comments"
+type = "RustBlockComment"
+cardinality = "many"
+selector = { node = "BlockComment" }
+
 [[node]]
 name = "RustAttribute"
 kind = "Attribute"
@@ -323,6 +329,12 @@ kind = ".."
 [[node]]
 name = "RustString"
 kind = "String"
+
+[[node.field]]
+name = "escapes"
+type = "RustEscape"
+cardinality = "many"
+selector = { node = "Escape" }
 
 [[node]]
 name = "RustRawString"
@@ -621,53 +633,165 @@ selector = { union = "RustNumericLiteral" }
 name = "RustAbstractType"
 kind = "AbstractType"
 
+[[node.field]]
+name = "bound"
+type = "RustApplicableTraitBound"
+cardinality = "one"
+selector = { union = "RustApplicableTraitBound" }
+
 [[node]]
 name = "RustSelfType"
 kind = "SelfType"
+
+[[node.field]]
+name = "self_keyword"
+type = "RustSelfKeyword"
+cardinality = "one"
+selector = { node = "self" }
 
 [[node]]
 name = "RustMetaType"
 kind = "MetaType"
 
+[[node.field]]
+name = "metavariable"
+type = "RustMetavariable"
+cardinality = "one"
+selector = { node = "Metavariable" }
+
 [[node]]
 name = "RustFunctionType"
 kind = "FunctionType"
+
+[[node.field]]
+name = "lifetimes"
+type = "RustForLifetimes"
+cardinality = "optional"
+selector = { node = "ForLifetimes" }
+
+[[node.field]]
+name = "path"
+type = "RustTypePath"
+cardinality = "optional"
+selector = { union = "RustTypePath" }
+
+[[node.field]]
+name = "parameters"
+type = "RustParameterList"
+cardinality = "one"
+selector = { node = "ParamList" }
+
+[[node.field]]
+name = "types"
+type = "RustType"
+cardinality = "many"
+selector = { union = "RustType" }
 
 [[node]]
 name = "RustInferredType"
 kind = "InferredType"
 
+[[node.field]]
+name = "underscore"
+type = "RustUnderscore"
+cardinality = "one"
+selector = { node = "_" }
+
 [[node]]
 name = "RustReferenceType"
 kind = "ReferenceType"
+
+[[node.field]]
+name = "lifetime"
+type = "RustLifetime"
+cardinality = "optional"
+selector = { node = "Lifetime" }
+
+[[node.field]]
+name = "ty"
+type = "RustType"
+cardinality = "one"
+selector = { union = "RustType" }
 
 [[node]]
 name = "RustPointerType"
 kind = "PointerType"
 
+[[node.field]]
+name = "ty"
+type = "RustType"
+cardinality = "one"
+selector = { union = "RustType" }
+
 [[node]]
 name = "RustTupleType"
 kind = "TupleType"
+
+[[node.field]]
+name = "elements"
+type = "RustType"
+cardinality = "many"
+selector = { union = "RustType" }
 
 [[node]]
 name = "RustUnitType"
 kind = "UnitType"
 
+[[node.field]]
+name = "left_parenthesis_token"
+cardinality = "one"
+occurrence = 0
+selector = { token = "(" }
+
+[[node.field]]
+name = "right_parenthesis_token"
+cardinality = "one"
+selector = { token = ")" }
+
 [[node]]
 name = "RustArrayType"
 kind = "ArrayType"
+
+[[node.field]]
+name = "element_type"
+type = "RustType"
+cardinality = "one"
+selector = { union = "RustType" }
+
+[[node.field]]
+name = "length"
+type = "RustExpression"
+cardinality = "optional"
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustEmptyType"
 kind = "EmptyType"
 
+[[node.field]]
+name = "bang_token"
+cardinality = "one"
+selector = { token = "!" }
+
 [[node]]
 name = "RustDynamicType"
 kind = "DynamicType"
 
+[[node.field]]
+name = "bound"
+type = "RustApplicableTraitBound"
+cardinality = "one"
+selector = { union = "RustApplicableTraitBound" }
+
 [[node]]
 name = "RustBoundedType"
 kind = "BoundedType"
+
+[[node.field]]
+name = "elements"
+type = "RustBoundedTypeElement"
+cardinality = "many"
+selector = { union = "RustBoundedTypeElement" }
 
 # Patterns.
 
@@ -675,61 +799,200 @@ kind = "BoundedType"
 name = "RustLiteralPattern"
 kind = "LiteralPattern"
 
+[[node.field]]
+name = "operator"
+type = "RustArithmeticOperator"
+cardinality = "optional"
+selector = { node = "ArithOp" }
+
+[[node.field]]
+name = "literal"
+type = "RustLiteral"
+cardinality = "one"
+selector = { union = "RustLiteral" }
+
 [[node]]
 name = "RustMetaPattern"
 kind = "MetaPattern"
+
+[[node.field]]
+name = "metavariable"
+type = "RustMetavariable"
+cardinality = "one"
+selector = { node = "Metavariable" }
 
 [[node]]
 name = "RustSelfPattern"
 kind = "SelfPattern"
 
+[[node.field]]
+name = "self_keyword"
+type = "RustSelfKeyword"
+cardinality = "one"
+selector = { node = "self" }
+
 [[node]]
 name = "RustTuplePattern"
 kind = "TuplePattern"
+
+[[node.field]]
+name = "path"
+type = "RustStructPath"
+cardinality = "optional"
+selector = { union = "RustStructPath" }
+
+[[node.field]]
+name = "patterns"
+type = "RustPattern"
+cardinality = "many"
+selector = { union = "RustPattern" }
 
 [[node]]
 name = "RustStructPattern"
 kind = "StructPattern"
 
+[[node.field]]
+name = "path"
+type = "RustStructPath"
+cardinality = "one"
+selector = { union = "RustStructPath" }
+
+[[node.field]]
+name = "fields"
+type = "RustFieldPatternList"
+cardinality = "one"
+selector = { node = "FieldPatternList" }
+
 [[node]]
 name = "RustFieldPatternList"
 kind = "FieldPatternList"
+
+[[node.field]]
+name = "fields"
+type = "RustFieldPattern"
+cardinality = "many"
+selector = { node = "FieldPattern" }
+
+[[node.field]]
+name = "rest"
+type = "RustDotDot"
+cardinality = "optional"
+selector = { node = ".." }
 
 [[node]]
 name = "RustFieldPattern"
 kind = "FieldPattern"
 
+[[node.field]]
+name = "binding"
+type = "RustBoundIdentifier"
+cardinality = "optional"
+selector = { node = "BoundIdentifier" }
+
+[[node.field]]
+name = "field_name"
+type = "RustFieldIdentifier"
+cardinality = "optional"
+selector = { node = "FieldIdentifier" }
+
+[[node.field]]
+name = "pattern"
+type = "RustPattern"
+cardinality = "one"
+selector = { union = "RustPattern" }
+
 [[node]]
 name = "RustRefPattern"
 kind = "RefPattern"
+
+[[node.field]]
+name = "pattern"
+type = "RustPattern"
+cardinality = "one"
+selector = { union = "RustPattern" }
 
 [[node]]
 name = "RustSlicePattern"
 kind = "SlicePattern"
 
+[[node.field]]
+name = "patterns"
+type = "RustPattern"
+cardinality = "many"
+selector = { union = "RustPattern" }
+
 [[node]]
 name = "RustCapturedPattern"
 kind = "CapturedPattern"
+
+[[node.field]]
+name = "binding"
+type = "RustBoundIdentifier"
+cardinality = "one"
+selector = { node = "BoundIdentifier" }
+
+[[node.field]]
+name = "pattern"
+type = "RustPattern"
+cardinality = "one"
+occurrence = 1
+selector = { union = "RustPattern" }
 
 [[node]]
 name = "RustReferencePattern"
 kind = "ReferencePattern"
 
+[[node.field]]
+name = "pattern"
+type = "RustPattern"
+cardinality = "one"
+selector = { union = "RustPattern" }
+
 [[node]]
 name = "RustMutPattern"
 kind = "MutPattern"
+
+[[node.field]]
+name = "pattern"
+type = "RustPattern"
+cardinality = "one"
+selector = { union = "RustPattern" }
 
 [[node]]
 name = "RustRangePattern"
 kind = "RangePattern"
 
+[[node.field]]
+name = "endpoints"
+type = "RustRangePatternEndpoint"
+cardinality = "many"
+selector = { union = "RustRangePatternEndpoint" }
+
 [[node]]
 name = "RustOrPattern"
 kind = "OrPattern"
 
+[[node.field]]
+name = "patterns"
+type = "RustPattern"
+cardinality = "many"
+selector = { union = "RustPattern" }
+
 [[node]]
 name = "RustMacroPattern"
 kind = "MacroPattern"
+
+[[node.field]]
+name = "path"
+type = "RustMacroPath"
+cardinality = "one"
+selector = { union = "RustMacroPath" }
+
+[[node.field]]
+name = "tokens"
+type = "RustDelimitedTokenTree"
+cardinality = "one"
+selector = { union = "RustDelimitedTokenTree" }
 
 # Expressions and blocks.
 
@@ -763,169 +1026,653 @@ selector = { token = "}" }
 name = "RustUnsafeBlock"
 kind = "UnsafeBlock"
 
+[[node.field]]
+name = "body"
+type = "RustBlock"
+cardinality = "one"
+selector = { node = "Block" }
+
 [[node]]
 name = "RustAsyncBlock"
 kind = "AsyncBlock"
+
+[[node.field]]
+name = "body"
+type = "RustBlock"
+cardinality = "one"
+selector = { node = "Block" }
 
 [[node]]
 name = "RustConstBlock"
 kind = "ConstBlock"
 
+[[node.field]]
+name = "body"
+type = "RustBlock"
+cardinality = "one"
+selector = { node = "Block" }
+
 [[node]]
 name = "RustTryBlock"
 kind = "TryBlock"
+
+[[node.field]]
+name = "body"
+type = "RustBlock"
+cardinality = "one"
+selector = { node = "Block" }
 
 [[node]]
 name = "RustLabeledBlock"
 kind = "LabeledBlock"
 
+[[node.field]]
+name = "label"
+type = "RustLoopLabel"
+cardinality = "one"
+selector = { node = "LoopLabel" }
+
+[[node.field]]
+name = "body"
+type = "RustBlock"
+cardinality = "one"
+selector = { node = "Block" }
+
 [[node]]
 name = "RustIfExpression"
 kind = "IfExpression"
+
+[[node.field]]
+name = "condition"
+type = "RustCondition"
+cardinality = "one"
+selector = { union = "RustCondition" }
+
+[[node.field]]
+name = "blocks"
+type = "RustBlock"
+cardinality = "many"
+selector = { node = "Block" }
+
+[[node.field]]
+name = "else_if"
+type = "RustIfExpression"
+cardinality = "optional"
+selector = { node = "IfExpression" }
 
 [[node]]
 name = "RustLetChain"
 kind = "LetChain"
 
+[[node.field]]
+name = "operands"
+type = "RustLetChainOperand"
+cardinality = "many"
+selector = { union = "RustLetChainOperand" }
+
 [[node]]
 name = "RustLetCondition"
 kind = "LetCondition"
+
+[[node.field]]
+name = "pattern"
+type = "RustPattern"
+cardinality = "one"
+selector = { union = "RustPattern" }
+
+[[node.field]]
+name = "value"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustMatchExpression"
 kind = "MatchExpression"
 
+[[node.field]]
+name = "scrutinee"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
+[[node.field]]
+name = "body"
+type = "RustMatchBlock"
+cardinality = "one"
+selector = { node = "MatchBlock" }
+
 [[node]]
 name = "RustMatchBlock"
 kind = "MatchBlock"
+
+[[node.field]]
+name = "inner_attributes"
+type = "RustInnerAttribute"
+cardinality = "many"
+selector = { node = "InnerAttribute" }
+
+[[node.field]]
+name = "arms"
+type = "RustMatchArm"
+cardinality = "many"
+selector = { node = "MatchArm" }
 
 [[node]]
 name = "RustMatchArm"
 kind = "MatchArm"
 
+[[node.field]]
+name = "attributes"
+type = "RustAttribute"
+cardinality = "many"
+selector = { node = "Attribute" }
+
+[[node.field]]
+name = "pattern"
+type = "RustPattern"
+cardinality = "one"
+selector = { union = "RustPattern" }
+
+[[node.field]]
+name = "guard"
+type = "RustGuard"
+cardinality = "optional"
+selector = { node = "Guard" }
+
+[[node.field]]
+name = "expression"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
 [[node]]
 name = "RustGuard"
 kind = "Guard"
+
+[[node.field]]
+name = "condition"
+type = "RustCondition"
+cardinality = "one"
+selector = { union = "RustCondition" }
 
 [[node]]
 name = "RustUnaryExpression"
 kind = "UnaryExpression"
 
+[[node.field]]
+name = "operator"
+type = "RustPrefixOperator"
+cardinality = "one"
+selector = { union = "RustPrefixOperator" }
+
+[[node.field]]
+name = "operand"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
 [[node]]
 name = "RustReferenceExpression"
 kind = "ReferenceExpression"
+
+[[node.field]]
+name = "operand"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustTryExpression"
 kind = "TryExpression"
 
+[[node.field]]
+name = "operand"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
 [[node]]
 name = "RustBinaryExpression"
 kind = "BinaryExpression"
+
+[[node.field]]
+name = "left"
+type = "RustExpression"
+cardinality = "one"
+occurrence = 0
+selector = { union = "RustExpression" }
+
+[[node.field]]
+name = "operator"
+type = "RustBinaryOperator"
+cardinality = "one"
+selector = { union = "RustBinaryOperator" }
+
+[[node.field]]
+name = "right"
+type = "RustExpression"
+cardinality = "one"
+occurrence = 1
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustAssignmentExpression"
 kind = "AssignmentExpression"
 
+[[node.field]]
+name = "operands"
+type = "RustAssignmentOperand"
+cardinality = "many"
+selector = { union = "RustAssignmentOperand" }
+
+[[node.field]]
+name = "operator"
+type = "RustUpdateOperator"
+cardinality = "optional"
+selector = { node = "UpdateOp" }
+
 [[node]]
 name = "RustTypeCastExpression"
 kind = "TypeCastExpression"
+
+[[node.field]]
+name = "expression"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
+[[node.field]]
+name = "ty"
+type = "RustType"
+cardinality = "one"
+selector = { union = "RustType" }
 
 [[node]]
 name = "RustReturnExpression"
 kind = "ReturnExpression"
 
+[[node.field]]
+name = "value"
+type = "RustExpression"
+cardinality = "optional"
+selector = { union = "RustExpression" }
+
 [[node]]
 name = "RustRangeExpression"
 kind = "RangeExpression"
+
+[[node.field]]
+name = "endpoints"
+type = "RustExpression"
+cardinality = "many"
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustCallExpression"
 kind = "CallExpression"
 
+[[node.field]]
+name = "callee"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
+[[node.field]]
+name = "arguments"
+type = "RustArgumentList"
+cardinality = "one"
+selector = { node = "ArgList" }
+
 [[node]]
 name = "RustArgumentList"
 kind = "ArgList"
+
+[[node.field]]
+name = "attributes"
+type = "RustAttribute"
+cardinality = "many"
+selector = { node = "Attribute" }
+
+[[node.field]]
+name = "arguments"
+type = "RustExpression"
+cardinality = "many"
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustAwaitExpression"
 kind = "AwaitExpression"
 
+[[node.field]]
+name = "expression"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
 [[node]]
 name = "RustFieldExpression"
 kind = "FieldExpression"
+
+[[node.field]]
+name = "receiver"
+type = "RustExpression"
+cardinality = "one"
+occurrence = 0
+selector = { union = "RustExpression" }
+
+[[node.field]]
+name = "field"
+type = "RustFieldName"
+cardinality = "one"
+selector = { union = "RustFieldName" }
 
 [[node]]
 name = "RustGenericFunction"
 kind = "GenericFunction"
 
+[[node.field]]
+name = "function"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
+[[node.field]]
+name = "type_arguments"
+type = "RustTypeArgumentList"
+cardinality = "one"
+selector = { node = "TypeArgList" }
+
 [[node]]
 name = "RustBreakExpression"
 kind = "BreakExpression"
+
+[[node.field]]
+name = "label"
+type = "RustLoopLabel"
+cardinality = "optional"
+selector = { node = "LoopLabel" }
+
+[[node.field]]
+name = "value"
+type = "RustExpression"
+cardinality = "optional"
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustContinueExpression"
 kind = "ContinueExpression"
 
+[[node.field]]
+name = "label"
+type = "RustLoopLabel"
+cardinality = "optional"
+selector = { node = "LoopLabel" }
+
 [[node]]
 name = "RustIndexExpression"
 kind = "IndexExpression"
+
+[[node.field]]
+name = "receiver"
+type = "RustExpression"
+cardinality = "one"
+occurrence = 0
+selector = { union = "RustExpression" }
+
+[[node.field]]
+name = "index"
+type = "RustExpression"
+cardinality = "one"
+occurrence = 1
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustArrayExpression"
 kind = "ArrayExpression"
 
+[[node.field]]
+name = "inner_attributes"
+type = "RustInnerAttribute"
+cardinality = "many"
+selector = { node = "InnerAttribute" }
+
+[[node.field]]
+name = "attributes"
+type = "RustAttribute"
+cardinality = "many"
+selector = { node = "Attribute" }
+
+[[node.field]]
+name = "elements"
+type = "RustArrayElement"
+cardinality = "many"
+selector = { union = "RustArrayElement" }
+
 [[node]]
 name = "RustInferredConst"
 kind = "InferredConst"
+
+[[node.field]]
+name = "underscore"
+type = "RustUnderscore"
+cardinality = "one"
+selector = { node = "_" }
 
 [[node]]
 name = "RustTupleExpression"
 kind = "TupleExpression"
 
+[[node.field]]
+name = "inner_attributes"
+type = "RustInnerAttribute"
+cardinality = "many"
+selector = { node = "InnerAttribute" }
+
+[[node.field]]
+name = "elements"
+type = "RustExpression"
+cardinality = "many"
+selector = { union = "RustExpression" }
+
 [[node]]
 name = "RustUnitExpression"
 kind = "UnitExpression"
+
+[[node.field]]
+name = "left_parenthesis_token"
+cardinality = "one"
+occurrence = 0
+selector = { token = "(" }
+
+[[node.field]]
+name = "right_parenthesis_token"
+cardinality = "one"
+selector = { token = ")" }
 
 [[node]]
 name = "RustClosureExpression"
 kind = "ClosureExpression"
 
+[[node.field]]
+name = "parameters"
+type = "RustParameterList"
+cardinality = "one"
+selector = { node = "ParamList" }
+
+[[node.field]]
+name = "return_type"
+type = "RustType"
+cardinality = "optional"
+selector = { union = "RustType" }
+
+[[node.field]]
+name = "body"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
 [[node]]
 name = "RustParenthesizedExpression"
 kind = "ParenthesizedExpression"
+
+[[node.field]]
+name = "inner_attributes"
+type = "RustInnerAttribute"
+cardinality = "many"
+selector = { node = "InnerAttribute" }
+
+[[node.field]]
+name = "expression"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustStructExpression"
 kind = "StructExpression"
 
+[[node.field]]
+name = "path"
+type = "RustStructPath"
+cardinality = "one"
+selector = { union = "RustStructPath" }
+
+[[node.field]]
+name = "type_arguments"
+type = "RustTypeArgumentList"
+cardinality = "optional"
+selector = { node = "TypeArgList" }
+
+[[node.field]]
+name = "fields"
+type = "RustFieldInitializerList"
+cardinality = "one"
+selector = { node = "FieldInitializerList" }
+
 [[node]]
 name = "RustFieldInitializerList"
 kind = "FieldInitializerList"
+
+[[node.field]]
+name = "initializers"
+type = "RustFieldInitializerNode"
+cardinality = "many"
+selector = { union = "RustFieldInitializerNode" }
 
 [[node]]
 name = "RustShorthandFieldInitializer"
 kind = "ShorthandFieldInitializer"
 
+[[node.field]]
+name = "attributes"
+type = "RustAttribute"
+cardinality = "many"
+selector = { node = "Attribute" }
+
+[[node.field]]
+name = "name"
+type = "RustIdentifier"
+cardinality = "one"
+selector = { node = "Identifier" }
+
 [[node]]
 name = "RustFieldInitializer"
 kind = "FieldInitializer"
+
+[[node.field]]
+name = "attributes"
+type = "RustAttribute"
+cardinality = "many"
+selector = { node = "Attribute" }
+
+[[node.field]]
+name = "name"
+type = "RustFieldName"
+cardinality = "one"
+selector = { union = "RustFieldName" }
+
+[[node.field]]
+name = "expressions"
+type = "RustExpression"
+cardinality = "many"
+selector = { union = "RustExpression" }
 
 [[node]]
 name = "RustBaseFieldInitializer"
 kind = "BaseFieldInitializer"
 
+[[node.field]]
+name = "expression"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
 [[node]]
 name = "RustWhileExpression"
 kind = "WhileExpression"
+
+[[node.field]]
+name = "label"
+type = "RustLoopLabel"
+cardinality = "optional"
+selector = { node = "LoopLabel" }
+
+[[node.field]]
+name = "condition"
+type = "RustCondition"
+cardinality = "one"
+selector = { union = "RustCondition" }
+
+[[node.field]]
+name = "blocks"
+type = "RustBlock"
+cardinality = "many"
+selector = { node = "Block" }
 
 [[node]]
 name = "RustLoopExpression"
 kind = "LoopExpression"
 
+[[node.field]]
+name = "label"
+type = "RustLoopLabel"
+cardinality = "optional"
+selector = { node = "LoopLabel" }
+
+[[node.field]]
+name = "body"
+type = "RustBlock"
+cardinality = "one"
+selector = { node = "Block" }
+
 [[node]]
 name = "RustForExpression"
 kind = "ForExpression"
+
+[[node.field]]
+name = "label"
+type = "RustLoopLabel"
+cardinality = "optional"
+selector = { node = "LoopLabel" }
+
+[[node.field]]
+name = "pattern"
+type = "RustPattern"
+cardinality = "one"
+selector = { union = "RustPattern" }
+
+[[node.field]]
+name = "iterable"
+type = "RustExpression"
+cardinality = "one"
+selector = { union = "RustExpression" }
+
+[[node.field]]
+name = "blocks"
+type = "RustBlock"
+cardinality = "many"
+selector = { node = "Block" }
 
 # Macro token trees.
 
@@ -1130,6 +1877,11 @@ selector = { node = "ExpressionStatement" }
 [[node]]
 name = "RustEmptyStatement"
 kind = "EmptyStatement"
+
+[[node.field]]
+name = "semicolon_token"
+cardinality = "one"
+selector = { token = ";" }
 
 [[node]]
 name = "RustExpressionStatement"
@@ -1892,6 +2644,23 @@ variants = [
 ]
 
 [[union]]
+name = "RustBoundedTypeElement"
+variants = [
+	{ name = "Type", type = "RustType" },
+	{ name = "Lifetime", type = "RustLifetime" },
+	{ name = "Use", type = "RustUseBound" },
+	{ name = "Const", type = "RustConstTraitBound" },
+	{ name = "Removed", type = "RustRemovedTraitBound" },
+]
+
+[[union]]
+name = "RustApplicableTraitBound"
+variants = [
+	{ name = "Trait", type = "RustTraitBoundCore" },
+	{ name = "Const", type = "RustConstTraitBound" },
+]
+
+[[union]]
 name = "RustTokenTreeElement"
 variants = [
 	{ name = "Delimited", type = "RustDelimitedTokenTree" },
@@ -2006,6 +2775,17 @@ variants = [
 ]
 
 [[union]]
+name = "RustStructPath"
+variants = [
+	{ name = "Identifier", type = "RustTypeIdentifier" },
+	{ name = "Scoped", type = "RustScopedTypeIdentifier" },
+	{ name = "Metavariable", type = "RustMetavariable" },
+	{ name = "SelfKeyword", type = "RustSelfKeyword" },
+	{ name = "SuperKeyword", type = "RustSuperKeyword" },
+	{ name = "CrateKeyword", type = "RustCrateKeyword" },
+]
+
+[[union]]
 name = "RustType"
 variants = [
 	{ name = "Abstract", type = "RustAbstractType" },
@@ -2044,6 +2824,73 @@ variants = [
 	{ name = "Macro", type = "RustMacroPattern" },
 	{ name = "Wildcard", type = "RustUnderscore" },
 	{ name = "Rest", type = "RustDotDot" },
+]
+
+[[union]]
+name = "RustRangePatternEndpoint"
+variants = [
+	{ name = "Literal", type = "RustLiteral" },
+	{ name = "Path", type = "RustPath" },
+]
+
+[[union]]
+name = "RustCondition"
+variants = [
+	{ name = "LetChain", type = "RustLetChain" },
+	{ name = "Expression", type = "RustExpression" },
+]
+
+[[union]]
+name = "RustLetChainOperand"
+variants = [
+	{ name = "Let", type = "RustLetCondition" },
+	{ name = "Expression", type = "RustExpression" },
+]
+
+[[union]]
+name = "RustPrefixOperator"
+variants = [
+	{ name = "Arithmetic", type = "RustArithmeticOperator" },
+	{ name = "Dereference", type = "RustDereferenceOperator" },
+	{ name = "Logic", type = "RustLogicOperator" },
+]
+
+[[union]]
+name = "RustBinaryOperator"
+variants = [
+	{ name = "Arithmetic", type = "RustArithmeticOperator" },
+	{ name = "Bit", type = "RustBitOperator" },
+	{ name = "Compare", type = "RustCompareOperator" },
+	{ name = "Logic", type = "RustLogicOperator" },
+]
+
+[[union]]
+name = "RustAssignmentOperand"
+variants = [
+	{ name = "Expression", type = "RustExpression" },
+	{ name = "Discard", type = "RustUnderscore" },
+]
+
+[[union]]
+name = "RustFieldName"
+variants = [
+	{ name = "Named", type = "RustFieldIdentifier" },
+	{ name = "Index", type = "RustInteger" },
+]
+
+[[union]]
+name = "RustFieldInitializerNode"
+variants = [
+	{ name = "Shorthand", type = "RustShorthandFieldInitializer" },
+	{ name = "Named", type = "RustFieldInitializer" },
+	{ name = "Base", type = "RustBaseFieldInitializer" },
+]
+
+[[union]]
+name = "RustArrayElement"
+variants = [
+	{ name = "Expression", type = "RustExpression" },
+	{ name = "InferredConst", type = "RustInferredConst" },
 ]
 
 [[union]]

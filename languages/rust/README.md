@@ -118,11 +118,12 @@ assert_eq!(
 # }
 ```
 
-Core source-file, attribute, block, declaration, function, expression, type,
+Source-file, attribute, block, declaration, function, expression, type,
 pattern, literal, path, and token-tree roles are navigable through generated
-fields and unions. Wrappers remain generic where the grammar has not yet
-declared a stable direct-child accessor. The typed API is a zero-copy CST view
-and does not construct an owned Rust AST.
+fields and closed unions. Every visible grammar kind has a typed wrapper, and
+compound syntax exposes grammar-checked direct-child accessors wherever the
+CST distinguishes a stable role. The typed API remains a zero-copy CST view;
+it does not normalize ambiguous grammar shapes or construct an owned Rust AST.
 
 ## Highlighting
 
