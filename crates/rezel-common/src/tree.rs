@@ -1126,7 +1126,7 @@ where
             .get(id)
             .unwrap_or_else(|| panic!("unknown node type id {id}"))
             .clone();
-        let mut start_position = start - request.parent_start;
+        let start_position = start - request.parent_start;
         let packed = if end - start <= self.build.max_buffer_length {
             self.find_buffer_size(
                 self.cursor.position() - request.min_position,
@@ -1136,23 +1136,10 @@ where
             None
         };
 
-        if let Some(packed) = packed {
-            let mut data = vec![0; packed.size - packed.skip];
-            let end_position = self.cursor.position() - packed.size;
-            let mut index = data.len();
-            while self.cursor.position() > end_position {
-                index = self.copy_to_buffer(packed.start, &mut data, index);
-            }
-            assert_eq!(index, 0, "packed tree buffer was not filled");
-            start_position = packed.start - request.parent_start;
-            return StartedNode::Built(BuiltNode {
-                child: TreeChild::Buffer(TreeBuffer::new(
-                    data,
-                    end - packed.start,
-                    Arc::clone(&self.build.node_set),
-                )),
-                position: start_position,
-            });
+        if let Some(packed) = packed
+            && let Some(node) = self.pack_node(packed, request.parent_start, end)
+        {
+            return StartedNode::Built(node);
         }
 
         let end_position = self.cursor.position() - size;
@@ -1169,6 +1156,36 @@ where
             last_group: 0,
             last_end: end,
             depth: request.depth,
+        })
+    }
+
+    fn pack_node(
+        &mut self,
+        packed: BufferScan,
+        parent_start: TextSize,
+        end: TextSize,
+    ) -> Option<BuiltNode> {
+        let position = packed.start.checked_sub(parent_start)?;
+        let length = end.checked_sub(packed.start)?;
+        let checkpoint = self.cursor.clone();
+        let mut data = vec![0; packed.size - packed.skip];
+        let end_position = self.cursor.position() - packed.size;
+        let mut index = data.len();
+        while self.cursor.position() > end_position {
+            let Some(next_index) = self.copy_to_buffer(packed.start, &mut data, index) else {
+                self.cursor = checkpoint;
+                return None;
+            };
+            index = next_index;
+        }
+        assert_eq!(index, 0, "packed tree buffer was not filled");
+        Some(BuiltNode {
+            child: TreeChild::Buffer(TreeBuffer::new(
+                data,
+                length,
+                Arc::clone(&self.build.node_set),
+            )),
+            position,
         })
     }
 
@@ -1244,17 +1261,34 @@ where
             return;
         };
         let end = nodes[0].2;
+        let encodable = nodes.iter().all(|&(_, from, to)| {
+            buffer_position(from, start).is_some() && buffer_position(to, start).is_some()
+        });
+        if !encodable {
+            for (id, from, to) in nodes.into_iter().rev() {
+                let node_type = self
+                    .build
+                    .node_set
+                    .get(id)
+                    .unwrap_or_else(|| panic!("unknown node type id {id}"))
+                    .clone();
+                children.push(TreeChild::Tree(Tree::new(
+                    node_type,
+                    Vec::new(),
+                    Vec::new(),
+                    to - from,
+                )));
+                positions.push(from - parent_start);
+            }
+            return;
+        }
         let mut data = Vec::with_capacity(nodes.len() * 4);
         for (id, from, to) in nodes.into_iter().rev() {
             let record_end = data.len() + 4;
             data.extend_from_slice(&[
                 id,
-                u32::from(from - start)
-                    .try_into()
-                    .expect("flat tree-buffer start exceeds 16 bits"),
-                u32::from(to - start)
-                    .try_into()
-                    .expect("flat tree-buffer end exceeds 16 bits"),
+                buffer_position(from, start).expect("flat tree-buffer start was prevalidated"),
+                buffer_position(to, start).expect("flat tree-buffer end was prevalidated"),
                 record_end
                     .try_into()
                     .expect("flat tree-buffer index exceeds 16 bits"),
@@ -1321,35 +1355,37 @@ where
         buffer_start: TextSize,
         data: &mut [u16],
         mut index: usize,
-    ) -> usize {
+    ) -> Option<usize> {
         let id = self.cursor.id();
         let start = self.cursor.start();
         let end = self.cursor.end();
         let size = self.cursor.size();
         self.cursor.next();
         if usize::from(id) >= self.build.min_repeat_type {
-            return index;
+            return Some(index);
         }
         let start_index = index;
         if size > 4 {
             let end_position = self.cursor.position() - (size - 4);
             while self.cursor.position() > end_position {
-                index = self.copy_to_buffer(buffer_start, data, index);
+                index = self.copy_to_buffer(buffer_start, data, index)?;
             }
         }
+        let relative_start = buffer_position(start, buffer_start)?;
+        let relative_end = buffer_position(end, buffer_start)?;
+        let record_end = start_index.try_into().ok()?;
         index -= 4;
         data[index] = id;
-        data[index + 1] = u32::from(start - buffer_start)
-            .try_into()
-            .expect("tree-buffer node start exceeds 16 bits");
-        data[index + 2] = u32::from(end - buffer_start)
-            .try_into()
-            .expect("tree-buffer node end exceeds 16 bits");
-        data[index + 3] = start_index
-            .try_into()
-            .expect("tree-buffer node index exceeds 16 bits");
-        index
+        data[index + 1] = relative_start;
+        data[index + 2] = relative_end;
+        data[index + 3] = record_end;
+        Some(index)
     }
+}
+
+fn buffer_position(position: TextSize, start: TextSize) -> Option<u16> {
+    let relative = position.checked_sub(start)?;
+    u32::from(relative).try_into().ok()
 }
 
 fn make_repeat_leaf(

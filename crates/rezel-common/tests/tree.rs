@@ -139,6 +139,37 @@ fn anonymous_tree() -> Tree {
     .clone()
 }
 
+fn packing_tree(records: &[(u16, u32, u32)], max_buffer_length: u32) -> Tree {
+    static NODE_SET: OnceLock<Arc<NodeSet>> = OnceLock::new();
+    let node_set = Arc::clone(NODE_SET.get_or_init(|| {
+        Arc::new(NodeSet::new(vec![
+            NodeType::new(0, "T", NodeFlags::TOP),
+            NodeType::new(1, "Comment", NodeFlags::SKIPPED),
+            NodeType::new(2, "Item", NodeFlags::default()),
+        ]))
+    }));
+    let mut buffer = Vec::with_capacity(records.len() * 4);
+    for &(id, start, end) in records {
+        buffer.extend_from_slice(&[u32::from(id), start, end, 4]);
+    }
+    let mut build = TreeBuild::new(buffer, node_set, 0);
+    build.length = Some(4.into());
+    build.max_buffer_length = max_buffer_length.into();
+    Tree::build(&build)
+}
+
+fn syntax_snapshot(tree: &Tree) -> Vec<(String, TextRange)> {
+    let mut cursor = tree.cursor(IterMode::INCLUDE_ANONYMOUS);
+    let mut snapshot = Vec::new();
+    loop {
+        let range = TextRange::new(cursor.from(), cursor.to());
+        snapshot.push((cursor.name().to_string(), range));
+        if !cursor.next(true) {
+            return snapshot;
+        }
+    }
+}
+
 #[test]
 fn empty_names_do_not_imply_anonymous_nodes() {
     let empty = NodeType::new(0, "", NodeFlags::default());
@@ -146,6 +177,29 @@ fn empty_names_do_not_imply_anonymous_nodes() {
 
     assert!(!empty.is_anonymous());
     assert!(anonymous.is_anonymous());
+}
+
+#[test]
+fn unencodable_tree_buffer_candidates_fall_back_without_changing_the_tree() {
+    let overlapping = [(1, 2, 3), (2, 0, 4)];
+    let unpacked = packing_tree(&overlapping, 0);
+    let fallback = packing_tree(&overlapping, 4);
+
+    assert_eq!(fallback.to_string(), unpacked.to_string());
+    assert_eq!(syntax_snapshot(&fallback), syntax_snapshot(&unpacked));
+    assert_eq!(fallback.positions(), unpacked.positions());
+    assert!(
+        fallback
+            .children()
+            .iter()
+            .all(|child| matches!(child, TreeChild::Tree(_)))
+    );
+
+    let ordered = [(1, 0, 1), (2, 2, 4)];
+    let packed = packing_tree(&ordered, 4);
+    let ordered_unpacked = packing_tree(&ordered, 0);
+    assert_eq!(syntax_snapshot(&packed), syntax_snapshot(&ordered_unpacked));
+    assert!(matches!(packed.children(), [TreeChild::Buffer(_)]));
 }
 
 fn names(nodes: &[SyntaxNode]) -> String {

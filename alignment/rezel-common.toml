@@ -56,7 +56,7 @@ upstream_symbols = [
 	"balanceRange",
 ]
 invariant = "Compact immutable trees preserve named-node traversal, boundary resolution, packed-buffer, property, mount, and balancing semantics."
-representation = "Rust represents each TreeBuffer with one shared Arc handle, stores packed u16 quads bounded to the encoding's relative-coordinate and end-index domains, uses TextSize and TextRange coordinates and typed flags, and builds trees from a cloneable backward postfix cursor without flattening the producer; incremental reuse is excluded."
+representation = "Rust represents each TreeBuffer with one shared Arc handle, stores packed u16 quads bounded to the encoding's relative-coordinate and end-index domains, and falls back to stand-alone trees when postfix ordering makes a candidate unencodable. It uses TextSize and TextRange coordinates and typed flags, and builds trees from a cloneable backward postfix cursor without flattening the producer; incremental reuse is excluded."
 evidence_files = ["crates/rezel-common/tests/tree.rs"]
 
 [[scope]]
