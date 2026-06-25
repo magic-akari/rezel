@@ -136,7 +136,7 @@ expr[@isGroup=Expr] {
   SelectorExpr |
   IndexExpr { expr !index ~bracket "[" (expr | type) ","? "]" } |
   IndexListExpr {
-    expr !index ~bracket "[" (expr | type) "," (expr | type) ("," (expr | type))* ","? "]"
+    expr !index ~bracket "[" type "," type ("," type)* ","? "]"
   } |
   SliceExpr { expr !slice ~bracket "[" expr? ":" expr? (":" expr)? "]" } |
   TypeAssertion { expr !type "." "(" type ")" } |

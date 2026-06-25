@@ -22,6 +22,10 @@
 			"source": "package modern\n\nvar _64bit = 64\nvar instantiatedArray = generic[[16]byte]\nvar instantiatedPair = generic[int32, int64]\ntype Alias[T any] = map[string]T\ntype names struct { true int; false int }\nfunc visit(true bool) {\n\tvar nil = true\n\tvar other = false\n\tfor range 3 {}\n\t_ = nil\n\t_ = other\n}\n"
 		},
 		{
+			"id": "nested-multi-type-arguments",
+			"source": "package nested\n\ntype Pair[A, B any] struct{}\ntype Triple[A, B, C any] struct{}\nvar _ = Triple[Pair[int, string], Pair[byte, rune], Pair[bool, error]]{}\n"
+		},
+		{
 			"id": "unicode-and-lexical-boundaries",
 			"source": "package 字符\n\nconst (\n\tdecimal = 1_000_000\n\tbinary = 0b1010_0011\n\toctal = 0o755\n\thex = 0x1f_ff\n\tfloating = 0x1.fp3\n\timaginary = 2.5i\n\tchar = '界'\n\ttext = \"héllo 😀\"\n\traw = `line\n文本`\n)\nvar 变量 = 𐐀value"
 		}

@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/go/grammar/go.grammar",
-				"sha256": "c824021c322a55163a1d7ae835c89edf6ef8f5a8de17f635e452b168774f7316"
+				"sha256": "4164d72bf30dd249cdab58e95c518f38c2f1e0f4396335619d23a4a1f01661b5"
 			}
 		}
 	},
@@ -4364,7 +4364,7 @@
 												"to": 105
 											},
 											{
-												"name": "VariableName",
+												"name": "TypeName",
 												"from": 105,
 												"to": 110
 											},
@@ -4374,7 +4374,7 @@
 												"to": 111
 											},
 											{
-												"name": "VariableName",
+												"name": "TypeName",
 												"from": 112,
 												"to": 117
 											},
@@ -4797,6 +4797,461 @@
 										"name": "}",
 										"from": 289,
 										"to": 290
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "nested-multi-type-arguments",
+			"tree": {
+				"name": "SourceFile",
+				"from": 0,
+				"to": 152,
+				"children": [
+					{
+						"name": "PackageClause",
+						"from": 0,
+						"to": 14,
+						"children": [
+							{
+								"name": "package",
+								"from": 0,
+								"to": 7
+							},
+							{
+								"name": "DefName",
+								"from": 8,
+								"to": 14
+							}
+						]
+					},
+					{
+						"name": "TypeDecl",
+						"from": 16,
+						"to": 44,
+						"children": [
+							{
+								"name": "type",
+								"from": 16,
+								"to": 20
+							},
+							{
+								"name": "TypeSpec",
+								"from": 21,
+								"to": 44,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 21,
+										"to": 25
+									},
+									{
+										"name": "TypeParams",
+										"from": 25,
+										"to": 35,
+										"children": [
+											{
+												"name": "[",
+												"from": 25,
+												"to": 26
+											},
+											{
+												"name": "TypeParam",
+												"from": 26,
+												"to": 34,
+												"children": [
+													{
+														"name": "TypeName",
+														"from": 26,
+														"to": 27
+													},
+													{
+														"name": ",",
+														"from": 27,
+														"to": 28
+													},
+													{
+														"name": "TypeName",
+														"from": 29,
+														"to": 30
+													},
+													{
+														"name": "TypeName",
+														"from": 31,
+														"to": 34
+													}
+												]
+											},
+											{
+												"name": "]",
+												"from": 34,
+												"to": 35
+											}
+										]
+									},
+									{
+										"name": "StructType",
+										"from": 36,
+										"to": 44,
+										"children": [
+											{
+												"name": "struct",
+												"from": 36,
+												"to": 42
+											},
+											{
+												"name": "StructBody",
+												"from": 42,
+												"to": 44,
+												"children": [
+													{
+														"name": "{",
+														"from": 42,
+														"to": 43
+													},
+													{
+														"name": "}",
+														"from": 43,
+														"to": 44
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "TypeDecl",
+						"from": 45,
+						"to": 78,
+						"children": [
+							{
+								"name": "type",
+								"from": 45,
+								"to": 49
+							},
+							{
+								"name": "TypeSpec",
+								"from": 50,
+								"to": 78,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 50,
+										"to": 56
+									},
+									{
+										"name": "TypeParams",
+										"from": 56,
+										"to": 69,
+										"children": [
+											{
+												"name": "[",
+												"from": 56,
+												"to": 57
+											},
+											{
+												"name": "TypeParam",
+												"from": 57,
+												"to": 68,
+												"children": [
+													{
+														"name": "TypeName",
+														"from": 57,
+														"to": 58
+													},
+													{
+														"name": ",",
+														"from": 58,
+														"to": 59
+													},
+													{
+														"name": "TypeName",
+														"from": 60,
+														"to": 61
+													},
+													{
+														"name": ",",
+														"from": 61,
+														"to": 62
+													},
+													{
+														"name": "TypeName",
+														"from": 63,
+														"to": 64
+													},
+													{
+														"name": "TypeName",
+														"from": 65,
+														"to": 68
+													}
+												]
+											},
+											{
+												"name": "]",
+												"from": 68,
+												"to": 69
+											}
+										]
+									},
+									{
+										"name": "StructType",
+										"from": 70,
+										"to": 78,
+										"children": [
+											{
+												"name": "struct",
+												"from": 70,
+												"to": 76
+											},
+											{
+												"name": "StructBody",
+												"from": 76,
+												"to": 78,
+												"children": [
+													{
+														"name": "{",
+														"from": 76,
+														"to": 77
+													},
+													{
+														"name": "}",
+														"from": 77,
+														"to": 78
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"name": "VarDecl",
+						"from": 79,
+						"to": 151,
+						"children": [
+							{
+								"name": "var",
+								"from": 79,
+								"to": 82
+							},
+							{
+								"name": "VarSpec",
+								"from": 83,
+								"to": 151,
+								"children": [
+									{
+										"name": "DefName",
+										"from": 83,
+										"to": 84
+									},
+									{
+										"name": "=",
+										"from": 85,
+										"to": 86
+									},
+									{
+										"name": "TypedLiteral",
+										"from": 87,
+										"to": 151,
+										"children": [
+											{
+												"name": "ParameterizedType",
+												"from": 87,
+												"to": 149,
+												"children": [
+													{
+														"name": "TypeName",
+														"from": 87,
+														"to": 93
+													},
+													{
+														"name": "TypeArgs",
+														"from": 93,
+														"to": 149,
+														"children": [
+															{
+																"name": "[",
+																"from": 93,
+																"to": 94
+															},
+															{
+																"name": "ParameterizedType",
+																"from": 94,
+																"to": 111,
+																"children": [
+																	{
+																		"name": "TypeName",
+																		"from": 94,
+																		"to": 98
+																	},
+																	{
+																		"name": "TypeArgs",
+																		"from": 98,
+																		"to": 111,
+																		"children": [
+																			{
+																				"name": "[",
+																				"from": 98,
+																				"to": 99
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 99,
+																				"to": 102
+																			},
+																			{
+																				"name": ",",
+																				"from": 102,
+																				"to": 103
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 104,
+																				"to": 110
+																			},
+																			{
+																				"name": "]",
+																				"from": 110,
+																				"to": 111
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": ",",
+																"from": 111,
+																"to": 112
+															},
+															{
+																"name": "ParameterizedType",
+																"from": 113,
+																"to": 129,
+																"children": [
+																	{
+																		"name": "TypeName",
+																		"from": 113,
+																		"to": 117
+																	},
+																	{
+																		"name": "TypeArgs",
+																		"from": 117,
+																		"to": 129,
+																		"children": [
+																			{
+																				"name": "[",
+																				"from": 117,
+																				"to": 118
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 118,
+																				"to": 122
+																			},
+																			{
+																				"name": ",",
+																				"from": 122,
+																				"to": 123
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 124,
+																				"to": 128
+																			},
+																			{
+																				"name": "]",
+																				"from": 128,
+																				"to": 129
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": ",",
+																"from": 129,
+																"to": 130
+															},
+															{
+																"name": "ParameterizedType",
+																"from": 131,
+																"to": 148,
+																"children": [
+																	{
+																		"name": "TypeName",
+																		"from": 131,
+																		"to": 135
+																	},
+																	{
+																		"name": "TypeArgs",
+																		"from": 135,
+																		"to": 148,
+																		"children": [
+																			{
+																				"name": "[",
+																				"from": 135,
+																				"to": 136
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 136,
+																				"to": 140
+																			},
+																			{
+																				"name": ",",
+																				"from": 140,
+																				"to": 141
+																			},
+																			{
+																				"name": "TypeName",
+																				"from": 142,
+																				"to": 147
+																			},
+																			{
+																				"name": "]",
+																				"from": 147,
+																				"to": 148
+																			}
+																		]
+																	}
+																]
+															},
+															{
+																"name": "]",
+																"from": 148,
+																"to": 149
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "LiteralValue",
+												"from": 149,
+												"to": 151,
+												"children": [
+													{
+														"name": "{",
+														"from": 149,
+														"to": 150
+													},
+													{
+														"name": "}",
+														"from": 150,
+														"to": 151
+													}
+												]
+											}
+										]
 									}
 								]
 							}

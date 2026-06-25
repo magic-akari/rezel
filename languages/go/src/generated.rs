@@ -4,9 +4,9 @@
 #[repr(C, align(4))]
 #[derive(zerocopy::FromBytes, zerocopy::Immutable)]
 struct GeneratedTables {
-    states: [u32; 3492usize],
-    state_data: [u16; 5746usize],
-    goto: [u16; 3713usize],
+    states: [u32; 3468usize],
+    state_data: [u16; 5589usize],
+    goto: [u16; 3660usize],
     token_states: [rezel_lr::TokenState; 69usize],
     token_accepts: [rezel_lr::TokenAccept; 52usize],
     token_edges: [rezel_lr::TokenEdge; 174usize],
@@ -16,7 +16,7 @@ struct GeneratedTables {
     local_token_3_edges: [rezel_lr::TokenEdge; 3usize],
     local_token_3_eof: [rezel_lr::TokenEof; 0usize],
     local_token_3_precedence: [u16; 1usize],
-    dynamic_precedences: [i16; 221usize],
+    dynamic_precedences: [i16; 220usize],
 }
 #[cfg(target_endian = "little")]
 static TABLES_LE: GeneratedTables = rezel_lr::__private::include_value!(
@@ -75,7 +75,7 @@ fn specialize_0(
             Some(rezel_lr::SpecializedToken::new(149u16, rezel_lr::Specialize::Replace))
         }
         "false" => {
-            Some(rezel_lr::SpecializedToken::new(192u16, rezel_lr::Specialize::Extend))
+            Some(rezel_lr::SpecializedToken::new(191u16, rezel_lr::Specialize::Extend))
         }
         "for" => {
             Some(rezel_lr::SpecializedToken::new(131u16, rezel_lr::Specialize::Replace))
@@ -108,7 +108,7 @@ fn specialize_0(
             Some(rezel_lr::SpecializedToken::new(80u16, rezel_lr::Specialize::Extend))
         }
         "nil" => {
-            Some(rezel_lr::SpecializedToken::new(193u16, rezel_lr::Specialize::Extend))
+            Some(rezel_lr::SpecializedToken::new(192u16, rezel_lr::Specialize::Extend))
         }
         "package" => {
             Some(rezel_lr::SpecializedToken::new(5u16, rezel_lr::Specialize::Replace))
@@ -129,7 +129,7 @@ fn specialize_0(
             Some(rezel_lr::SpecializedToken::new(122u16, rezel_lr::Specialize::Replace))
         }
         "true" => {
-            Some(rezel_lr::SpecializedToken::new(192u16, rezel_lr::Specialize::Extend))
+            Some(rezel_lr::SpecializedToken::new(191u16, rezel_lr::Specialize::Extend))
         }
         "type" => {
             Some(rezel_lr::SpecializedToken::new(107u16, rezel_lr::Specialize::Replace))
@@ -1861,14 +1861,6 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 );
                 nodes.push(node);
             }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    177u16,
-                    "",
-                    rezel_common::NodeFlags::ANONYMOUS,
-                );
-                nodes.push(node);
-            }
             std::sync::Arc::new(
                 rezel_common::NodeSet::new(nodes).extend(&[crate::go_highlighting()]),
             )
@@ -1882,7 +1874,7 @@ static TOKENIZERS: &[rezel_lr::Tokenizer] = &[
         rezel_lr::LocalTokenGroup::new(
             &LOCAL_TOKEN_3_TABLE,
             &TABLES.local_token_3_precedence,
-            Some(183u16),
+            Some(182u16),
         ),
     ),
 ];
@@ -1896,7 +1888,7 @@ static TOP_RULES: &[rezel_lr::TopRule] = &[
 static DIALECTS: &[rezel_lr::DialectSpec] = &[];
 static SPECIALIZERS: &[rezel_lr::SpecializerSpec] = &[
     rezel_lr::SpecializerSpec {
-        term: 186u16,
+        term: 185u16,
         get: specialize_0,
     },
 ];
@@ -2069,59 +2061,58 @@ static TERM_NAMES: &[(u16, &str)] = &[
     (165u16, "\",\" type+"),
     (166u16, "\",\" Element+"),
     (167u16, "statement semi | \";\"+"),
-    (168u16, "\",\" expr | type+"),
-    (169u16, "\",\" expr?+"),
-    (170u16, "ConstSpec semi+"),
-    (171u16, "\",\" typeName+"),
-    (172u16, "\",\" TypeParam+"),
-    (173u16, "TypeSpec semi+"),
-    (174u16, "VarSpec semi+"),
-    (175u16, "Case<exprList> semiSep<statement>+"),
-    (176u16, "Case<commaSep1<type>> semiSep<statement>+"),
-    (177u16, "Case<SendStatement | ReceiveStatement> semiSep<statement>+"),
-    (178u16, "␄"),
-    (179u16, "insertedSemi"),
-    (180u16, "%mainskip-1"),
-    (181u16, "space"),
-    (182u16, "\"/*\""),
-    (183u16, "blockCommentContent"),
-    (184u16, "blockCommentNewline"),
-    (185u16, "blockCommentEnd"),
-    (186u16, "identifier"),
-    (187u16, "semi-1"),
-    (188u16, "semiSep<statement | FunctionDecl | MethodDecl>-1"),
-    (189u16, "statement-1"),
-    (190u16, "simpleStatement-1"),
-    (191u16, "expr-1"),
-    (192u16, "identifier/\"true\""),
-    (193u16, "identifier/\"nil\""),
-    (194u16, "literalType-1"),
-    (195u16, "type-1"),
-    (196u16, "\"*\""),
-    (197u16, "signature-1"),
-    (198u16, "commaSep<Parameter>-1"),
-    (199u16, "idList-1"),
-    (200u16, "typeElem-1"),
-    (201u16, "typeOrUnderlying-1"),
-    (202u16, "\"|\""),
-    (203u16, "typeName-1"),
-    (204u16, "commaSep1<type>-1"),
-    (205u16, "commaSep<Element>-1"),
-    (206u16, "semiSep<statement>-1"),
-    (207u16, "exprList-1"),
-    (208u16, "\"+\""),
-    (209u16, "\"-\""),
-    (210u16, "\"!\""),
-    (211u16, "\"^\""),
-    (212u16, "\"&\""),
-    (213u16, "\"/\""),
-    (214u16, "\"%\""),
-    (215u16, "\"<<\""),
-    (216u16, "\">>\""),
-    (217u16, "\"&^\""),
-    (218u16, "\"&&\""),
-    (219u16, "\"||\""),
-    (220u16, "commaSep1<TypeParam>-1"),
+    (168u16, "\",\" expr?+"),
+    (169u16, "ConstSpec semi+"),
+    (170u16, "\",\" typeName+"),
+    (171u16, "\",\" TypeParam+"),
+    (172u16, "TypeSpec semi+"),
+    (173u16, "VarSpec semi+"),
+    (174u16, "Case<exprList> semiSep<statement>+"),
+    (175u16, "Case<commaSep1<type>> semiSep<statement>+"),
+    (176u16, "Case<SendStatement | ReceiveStatement> semiSep<statement>+"),
+    (177u16, "␄"),
+    (178u16, "insertedSemi"),
+    (179u16, "%mainskip-1"),
+    (180u16, "space"),
+    (181u16, "\"/*\""),
+    (182u16, "blockCommentContent"),
+    (183u16, "blockCommentNewline"),
+    (184u16, "blockCommentEnd"),
+    (185u16, "identifier"),
+    (186u16, "semi-1"),
+    (187u16, "semiSep<statement | FunctionDecl | MethodDecl>-1"),
+    (188u16, "statement-1"),
+    (189u16, "simpleStatement-1"),
+    (190u16, "expr-1"),
+    (191u16, "identifier/\"true\""),
+    (192u16, "identifier/\"nil\""),
+    (193u16, "literalType-1"),
+    (194u16, "type-1"),
+    (195u16, "\"*\""),
+    (196u16, "signature-1"),
+    (197u16, "commaSep<Parameter>-1"),
+    (198u16, "idList-1"),
+    (199u16, "typeElem-1"),
+    (200u16, "typeOrUnderlying-1"),
+    (201u16, "\"|\""),
+    (202u16, "typeName-1"),
+    (203u16, "commaSep1<type>-1"),
+    (204u16, "commaSep<Element>-1"),
+    (205u16, "semiSep<statement>-1"),
+    (206u16, "exprList-1"),
+    (207u16, "\"+\""),
+    (208u16, "\"-\""),
+    (209u16, "\"!\""),
+    (210u16, "\"^\""),
+    (211u16, "\"&\""),
+    (212u16, "\"/\""),
+    (213u16, "\"%\""),
+    (214u16, "\"<<\""),
+    (215u16, "\">>\""),
+    (216u16, "\"&^\""),
+    (217u16, "\"&&\""),
+    (218u16, "\"||\""),
+    (219u16, "commaSep1<TypeParam>-1"),
 ];
 pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: &TABLES.states,
@@ -2130,9 +2121,9 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
-    max_term: 220u16,
+    max_term: 219u16,
     min_repeat_term: 154u16,
-    token_precedence: 5741usize,
+    token_precedence: 5584usize,
     node_set,
     context: Some(&crate::tokens::TRACK_TOKENS),
     dialects: DIALECTS,
