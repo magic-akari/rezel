@@ -5,6 +5,9 @@ use rezel_common::{
     CodePoint, Input, InputCharacter, InputChunk, LexicalInput, TextRange, TextSize,
 };
 
+// Bound translation searches to one 4 KiB raw-input page.
+const TRANSLATION_PAGE_SHIFT: u32 = 12;
+
 /// Java's JLS §3.3 Unicode-escape view over original UTF-8 input.
 ///
 /// The parser observes translated code points while all ranges continue to
@@ -13,7 +16,7 @@ use rezel_common::{
 #[derive(Clone)]
 pub(crate) struct JavaInput {
     raw: Arc<dyn Input>,
-    translations: Arc<[Translation]>,
+    translations: TranslationIndex,
     final_sub: Option<TextSize>,
     malformed_escapes: Arc<[TextSize]>,
 }
@@ -37,9 +40,10 @@ impl JavaInput {
             final_sub,
             malformed_escapes,
         } = scan_unicode_escapes(&*raw);
+        let raw_length = raw.len();
         Self {
             raw,
-            translations: combine_escapes(&escapes).into(),
+            translations: TranslationIndex::new(combine_escapes(&escapes), raw_length),
             final_sub,
             malformed_escapes: malformed_escapes.into(),
         }
@@ -60,10 +64,7 @@ impl JavaInput {
     }
 
     fn translation_at_or_after(&self, position: TextSize) -> Option<Translation> {
-        let index = self
-            .translations
-            .partition_point(|translation| translation.range.end() <= position);
-        self.translations.get(index).copied()
+        self.translations.at_or_after(position)
     }
 
     fn range_has_translation(&self, range: TextRange) -> bool {
@@ -73,9 +74,7 @@ impl JavaInput {
         {
             return true;
         }
-        let index = self
-            .translations
-            .partition_point(|translation| translation.range.end() <= range.start());
+        let index = self.translations.first_ending_after(range.start());
         self.translations
             .get(index)
             .is_some_and(|translation| translation.range.start() < range.end())
@@ -167,9 +166,7 @@ impl LexicalInput for JavaInput {
             let start = before - TextSize::from(1);
             return Some((start, InputCharacter::new(CodePoint::from(b' '), before)));
         }
-        let index = self
-            .translations
-            .partition_point(|translation| translation.range.end() <= before);
+        let index = self.translations.first_ending_after(before);
         if let Some(translation) = index
             .checked_sub(1)
             .and_then(|index| self.translations.get(index))
@@ -250,6 +247,87 @@ fn raw_character_before(input: &dyn Input, before: TextSize) -> Option<(TextSize
 struct Translation {
     range: TextRange,
     value: CodePoint,
+}
+
+#[derive(Clone)]
+struct TranslationIndex {
+    values: Arc<[Translation]>,
+    // Each entry is the first translation whose raw end is after that page boundary.
+    page_offsets: Arc<[usize]>,
+}
+
+impl TranslationIndex {
+    fn new(values: Vec<Translation>, raw_length: TextSize) -> Self {
+        let page_offsets = build_translation_page_offsets(&values, raw_length);
+        Self {
+            values: values.into(),
+            page_offsets: page_offsets.into(),
+        }
+    }
+
+    fn len(&self) -> usize {
+        self.values.len()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.values.is_empty()
+    }
+
+    fn get(&self, index: usize) -> Option<&Translation> {
+        self.values.get(index)
+    }
+
+    fn first_ending_after(&self, position: TextSize) -> usize {
+        if self.values.is_empty() {
+            return 0;
+        }
+        let page = usize::from(position) >> TRANSLATION_PAGE_SHIFT;
+        let Some(next_page) = page.checked_add(1) else {
+            return self.full_search(position);
+        };
+        let Some(start) = self.page_offsets.get(page).copied() else {
+            return self.full_search(position);
+        };
+        let Some(end) = self.page_offsets.get(next_page).copied() else {
+            return self.full_search(position);
+        };
+        let local = self.values[start..end]
+            .partition_point(|translation| translation.range.end() <= position);
+        start + local
+    }
+
+    fn at_or_after(&self, position: TextSize) -> Option<Translation> {
+        self.values.get(self.first_ending_after(position)).copied()
+    }
+
+    fn full_search(&self, position: TextSize) -> usize {
+        self.values
+            .partition_point(|translation| translation.range.end() <= position)
+    }
+}
+
+fn build_translation_page_offsets(
+    translations: &[Translation],
+    raw_length: TextSize,
+) -> Vec<usize> {
+    if translations.is_empty() {
+        return Vec::new();
+    }
+    let page_count = (usize::from(raw_length) >> TRANSLATION_PAGE_SHIFT) + 2;
+    let mut offsets = Vec::with_capacity(page_count);
+    let mut translation_index = 0;
+    for page in 0..page_count {
+        let page = u64::try_from(page).expect("translation page index fits u64");
+        let boundary = page << TRANSLATION_PAGE_SHIFT;
+        while translations
+            .get(translation_index)
+            .is_some_and(|translation| u64::from(u32::from(translation.range.end())) <= boundary)
+        {
+            translation_index += 1;
+        }
+        offsets.push(translation_index);
+    }
+    offsets
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -452,6 +530,27 @@ mod tests {
         JavaInput::new(Arc::new(StringInput::try_new(source).unwrap()))
     }
 
+    fn translation(start: u32, end: u32) -> Translation {
+        Translation {
+            range: TextRange::new(start.into(), end.into()),
+            value: CodePoint::from(b'a'),
+        }
+    }
+
+    fn assert_paged_lookup_matches_full_search(translations: &[Translation], raw_length: u32) {
+        let index = TranslationIndex::new(translations.to_vec(), raw_length.into());
+        for position in 0..=raw_length {
+            let position = TextSize::from(position);
+            let expected =
+                translations.partition_point(|translation| translation.range.end() <= position);
+            assert_eq!(
+                index.first_ending_after(position),
+                expected,
+                "translation lookup differed at {position:?}"
+            );
+        }
+    }
+
     fn cooked(source: &str) -> String {
         input(source)
             .read_logical(TextRange::new(0.into(), source.len().try_into().unwrap()))
@@ -507,6 +606,30 @@ mod tests {
         let suffix = input.identity_chunk(8.into()).expect("identity suffix");
         assert_eq!(suffix.raw_start(), 8.into());
         assert_eq!(suffix.raw_end(), 10.into());
+    }
+
+    #[test]
+    fn paged_translation_index_matches_full_search() {
+        let sparse = vec![
+            translation(0, 6),
+            translation(4084, 4090),
+            translation(4090, 4096),
+            translation(4096, 4102),
+            translation(4200, 9000),
+            translation(10_000, 10_006),
+            translation(12_282, 12_288),
+        ];
+        assert_paged_lookup_matches_full_search(&sparse, 12_288);
+
+        let dense: Vec<_> = (0_u32..12_288)
+            .step_by(6)
+            .map(|start| translation(start, start + 6))
+            .collect();
+        assert_paged_lookup_matches_full_search(&dense, 12_288);
+
+        let empty = TranslationIndex::new(Vec::new(), TextSize::from(12_288));
+        assert!(empty.page_offsets.is_empty());
+        assert_eq!(empty.first_ending_after(TextSize::from(12_288)), 0);
     }
 
     #[test]
