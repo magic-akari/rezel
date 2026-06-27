@@ -444,11 +444,13 @@ impl InputStream {
     /// Look around the stream in Unicode code points.
     #[must_use]
     pub fn peek(&self, offset: isize) -> Option<CodePoint> {
-        if offset == 0 {
-            return self.next();
+        match offset.cmp(&0) {
+            std::cmp::Ordering::Equal => self.next(),
+            std::cmp::Ordering::Greater => self.lookahead().nth(offset.unsigned_abs()),
+            std::cmp::Ordering::Less => self
+                .lookbehind()
+                .nth(offset.unsigned_abs().saturating_sub(1)),
         }
-        let cursor = self.offset_cursor(self.cursor, offset)?;
-        code_point_at(&*self.input, &self.ranges, cursor)
     }
 
     /// Iterate forward from the current position in Unicode code points.
@@ -462,6 +464,20 @@ impl InputStream {
             cursor: Some(self.cursor),
             initial_chunk: self.chunk.as_ref(),
             loaded_chunk: None,
+        }
+    }
+
+    /// Iterate backward from immediately before the current position in Unicode code points.
+    ///
+    /// Like [`Self::lookahead`], this follows the stream's selected-range
+    /// order. It does not move the input cursor. External tokenizers that
+    /// inspect a run of preceding input should prefer this to repeatedly
+    /// calling [`Self::peek`] with decreasing offsets.
+    pub fn lookbehind(&self) -> impl Iterator<Item = CodePoint> + '_ {
+        InputLookbehind {
+            input: &*self.input,
+            ranges: &self.ranges,
+            cursor: Some(self.cursor),
         }
     }
 
@@ -822,19 +838,6 @@ impl InputStream {
         advance_cursor(&*self.input, &self.ranges, cursor).map(|cursor| cursor.byte)
     }
 
-    fn offset_cursor(&self, mut cursor: StreamCursor, offset: isize) -> Option<StreamCursor> {
-        if offset >= 0 {
-            for _ in 0..offset.unsigned_abs() {
-                cursor = advance_cursor(&*self.input, &self.ranges, cursor)?;
-            }
-        } else {
-            for _ in 0..offset.unsigned_abs() {
-                cursor = retreat_cursor(&*self.input, &self.ranges, cursor)?;
-            }
-        }
-        Some(cursor)
-    }
-
     fn current_character(&mut self) -> Option<InputCharacter> {
         self.current_character_impl(true)
     }
@@ -1009,6 +1012,27 @@ impl Iterator for InputLookahead<'_> {
     }
 }
 
+struct InputLookbehind<'a> {
+    input: &'a dyn LexicalInput,
+    ranges: &'a [TextRange],
+    cursor: Option<StreamCursor>,
+}
+
+impl Iterator for InputLookbehind<'_> {
+    type Item = CodePoint;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Some((cursor, character)) =
+            retreat_cursor_with_character(self.input, self.ranges, self.cursor?)
+        else {
+            self.cursor = None;
+            return None;
+        };
+        self.cursor = Some(cursor);
+        Some(character.value())
+    }
+}
+
 fn first_cursor(ranges: &[TextRange]) -> StreamCursor {
     let range_index = ranges
         .iter()
@@ -1049,18 +1073,6 @@ fn character_at(
     (character.raw_end() <= range.end()).then_some(character)
 }
 
-fn code_point_at(
-    input: &dyn LexicalInput,
-    ranges: &[TextRange],
-    cursor: StreamCursor,
-) -> Option<CodePoint> {
-    let range = ranges.get(cursor.range_index)?;
-    if cursor.byte >= range.end() {
-        return None;
-    }
-    character_at(input, *range, cursor.byte).map(InputCharacter::value)
-}
-
 fn advance_cursor(
     input: &dyn LexicalInput,
     ranges: &[TextRange],
@@ -1077,11 +1089,11 @@ fn advance_cursor(
     next_range_cursor(ranges, cursor.range_index).or_else(|| Some(end_cursor(ranges)))
 }
 
-fn retreat_cursor(
+fn retreat_cursor_with_character(
     input: &dyn LexicalInput,
     ranges: &[TextRange],
     cursor: StreamCursor,
-) -> Option<StreamCursor> {
+) -> Option<(StreamCursor, InputCharacter)> {
     let range = ranges.get(cursor.range_index)?;
     let (range_index, byte_limit) = if cursor.byte > range.start() {
         (cursor.range_index, cursor.byte)
@@ -1096,7 +1108,7 @@ fn retreat_cursor(
     if byte < previous_range.start() || character.raw_end() != byte_limit {
         return None;
     }
-    Some(StreamCursor { range_index, byte })
+    Some((StreamCursor { range_index, byte }, character))
 }
 
 fn next_range_cursor(ranges: &[TextRange], range_index: usize) -> Option<StreamCursor> {
@@ -1249,6 +1261,7 @@ mod tests {
     struct CountingLexicalInput {
         inner: Utf8Input,
         character_reads: Arc<AtomicUsize>,
+        character_before_reads: Arc<AtomicUsize>,
     }
 
     struct BoundaryTranslationInput {
@@ -1299,6 +1312,11 @@ mod tests {
         fn character(&self, from: TextSize) -> Option<InputCharacter> {
             self.character_reads.fetch_add(1, Ordering::Relaxed);
             self.inner.character(from)
+        }
+
+        fn character_before(&self, before: TextSize) -> Option<(TextSize, InputCharacter)> {
+            self.character_before_reads.fetch_add(1, Ordering::Relaxed);
+            self.inner.character_before(before)
         }
     }
 
@@ -1534,6 +1552,7 @@ mod tests {
         let input: Arc<dyn LexicalInput> = Arc::new(CountingLexicalInput {
             inner: Utf8Input::new(raw),
             character_reads: Arc::new(AtomicUsize::new(0)),
+            character_before_reads: Arc::new(AtomicUsize::new(0)),
         });
         let ranges = Arc::from([TextRange::new(0.into(), 2.into())]);
         let mut fallback = InputStream::new(input, ranges);
@@ -1616,15 +1635,48 @@ mod tests {
     }
 
     #[test]
+    fn lookbehind_preserves_code_points_selected_ranges_and_position() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 5.into()),
+            TextRange::new(6.into(), 7.into()),
+        ]);
+        let mut input = stream("a😀Xb", ranges);
+
+        assert!(input.lookbehind().next().is_none());
+        input.advance(3);
+        assert_eq!(input.position(), TextSize::from(7));
+        assert_eq!(
+            input.lookbehind().collect::<Vec<_>>(),
+            vec![
+                CodePoint::from(b'b'),
+                CodePoint::from('😀'),
+                CodePoint::from(b'a')
+            ]
+        );
+        assert_eq!(input.position(), TextSize::from(7));
+        assert_eq!(input.next(), None);
+
+        input.reset(1.into());
+        assert_eq!(input.next(), Some(CodePoint::from('😀')));
+        let mut lookbehind = input.lookbehind();
+        assert_eq!(lookbehind.next(), Some(CodePoint::from(b'a')));
+        assert_eq!(lookbehind.next(), None);
+        assert_eq!(lookbehind.next(), None);
+        assert_eq!(input.position(), TextSize::from(1));
+    }
+
+    #[test]
     fn sequential_lookahead_resolves_input_linearly() {
         const WIDTH: usize = 128;
 
         let source: Arc<str> = " ".repeat(WIDTH + 1).into();
         let character_reads = Arc::new(AtomicUsize::new(0));
+        let character_before_reads = Arc::new(AtomicUsize::new(0));
         let raw: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
         let input: Arc<dyn LexicalInput> = Arc::new(CountingLexicalInput {
             inner: Utf8Input::new(raw),
             character_reads: Arc::clone(&character_reads),
+            character_before_reads,
         });
         let ranges = Arc::from([TextRange::new(
             TextSize::from(0),
@@ -1634,6 +1686,32 @@ mod tests {
 
         assert_eq!(stream.lookahead().count(), WIDTH + 1);
         assert!(character_reads.load(Ordering::Relaxed) <= WIDTH + 2);
+    }
+
+    #[test]
+    fn sequential_lookbehind_resolves_input_linearly() {
+        const WIDTH: usize = 128;
+
+        let source: Arc<str> = " ".repeat(WIDTH).into();
+        let character_reads = Arc::new(AtomicUsize::new(0));
+        let character_before_reads = Arc::new(AtomicUsize::new(0));
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(CountingLexicalInput {
+            inner: Utf8Input::new(raw),
+            character_reads: Arc::clone(&character_reads),
+            character_before_reads: Arc::clone(&character_before_reads),
+        });
+        let ranges = Arc::from([TextRange::new(
+            TextSize::from(0),
+            TextSize::try_from(WIDTH).unwrap(),
+        )]);
+        let mut stream = InputStream::new(input, ranges);
+        stream.advance(WIDTH);
+        character_reads.store(0, Ordering::Relaxed);
+
+        assert_eq!(stream.lookbehind().count(), WIDTH);
+        assert!(character_before_reads.load(Ordering::Relaxed) <= WIDTH + 1);
+        assert_eq!(character_reads.load(Ordering::Relaxed), 0);
     }
 
     #[test]
