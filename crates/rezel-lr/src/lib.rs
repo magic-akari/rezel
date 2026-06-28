@@ -19,8 +19,9 @@ pub use parse::{
 };
 pub use stack::Stack;
 pub use token::{
-    ExternalTokenizer, InputMark, InputStream, LocalTokenGroup, TokenAccept, TokenEdge, TokenEof,
-    TokenGroup, TokenState, TokenTable, Tokenizer, TokenizerFlags,
+    ExternalTokenizer, ExternalTokenizerStart, InputMark, InputStream, LocalTokenGroup,
+    TokenAccept, TokenEdge, TokenEof, TokenGroup, TokenState, TokenTable, Tokenizer,
+    TokenizerFlags,
 };
 
 /// Implementation details referenced by generated parser glue.

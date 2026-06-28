@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path;
+use std::sync::Arc;
 
 #[path = "upstream/case_format.rs"]
 mod case_format;
@@ -9,6 +10,7 @@ mod case_registry;
 
 mod support;
 
+use rezel_common::{Input, ParseErrorKind, ParseRequest, Parser, StringInput, TextRange};
 use rezel_generator::{BuildOptions, compile_grammar};
 use rezel_lr::LRParser;
 
@@ -125,6 +127,63 @@ fn parse_cases_match_expected_trees() {
         failures.len(),
         failures.join("\n\n")
     );
+}
+
+#[test]
+fn external_tokenizer_start_respects_selected_ranges_and_visible_outcomes() {
+    let parser =
+        LRParser::from_language(generated_case("ExternalTokens").language).with_strict(true);
+    let source = "x?Q{x}";
+    let input: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+    let request = ParseRequest::ranges(
+        input,
+        vec![
+            TextRange::new(0.into(), 1.into()),
+            TextRange::new(2.into(), 2.into()),
+            TextRange::new(3.into(), 6.into()),
+        ],
+    )
+    .unwrap();
+    let mut parse = parser.create_parse(request).unwrap();
+    let tree = loop {
+        if let Some(tree) = parse.advance().unwrap() {
+            break tree;
+        }
+    };
+    assert_eq!(tree.to_string(), "T(X,Braced(X))");
+
+    let source = "x?Q!";
+    let input: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+    let request = ParseRequest::ranges(
+        input,
+        vec![
+            TextRange::new(0.into(), 0.into()),
+            TextRange::new(2.into(), 2.into()),
+            TextRange::new(4.into(), 4.into()),
+        ],
+    )
+    .unwrap();
+    let mut parse = parser.create_parse(request).unwrap();
+    let tree = loop {
+        if let Some(tree) = parse.advance().unwrap() {
+            break tree;
+        }
+    };
+    assert_eq!(tree.to_string(), "T");
+
+    support::externals::reset_ext1_calls();
+    let error = parser.parse("?").unwrap_err();
+    assert_eq!(error.kind(), ParseErrorKind::Syntax);
+    assert_eq!(support::externals::ext1_calls(), 0);
+
+    support::externals::reset_ext1_calls();
+    let error = parser.parse("!").unwrap_err();
+    assert_eq!(error.kind(), ParseErrorKind::Input);
+    assert_eq!(support::externals::ext1_calls(), 1);
+
+    support::externals::reset_ext1_calls();
+    parser.parse("").unwrap();
+    assert!(support::externals::ext1_calls() > 0);
 }
 
 #[test]

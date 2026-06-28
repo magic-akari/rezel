@@ -105,6 +105,62 @@ Implement one lexical decision per tokenizer. Typical examples are indentation
 changes, automatic separators, string modes, or identifiers backed by generated
 Unicode tables.
 
+An adapter may attach a conservative `ExternalTokenizerStart` filter when its
+first-code-point domain is much smaller than all input. The filter is a runtime
+optimization, not lexical precedence: every code point and end-of-input
+position where the callback may accept a token **or return an error** must be
+included. Only an input on which the callback is guaranteed to decline may be
+skipped. Test a filtered decline, an accepted token, an error result, and EOF;
+also cover selected ranges when the tokenizer is used by mixed parsing.
+
+The grammar determines which parser states enable the tokenizer. Its position
+among generated, local, and other external tokenizers determines lexical
+precedence. At an enabled position, the runtime considers tokenizer entries in
+declaration order:
+
+1. a tokenizer that declines leaves later entries eligible;
+2. an accepted non-extension term with an executable parser action wins and
+   stops the search;
+3. an accepted term with no executable action suppresses ordinary later
+   entries, but a later `fallback` tokenizer may still run;
+4. an `extend` tokenizer contributes distinct actions and, when no earlier main
+   candidate exists, leaves all lower-precedence entries eligible; when it runs
+   as a fallback after a main candidate, only later fallback entries remain
+   eligible.
+
+This order is part of the grammar contract. Do not move an external declaration
+without testing every token family that can inspect the same prefix.
+
+### Tokenizer flags
+
+`ExternalTokenizer::new` takes `TokenizerFlags`. These flags belong to the Rust
+adapter because they describe how the callback participates in runtime
+selection and caching:
+
+| Flag         | Runtime meaning                                                                                                                                                          | Required invariant                                                                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contextual` | Recompute for each parser stack instead of reusing a cached result for an equivalent position, tokenizer mask, and context hash.                                         | Set it when the result reads stack details finer than those cache keys, including `Stack::can_shift`. A non-contextual callback must be reusable across such stacks. |
+| `fallback`   | Run after an earlier tokenizer accepted a lexical term but produced no executable action in the current parser state. It does not override an earlier actionable result. | The result must be a genuine lower-priority interpretation, commonly a guarded zero-length insertion.                                                                |
+| `extend`     | Keep distinct actions produced by this tokenizer and continue to the lower-precedence entries still eligible under the fallback rule.                                    | Multiple surviving terms must be intentional grammar alternatives with bounded branching.                                                                            |
+
+A tokenizer that depends only on source text can normally leave all three
+flags false. Depending on tracked context alone does not by itself require
+`contextual`: the context hash is already part of the cache key. Set
+`contextual` when equal cache keys can still produce different callback
+results, most commonly because the callback queries the exact stack state.
+If two context values can produce different answers in a non-contextual
+tokenizer, their hashes must also differ; otherwise the tokenizer must be
+contextual.
+
+`fallback` is not a general priority inversion. It matters only after an
+earlier lexical match cannot drive the current parse. Likewise, `extend` does
+not replace the earlier term and does not mean “keep scanning characters”; it
+keeps tokenizer alternatives alive while selection proceeds to eligible later
+entries. Actions are deduplicated by their encoded parser action; if two terms
+lead to the same action, a second token identity is not retained merely because
+`extend` was set. Use either flag only with grammar witnesses that need its
+exact behavior.
+
 The callback must either accept one token with a validated endpoint or decline
 without changing parser-visible state. Observe these constraints:
 

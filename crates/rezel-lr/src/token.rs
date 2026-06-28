@@ -163,6 +163,95 @@ pub struct TokenizerFlags {
     pub extend: bool,
 }
 
+/// A conservative first-code-point filter for an external tokenizer.
+///
+/// A match only means that the tokenizer may produce a parser-visible outcome.
+/// The callback still makes the parser-aware decision. Every position where it
+/// can accept a token or return an error must therefore be included; only a
+/// guaranteed decline may be filtered out.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct ExternalTokenizerStart {
+    ascii: [u64; 2],
+    non_ascii: bool,
+    end: bool,
+}
+
+impl ExternalTokenizerStart {
+    /// An empty filter.
+    pub const NONE: Self = Self {
+        ascii: [0; 2],
+        non_ascii: false,
+        end: false,
+    };
+
+    /// Include one ASCII byte.
+    ///
+    /// # Panics
+    ///
+    /// Panics when `byte` is not ASCII.
+    #[must_use]
+    pub const fn with_ascii(mut self, byte: u8) -> Self {
+        assert!(byte.is_ascii(), "external tokenizer start must be ASCII");
+        let word = byte / 64;
+        let bit = byte % 64;
+        self.ascii[word as usize] |= 1_u64 << bit;
+        self
+    }
+
+    /// Include one inclusive ASCII byte range.
+    ///
+    /// # Panics
+    ///
+    /// Panics when the range is reversed or either bound is not ASCII.
+    #[must_use]
+    pub const fn with_ascii_range(mut self, range: std::ops::RangeInclusive<u8>) -> Self {
+        let start = *range.start();
+        let end = *range.end();
+        assert!(
+            start <= end && end.is_ascii(),
+            "external tokenizer start range must be ordered ASCII"
+        );
+        let mut byte = start;
+        loop {
+            self = self.with_ascii(byte);
+            if byte == end {
+                break;
+            }
+            byte += 1;
+        }
+        self
+    }
+
+    /// Include every non-ASCII code point.
+    #[must_use]
+    pub const fn with_non_ascii(mut self) -> Self {
+        self.non_ascii = true;
+        self
+    }
+
+    /// Include end of input.
+    #[must_use]
+    pub const fn with_end(mut self) -> Self {
+        self.end = true;
+        self
+    }
+
+    #[inline]
+    pub(crate) fn matches(self, next: Option<CodePoint>) -> bool {
+        let Some(next) = next else {
+            return self.end;
+        };
+        let value = next.as_u32();
+        if value >= 0x80 {
+            return self.non_ascii;
+        }
+        let byte = u8::try_from(value).expect("ASCII code point fits in u8");
+        let word = byte / 64;
+        let bit = byte % 64;
+        self.ascii[usize::from(word)] & (1_u64 << bit) != 0
+    }
+}
+
 /// One parser-generated token DFA group.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct TokenGroup {
@@ -209,6 +298,7 @@ impl LocalTokenGroup {
 pub struct ExternalTokenizer {
     callback: fn(&mut InputStream, &Stack) -> Result<(), ParseError>,
     flags: TokenizerFlags,
+    start: Option<ExternalTokenizerStart>,
 }
 
 impl ExternalTokenizer {
@@ -218,7 +308,18 @@ impl ExternalTokenizer {
         callback: fn(&mut InputStream, &Stack) -> Result<(), ParseError>,
         flags: TokenizerFlags,
     ) -> Self {
-        Self { callback, flags }
+        Self {
+            callback,
+            flags,
+            start: None,
+        }
+    }
+
+    /// Skip this callback when the next code point cannot start its token.
+    #[must_use]
+    pub const fn with_start(mut self, start: ExternalTokenizerStart) -> Self {
+        self.start = Some(start);
+        self
     }
 
     fn token(&self, input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
@@ -228,6 +329,10 @@ impl ExternalTokenizer {
     const fn flags(&self) -> TokenizerFlags {
         self.flags
     }
+
+    const fn start(&self) -> Option<ExternalTokenizerStart> {
+        self.start
+    }
 }
 
 impl std::fmt::Debug for ExternalTokenizer {
@@ -235,6 +340,7 @@ impl std::fmt::Debug for ExternalTokenizer {
         formatter
             .debug_struct("ExternalTokenizer")
             .field("flags", &self.flags)
+            .field("start", &self.start)
             .finish_non_exhaustive()
     }
 }
@@ -259,6 +365,14 @@ impl Tokenizer {
                 extend: false,
             },
             Self::External(tokenizer) => tokenizer.flags(),
+        }
+    }
+
+    #[inline]
+    pub(crate) const fn start(self) -> Option<ExternalTokenizerStart> {
+        match self {
+            Self::Group(_) | Self::Local(_) => None,
+            Self::External(tokenizer) => tokenizer.start(),
         }
     }
 
@@ -794,23 +908,23 @@ impl InputStream {
     }
 
     pub(crate) fn reset(&mut self, position: TextSize) {
-        self.token_start = position;
         self.accepted = None;
         if self.cursor.byte == position {
+            self.token_start = position;
             return;
         }
         debug_assert!(self.input.is_boundary(position));
-        self.cursor = cursor_at(&self.ranges, position);
+        let cursor = cursor_at_or_after(&self.ranges, position);
+        self.token_start = cursor.byte;
+        if self.cursor == cursor {
+            return;
+        }
+        self.cursor = cursor;
         self.refresh_next();
     }
 
     pub(crate) fn clip_position(&self, position: TextSize) -> TextSize {
-        for range in &*self.ranges {
-            if range.end() > position {
-                return position.max(range.start());
-            }
-        }
-        self.end
+        cursor_at_or_after(&self.ranges, position).byte
     }
 
     pub(crate) fn accepted(&self) -> Option<AcceptedToken> {
@@ -834,7 +948,7 @@ impl InputStream {
     }
 
     pub(crate) fn next_position_from(&self, position: TextSize) -> Option<TextSize> {
-        let cursor = cursor_at(&self.ranges, position);
+        let cursor = cursor_at_or_after(&self.ranges, position);
         advance_cursor(&*self.input, &self.ranges, cursor).map(|cursor| cursor.byte)
     }
 
@@ -854,7 +968,7 @@ impl InputStream {
             return Some(cached.character);
         }
         let range = *self.ranges.get(self.cursor.range_index)?;
-        if self.cursor.byte >= range.end() {
+        if self.cursor.byte < range.start() || self.cursor.byte >= range.end() {
             return None;
         }
         let mut character = self.chunk_character(range, self.cursor.byte);
@@ -874,7 +988,7 @@ impl InputStream {
 
     #[inline]
     fn chunk_character(&self, range: TextRange, position: TextSize) -> Option<InputCharacter> {
-        if position >= range.end() {
+        if position < range.start() || position >= range.end() {
             return None;
         }
         let character = self.chunk.as_ref()?.character(position)?;
@@ -883,7 +997,7 @@ impl InputStream {
 
     #[inline]
     fn chunk_ascii(&self, range: TextRange, position: TextSize) -> Option<u8> {
-        if position >= range.end() {
+        if position < range.start() || position >= range.end() {
             return None;
         }
         self.chunk.as_ref()?.ascii_byte(position)
@@ -891,7 +1005,7 @@ impl InputStream {
 
     fn advance_current(&mut self) -> Option<StreamCursor> {
         let range = *self.ranges.get(self.cursor.range_index)?;
-        if self.cursor.byte >= range.end() {
+        if self.cursor.byte < range.start() || self.cursor.byte >= range.end() {
             return next_range_cursor(&self.ranges, self.cursor.range_index);
         }
         if self.chunk_ascii(range, self.cursor.byte).is_some() {
@@ -985,7 +1099,7 @@ impl Iterator for InputLookahead<'_> {
         loop {
             let cursor = self.cursor?;
             let range = *self.ranges.get(cursor.range_index)?;
-            if cursor.byte >= range.end() {
+            if cursor.byte < range.start() || cursor.byte >= range.end() {
                 self.cursor = next_range_cursor(self.ranges, cursor.range_index);
                 continue;
             }
@@ -1034,16 +1148,7 @@ impl Iterator for InputLookbehind<'_> {
 }
 
 fn first_cursor(ranges: &[TextRange]) -> StreamCursor {
-    let range_index = ranges
-        .iter()
-        .position(|range| !range.is_empty())
-        .unwrap_or_else(|| ranges.len().saturating_sub(1));
-    StreamCursor {
-        range_index,
-        byte: ranges
-            .get(range_index)
-            .map_or(TextSize::from(0), |range| range.start()),
-    }
+    cursor_at_or_after(ranges, TextSize::from(0))
 }
 
 fn end_cursor(ranges: &[TextRange]) -> StreamCursor {
@@ -1053,14 +1158,20 @@ fn end_cursor(ranges: &[TextRange]) -> StreamCursor {
     }
 }
 
-fn cursor_at(ranges: &[TextRange], position: TextSize) -> StreamCursor {
-    let range_index = ranges
-        .iter()
-        .position(|range| position >= range.start() && position < range.end())
-        .unwrap_or_else(|| ranges.len().saturating_sub(1));
+fn cursor_at_or_after(ranges: &[TextRange], position: TextSize) -> StreamCursor {
+    let mut range_index = ranges.partition_point(|range| range.end() <= position);
+    while ranges
+        .get(range_index)
+        .is_some_and(|range| range.is_empty())
+    {
+        range_index += 1;
+    }
+    let Some(range) = ranges.get(range_index) else {
+        return end_cursor(ranges);
+    };
     StreamCursor {
         range_index,
-        byte: position,
+        byte: position.max(range.start()),
     }
 }
 
@@ -1069,6 +1180,9 @@ fn character_at(
     range: TextRange,
     position: TextSize,
 ) -> Option<InputCharacter> {
+    if position < range.start() || position >= range.end() {
+        return None;
+    }
     let character = input.character(position)?;
     (character.raw_end() <= range.end()).then_some(character)
 }
@@ -1079,7 +1193,7 @@ fn advance_cursor(
     cursor: StreamCursor,
 ) -> Option<StreamCursor> {
     let range = ranges.get(cursor.range_index)?;
-    if cursor.byte >= range.end() {
+    if cursor.byte < range.start() || cursor.byte >= range.end() {
         return next_range_cursor(ranges, cursor.range_index);
     }
     let byte = character_at(input, *range, cursor.byte)?.raw_end();
@@ -1345,6 +1459,21 @@ mod tests {
         assert_eq!(std::mem::offset_of!(TokenEdge, from), 0);
         assert_eq!(std::mem::offset_of!(TokenEdge, to), 4);
         assert_eq!(std::mem::offset_of!(TokenEdge, target), 8);
+    }
+
+    #[test]
+    fn external_tokenizer_start_matches_only_declared_inputs() {
+        let start = ExternalTokenizerStart::NONE
+            .with_ascii(b'$')
+            .with_ascii_range(b'A'..=b'Z')
+            .with_non_ascii()
+            .with_end();
+
+        assert!(start.matches(Some(CodePoint::from('$'))));
+        assert!(start.matches(Some(CodePoint::from('M'))));
+        assert!(!start.matches(Some(CodePoint::from('m'))));
+        assert!(start.matches(Some(CodePoint::from('λ'))));
+        assert!(start.matches(None));
     }
 
     #[test]
@@ -1632,6 +1761,43 @@ mod tests {
             input.lookahead().collect::<Vec<_>>(),
             vec![CodePoint::from('😀'), CodePoint::from(b'b')]
         );
+    }
+
+    #[test]
+    fn empty_selected_ranges_never_expose_omitted_input() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 1.into()),
+            TextRange::new(2.into(), 2.into()),
+            TextRange::new(3.into(), 4.into()),
+        ]);
+        let mut input = stream("aXYb", ranges);
+
+        assert_eq!(input.next(), Some(CodePoint::from(b'a')));
+        assert_eq!(input.clip_position(1.into()), TextSize::from(3));
+        assert_eq!(input.next_position_from(1.into()), Some(TextSize::from(4)));
+        input.reset(1.into());
+        assert_eq!(input.position(), TextSize::from(3));
+        assert_eq!(input.next(), Some(CodePoint::from(b'b')));
+    }
+
+    #[test]
+    fn all_empty_selected_ranges_are_logically_empty() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 0.into()),
+            TextRange::new(2.into(), 2.into()),
+            TextRange::new(4.into(), 4.into()),
+        ]);
+        let mut input = stream("aXYb", ranges);
+
+        assert_eq!(input.position(), TextSize::from(4));
+        assert_eq!(input.clip_position(0.into()), TextSize::from(4));
+        assert_eq!(input.next(), None);
+        assert_eq!(input.lookahead().next(), None);
+        assert_eq!(input.lookbehind().next(), None);
+        assert_eq!(input.next_position_from(0.into()), None);
+        input.reset(0.into());
+        assert_eq!(input.position(), TextSize::from(4));
+        assert_eq!(input.next(), None);
     }
 
     #[test]

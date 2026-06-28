@@ -122,7 +122,8 @@ Generated files are committed so ordinary users do not need the generator.
 At compile time, `generated.rs` selects the target's native-endian blob and
 uses `zerocopy` to validate its layout. Runtime parser construction borrows the
 static tables; it does not decode a portable blob or allocate a second table
-representation.
+copy. Construction does build compact auxiliary lookup indexes, so cache the
+immutable parser in the package facade as shown below.
 
 ## Expose a language facade
 

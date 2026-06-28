@@ -28,7 +28,9 @@ versions.
 little-endian and big-endian. Generated code selects the target's native
 endianness at compile time and validates the borrowed layout with `zerocopy`.
 Parser construction does not deserialize a portable image or allocate another
-table representation.
+owned copy of the tables. It builds compact auxiliary indexes for hot action,
+goto, and token lookup; language facades normally construct and cache that
+immutable parser once.
 
 The engine executes LR actions, creates explicitly allowed GLR branches, merges
 compatible stacks, and builds compact CST buffers. Recovering mode searches
@@ -51,7 +53,13 @@ Generated token DFAs and local token groups share the runtime with:
 
 External code receives validated stream operations and the current `Stack`.
 It remains responsible for deterministic progress and for reporting malformed
-language input as a parser error.
+language input as a parser error. An external tokenizer may also declare a
+conservative `ExternalTokenizerStart` set. The runtime then skips its callback
+when the next logical code point cannot start one of its tokens. This is only a
+performance filter: the callback still makes the parser-aware decision, and
+the declared set must include every code point and end-of-input position where
+the callback can accept or return an error. Only a guaranteed decline may be
+filtered out.
 
 ## Configuration and bounds
 

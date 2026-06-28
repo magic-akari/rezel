@@ -345,6 +345,37 @@ pub trait Input: Send + Sync {
     /// Read one byte range.
     fn read(&self, range: TextRange) -> Cow<'_, str>;
 
+    /// Read the Unicode scalar immediately before one UTF-8 boundary.
+    ///
+    /// The default reads at most the four bytes of one UTF-8 scalar. Inputs
+    /// with direct access to their backing storage may override it.
+    #[doc(hidden)]
+    fn character_before(&self, before: TextSize) -> Option<(TextSize, InputCharacter)> {
+        if before == TextSize::from(0) || !self.is_boundary(before) {
+            return None;
+        }
+        let minimum = before
+            .checked_sub(TextSize::from(4))
+            .unwrap_or(TextSize::from(0));
+        let mut start = before - TextSize::from(1);
+        while start > minimum && !self.is_boundary(start) {
+            start -= TextSize::from(1);
+        }
+        if !self.is_boundary(start) {
+            return None;
+        }
+        let text = self.read(TextRange::new(start, before));
+        let mut characters = text.chars();
+        let character = characters.next()?;
+        if characters.next().is_some() || character.len_utf8() != usize::from(before - start) {
+            return None;
+        }
+        Some((
+            start,
+            InputCharacter::new(CodePoint::from(character), before),
+        ))
+    }
+
     /// Whether a position is a valid UTF-8 byte boundary.
     fn is_boundary(&self, position: TextSize) -> bool;
 
@@ -410,13 +441,7 @@ pub trait LexicalInput: Send + Sync {
     #[doc(hidden)]
     fn character_before(&self, before: TextSize) -> Option<(TextSize, InputCharacter)> {
         debug_assert!(self.raw().is_boundary(before));
-        let text = self.raw().read(TextRange::new(TextSize::from(0), before));
-        let (start, character) = text.char_indices().next_back()?;
-        let start = TextSize::try_from(start).ok()?;
-        Some((
-            start,
-            InputCharacter::new(CodePoint::from(character), before),
-        ))
+        self.raw().character_before(before)
     }
 
     /// Whether a raw position is a complete logical-character boundary.
@@ -520,6 +545,16 @@ impl Input for StringInput {
         )
     }
 
+    fn character_before(&self, before: TextSize) -> Option<(TextSize, InputCharacter)> {
+        let text = self.source.get(..usize::from(before))?;
+        let (start, character) = text.char_indices().next_back()?;
+        let start = TextSize::try_from(start).ok()?;
+        Some((
+            start,
+            InputCharacter::new(CodePoint::from(character), before),
+        ))
+    }
+
     fn is_boundary(&self, position: TextSize) -> bool {
         position <= self.length && self.source.is_char_boundary(usize::from(position))
     }
@@ -572,6 +607,10 @@ impl ParseRequest {
     }
 
     /// Build a request over selected raw byte ranges.
+    ///
+    /// Empty ranges contribute no logical code points. Advancing or resetting
+    /// skips them while preserving their raw endpoints for mixed-parse
+    /// bookkeeping.
     ///
     /// # Errors
     ///

@@ -1,6 +1,7 @@
-use crate::table::{Action, SequenceCode, StateField};
+use crate::table::{Action, ReservedTerm, SequenceCode, StateField};
 
 const NO_ROW: u16 = u16::MAX;
+const NO_ENTRY: u16 = u16::MAX;
 const LINEAR_SEARCH_LIMIT: usize = 8;
 
 #[derive(Clone, Copy, Debug)]
@@ -8,6 +9,8 @@ struct ActionRow {
     start: u32,
     term_filter: u32,
     fallback: Action,
+    error_action: Action,
+    error_order: u16,
     length: u16,
     next: u16,
 }
@@ -37,8 +40,9 @@ pub(crate) struct ActionIndex {
     rows: Box<[ActionRow]>,
     terms: Box<[u16]>,
     actions: Box<[Action]>,
+    entry_orders: Box<[u16]>,
     skip_terms: Box<[u64]>,
-    skip_has_fallback: bool,
+    skip_has_catch_all: bool,
 }
 
 impl ActionIndex {
@@ -77,15 +81,27 @@ impl ActionIndex {
         let mut rows = Vec::with_capacity(decoded_rows.len());
         let mut terms = Vec::new();
         let mut actions = Vec::new();
-        for (_, mut decoded) in decoded_rows {
-            decoded.entries.sort_by_key(|(term, _)| *term);
+        let mut entry_orders = Vec::new();
+        for (_, decoded) in decoded_rows {
             let length = u16::try_from(decoded.entries.len())
                 .map_err(|_| "action sequence has too many entries")?;
             let term_filter = build_term_filter(&decoded.entries);
+            let mut indexed_entries = decoded.entries.into_iter().enumerate().collect::<Vec<_>>();
+            let (error_order, error_action) = indexed_entries
+                .iter()
+                .find(|(_, (term, _))| *term == ReservedTerm::Error.raw())
+                .map_or((NO_ENTRY, Action::NONE), |(order, (_, action))| {
+                    (
+                        u16::try_from(*order).expect("entry count was validated"),
+                        *action,
+                    )
+                });
+            indexed_entries.sort_by_key(|(_, (term, _))| *term);
             let start = u32::try_from(terms.len()).map_err(|_| "action projection is too large")?;
-            for (term, action) in decoded.entries {
+            for (order, (term, action)) in indexed_entries {
                 terms.push(term);
                 actions.push(action);
+                entry_orders.push(u16::try_from(order).expect("entry count was validated"));
             }
             let end = start
                 .checked_add(u32::from(length))
@@ -98,6 +114,8 @@ impl ActionIndex {
                 start,
                 term_filter,
                 fallback: decoded.fallback,
+                error_action,
+                error_order,
                 length,
                 next,
             });
@@ -107,20 +125,21 @@ impl ActionIndex {
             .into_iter()
             .map(|roots| Ok([row_id(&offsets, roots[0])?, row_id(&offsets, roots[1])?]))
             .collect::<Result<Box<[_]>, &'static str>>()?;
-        let (skip_terms, skip_has_fallback) = build_skip_filter(&state_rows, &rows, &terms);
+        let (skip_terms, skip_has_catch_all) = build_skip_filter(&state_rows, &rows, &terms);
 
         Ok(Self {
             state_rows,
             rows: rows.into_boxed_slice(),
             terms: terms.into_boxed_slice(),
             actions: actions.into_boxed_slice(),
+            entry_orders: entry_orders.into_boxed_slice(),
             skip_terms,
-            skip_has_fallback,
+            skip_has_catch_all,
         })
     }
 
     pub(crate) fn skip_may_match(&self, term: u16) -> bool {
-        if self.skip_has_fallback {
+        if self.skip_has_catch_all {
             return true;
         }
         let term = usize::from(term);
@@ -129,6 +148,69 @@ impl ActionIndex {
         self.skip_terms
             .get(word)
             .is_some_and(|terms| terms & (1_u64 << bit) != 0)
+    }
+
+    pub(crate) fn first_action(&self, state: u16, term: u16) -> Action {
+        let action = self.first(state, StateField::Actions, term);
+        if !action.is_none() || !self.skip_may_match(term) {
+            return action;
+        }
+        self.first(state, StateField::Skip, term)
+    }
+
+    pub(crate) fn first(&self, state: u16, field: StateField, term: u16) -> Action {
+        let column = match field {
+            StateField::Actions => 0,
+            StateField::Skip => 1,
+            _ => unreachable!("only action sequence fields are indexed"),
+        };
+        let mut row_id = self.state_rows[usize::from(state)][column];
+        loop {
+            let row = self.rows[usize::from(row_id)];
+            let terminal = self.first_terminal(row, term);
+            if row.error_order != NO_ENTRY
+                && terminal.is_none_or(|(order, _)| row.error_order <= order)
+            {
+                return row.error_action;
+            }
+            if let Some((_, action)) = terminal {
+                return action;
+            }
+            if row.next == NO_ROW {
+                return row.fallback;
+            }
+            row_id = row.next;
+        }
+    }
+
+    fn first_terminal(&self, row: ActionRow, term: u16) -> Option<(u16, Action)> {
+        if !row.may_contain(term) {
+            return None;
+        }
+        let range = row.range();
+        let start = range.start;
+        let terms = &self.terms[range];
+        if terms.len() <= LINEAR_SEARCH_LIMIT {
+            return terms
+                .iter()
+                .copied()
+                .enumerate()
+                .filter(|(_, candidate)| *candidate == term)
+                .map(|(index, _)| {
+                    (
+                        self.entry_orders[start + index],
+                        self.actions[start + index],
+                    )
+                })
+                .min_by_key(|(order, _)| *order);
+        }
+        let index = terms.partition_point(|candidate| *candidate < term);
+        (terms.get(index) == Some(&term)).then(|| {
+            (
+                self.entry_orders[start + index],
+                self.actions[start + index],
+            )
+        })
     }
 
     pub(crate) fn visit(
@@ -194,14 +276,14 @@ fn build_skip_filter(
 ) -> (Box<[u64]>, bool) {
     let mut visited = vec![false; rows.len()];
     let mut skip_terms = Vec::new();
-    let mut skip_has_fallback = false;
+    let mut skip_has_catch_all = false;
     for state in state_rows {
         let mut row_id = usize::from(state[1]);
         while !visited[row_id] {
             visited[row_id] = true;
             let row = rows[row_id];
             skip_terms.extend_from_slice(&terms[row.range()]);
-            skip_has_fallback |= !row.fallback.is_none();
+            skip_has_catch_all |= row.error_order != NO_ENTRY || !row.fallback.is_none();
             if row.next == NO_ROW {
                 break;
             }
@@ -220,7 +302,7 @@ fn build_skip_filter(
         let bit = term % u64::BITS as usize;
         filter[word] |= 1_u64 << bit;
     }
-    (filter.into_boxed_slice(), skip_has_fallback)
+    (filter.into_boxed_slice(), skip_has_catch_all)
 }
 
 fn decode_row(data: &[u16], offset: usize) -> Result<DecodedRow, &'static str> {
@@ -353,6 +435,79 @@ mod tests {
     }
 
     #[test]
+    fn first_preserves_terminal_error_and_continuation_order() {
+        let states = [0, 0, 0, 0, 0, 0];
+        let error = ReservedTerm::Error.raw();
+        let data = [
+            3, 10, 0, error, 11, 0, 4, 12, 0, END, NEXT, 13, 0, 5, 14, 0, END, OTHER, 15, 0,
+        ];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert_eq!(index.first(0, StateField::Actions, 3).raw(), 10);
+        assert_eq!(index.first(0, StateField::Actions, 4).raw(), 11);
+        assert_eq!(index.first(0, StateField::Actions, 5).raw(), 11);
+        assert_eq!(index.first(0, StateField::Actions, 99).raw(), 11);
+    }
+
+    #[test]
+    fn first_reaches_continuations_and_terminal_fallbacks() {
+        let states = [0, 0, 0, 0, 0, 0];
+        let data = [END, NEXT, 4, 0, 5, 14, 0, END, OTHER, 15, 0];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert_eq!(index.first(0, StateField::Actions, 5).raw(), 14);
+        assert_eq!(index.first(0, StateField::Actions, 99).raw(), 15);
+    }
+
+    #[test]
+    fn first_preserves_source_order_on_binary_search_rows() {
+        let states = [0, 0, 0, 0, 0, 0];
+        let error = ReservedTerm::Error.raw();
+        let data = [
+            9,
+            109,
+            0,
+            1,
+            101,
+            0,
+            5,
+            105,
+            0,
+            2,
+            102,
+            0,
+            8,
+            108,
+            0,
+            3,
+            103,
+            0,
+            7,
+            107,
+            0,
+            error,
+            190,
+            0,
+            4,
+            104,
+            0,
+            6,
+            106,
+            0,
+            5,
+            205,
+            0,
+            END,
+            SequenceCode::Done.raw(),
+        ];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert_eq!(index.first(0, StateField::Actions, 5).raw(), 105);
+        assert_eq!(index.first(0, StateField::Actions, 4).raw(), 190);
+        assert_eq!(index.first(0, StateField::Actions, 99).raw(), 190);
+    }
+
+    #[test]
     fn filters_terminals_that_cannot_enter_skip_actions() {
         let states = [0, 0, 2, 0, 0, 0];
         let data = [
@@ -369,6 +524,122 @@ mod tests {
         assert!(index.skip_may_match(5));
         assert!(!index.skip_may_match(4));
         assert!(!index.skip_may_match(128));
+    }
+
+    #[test]
+    fn skip_filter_preserves_error_and_other_catch_alls() {
+        let states = [0, 0, 2, 0, 0, 0];
+        let error = ReservedTerm::Error.raw();
+        let data = [
+            END,
+            SequenceCode::Done.raw(),
+            error,
+            10,
+            0,
+            END,
+            SequenceCode::Done.raw(),
+        ];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert!(index.skip_may_match(5));
+        assert_eq!(index.first(0, StateField::Skip, 5).raw(), 10);
+
+        let data = [END, SequenceCode::Done.raw(), END, OTHER, 11, 0];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert!(index.skip_may_match(5));
+        assert_eq!(index.first(0, StateField::Skip, 5).raw(), 11);
+    }
+
+    #[test]
+    fn skip_filter_never_hides_a_possible_action() {
+        let error = ReservedTerm::Error.raw();
+        let cases = [
+            vec![
+                END,
+                SequenceCode::Done.raw(),
+                5,
+                10,
+                0,
+                END,
+                SequenceCode::Done.raw(),
+            ],
+            vec![
+                END,
+                SequenceCode::Done.raw(),
+                END,
+                NEXT,
+                6,
+                0,
+                error,
+                10,
+                0,
+                END,
+                SequenceCode::Done.raw(),
+            ],
+            vec![
+                END,
+                SequenceCode::Done.raw(),
+                END,
+                NEXT,
+                6,
+                0,
+                END,
+                OTHER,
+                11,
+                0,
+            ],
+        ];
+        for data in cases {
+            let states = [0, 2, 0, 0, 0, 0];
+            let index = ActionIndex::build(&states, &data).unwrap();
+            for term in 0..=u16::MAX {
+                let action = index.first(0, StateField::Skip, term);
+                assert!(action.is_none() || index.skip_may_match(term));
+            }
+        }
+    }
+
+    #[test]
+    fn first_action_preserves_actions_before_skip() {
+        let states = [0, 0, 5, 0, 0, 0];
+        let data = [
+            5,
+            10,
+            0,
+            END,
+            SequenceCode::Done.raw(),
+            5,
+            20,
+            0,
+            6,
+            21,
+            0,
+            END,
+            SequenceCode::Done.raw(),
+        ];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert_eq!(index.first_action(0, 5).raw(), 10);
+        assert_eq!(index.first_action(0, 6).raw(), 21);
+        assert!(index.first_action(0, 7).is_none());
+
+        let error = ReservedTerm::Error.raw();
+        let data = [
+            error,
+            12,
+            0,
+            END,
+            SequenceCode::Done.raw(),
+            6,
+            21,
+            0,
+            END,
+            SequenceCode::Done.raw(),
+        ];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert_eq!(index.first_action(0, 6).raw(), 12);
     }
 
     #[test]

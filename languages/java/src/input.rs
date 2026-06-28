@@ -231,16 +231,7 @@ fn raw_character(input: &dyn Input, from: TextSize) -> Option<InputCharacter> {
 }
 
 fn raw_character_before(input: &dyn Input, before: TextSize) -> Option<(TextSize, InputCharacter)> {
-    if !input.is_boundary(before) {
-        return None;
-    }
-    let text = input.read(TextRange::new(TextSize::from(0), before));
-    let (start, character) = text.char_indices().next_back()?;
-    let start = TextSize::try_from(start).ok()?;
-    Some((
-        start,
-        InputCharacter::new(CodePoint::from(character), before),
-    ))
+    input.character_before(before)
 }
 
 #[derive(Clone, Copy, Debug)]

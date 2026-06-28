@@ -497,29 +497,7 @@ impl ParserCore {
     }
 
     pub(crate) fn has_action(&self, state: u16, terminal: u16) -> Action {
-        let data = self.language.state_data;
-        for field in [StateField::Actions, StateField::Skip] {
-            let mut index = self.state_slot(state, field) as usize;
-            loop {
-                let mut next = data[index];
-                if next == SequenceCode::End.raw() {
-                    if data[index + 1] == SequenceCode::Next.raw() {
-                        index = pair(data, index + 2) as usize;
-                        next = data[index];
-                    } else {
-                        if data[index + 1] == SequenceCode::Other.raw() {
-                            return Action::from_raw(pair(data, index + 2));
-                        }
-                        break;
-                    }
-                }
-                if next == terminal || next == ReservedTerm::Error.raw() {
-                    return Action::from_raw(pair(data, index + 1));
-                }
-                index += 3;
-            }
-        }
-        Action::NONE
+        self.action_index.first_action(state, terminal)
     }
 
     pub(crate) fn all_actions<T>(
@@ -1063,8 +1041,10 @@ impl TokenCache {
         let core = stack.core();
         let mask = core.state_slot(stack.state(), StateField::TokenizerMask);
         let context = stack.context_hash();
+        let token_start = stream.clip_position(stack.position());
         self.actions.clear();
         let mut main = None;
+        let mut token_start_character = None;
         for (index, tokenizer) in core.language.tokenizers.iter().copied().enumerate() {
             if (1_u32 << index) & mask == 0 {
                 continue;
@@ -1073,16 +1053,32 @@ impl TokenCache {
             if main.is_some() && !flags.fallback {
                 continue;
             }
+            if let Some(start) = tokenizer.start() {
+                let next = *token_start_character.get_or_insert_with(|| {
+                    stream.reset(token_start);
+                    stream.next()
+                });
+                if !start.matches(next) {
+                    continue;
+                }
+            }
             let stale = {
                 let token = &self.tokens[index];
                 flags.contextual
-                    || token.start != stack.position()
+                    || token.start != token_start
                     || token.mask != mask
                     || token.context != context
             };
             if stale {
-                self.tokens[index] =
-                    update_cached_token(index, tokenizer, stack, stream, mask, context)?;
+                self.tokens[index] = update_cached_token(
+                    index,
+                    tokenizer,
+                    stack,
+                    stream,
+                    token_start,
+                    mask,
+                    context,
+                )?;
             }
             let token = &self.tokens[index];
             if token.value != Some(ReservedTerm::Error.raw()) {
@@ -1105,11 +1101,11 @@ impl TokenCache {
                 }
             }
         }
-        if main.is_none() && stack.position() == stream.end() {
+        if main.is_none() && token_start == stream.end() {
             let eof = MainToken {
-                start: stack.position(),
+                start: token_start,
                 value: core.eof_term(),
-                end: stack.position(),
+                end: token_start,
             };
             add_actions(stack, eof.value, eof.end, &mut self.actions);
             main = Some(eof);
@@ -1119,17 +1115,20 @@ impl TokenCache {
     }
 
     fn main_token(&self, stack: &Stack, stream: &InputStream) -> MainToken {
-        self.main_token.unwrap_or_else(|| MainToken {
-            start: stack.position(),
-            value: if stack.position() == stream.end() {
-                stack.core().eof_term()
-            } else {
-                ReservedTerm::Error.raw()
-            },
-            end: stream
-                .next_position_from(stack.position())
-                .unwrap_or_else(|| stream.end())
-                .max(stack.position()),
+        self.main_token.unwrap_or_else(|| {
+            let token_start = stream.clip_position(stack.position());
+            MainToken {
+                start: token_start,
+                value: if token_start == stream.end() {
+                    stack.core().eof_term()
+                } else {
+                    ReservedTerm::Error.raw()
+                },
+                end: stream
+                    .next_position_from(token_start)
+                    .unwrap_or_else(|| stream.end())
+                    .max(token_start),
+            }
         })
     }
 }
@@ -1139,19 +1138,13 @@ fn update_cached_token(
     tokenizer: Tokenizer,
     stack: &Stack,
     stream: &mut InputStream,
+    start: TextSize,
     mask: u32,
     context: u64,
 ) -> Result<CachedToken, ParseError> {
-    let start = stream.clip_position(stack.position());
     stream.reset(start);
     tokenizer.token(tokenizer_index, stream, stack)?;
-    let accepted = stream.accepted().unwrap_or_else(|| AcceptedToken {
-        value: ReservedTerm::Error.raw(),
-        end: stream
-            .next_position_from(start)
-            .unwrap_or_else(|| stream.end())
-            .max(start),
-    });
+    let accepted = accepted_or_declined(stream, start);
     let mut token = CachedToken {
         start,
         value: Some(accepted.value),
@@ -1179,6 +1172,16 @@ fn update_cached_token(
         }
     }
     Ok(token)
+}
+
+fn accepted_or_declined(stream: &InputStream, start: TextSize) -> AcceptedToken {
+    stream.accepted().unwrap_or(AcceptedToken {
+        value: ReservedTerm::Error.raw(),
+        // A declined tokenizer is ignored by `TokenCache`. Its endpoint is
+        // therefore unobservable; defer decoding the next code point until
+        // the parser actually needs one fallback Error token at this position.
+        end: start,
+    })
 }
 
 fn add_actions(stack: &Stack, token: u16, end: TextSize, actions: &mut Vec<TokenAction>) {
@@ -1285,9 +1288,7 @@ impl Parse {
     fn new(core: Arc<ParserCore>, request: ParseRequest) -> Self {
         let ranges: Arc<[_]> = request.selected_ranges().to_vec().into();
         let stream = InputStream::new(Arc::clone(request.lexical_input()), Arc::clone(&ranges));
-        let start = ranges
-            .first()
-            .map_or(TextSize::from(0), |range| range.start());
+        let start = stream.position();
         let stack = Stack::start(Arc::clone(&core), core.top.state, start);
         let tokenizer_count = core.language.tokenizers.len();
         Self {
@@ -1744,6 +1745,7 @@ fn prune_by_score(stacks: &mut Vec<Stack>, maximum: usize) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rezel_common::{Input, LexicalInput, StringInput, TextRange, Utf8Input};
 
     fn start_context() -> ContextValue {
         ContextValue::new(())
@@ -1787,5 +1789,23 @@ mod tests {
             .with_shift_without_input(shift_without_input)
             .with_shift_input_terms(&[7]);
         assert!(!state_only.shift_uses_input(7));
+    }
+
+    #[test]
+    fn declined_tokenizer_endpoints_remain_lazy() {
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("x").unwrap());
+        let lexical: Arc<dyn LexicalInput> = Arc::new(Utf8Input::new(raw));
+        let ranges: Arc<[TextRange]> = Arc::from([TextRange::new(0.into(), 1.into())]);
+        let mut stream = InputStream::new(lexical, ranges);
+
+        let declined = accepted_or_declined(&stream, 0.into());
+        assert_eq!(declined.value, ReservedTerm::Error.raw());
+        assert_eq!(declined.end, TextSize::from(0));
+
+        stream.advance(1);
+        stream.accept_token(7).unwrap();
+        let accepted = accepted_or_declined(&stream, 0.into());
+        assert_eq!(accepted.value, 7);
+        assert_eq!(accepted.end, TextSize::from(1));
     }
 }

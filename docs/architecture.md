@@ -77,9 +77,12 @@ LR tables, and emits:
 - zero-copy typed syntax wrappers;
 - little-endian and big-endian native-layout parser-table blobs.
 
-The target-endian blob is included as a typed static value at compile time.
-There is no run-time table decoding or allocation. Generated language crates
-therefore depend on `zerocopy` as well as `rezel-common` and `rezel-lr`.
+The target-endian blob is included as a typed static value at compile time, so
+there is no run-time decoding or second owned copy of the parser tables. Parser
+construction builds compact auxiliary action, goto, and token indexes over the
+borrowed tables; language facades normally cache that immutable parser. Generated
+language crates therefore depend on `zerocopy` as well as `rezel-common` and
+`rezel-lr`.
 
 Handwritten language code is compiled into the same crate. It supplies behavior
 that should not be encoded in the generic runtime, such as input translation,
