@@ -1045,10 +1045,11 @@ impl TokenCache {
         self.actions.clear();
         let mut main = None;
         let mut token_start_character = None;
-        for (index, tokenizer) in core.language.tokenizers.iter().copied().enumerate() {
-            if (1_u32 << index) & mask == 0 {
-                continue;
-            }
+        let mut remaining = mask;
+        while remaining != 0 {
+            let index = remaining.trailing_zeros() as usize;
+            remaining &= remaining - 1;
+            let tokenizer = core.language.tokenizers[index];
             let flags = tokenizer.flags();
             if main.is_some() && !flags.fallback {
                 continue;
