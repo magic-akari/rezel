@@ -578,6 +578,7 @@ impl InputStream {
             cursor: Some(self.cursor),
             initial_chunk: self.chunk.as_ref(),
             loaded_chunk: None,
+            fast_window: self.window.as_ref(),
         }
     }
 
@@ -1054,6 +1055,7 @@ struct InputLookahead<'a> {
     cursor: Option<StreamCursor>,
     initial_chunk: Option<&'a InputChunk>,
     loaded_chunk: Option<InputChunk>,
+    fast_window: Option<&'a FastWindow>,
 }
 
 impl InputLookahead<'_> {
@@ -1078,6 +1080,14 @@ impl InputLookahead<'_> {
     }
 
     fn chunk_ascii(&mut self, position: TextSize) -> Option<u8> {
+        if let Some(window) = self.fast_window
+            && window.contains(position)
+            && let Some(source_position) = window.source_position(position)
+            && let Some(byte) = window.source.as_bytes().get(source_position).copied()
+            && byte.is_ascii()
+        {
+            return Some(byte);
+        }
         self.ensure_chunk(position);
         self.chunk(position)?.ascii_byte(position)
     }
@@ -1722,6 +1732,29 @@ mod tests {
                 .read_scalar_at_boundaries(0.into(), 5.into())
                 .as_deref(),
             Some("abcd")
+        );
+    }
+
+    #[test]
+    fn lookahead_fast_window_stops_at_an_adjacent_translation_boundary() {
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("abXc").unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(BoundaryTranslationInput {
+            inner: Utf8Input::new(raw),
+        });
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 2.into()),
+            TextRange::new(2.into(), 4.into()),
+        ]);
+        let stream = InputStream::new(input, ranges);
+
+        assert_eq!(
+            stream.lookahead().collect::<Vec<_>>(),
+            vec![
+                CodePoint::from(b'a'),
+                CodePoint::from(b'b'),
+                CodePoint::new(0xd800).unwrap(),
+                CodePoint::from(b'c'),
+            ]
         );
     }
 
