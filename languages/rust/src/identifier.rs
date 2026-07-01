@@ -1,5 +1,5 @@
 use rezel_common::{CodePoint, ParseError};
-use rezel_lr::{ExternalTokenizer, InputStream, Stack, TokenizerFlags};
+use rezel_lr::{ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack, TokenizerFlags};
 use std::iter::Peekable;
 
 use crate::{input::is_whitespace, terms};
@@ -26,6 +26,14 @@ enum IdentifierSpelling {
 /// Unicode version used by Rust 1.95 identifiers.
 pub(crate) const UNICODE_VERSION: &str = "17.0.0";
 
+const IDENTIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'$')
+    .with_ascii(b'\'')
+    .with_ascii(b'_')
+    .with_ascii_range(b'A'..=b'Z')
+    .with_ascii_range(b'a'..=b'z')
+    .with_non_ascii();
+
 pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
     scan,
     TokenizerFlags {
@@ -33,7 +41,8 @@ pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
         fallback: false,
         extend: false,
     },
-);
+)
+.with_start(IDENTIFIER_START);
 
 fn scan(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     match current(input) {

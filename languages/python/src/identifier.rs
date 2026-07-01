@@ -1,5 +1,5 @@
 use rezel_common::{CodePoint, ParseError};
-use rezel_lr::{ExternalTokenizer, InputStream, Stack, TokenizerFlags};
+use rezel_lr::{ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack, TokenizerFlags};
 use unicode_normalization::UnicodeNormalization;
 
 #[path = "unicode16.rs"]
@@ -11,6 +11,12 @@ pub(crate) fn canonical_name(spelling: &str) -> String {
     spelling.nfkc().collect()
 }
 
+const IDENTIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'_')
+    .with_ascii_range(b'A'..=b'Z')
+    .with_ascii_range(b'a'..=b'z')
+    .with_non_ascii();
+
 pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
     scan,
     TokenizerFlags {
@@ -18,7 +24,8 @@ pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
         fallback: false,
         extend: false,
     },
-);
+)
+.with_start(IDENTIFIER_START);
 
 fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     if looks_like_string_prefix(input) {

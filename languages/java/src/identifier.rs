@@ -1,8 +1,15 @@
 use rezel_common::ParseError;
-use rezel_lr::{ExternalTokenizer, InputStream, Stack, TokenizerFlags};
+use rezel_lr::{ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack, TokenizerFlags};
 
 #[path = "unicode17.rs"]
 mod unicode17;
+
+const IDENTIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'$')
+    .with_ascii(b'_')
+    .with_ascii_range(b'A'..=b'Z')
+    .with_ascii_range(b'a'..=b'z')
+    .with_non_ascii();
 
 pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
     scan,
@@ -11,7 +18,8 @@ pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
         fallback: false,
         extend: false,
     },
-);
+)
+.with_start(IDENTIFIER_START);
 
 fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     let Some(first) = input.next().map(rezel_common::CodePoint::as_u32) else {

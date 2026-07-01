@@ -1472,18 +1472,28 @@ mod tests {
     }
 
     #[test]
-    fn external_tokenizer_start_matches_only_declared_inputs() {
+    fn external_tokenizer_start_matches_declared_code_points() {
         let start = ExternalTokenizerStart::NONE
             .with_ascii(b'$')
             .with_ascii_range(b'A'..=b'Z')
             .with_non_ascii()
             .with_end();
 
-        assert!(start.matches(Some(CodePoint::from('$'))));
-        assert!(start.matches(Some(CodePoint::from('M'))));
-        assert!(!start.matches(Some(CodePoint::from('m'))));
-        assert!(start.matches(Some(CodePoint::from('λ'))));
+        for byte in 0_u8..0x80 {
+            let expected = byte == b'$' || byte.is_ascii_uppercase();
+            assert_eq!(
+                start.matches(Some(CodePoint::from(byte))),
+                expected,
+                "ASCII {byte:#04x}"
+            );
+        }
+        assert!(start.matches(Some(CodePoint::from('µ'))));
         assert!(start.matches(None));
+
+        let ascii_only = ExternalTokenizerStart::NONE.with_ascii(b'_');
+        assert!(ascii_only.matches(Some(CodePoint::from(b'_'))));
+        assert!(!ascii_only.matches(Some(CodePoint::from('µ'))));
+        assert!(!ascii_only.matches(None));
     }
 
     #[test]

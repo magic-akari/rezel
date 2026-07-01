@@ -46,7 +46,8 @@ translated code points.
 
 Generated token DFAs and local token groups share the runtime with:
 
-- `ExternalTokenizer` for bounded parser-aware lexical decisions;
+- `ExternalTokenizer` for bounded parser-aware lexical decisions, optionally
+  guarded by a conservative first-code-point set;
 - `ContextTracker` for immutable state across shifts and reductions;
 - generated or external specializers for base-token reclassification;
 - dialect selection and parser-state token filtering.

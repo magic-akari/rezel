@@ -2,7 +2,8 @@ use std::sync::LazyLock;
 
 use rezel_common::{CodePoint, ParseError};
 use rezel_lr::{
-    ContextTracker, ContextValue, ExternalTokenizer, InputStream, Stack, TokenizerFlags,
+    ContextTracker, ContextValue, ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack,
+    TokenizerFlags,
 };
 
 use crate::terms;
@@ -19,6 +20,16 @@ const CLOSE_BRACE: u32 = 125;
 static BOOLEAN_CONTEXTS: LazyLock<[ContextValue; 2]> =
     LazyLock::new(|| [ContextValue::new(false), ContextValue::new(true)]);
 
+const SEMICOLON_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'\n')
+    .with_ascii(b'\r')
+    .with_ascii(b' ')
+    .with_ascii(b'\t')
+    .with_ascii(b'/')
+    .with_ascii(b')')
+    .with_ascii(b'}')
+    .with_end();
+
 pub(crate) static SEMICOLON: ExternalTokenizer = ExternalTokenizer::new(
     scan_semicolon,
     TokenizerFlags {
@@ -26,7 +37,8 @@ pub(crate) static SEMICOLON: ExternalTokenizer = ExternalTokenizer::new(
         fallback: false,
         extend: false,
     },
-);
+)
+.with_start(SEMICOLON_START);
 
 pub(crate) static TRACK_TOKENS: ContextTracker =
     ContextTracker::new(start_context, None, None, hash_context)

@@ -1,6 +1,7 @@
 use rezel_common::{CodePoint, ParseError, ParseErrorKind};
 use rezel_lr::{
-    ContextTracker, ContextValue, ExternalTokenizer, InputStream, Stack, TokenizerFlags,
+    ContextTracker, ContextValue, ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack,
+    TokenizerFlags,
 };
 
 use crate::{indentation::IndentColumns, terms};
@@ -38,6 +39,15 @@ pub(crate) static NEWLINES: ExternalTokenizer = ExternalTokenizer::new(
         fallback: false,
         extend: false,
     },
+)
+.with_start(
+    ExternalTokenizerStart::NONE
+        .with_ascii(b' ')
+        .with_ascii(b'\t')
+        .with_ascii(b'#')
+        .with_ascii(b'\n')
+        .with_ascii(b'\r')
+        .with_end(),
 );
 
 pub(crate) static INDENTATION: ExternalTokenizer = ExternalTokenizer::new(

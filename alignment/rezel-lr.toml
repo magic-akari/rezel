@@ -62,6 +62,19 @@ evidence_files = [
 ]
 
 [[scope]]
+rust_file = "goto_index.rs"
+classification = "rezel-owned"
+invariant = "Parser-private lookup preserves every strict source-to-target transition and the generated table's selected loose fallback after construction validation."
+representation = "Validated term-major groups are projected once into one default target, its strict source-membership list, and compact exact-match exceptions while generated tables remain authoritative."
+evidence_files = [
+	"crates/rezel-lr/src/goto_index.rs",
+	"crates/rezel-lr/tests/validation.rs",
+	"crates/rezel-generator/tests/cases.rs",
+	"languages/java/tests/reference.rs",
+	"languages/go/tests/reference.rs",
+]
+
+[[scope]]
 rust_file = "parse.rs"
 classification = "adapted"
 upstream_file = "src/parse.ts"
@@ -77,7 +90,7 @@ upstream_symbols = [
 	"pushStackDedup",
 ]
 invariant = "State-driven tokenization, LR and bounded GLR actions, dynamic precedence, deterministic pruning, recovery, and completion produce the selected top rule's concrete syntax tree."
-representation = "Generated data is held in a construction-validated static Language with term-indexed action and goto projections plus unchecked hot reads; the validated maximum node id and first repeat term are cached in ParserCore for shift, reduction, recovery, and tree classification, while selected-top fields and strict mode share one compact internal record; TokenCache borrows full per-tokenizer cache records while retaining only start, value, and end in its observable main-token snapshot; parser configuration is owned, input positions use UTF-8 TextSize values, failures use Result, incremental fragments are excluded, and the non-incremental default packs larger tree buffers while preserving the configurable Lezer build contract."
+representation = "Generated data is held in a construction-validated static Language with term-indexed action and goto projections plus unchecked hot reads; parser configuration is owned, input positions use UTF-8 TextSize values, failures use Result, incremental fragments are excluded, and the non-incremental default packs larger tree buffers while preserving the configurable Lezer build contract."
 evidence_files = ["crates/rezel-lr/tests/validation.rs"]
 
 [[scope]]
@@ -126,7 +139,20 @@ upstream_symbols = [
 	"overrides",
 ]
 invariant = "Only tokenizers enabled by the current state run, with longest-match, precedence, fallback, extend, local-token, dialect, specialization, and external-token semantics."
-representation = "Tokenizer code observes logical code points over cached identity-mapped input chunks while public positions remain UTF-8 byte offsets; opaque stream marks preserve token endpoints across multi-byte characters and selected ranges, reads may borrow scalar text, external tokenizers can traverse sequential lookahead through one forward cursor, bounded ASCII runs use prevalidated identity windows, generated DFA self-loops consume maximal same-state ASCII runs before acceptance is rechecked, other ASCII transitions reuse their already classified byte when advancing that window, and Rust externals are static fallible function pointers."
+representation = "Tokenizer code observes logical code points over cached identity-mapped input chunks while public positions remain UTF-8 byte offsets; opaque stream marks preserve token endpoints across multi-byte characters and selected ranges, reads may borrow scalar text, external tokenizers can traverse sequential lookahead through one forward cursor, bounded ASCII runs use prevalidated identity windows, generated DFA self-loops consume maximal same-state ASCII runs before acceptance is rechecked, other ASCII transitions reuse their already classified byte when advancing that window, and Rust externals are static fallible function pointers with optional conservative first-code-point filters."
+
+[[override_item]]
+rust_item = "rezel_lr::token::ExternalTokenizerStart"
+classification = "rezel-owned"
+invariant = "Skipping an external tokenizer is permitted only when its callback cannot accept at the current logical token-start code point or end-of-input position; enabled tokenizer order, caching, fallback, extend, and action semantics remain unchanged."
+representation = "Language adapters may attach a const two-word ASCII bitmap plus non-ASCII and end-of-input flags to an external tokenizer. TokenCache reads the logical stack-position character once and bypasses callbacks whose conservative set cannot match, while tokenizers without a set follow the pinned runtime path."
+evidence_files = [
+	"crates/rezel-lr/src/token.rs",
+	"languages/go/tests/reference.rs",
+	"languages/java/tests/reference.rs",
+	"languages/python/tests/reference.rs",
+	"languages/rust/tests/reference.rs",
+]
 
 [[override_item]]
 rust_item = "rezel_lr::token::TokenAsciiIndex"

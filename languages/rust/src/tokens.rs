@@ -1,5 +1,5 @@
 use rezel_common::{CodePoint, ParseError};
-use rezel_lr::{ExternalTokenizer, InputStream, Stack, TokenizerFlags};
+use rezel_lr::{ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack, TokenizerFlags};
 
 use crate::terms;
 
@@ -31,13 +31,25 @@ const FLAGS: TokenizerFlags = TokenizerFlags {
     extend: false,
 };
 
-pub(crate) static LITERALS: ExternalTokenizer = ExternalTokenizer::new(scan_literals, FLAGS);
+const LITERAL_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii_range(b'0'..=b'9')
+    .with_ascii(b'b')
+    .with_ascii(b'c')
+    .with_ascii(b'r');
+const CLOSURE_PARAM_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE.with_ascii(b'|');
+const TYPE_PARAMETER_DELIMITER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'<')
+    .with_ascii(b'>');
+
+pub(crate) static LITERALS: ExternalTokenizer =
+    ExternalTokenizer::new(scan_literals, FLAGS).with_start(LITERAL_START);
 
 pub(crate) static CLOSURE_PARAM: ExternalTokenizer =
-    ExternalTokenizer::new(scan_closure_param, FLAGS);
+    ExternalTokenizer::new(scan_closure_param, FLAGS).with_start(CLOSURE_PARAM_START);
 
 pub(crate) static TYPE_PARAMETER_DELIMITERS: ExternalTokenizer =
-    ExternalTokenizer::new(scan_type_parameter_delimiters, FLAGS);
+    ExternalTokenizer::new(scan_type_parameter_delimiters, FLAGS)
+        .with_start(TYPE_PARAMETER_DELIMITER_START);
 
 fn scan_literals(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     match current(input) {
