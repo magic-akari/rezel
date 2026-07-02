@@ -157,8 +157,10 @@ enum ContextTransitionKind {
 pub struct ContextTracker {
     start: fn() -> ContextValue,
     shift: Option<ContextTransitionKind>,
+    shift_term_filter: u64,
     shift_input_terms: Option<&'static [u16]>,
     reduce: Option<ContextTransitionKind>,
+    reduce_term_filter: u64,
     hash: fn(&ContextValue) -> u64,
 }
 
@@ -180,11 +182,13 @@ impl ContextTracker {
                 Some(shift) => Some(ContextTransitionKind::WithInput(shift)),
                 None => None,
             },
+            shift_term_filter: u64::MAX,
             shift_input_terms: None,
             reduce: match reduce {
                 Some(reduce) => Some(ContextTransitionKind::WithInput(reduce)),
                 None => None,
             },
+            reduce_term_filter: u64::MAX,
             hash,
         }
     }
@@ -198,6 +202,16 @@ impl ContextTracker {
         self
     }
 
+    /// Restrict shift callbacks to a conservative set of relevant terms.
+    ///
+    /// The callback must return its input [`ContextValue`] identity for every
+    /// omitted term. Hash collisions may still invoke it for an omitted term.
+    #[must_use]
+    pub const fn with_shift_terms(mut self, terms: &'static [u16]) -> Self {
+        self.shift_term_filter = context_term_filter(terms);
+        self
+    }
+
     /// Restrict input observation to the listed shifted terms.
     ///
     /// The runtime does not reposition the input stream before invoking the
@@ -206,6 +220,16 @@ impl ContextTracker {
     #[must_use]
     pub const fn with_shift_input_terms(mut self, terms: &'static [u16]) -> Self {
         self.shift_input_terms = Some(terms);
+        self
+    }
+
+    /// Restrict reduce callbacks to a conservative set of relevant terms.
+    ///
+    /// The callback must return its input [`ContextValue`] identity for every
+    /// omitted term. Hash collisions may still invoke it for an omitted term.
+    #[must_use]
+    pub const fn with_reduce_terms(mut self, terms: &'static [u16]) -> Self {
+        self.reduce_term_filter = context_term_filter(terms);
         self
     }
 
@@ -232,8 +256,12 @@ impl ContextTracker {
                 .is_none_or(|terms| terms.contains(&term))
     }
 
-    pub(crate) const fn tracks_reductions(&self) -> bool {
-        self.reduce.is_some()
+    pub(crate) const fn tracks_shift(&self, term: u16) -> bool {
+        self.shift.is_some() && self.shift_term_filter & context_term_bit(term) != 0
+    }
+
+    pub(crate) const fn tracks_reduction(&self, term: u16) -> bool {
+        self.reduce.is_some() && self.reduce_term_filter & context_term_bit(term) != 0
     }
 
     pub(crate) const fn reduction_uses_input(&self) -> bool {
@@ -271,6 +299,21 @@ impl ContextTracker {
     pub(crate) fn hash(&self, context: &ContextValue) -> u64 {
         (self.hash)(context)
     }
+}
+
+const fn context_term_filter(terms: &[u16]) -> u64 {
+    let mut filter = 0;
+    let mut index = 0;
+    while index < terms.len() {
+        filter |= context_term_bit(terms[index]);
+        index += 1;
+    }
+    filter
+}
+
+const fn context_term_bit(term: u16) -> u64 {
+    let folded = term ^ (term >> 6) ^ (term >> 12);
+    1_u64 << (folded & 63)
 }
 
 impl fmt::Debug for ContextTracker {
@@ -1808,5 +1851,23 @@ mod tests {
         let accepted = accepted_or_declined(&stream, 0.into());
         assert_eq!(accepted.value, 7);
         assert_eq!(accepted.end, TextSize::from(1));
+    }
+
+    #[test]
+    fn context_transitions_can_filter_irrelevant_terms() {
+        let default =
+            ContextTracker::new(start_context, Some(shift_with_input), None, hash_context);
+        assert!(default.tracks_shift(3));
+
+        let scoped = default.with_shift_terms(&[7, 11]);
+        assert!(!scoped.tracks_shift(3));
+        assert!(scoped.tracks_shift(7));
+        assert!(scoped.tracks_shift(11));
+
+        let reduced = ContextTracker::new(start_context, None, None, hash_context)
+            .with_reduce_without_input(shift_without_input)
+            .with_reduce_terms(&[13]);
+        assert!(!reduced.tracks_reduction(3));
+        assert!(reduced.tracks_reduction(13));
     }
 }

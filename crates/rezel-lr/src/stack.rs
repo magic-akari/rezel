@@ -816,15 +816,31 @@ impl Stack {
         self.core.dialect.allows(term)
     }
 
+    #[inline]
     fn shift_context(
         &mut self,
         term: u16,
         start: TextSize,
         input: &mut InputStream,
     ) -> Result<(), ParseError> {
-        let Some(context) = self.context.clone() else {
+        let Some(context) = self.context.as_ref() else {
             return Ok(());
         };
+        if !context.tracker.tracks_shift(term) {
+            return Ok(());
+        }
+        let context = context.clone();
+        self.shift_tracked_context(&context, term, start, input)
+    }
+
+    #[inline(never)]
+    fn shift_tracked_context(
+        &mut self,
+        context: &StackContext,
+        term: u16,
+        start: TextSize,
+        input: &mut InputStream,
+    ) -> Result<(), ParseError> {
         if context.tracker.shift_uses_input(term) {
             input.reset(start);
         }
@@ -841,6 +857,7 @@ impl Stack {
         Ok(())
     }
 
+    #[inline]
     fn reduce_context(
         &mut self,
         term: u16,
@@ -850,10 +867,21 @@ impl Stack {
         let Some(context) = self.context.as_ref() else {
             return Ok(());
         };
-        if !context.tracker.tracks_reductions() {
+        if !context.tracker.tracks_reduction(term) {
             return Ok(());
         }
         let context = context.clone();
+        self.reduce_tracked_context(&context, term, start, input)
+    }
+
+    #[inline(never)]
+    fn reduce_tracked_context(
+        &mut self,
+        context: &StackContext,
+        term: u16,
+        start: TextSize,
+        input: &mut InputStream,
+    ) -> Result<(), ParseError> {
         if context.tracker.reduction_uses_input() {
             input.reset(start);
         }

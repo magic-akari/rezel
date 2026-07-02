@@ -90,7 +90,7 @@ upstream_symbols = [
 	"pushStackDedup",
 ]
 invariant = "State-driven tokenization, LR and bounded GLR actions, dynamic precedence, deterministic pruning, recovery, and completion produce the selected top rule's concrete syntax tree."
-representation = "Generated data is held in a construction-validated static Language with term-indexed action and goto projections plus unchecked hot reads; parser configuration is owned, input positions use UTF-8 TextSize values, failures use Result, incremental fragments are excluded, and the non-incremental default packs larger tree buffers while preserving the configurable Lezer build contract."
+representation = "Generated data is held in a construction-validated static Language with term-indexed action and goto projections plus unchecked hot reads; parser configuration is owned, context trackers may conservatively declare terms whose transitions are not the identity, input positions use UTF-8 TextSize values, failures use Result, incremental fragments are excluded, and the non-incremental default packs larger tree buffers while preserving the configurable Lezer build contract."
 evidence_files = ["crates/rezel-lr/tests/validation.rs"]
 
 [[scope]]
@@ -111,7 +111,7 @@ upstream_symbols = [
 	"StackBufferCursor",
 ]
 invariant = "Shift, reduce, bounded branch splitting, recovery scoring, forced reductions, stack equivalence, and context transitions preserve the pinned runtime's action semantics."
-representation = "Rust stores typed frames, shares immutable postfix-prefix chunks across branches, retains only a branch-local mutable suffix, and exposes a backward cursor that feeds tree construction directly; can-shift simulations borrow the live frame prefix and materialize it only when a zero-depth reduction must append a frame; parser failures are explicit and reused-node records are absent."
+representation = "Rust stores typed frames, shares immutable postfix-prefix chunks across branches, retains only a branch-local mutable suffix, and exposes a backward cursor that feeds tree construction directly; can-shift simulations borrow the live frame prefix and materialize it only when a zero-depth reduction must append a frame; context applicability guards are inlined while actual tracked transitions are outlined; parser failures are explicit and reused-node records are absent."
 
 [[override_item]]
 rust_item = "rezel_lr::stack::MIN_BRANCH_BUFFER_CAPACITY"
@@ -186,13 +186,16 @@ invariant = "A prepared language request enters the ordinary LR engine exactly o
 representation = "The hidden Rust method separates language-owned request preparation from the shared LR parse constructor."
 
 [[override_item]]
-rust_item = "rezel_lr::parse::ContextTracker::tracks_reductions"
+rust_item = "rezel_lr::parse::ContextTracker::tracks_reduction"
 classification = "rezel-owned"
-invariant = "An omitted reduction transition remains the identity operation and cannot alter the current context."
-representation = "Rust preserves an omitted callback as None and bypasses context cloning and input reset; the pinned runtime installs and invokes an identity callback instead."
+invariant = "An omitted reduction callback or a reduction term outside its declared relevant set remains the identity operation and cannot alter the current context."
+representation = "Rust preserves an omitted callback as None and combines callback presence with a conservative folded term filter; an absent filter bit bypasses context cloning and input reset, while collisions retain the pinned callback path."
 evidence_files = [
 	"languages/go/tests/parse.rs",
 	"languages/go/tests/reference.rs",
+	"languages/python/src/tokens.rs",
+	"languages/python/tests/contract.rs",
+	"languages/python/tests/reference/lezer.rs",
 ]
 
 [[override_item]]
@@ -216,11 +219,35 @@ evidence_files = [
 ]
 
 [[override_item]]
+rust_item = "rezel_lr::parse::ContextTracker::with_shift_terms"
+classification = "rezel-owned"
+invariant = "A declared shift-term set may suppress a callback only for terms where that callback returns the input context identity."
+representation = "A const 64-bit folded bitmap provides a negative filter before context cloning; trackers default to all terms, every declared term sets its bit, and collisions only retain an unnecessary callback."
+evidence_files = [
+	"crates/rezel-lr/src/parse.rs",
+	"languages/python/src/tokens.rs",
+	"languages/python/tests/contract.rs",
+	"languages/python/tests/reference/lezer.rs",
+]
+
+[[override_item]]
 rust_item = "rezel_lr::parse::ContextTracker::with_reduce_without_input"
 classification = "rezel-owned"
 invariant = "Opting into an input-independent reduce callback preserves its context transition while making input observation impossible through the callback type."
 representation = "The pinned runtime resets input before every context callback; an explicit Rust builder accepts a callback without InputStream and lets the runtime bypass that reset."
 evidence_files = [
+	"languages/python/tests/contract.rs",
+	"languages/python/tests/reference/lezer.rs",
+]
+
+[[override_item]]
+rust_item = "rezel_lr::parse::ContextTracker::with_reduce_terms"
+classification = "rezel-owned"
+invariant = "A declared reduce-term set may suppress a callback only for terms where that callback returns the input context identity."
+representation = "A const 64-bit folded bitmap provides a negative filter before context cloning; trackers default to all terms, every declared term sets its bit, and collisions only retain an unnecessary callback."
+evidence_files = [
+	"crates/rezel-lr/src/parse.rs",
+	"languages/python/src/tokens.rs",
 	"languages/python/tests/contract.rs",
 	"languages/python/tests/reference/lezer.rs",
 ]

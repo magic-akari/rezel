@@ -24,6 +24,66 @@ const LONG: u8 = 8;
 const RAW: u8 = 16;
 const FORMAT: u8 = 32;
 
+const SHIFT_CONTEXT_TERMS: &[u16] = &[
+    terms::indent,
+    terms::dedent,
+    terms::ParenL,
+    terms::BracketL,
+    terms::BraceL,
+    terms::replacementStart,
+    terms::stringStart,
+    terms::stringStartD,
+    terms::stringStartL,
+    terms::stringStartLD,
+    terms::stringStartR,
+    terms::stringStartRD,
+    terms::stringStartRL,
+    terms::stringStartRLD,
+    terms::stringStartF,
+    terms::stringStartFD,
+    terms::stringStartFL,
+    terms::stringStartFLD,
+    terms::stringStartFR,
+    terms::stringStartFRD,
+    terms::stringStartFRL,
+    terms::stringStartFRLD,
+    terms::stringStartT,
+    terms::stringStartTD,
+    terms::stringStartTL,
+    terms::stringStartTLD,
+    terms::stringStartTR,
+    terms::stringStartTRD,
+    terms::stringStartTRL,
+    terms::stringStartTRLD,
+];
+
+const REDUCE_CONTEXT_TERMS: &[u16] = &[
+    terms::ParenthesizedExpression,
+    terms::parenthesizedWithItems,
+    terms::TupleExpression,
+    terms::ComprehensionExpression,
+    terms::importList,
+    terms::ArgList,
+    terms::ParamList,
+    terms::ArrayExpression,
+    terms::ArrayComprehensionExpression,
+    terms::subscript,
+    terms::SetExpression,
+    terms::SetComprehensionExpression,
+    terms::FormatString,
+    terms::TemplateString,
+    terms::FormatReplacement,
+    terms::TemplateInterpolation,
+    terms::nestedFormatReplacement,
+    terms::DictionaryExpression,
+    terms::DictionaryComprehensionExpression,
+    terms::SequencePattern,
+    terms::MappingPattern,
+    terms::PatternArgList,
+    terms::TypeParamList,
+    terms::String,
+];
+
 #[derive(Clone)]
 struct PythonContext {
     parent: Option<ContextValue>,
@@ -70,8 +130,10 @@ pub(crate) static STRINGS: ExternalTokenizer = ExternalTokenizer::new(
 
 pub(crate) static TRACK_INDENT: ContextTracker =
     ContextTracker::new(start_context, Some(shift_context), None, hash_context)
+        .with_shift_terms(SHIFT_CONTEXT_TERMS)
         .with_shift_input_terms(&[terms::indent])
-        .with_reduce_without_input(reduce_context);
+        .with_reduce_without_input(reduce_context)
+        .with_reduce_terms(REDUCE_CONTEXT_TERMS);
 
 fn scan_newlines(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let context = context(stack);
@@ -422,4 +484,34 @@ fn is_bracketed_node(term: u16) -> bool {
             | terms::PatternArgList
             | terms::TypeParamList
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        REDUCE_CONTEXT_TERMS, SHIFT_CONTEXT_TERMS, is_bracketed_node, string_flags, terms,
+    };
+
+    #[test]
+    fn context_term_filters_cover_every_transition() {
+        for term in 0..=u16::MAX {
+            let shifts = matches!(
+                term,
+                terms::indent
+                    | terms::dedent
+                    | terms::ParenL
+                    | terms::BracketL
+                    | terms::BraceL
+                    | terms::replacementStart
+            ) || string_flags(term).is_some();
+            assert_eq!(SHIFT_CONTEXT_TERMS.contains(&term), shifts);
+
+            let reduces = is_bracketed_node(term)
+                || matches!(
+                    term,
+                    terms::String | terms::FormatString | terms::TemplateString
+                );
+            assert_eq!(REDUCE_CONTEXT_TERMS.contains(&term), reduces);
+        }
+    }
 }
