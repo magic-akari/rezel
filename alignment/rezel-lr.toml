@@ -65,7 +65,7 @@ evidence_files = [
 rust_file = "goto_index.rs"
 classification = "rezel-owned"
 invariant = "Parser-private lookup preserves every strict source-to-target transition and the generated table's selected loose fallback after construction validation."
-representation = "Validated term-major groups are projected once into one default target, its strict source-membership list, and compact exact-match exceptions while generated tables remain authoritative."
+representation = "Validated term-major groups are projected once into one default target, its strict source-membership list, and compact exact-match exceptions. Short exception rows retain generated order for linear lookup; longer rows use a contiguous balanced-search layout while generated tables remain authoritative."
 evidence_files = [
 	"crates/rezel-lr/src/goto_index.rs",
 	"crates/rezel-lr/tests/validation.rs",
