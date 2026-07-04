@@ -13,8 +13,8 @@ use rezel_generator::{
     emit_typed_syntax,
 };
 
-const USAGE: &str =
-    "Usage: rezel-codegen (json | java | go | python | rust | fixtures) (--check | --update)";
+const USAGE: &str = "Usage: rezel-codegen \
+     (json | java | go | python | rust | swift | fixtures) (--check | --update)";
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
@@ -357,6 +357,7 @@ impl Scope {
             "go" => Some(Self::Language("go")),
             "python" => Some(Self::Language("python")),
             "rust" => Some(Self::Language("rust")),
+            "swift" => Some(Self::Language("swift")),
             "fixtures" => Some(Self::Fixtures),
             _ => None,
         }

@@ -1,0 +1,18 @@
+[package]
+name = "rezel-swift-p0-reference"
+version = "0.0.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+repository = "https://github.com/magic-akari/rezel"
+description = "Pinned official Swift source and parser-recovery corpus verifier for Rezel"
+
+[features]
+default = []
+parser = ["dep:rezel-common", "dep:rezel-lang-swift"]
+
+[dependencies]
+rezel-common = { path = "../../../../crates/rezel-common", optional = true }
+rezel-lang-swift = { path = "../../../../languages/swift", optional = true }
+
+[workspace]

@@ -1,0 +1,35 @@
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftMetatypeTokens"
+rust_path = "crate::tokens::METATYPE_TOKENS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftKeywordIdentifiers"
+rust_path = "crate::tokens::KEYWORD_IDENTIFIERS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftLayoutTokens"
+rust_path = "crate::tokens::LAYOUT_TOKENS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftAttributeAndTypePathTokens"
+rust_path = "crate::tokens::ATTRIBUTE_AND_TYPE_PATH_TOKENS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftLiteralsAndOperators"
+rust_path = "crate::tokens::LITERALS_AND_OPERATORS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftPatternContexts"
+rust_path = "crate::tokens::PATTERN_CONTEXT_TOKENS"

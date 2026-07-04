@@ -4,6 +4,7 @@ go = "1.26.3"
 java = "26.0.1"
 node = "26.1.0"
 python = "3.14.5"
+swift = "6.3.3"
 
 [hooks]
 postinstall = [
@@ -54,6 +55,14 @@ run = "cargo run --locked --package rezel-codegen -- rust --check"
 [tasks."codegen:rezel:rust:update"]
 description = "Regenerate checked-in Rust parser sources"
 run = "cargo run --locked --package rezel-codegen -- rust --update"
+
+[tasks."codegen:rezel:swift"]
+description = "Verify checked-in Swift parser sources"
+run = "cargo run --locked --package rezel-codegen -- swift --check"
+
+[tasks."codegen:rezel:swift:update"]
+description = "Regenerate checked-in Swift parser sources"
+run = "cargo run --locked --package rezel-codegen -- swift --update"
 
 [tasks."codegen:rezel:fixtures"]
 description = "Verify checked-in rezel-generator test fixtures"
@@ -159,6 +168,20 @@ run = "npm --prefix tools/references/lezer run check"
 description = "Regenerate snapshots from the pinned Lezer reference"
 run = "npm --prefix tools/references/lezer run update"
 
+[tasks."reference:swift"]
+description = "Check Swift fixtures with the mise-pinned official parser oracle"
+run = "python tools/references/swift/reference.py"
+
+[tasks."reference:swift:p0:prepare"]
+description = "Fetch and materialize pinned official Swift source and parser corpora"
+run = "python tools/references/swift/prepare_p0.py"
+
+[tasks."reference:swift:p0"]
+description = "Verify the pinned official Swift source and parser corpora"
+depends = ["reference:swift:p0:prepare"]
+env = { CARGO_TARGET_DIR = "target/swift-p0" }
+run = "cargo run --locked --manifest-path tools/references/swift/p0/Cargo.toml --features parser"
+
 [tasks."reference:cpython"]
 description = "Verify CPython 3.14 parse and AST snapshots"
 run = "python tools/references/cpython/reference.py --check"
@@ -230,6 +253,7 @@ depends = [
 	"codegen:rezel:go",
 	"codegen:rezel:python",
 	"codegen:rezel:rust",
+	"codegen:rezel:swift",
 	"codegen:rezel:fixtures",
 	"codegen:java-identifiers",
 	"codegen:python-unicode",
