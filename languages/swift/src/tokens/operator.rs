@@ -66,6 +66,9 @@ pub(super) fn scan(input: &mut InputStream, stack: &Stack, first: u32) -> Result
     if starts_comment(first, peek(input, 1)) {
         return Ok(());
     }
+    if is_generated_only_operator(input, first) {
+        return Ok(());
+    }
 
     // SwiftSyntax splits the trailing `<` from a function-operator token when
     // it starts a generic parameter clause (`func *<let N: Int>`). The
@@ -76,7 +79,7 @@ pub(super) fn scan(input: &mut InputStream, stack: &Stack, first: u32) -> Result
     // operator spellings need only one fixity-specific capability probe; the
     // extra prefix/binary probes are reserved for the rare regex split path.
     let left_bound = is_left_bound(input);
-    let full_operator_shape = operator_token_shape(input);
+    let full_operator_shape = operator_token_shape(input, left_bound);
     let function_operator_prefix_width = if full_operator_shape.length >= 2
         && full_operator_shape.last == LEFT_ANGLE
         && stack.can_shift(terms::functionCustomOperator)
@@ -113,10 +116,29 @@ pub(super) fn scan(input: &mut InputStream, stack: &Stack, first: u32) -> Result
     }
     let prefix = full_operator_shape.prefix;
     let length = operator_prefix_width.unwrap_or(full_operator_shape.length);
-    let fixity = operator_fixity_at(input, length, left_bound);
+    let right_bound = if length == full_operator_shape.length {
+        full_operator_shape.right_bound
+    } else {
+        is_right_bound_at(input, length, left_bound)
+    };
+    let fixity = operator_fixity(left_bound, right_bound);
     input.advance(length);
 
     accept_operator(input, stack, prefix, length, fixity)
+}
+
+fn is_generated_only_operator(input: &InputStream, first: u32) -> bool {
+    if first == EQUAL && operator_ends_at(input, 1) {
+        return true;
+    }
+    first == MINUS && peek(input, 1) == Some(RIGHT_ANGLE) && operator_ends_at(input, 2)
+}
+
+fn operator_ends_at(input: &InputStream, offset: isize) -> bool {
+    let Some(next) = peek(input, offset) else {
+        return true;
+    };
+    next == PERIOD || starts_comment(next, peek(input, offset + 1)) || !is_operator_continue(next)
 }
 
 fn accept_operator(
@@ -277,21 +299,25 @@ struct OperatorShape {
     length: usize,
     last: u32,
     first_internal_slash: Option<usize>,
+    right_bound: bool,
 }
 
-fn operator_token_shape(input: &InputStream) -> OperatorShape {
+fn operator_token_shape(input: &InputStream, left_bound: bool) -> OperatorShape {
     let mut lookahead = input.lookahead().map(CodePoint::as_u32).peekable();
     let starts_with_period = lookahead.peek().copied() == Some(PERIOD);
     let mut prefix = [0_u32; 3];
     let mut length = 0_usize;
     let mut last = 0_u32;
     let mut first_internal_slash = None;
-    while let Some(next) = lookahead.next() {
+    let boundary = loop {
+        let Some(next) = lookahead.next() else {
+            break None;
+        };
         if length > 0 && next == PERIOD && !starts_with_period {
-            break;
+            break Some((next, None));
         }
         if length > 0 && starts_comment(next, lookahead.peek().copied()) {
-            break;
+            break Some((next, lookahead.peek().copied()));
         }
         let valid = if length == 0 {
             is_operator_start(next)
@@ -299,7 +325,7 @@ fn operator_token_shape(input: &InputStream) -> OperatorShape {
             is_operator_continue(next)
         };
         if !valid {
-            break;
+            break Some((next, lookahead.peek().copied()));
         }
         if length > 0 && next == SLASH && first_internal_slash.is_none() {
             first_internal_slash = Some(length);
@@ -309,12 +335,15 @@ fn operator_token_shape(input: &InputStream) -> OperatorShape {
         }
         last = next;
         length += 1;
-    }
+    };
+    let right_bound = boundary
+        .is_some_and(|(next, following)| boundary_has_right_bound(next, following, left_bound));
     OperatorShape {
         prefix,
         length,
         last,
         first_internal_slash,
+        right_bound,
     }
 }
 
@@ -366,8 +395,7 @@ pub(super) enum OperatorFixity {
     Postfix,
 }
 
-fn operator_fixity_at(input: &InputStream, offset: usize, left_bound: bool) -> OperatorFixity {
-    let right_bound = is_right_bound_at(input, offset, left_bound);
+fn operator_fixity(left_bound: bool, right_bound: bool) -> OperatorFixity {
     match (left_bound, right_bound) {
         (false, true) => OperatorFixity::Prefix,
         (true, false) => OperatorFixity::Postfix,
@@ -379,15 +407,19 @@ fn is_right_bound_at(input: &InputStream, offset: usize, left_bound: bool) -> bo
     let Ok(offset) = isize::try_from(offset) else {
         return false;
     };
-    match peek(input, offset) {
-        None
-        | Some(
-            0x00A0 | 0x0009 | 0x000A | 0x000D | 0x0020 | RIGHT_PAREN | RIGHT_BRACKET | RIGHT_BRACE
-            | COMMA | SEMICOLON | COLON,
-        ) => false,
-        Some(PERIOD) => !left_bound,
-        Some(SLASH) if matches!(peek(input, offset + 1), Some(SLASH | STAR)) => false,
-        Some(_) => true,
+    let Some(next) = peek(input, offset) else {
+        return false;
+    };
+    boundary_has_right_bound(next, peek(input, offset + 1), left_bound)
+}
+
+fn boundary_has_right_bound(next: u32, following: Option<u32>, left_bound: bool) -> bool {
+    match next {
+        0x00A0 | 0x0009 | 0x000A | 0x000D | 0x0020 | RIGHT_PAREN | RIGHT_BRACKET | RIGHT_BRACE
+        | COMMA | SEMICOLON | COLON => false,
+        PERIOD => !left_bound,
+        SLASH if matches!(following, Some(SLASH | STAR)) => false,
+        _ => true,
     }
 }
 

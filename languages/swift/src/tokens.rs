@@ -294,7 +294,7 @@ fn scan_literal_or_operator(input: &mut InputStream, stack: &Stack) -> Result<()
     let Some(first) = current(input) else {
         return Ok(());
     };
-    if generic::scan_value_lookahead(input, stack)? {
+    if matches!(first, LEFT_BRACKET | LEFT_PAREN) && generic::scan_value_lookahead(input, stack)? {
         return Ok(());
     }
     if first == QUESTION && operator::scan_question_mark(input, stack)? {
@@ -308,13 +308,24 @@ fn scan_literal_or_operator(input: &mut InputStream, stack: &Stack) -> Result<()
             return Ok(());
         }
     }
-    if scan_syntax_lookahead(input, stack, first)? {
+    if may_start_syntax_lookahead(first) && scan_syntax_lookahead(input, stack, first)? {
         return Ok(());
     }
     if !is_operator_start(first) {
         return Ok(());
     }
     operator::scan(input, stack, first)
+}
+
+fn may_start_syntax_lookahead(first: u32) -> bool {
+    matches!(
+        first,
+        LEFT_ANGLE | LEFT_BRACE | LEFT_PAREN | PERIOD | AT_SIGN
+    ) || first == u32::from(b'a')
+        || first == u32::from(b'e')
+        || first == u32::from(b'i')
+        || first == u32::from(b'n')
+        || first == u32::from(b'u')
 }
 
 fn scan_syntax_lookahead(
