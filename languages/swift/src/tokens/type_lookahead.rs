@@ -7,11 +7,17 @@
 use rezel_common::{CodePoint, ParseError};
 use rezel_lr::{InputStream, Stack};
 
-use super::lexical::{LookaheadIdentifier, is_identifier_start, scan_lookahead_identifier};
+use super::lexical::{
+    LookaheadIdentifier, is_identifier_start, scan_lookahead_identifier,
+    scan_lookahead_identifier_after_first,
+};
 use crate::terms;
 
 use super::attribute::scan_lookahead as scan_attribute_lookahead;
-use super::lookahead::{current, skip_balanced_angles, skip_trivia, skip_trivia_with_line_break};
+use super::lookahead::{
+    current, first_nontrivia_on_same_line, skip_balanced_angles, skip_trivia,
+    skip_trivia_with_line_break,
+};
 
 const AT_SIGN: u32 = b'@' as u32;
 const AMPERSAND: u32 = b'&' as u32;
@@ -104,11 +110,13 @@ pub(super) fn finish_parenthesized(
 pub(super) fn starts_qualified_decl_type_member(
     input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
 ) -> bool {
-    if input.next() != Some(PERIOD) || skip_trivia_with_line_break(input) != Some(false) {
+    if input.next() != Some(PERIOD) {
         return false;
     }
-
-    let Some(first_name) = scan_lookahead_identifier(input) else {
+    let Some(first) = first_nontrivia_on_same_line(input) else {
+        return false;
+    };
+    let Some(first_name) = scan_lookahead_identifier_after_first(first, input) else {
         return false;
     };
     skip_trivia(input);
@@ -118,10 +126,13 @@ pub(super) fn starts_qualified_decl_type_member(
             return false;
         }
         input.next();
-        if input.next() != Some(COLON) || skip_trivia_with_line_break(input) != Some(false) {
+        if input.next() != Some(COLON) {
             return false;
         }
-        let Some(selected_name) = scan_lookahead_identifier(input) else {
+        let Some(first) = first_nontrivia_on_same_line(input) else {
+            return false;
+        };
+        let Some(selected_name) = scan_lookahead_identifier_after_first(first, input) else {
             return false;
         };
         if !is_qualified_decl_module_selected_name(&selected_name) {

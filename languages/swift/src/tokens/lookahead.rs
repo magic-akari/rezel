@@ -134,6 +134,21 @@ pub(super) fn skip_trivia(input: &mut std::iter::Peekable<impl Iterator<Item = u
     let _ = skip_trivia_with_line_break(input);
 }
 
+/// Returns the first non-trivia code point only when all preceding trivia is
+/// on the current physical line. A line boundary rejects immediately, without
+/// scanning the remaining comment or indentation.
+pub(super) fn first_nontrivia_on_same_line(
+    input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
+) -> Option<u32> {
+    match scan_trivia_boundary(input, || true) {
+        TriviaBoundary::Complete {
+            first: Some(first),
+            has_line_break: false,
+        } => Some(first),
+        TriviaBoundary::Complete { .. } | TriviaBoundary::StoppedAtLineBreak => None,
+    }
+}
+
 pub(super) fn skip_trivia_with_line_break(
     input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
 ) -> Option<bool> {
@@ -338,7 +353,27 @@ fn skip_balanced(
 
 #[cfg(test)]
 mod tests {
-    use super::starts_member_access_continuation;
+    use std::cell::Cell;
+
+    use super::{first_nontrivia_on_same_line, starts_member_access_continuation};
+
+    #[test]
+    fn same_line_trivia_stops_at_the_first_physical_boundary() {
+        let source = format!(" /*\n{}*/ target", "trailing trivia ".repeat(4_096));
+        let inspected = Cell::new(0usize);
+        let mut input = source
+            .chars()
+            .map(u32::from)
+            .inspect(|_| inspected.set(inspected.get() + 1))
+            .peekable();
+
+        assert_eq!(first_nontrivia_on_same_line(&mut input), None);
+        assert!(
+            inspected.get() < 16,
+            "inspected {} code points",
+            inspected.get()
+        );
+    }
 
     #[test]
     fn member_continuations_match_decl_reference_lexical_heads() {

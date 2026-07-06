@@ -25,7 +25,7 @@ use lexical::{
 
 #[cfg(test)]
 use lookahead::next_nontrivia;
-use lookahead::{current, peek, skip_trivia_with_line_break, starts_member_access_continuation};
+use lookahead::{current, first_nontrivia_on_same_line, peek, starts_member_access_continuation};
 #[cfg(test)]
 use operator::{OperatorFixity, operator_has_fixed_role};
 
@@ -202,10 +202,7 @@ fn starts_contextual_any_type(input: &InputStream) -> bool {
     for _ in ANY {
         lookahead.next();
     }
-    if skip_trivia_with_line_break(&mut lookahead) != Some(false) {
-        return false;
-    }
-    match lookahead.next() {
+    match first_nontrivia_on_same_line(&mut lookahead) {
         Some(next) if next == u32::from(b'~') => lookahead.peek() != Some(&u32::from(b'>')),
         Some(BACKTICK | LEFT_BRACKET) => true,
         Some(next) if next == UNDERSCORE || is_identifier_start(next) => {
@@ -228,11 +225,7 @@ fn starts_using_declaration(input: &InputStream) -> bool {
     for _ in USING {
         lookahead.next();
     }
-    if skip_trivia_with_line_break(&mut lookahead) != Some(false) {
-        return false;
-    }
-    lookahead
-        .next()
+    first_nontrivia_on_same_line(&mut lookahead)
         .is_some_and(|next| matches!(next, AT_SIGN | BACKTICK) || is_identifier_start(next))
 }
 

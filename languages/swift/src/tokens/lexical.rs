@@ -58,8 +58,18 @@ pub(super) fn scan_lookahead_identifier(
     input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
 ) -> Option<LookaheadIdentifier> {
     let first = input.peek().copied()?;
+    if first != DOLLAR && first != BACKTICK && !is_identifier_start(first) {
+        return None;
+    }
+    input.next();
+    scan_lookahead_identifier_after_first(first, input)
+}
+
+pub(super) fn scan_lookahead_identifier_after_first(
+    first: u32,
+    input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
+) -> Option<LookaheadIdentifier> {
     if first == DOLLAR {
-        input.next();
         let mut length = 0_usize;
         let mut all_digits = true;
         while let Some(next) = input
@@ -76,17 +86,6 @@ pub(super) fn scan_lookahead_identifier(
             length: usize::MAX,
         });
     }
-    if first != BACKTICK && !is_identifier_start(first) {
-        return None;
-    }
-    input.next();
-    scan_lookahead_identifier_after_first(first, input)
-}
-
-pub(super) fn scan_lookahead_identifier_after_first(
-    first: u32,
-    input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
-) -> Option<LookaheadIdentifier> {
     if first == BACKTICK {
         for next in input.by_ref() {
             if next == BACKTICK {

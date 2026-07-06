@@ -2426,6 +2426,7 @@ fn contextual_any_type_expressions_follow_the_prefix_boundary() {
         "any + value",
         "any~>Copyable",
         "any\n~Copyable",
+        "any/* physical\nline */~Copyable",
     ] {
         let tree = parser.parse(source).unwrap();
         assert_eq!(
