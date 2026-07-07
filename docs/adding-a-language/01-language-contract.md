@@ -71,15 +71,15 @@ classification belong to semantic tooling.
 
 Use a source for the claim it can actually establish:
 
-| Claim                                             | Suitable authority                                                       |
-| ------------------------------------------------- | ------------------------------------------------------------------------ |
-| Lexical and syntactic membership                  | Normative language specification and accepted/rejected conformance cases |
-| Behavior of the targeted implementation           | Official parser or compiler for that version                             |
-| CST compatibility with a maintained Lezer grammar | Pinned Lezer parser and tree snapshots                                   |
-| Owned AST compatibility                           | Public AST model and differential projections                            |
-| Recovery behavior                                 | Explicit malformed-source fixtures and repeated parses                   |
-| Practical coverage                                | Standard library, conformance suite, or representative source corpus     |
-| Reproducible parser artifacts                     | Regeneration tests over grammar, bindings, schemas, and binary tables    |
+| Claim                                             | Suitable authority                                                                |
+| ------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Lexical and syntactic membership                  | Normative language specification and accepted/rejected conformance cases          |
+| Behavior of the targeted implementation           | Official parser or compiler for that version                                      |
+| CST compatibility with a maintained Lezer grammar | Pinned Lezer parser and tree snapshots                                            |
+| Owned AST compatibility                           | Public AST model and differential projections                                     |
+| Recovery behavior                                 | Explicit malformed-source fixtures and repeated parses                            |
+| Practical coverage                                | Standard library, conformance suite, or representative source corpus              |
+| Reproducible parser artifacts                     | Central `rezel-codegen` checks over grammar, bindings, schemas, and binary tables |
 
 One authority rarely covers all rows. A Lezer snapshot may define the inherited
 CST but not the newest language syntax. An official compiler may establish

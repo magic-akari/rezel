@@ -164,20 +164,17 @@ contract and review them together.
 
 ## Generate and test
 
-The normal parser generation command emits `typed.rs` when both typed options
-are present:
+The language's central code-generation scope validates the typed schema and
+emits `typed.rs` in the same operation as the other parser artifacts:
 
 ```sh
-cargo run --locked -p rezel-generator -- generate \
-  languages/<language>/grammar/<language>.grammar \
-  --output languages/<language>/src/generated.rs \
-  --bindings languages/<language>/grammar/<language>.bindings.toml \
-  --typed languages/<language>/grammar/<language>.typed.toml \
-  --typed-output languages/<language>/src/typed.rs
+mise run codegen:rezel:<language>:update
+mise run codegen:rezel:<language>
 ```
 
-The generated-output test must compare `emit_typed_syntax` with the committed
-file. Add behavioral tests that:
+The update task writes the complete expected set; the check task reconstructs
+it and compares `typed.rs` with the committed file. Add package-local
+behavioral tests that:
 
 1. strictly parse representative source;
 2. downcast the top node through `TypedNode::downcast_from`;

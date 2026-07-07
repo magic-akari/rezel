@@ -38,11 +38,14 @@ and warning should have an explanation and a minimal test.
 Generate all artifacts, inspect the source and binary changes, and run:
 
 ```sh
-cargo test --locked -p rezel-lang-<language> --test generated
+mise run codegen:rezel:<language>
 ```
 
-The test must compare `generated.rs`, `terms.rs`, `generated.le.bin`,
-`generated.be.bin`, and `typed.rs` when typed syntax is present.
+The registered repository-level `rezel-codegen` scope must compare
+`generated.rs`, `terms.rs`, `generated.le.bin`, `generated.be.bin`, and
+`typed.rs`. The standard language scope currently requires all five. Its check
+task must be a dependency of `mise run verify`; do not duplicate the comparison
+in a package-local `generated` test.
 
 ## Test the public parser contract
 
@@ -95,7 +98,7 @@ strict and recovering CSTs. Keep minimal cases for:
 - upstream grammar bugs fixed in Rezel;
 - language-version updates;
 - intentional tree or recovery differences;
-- Rust ports of external JavaScript behavior.
+- Rust ports of external callback behavior.
 
 Use the normative specification and official implementation for current
 language membership. Use a public AST model for AST compatibility. A
@@ -127,9 +130,16 @@ so parser acceptance and projection equality remain distinguishable.
 
 ## Integrate with the workspace
 
+Before relying on the aggregate gate, register the language scope in
+`rezel-codegen`, add its `codegen:rezel:<language>` and
+`codegen:rezel:<language>:update` tasks to `mise.toml`, and make the check task
+a dependency of `tasks.verify`. The update task writes generated files; only
+the non-writing check belongs in the gate.
+
 Run focused checks while iterating:
 
 ```sh
+mise run codegen:rezel:<language>
 cargo test --locked -p rezel-lang-<language>
 cargo clippy --locked -p rezel-lang-<language> --all-targets --all-features -- -D warnings
 cargo doc --locked -p rezel-lang-<language> --all-features --no-deps
@@ -162,8 +172,9 @@ Before presenting the language as supported, confirm that:
 - language-specific behavior remains inside the language package;
 - every non-obvious conflict and recovery decision has a minimal test;
 - references are pinned and assigned only to claims they can establish;
-- generated, contract, adapter, typed, optional projection, and corpus checks
-  pass at the levels promised by the package.
+- the central generation check plus package-local contract, adapter, typed,
+  optional projection, and corpus checks pass at the levels promised by the
+  package.
 
 Verification is complete when the evidence supports the stated contract, not
 when every available test category has been copied from an existing language.

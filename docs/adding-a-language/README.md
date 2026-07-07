@@ -80,6 +80,16 @@ document in isolation. Grammar and test cases usually evolve together. What
 must remain stable is the direction of authority: maintained language inputs
 produce generated parser artifacts, and evidence tests the resulting claims.
 
+## Case studies
+
+[Language adaptation case studies](case-studies/README.md) apply this workflow
+to pinned upstream artifacts. They may use a specific language to make the
+audit concrete, but they remain examples rather than general grammar rules or
+claims that Rezel ships that language. The first study traces every external
+declaration in a maintained JavaScript grammar through its source callback,
+prospective Rust binding, and verification obligations. Its coverage table
+also identifies the external forms that the grammar does not use.
+
 ## Existing grammar and new grammar
 
 An existing Lezer grammar is a valuable maintained design. Pin its revision,

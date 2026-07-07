@@ -36,8 +36,8 @@ mise run verify
 
 The normal gate checks formatting, Rust tests and doctests, API documentation,
 Rust/Go/TypeScript lints, traceability manifests, and committed code-generated
-tables. Changes that affect language conformance, parser references, or broad
-source coverage should also run:
+artifacts. Changes that affect language conformance, parser references, or
+broad source coverage should also run:
 
 ```sh
 mise run verify:full
@@ -92,10 +92,22 @@ flowchart LR
 ```
 
 Edit the maintained input rather than a generated file. Regenerate all outputs
-from the same input, inspect the complete diff, and run the language package's
-generated-output test. The two parser-table blobs are part of that diff: the
+from the same input, inspect the complete diff, and run the matching repository
+code-generation check:
+
+```sh
+mise run codegen:rezel:<language>:update
+mise run codegen:rezel:<language>
+```
+
+Both tasks call the centralized `rezel-codegen` tool. Update mode writes the
+expected artifacts; check mode reconstructs them and compares them with the
+committed files. The two parser-table blobs are part of that comparison: the
 runtime selects the native-endian blob at compile time, so both representations
-must remain current.
+must remain current. `mise run verify` checks the full parser-artifact set when
+every language's check task is explicitly present in its dependency list; it
+does not discover new scopes automatically. No separate comparison test is
+required in each package.
 
 Some project data has a dedicated check/update pair:
 
@@ -129,7 +141,7 @@ Place a test where the behavior is decided:
 | Generic tree, input, or parser mechanics   | Unit tests in `rezel-common` or `rezel-lr` |
 | Grammar parsing, conflicts, and emission   | `rezel-generator` case and emission tests  |
 | Public language parsing                    | Language contract and parse tests          |
-| Generated files                            | Language `generated` test                  |
+| Generated files                            | Repository `codegen:rezel:*` check         |
 | Typed CST navigation                       | Language typed-syntax tests                |
 | Owned AST lowering                         | Lowering and AST projection tests          |
 | Syntax highlighting                        | Highlight tests                            |
@@ -137,7 +149,7 @@ Place a test where the behavior is decided:
 | Behavior over many real files              | Corpus or standard-library runners         |
 | Resource bounds and malformed input        | Limit, recovery, and adversarial tests     |
 
-A generated-output test proves reproducibility, not language correctness. A
+A `rezel-codegen` check proves reproducibility, not language correctness. A
 reference comparison proves only the behavior represented by that reference.
 Important language changes commonly need evidence at several layers.
 

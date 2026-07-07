@@ -182,24 +182,100 @@ Lezer's [External Tokens](https://lezer.codemirror.net/docs/guide/#external-toke
 original callback model. Rezel binds equivalent responsibilities to checked
 Rust symbols.
 
+## Design implicit separators as fallback decisions
+
+An implicit separator is still a grammar terminal. Its spelling happens to
+consume no source text, and a contextual tokenizer decides where the terminal
+is available. Do not model it as discarded whitespace or as an unconditional
+rewrite of every line boundary—the same boundary may either separate two
+constructs or occur inside one construct.
+
+Three terms are important in this decision:
+
+- a **recognized token** is a candidate accepted by a tokenizer at the current
+  source position;
+- an **actionable token** has at least one parser or skip action for the current
+  stack; `Stack::can_shift` is the adapter-facing check for whether a specific
+  grammar term can shift after zero or more reductions;
+- a **fallback tokenizer** is allowed to run after an earlier tokenizer
+  recognized a main candidate but that candidate produced no actionable parse
+  path.
+
+Fallback does not mean “lower lexical precedence, always try both.” An
+actionable ordinary token wins before a later fallback tokenizer runs. The
+fallback flag matters precisely when the earlier tokenizer recognized input
+but the current grammar state cannot use its term. A tokenizer marked `extend`
+deliberately keeps eligible lower-precedence tokenizers in play after a match.
+If it is itself running after a main candidate as `fallback + extend`, only
+still-lower fallback tokenizers are eligible. Extension is a separate form of
+branching, not part of the usual separator design.
+
+Put an implicit-separator tokenizer after the ordinary tokenizers whose
+candidates must get the first opportunity. At a source position `p`, use this
+decision flow:
+
+1. Run enabled tokenizers in declaration order. A tokenizer that declines
+   leaves the decision to the next one.
+2. If an ordinary tokenizer recognizes an actionable token, use its parser
+   action. Do not insert a separator merely because trivia contains a line
+   boundary.
+3. If it recognizes a token with no action in the current stack, record it as
+   the current main candidate and skip later non-fallback tokenizers. Later
+   fallback tokenizers may still inspect the position and may replace that
+   candidate.
+4. When the separator fallback runs, test the declared boundary conditions:
+   relevant trivia or delimiter state, end of input when allowed, and any
+   finite parser context carried by the tracker.
+5. Decline unless the separator term can shift in this stack. Otherwise accept
+   the separator at `[p, p)` and let the parser take its action before
+   tokenizing `p` again.
+6. If neither the ordinary candidate nor the separator yields an action, leave
+   the position to ordinary EOF handling or recovery. The tokenizer must not
+   invent a separator solely to avoid an error.
+
+This ordering preserves continuation. For example, if the token after a line
+boundary can continue the current expression, that actionable token wins. If
+the same token is not legal after a completed construct and the boundary rule
+allows separation, the fallback can expose the inserted terminal instead.
+
+A zero-length token has no input advance to prove progress. Its design must
+provide another finite, strict progress measure at the same byte position:
+
+- shifting the separator moves to a parser state where that separator can no
+  longer shift;
+- an indentation-like token shrinks or otherwise advances a finite contextual
+  obligation;
+- an end-of-input closer consumes one item from a finite set of pending
+  closures.
+
+After every accepted `[p, p)` token, each successor parse stack must advance
+along that finite measure so that the same decision cannot repeat indefinitely.
+Merely changing state and later returning to the same opportunity is not
+progress. A grammar such as an unrestricted repetition of an insertable
+zero-length terminal violates this invariant even when each individual
+tokenizer call is deterministic. Prove the measure in the adapter notes and
+test repeated opportunities at one position, including recovery and end of
+input.
+
 ## Keep lexical work deterministic and bounded
 
 For the same raw input, selected ranges, parser state, dialect, and context, a
 tokenizer must return the same result. Its lookahead and stored state must have
 a stated bound or advance through source proportionally.
 
-Main and external tokenizers are tried in grammar declaration order. An earlier
-successful non-fallback tokenizer may prevent later tokenizers from running.
-Treat ordering and fallback behavior as part of the lexical contract, and test
-positions where more than one tokenizer could inspect the same prefix.
-
-Pay special attention to zero-length tokens. They are useful for inserted
-separators, indentation changes, and EOF structure, but the parser/tokenizer
-combination must make progress before the same token can be emitted again.
-Lezer's [JavaScript example](https://lezer.codemirror.net/examples/javascript/)
-demonstrates tokenizer ordering for automatic semicolon insertion, while its
+Main and external tokenizers are tried in grammar declaration order. Treat
+ordering, `fallback`, and `extend` behavior as part of the lexical contract,
+and test positions where more than one tokenizer could inspect the same
+prefix. As concrete examples of the general model, Lezer's
+[JavaScript example](https://lezer.codemirror.net/examples/javascript/)
+demonstrates fallback ordering for an automatic separator, while its
 [Indentation example](https://lezer.codemirror.net/examples/indent/) shows
-zero-length token guards based on shiftability and shrinking context.
+zero-length guards based on shiftability and shrinking context.
+The project-local
+[pinned external-tokenizer study](../case-studies/javascript-externals.md)
+audits the maintained upstream grammar behind the same broad separator pattern,
+from declarations through adapter obligations, and also records the mechanisms
+it does not cover.
 
 Test:
 
@@ -210,7 +286,12 @@ Test:
 - malformed escape or translation forms;
 - skipped and non-skipped regions;
 - each context transition and nested state;
+- an actionable ordinary token and a non-actionable ordinary token at the same
+  potential separator boundary;
+- separator fallback when the boundary is absent, the term cannot shift, and
+  the term can shift;
 - repeated zero-length opportunities;
+- zero-length insertion immediately before EOF and during recovery;
 - long-prefix and adversarial cases that establish the tokenizer's stated scan
   bound.
 

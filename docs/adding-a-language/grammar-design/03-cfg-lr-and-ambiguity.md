@@ -123,18 +123,19 @@ explains the wider LR/GLR model.
 Grammar growth appears in three different places and should be measured
 separately:
 
-| Budget                     | Typical source                                                                       | Observable evidence                                       |
-| -------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| LR parser states and table | Copied productions, template combinations, lookahead distinctions, and skip contexts | `rezel check` parser-state count and generated table size |
-| Token DFA states and edges | Large literal vocabularies, duplicated character logic, and complex token overlap    | `rezel check` token-state and token-edge counts           |
-| Runtime parse stacks       | Explicit ambiguity, extending specializers, and recovery search                      | Stack/action limits, adversarial tests, and profiles      |
+| Budget                     | Typical source                                                                              | Observable evidence                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| LR parser states and table | Copied productions, template or inline expansion, lookahead distinctions, and skip contexts | `rezel check` parser-state count and generated table size |
+| Token DFA states and edges | Large literal vocabularies, duplicated character logic, and complex token overlap           | `rezel check` token-state and token-edge counts           |
+| Runtime parse stacks       | Explicit ambiguity, extending specializers, and recovery search                             | Stack/action limits, adversarial tests, and profiles      |
 
 A conflict-free grammar can still be unnecessarily large. Each production
 position contributes LR items; copied context variants duplicate those
 positions, and different lookahead or skip contexts can prevent otherwise
-similar states from merging. Lezer also permits only one skip expression for a
-parse state, so the boundary of a scoped skip region is part of the automaton
-design.
+similar states from merging. Expanding a helper with several alternatives at
+several call sites can multiply productions before LR states are constructed.
+Lezer also permits only one skip expression for a parse state, so the boundary
+of a scoped skip region is part of the automaton design.
 
 Prefer:
 
@@ -173,6 +174,65 @@ These are related but not equivalent:
 
 Always reduce the conflict to a minimal terminal or source witness before
 choosing a mechanism.
+
+## Distinguish selection mechanisms from grammar transformation
+
+Precedence, cuts, ambiguity markers, dynamic precedence, and `[@inline]` are
+sometimes discussed together because all can change a generator's conflict
+report. They act at different stages and make different promises:
+
+| Mechanism                                               | When it acts                                                               | What it does                                                                                  | Appropriate use                                                                        |
+| ------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `!level`, optionally with `@left` or `@right`           | Parse-table construction                                                   | Selects among conflicting LR actions using a declared static order and optional associativity | A local operator hierarchy or another stable syntactic priority                        |
+| A precedence level declared `@cut` and used as `!level` | At the marked production position, before an ordinary conflict is required | Commits to the marked interpretation and removes competing interpretations                    | A prefix after which the syntax has unconditionally selected one construct             |
+| Matching `~group` markers                               | Parse-table construction and the corresponding runtime conflict            | Declares a conflict intentional so GLR may retain the competing stacks                        | A shared prefix whose later, nearby syntax makes the decision                          |
+| `[@dynamicPrecedence=n]`                                | On each reduction of the annotated rule                                    | Adds a bounded score used to rank competing live and finished stacks                          | A documented syntactic preference among intentional ambiguous interpretations          |
+| `[@inline]`                                             | Before LR states are constructed                                           | Substitutes an eligible helper's productions at its call sites                                | Removing an invisible helper reduction boundary or exposing caller-local CFG structure |
+
+The first four mechanisms govern selection or delayed selection. `[@inline]`
+does neither. It is a generation-time CFG transformation. For a non-recursive
+helper such as:
+
+```lezer
+qualifiedTail[@inline] { "::" Name | "." Name }
+Reference { Name qualifiedTail? }
+```
+
+the generator expands the helper alternatives into the productions that call
+it. This may expose lookahead or precedence positions that were hidden behind
+the helper reduction. It may also duplicate alternatives across call sites and
+therefore increase—or occasionally decrease—the LR state count and table size.
+It is not a runtime optimization, an ordered choice, or a way to prefer one
+parse. Recursive helpers cannot generally be eliminated by finite
+substitution. The current generator filters direct self-reference but does not
+compute recursive strongly connected components: a directly recursive marked
+rule remains a hidden reduction boundary, while an indirect cycle may be
+partially expanded through another rule. Avoid `[@inline]` throughout a
+recursive cycle.
+
+Inlining must preserve the externally observable contract: the same strict
+source language and the same visible CST nodes, ranges, groups, and properties.
+Use it only for an invisible grammar helper, then compare strict accept/reject
+cases and CST snapshots before and after the change. Recovery paths can still
+change because the LR states have changed, so keep recovery witnesses as well
+and record any material table-size movement reported by `rezel check`.
+
+Choose among the actual decision mechanisms by their semantic timing:
+
+1. Use static precedence when the language defines a context-local hierarchy
+   that is known at the conflict point.
+2. Use a cut only when crossing the marker makes the competing interpretation
+   invalid, not merely less desirable. Test malformed input after the cut
+   because the discarded path cannot reappear during recovery.
+3. Use an ambiguity marker when later syntax must decide. Bound the number of
+   stacks and the distance to convergence.
+4. Add dynamic precedence only when ambiguity is already intentional. Its
+   cumulative score participates in merging, stack-limit pruning, and final
+   selection, so keep it small and derive the preference from the CST contract;
+   the score does not create the GLR split.
+5. Use `[@inline]` only to reshape the generated CFG. If the desired result is
+   “choose this interpretation,” use or repair one of the preceding mechanisms
+   instead.
 
 ## Resolve the language decision before the table
 
@@ -215,8 +275,9 @@ equal-level association. A precedence level without associativity leaves
 self-conflicts unresolved when both groupings remain possible.
 
 A cut is different: it commits to a production before an ordinary conflict
-must appear. Dynamic precedence is also different: it scores completed
-competing GLR parses. Neither should encode an opaque semantic preference.
+must appear. Dynamic precedence is also different: each annotated reduction
+adds to the score of its live parse stack. Neither should encode an opaque
+semantic preference.
 
 See Lezer's
 [Precedence](https://lezer.codemirror.net/docs/guide/#precedence) section for
@@ -241,8 +302,9 @@ If alternatives remain valid for an arbitrarily long suffix, their cost may
 multiply. If several parses remain valid at EOF, the language or CST contract
 must say which tree wins. Do not depend on incidental stack order.
 
-Dynamic precedence can rank competing completed parses within the documented
-small range. It cannot replace type information or an unbounded global score.
+Dynamic precedence can rank competing live and completed parses within the
+documented small range. It cannot replace type information or an unbounded
+global score.
 Lezer's
 [Allowing Ambiguity](https://lezer.codemirror.net/docs/guide/#allowing-ambiguity)
 section gives the original ambiguity-marker model.

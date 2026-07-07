@@ -32,9 +32,9 @@ and handwritten language code are maintained inputs. Rust parser glue, named
 terms, typed wrappers, Unicode tables, AST schemas, and parser-table blobs are
 derived when their corresponding generator owns them.
 
-Generated artifacts must be deterministic and protected by regeneration tests.
-They are changed by modifying their maintained input or generator, never by
-editing the generated result to make a test pass.
+Generated artifacts must be deterministic and protected by the repository's
+centralized regeneration checks. They are changed by modifying their maintained
+input or generator, never by editing the generated result to make a check pass.
 
 ## Syntax layers have different roles
 

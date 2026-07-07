@@ -12,17 +12,17 @@ integration patterns, not the fixed scope of Rezel.
 
 A language package may contain the following layers:
 
-| Layer                | Typical contents                                                                      | Required                               |
-| -------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- |
-| Language definition  | Grammar, Rust bindings, typed schema, version and reference decisions.                | Yes                                    |
-| Generated parser     | Rust glue, named terms, endian-specific parser-table blobs.                           | Yes                                    |
-| Public facade        | `parser()`, strict/recovery configuration, top rules, dialects, input setup.          | Yes                                    |
-| Lexical adapters     | External tokenizers, specializers, context trackers, or source translation.           | When the grammar needs them            |
-| Typed syntax         | Generated zero-copy views over visible CST nodes.                                     | By package contract                    |
-| Private syntax views | Temporary normalization used by AST lowering or other semantic consumers.             | When raw typed shapes are insufficient |
-| Owned AST            | Arena-backed or otherwise owned projection from a strict CST.                         | Optional                               |
-| Highlighting         | Syntax-property configuration and a `highlight` feature.                              | Optional                               |
-| Validation           | Contract, generation, tree, typed, lowering, reference, conformance, or corpus tests. | Yes, according to the claims made      |
+| Layer                | Typical contents                                                                             | Required                               |
+| -------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Language definition  | Grammar, Rust bindings, typed schema, version and reference decisions.                       | Yes                                    |
+| Generated parser     | Rust glue, named terms, endian-specific parser-table blobs.                                  | Yes                                    |
+| Public facade        | `parser()`, strict/recovery configuration, top rules, dialects, input setup.                 | Yes                                    |
+| Lexical adapters     | External tokenizers, specializers, context trackers, or source translation.                  | When the grammar needs them            |
+| Typed syntax         | Generated zero-copy views over visible CST nodes.                                            | By package contract                    |
+| Private syntax views | Temporary normalization used by AST lowering or other semantic consumers.                    | When raw typed shapes are insufficient |
+| Owned AST            | Arena-backed or otherwise owned projection from a strict CST.                                | Optional                               |
+| Highlighting         | Syntax-property configuration and a `highlight` feature.                                     | Optional                               |
+| Validation           | Package-local contract/tree/projection tests and repository codegen/reference/corpus checks. | Yes, according to the claims made      |
 
 The grammar and adapters together define tokenization and parsing. Typed syntax,
 AST lowering, and highlighting are downstream projections; none of them should

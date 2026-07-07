@@ -8,16 +8,16 @@ Each claim must be paired with evidence that observes the same layer.
 
 ## Claims and evidence
 
-| Claim                                                                                       | Primary evidence                                                                        |
-| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Generated artifacts match their maintained inputs.                                          | Regeneration tests comparing Rust source, typed wrappers, and both parser-table blobs.  |
-| Public parser modes and source ranges behave as documented.                                 | Language contract tests and generic parser tests.                                       |
-| CST shape and selected recovery behavior remain compatible with a maintained Lezer grammar. | Pinned Lezer cases and snapshots.                                                       |
-| Strict acceptance follows the supported language version.                                   | Language specification cases, official parser/compiler fixtures, and conformance tests. |
-| Typed syntax exposes the intended CST surface.                                              | Typed-schema generation tests, coverage checks, and navigation tests.                   |
-| An owned AST follows its declared public model.                                             | Lowering tests and snapshots from the corresponding official AST implementation.        |
-| The implementation handles realistic syntax at scale.                                       | Standard-library or other broad-corpus runners.                                         |
-| Adapted implementation relationships remain recorded.                                       | Alignment manifests and their traceability check.                                       |
+| Claim                                                                                       | Primary evidence                                                                                              |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Generated artifacts match their maintained inputs.                                          | Central `rezel-codegen` checks comparing parser and term source, typed wrappers, and both parser-table blobs. |
+| Public parser modes and source ranges behave as documented.                                 | Language contract tests and generic parser tests.                                                             |
+| CST shape and selected recovery behavior remain compatible with a maintained Lezer grammar. | Pinned Lezer cases and snapshots.                                                                             |
+| Strict acceptance follows the supported language version.                                   | Language specification cases, official parser/compiler fixtures, and conformance tests.                       |
+| Typed syntax exposes the intended CST surface.                                              | Central typed-schema generation checks, coverage checks, and navigation tests.                                |
+| An owned AST follows its declared public model.                                             | Lowering tests and snapshots from the corresponding official AST implementation.                              |
+| The implementation handles realistic syntax at scale.                                       | Standard-library or other broad-corpus runners.                                                               |
+| Adapted implementation relationships remain recorded.                                       | Alignment manifests and their traceability check.                                                             |
 
 Passing one row does not establish another. A standard library is mostly
 positive input and cannot prove rejection behavior. An official AST says
@@ -41,6 +41,11 @@ package:
 
 Small local cases should be the first evidence added for a behavior. They make
 failures easier to diagnose than a large external snapshot or corpus.
+
+Generated-artifact reproducibility is the repository-level exception to this
+package-local pattern. `rezel-codegen` owns the comparisons, and the registered
+`mise` code-generation tasks compose them into the repository verification
+gate.
 
 ## Lezer references
 

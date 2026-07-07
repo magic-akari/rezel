@@ -90,8 +90,11 @@ external tokenizers, parser contexts, strict validation, syntax normalization,
 AST lowering, and language-specific highlighting configuration.
 
 Generation is explicit rather than a hidden `build.rs` side effect. Generated
-files and blobs are checked in, and package tests regenerate every artifact and
-compare it with the committed result.
+files and blobs are checked in. The repository-level `rezel-codegen` tool
+reconstructs every registered parser output, while `mise` exposes per-scope
+check and update tasks and includes all check tasks in `mise run verify`.
+Language packages do not duplicate this comparison in package-local generated
+tests.
 
 ## Parsing source text
 
@@ -168,14 +171,15 @@ replacements or overlays.
 
 ## Module boundaries
 
-| Location                 | Responsibility                                                                                                                           |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `crates/rezel-common`    | Input and parser contracts, UTF-8 coordinates, compact immutable trees, typed-node traits, properties, mounts, and mixed parsing.        |
-| `crates/rezel-lr`        | Static LR/GLR execution, token streams, recovery, parser contexts, dynamic precedence, strict mode, and resource limits.                 |
-| `crates/rezel-generator` | Grammar parsing, token and LR automata, binding validation, typed-schema validation, Rust glue, parser-table blobs, and the `rezel` CLI. |
-| `crates/rezel-highlight` | Abstract syntax tags, selectors, and mount-aware syntactic highlighting.                                                                 |
-| `languages/*`            | Maintained language definitions, generated artifacts, public parser facades, language-specific adapters, projections, and package tests. |
-| `tools/references/*`     | Pinned behavioral references, snapshots, conformance tooling, and broad-corpus runners.                                                  |
+| Location                 | Responsibility                                                                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `crates/rezel-common`    | Input and parser contracts, UTF-8 coordinates, compact immutable trees, typed-node traits, properties, mounts, and mixed parsing.                   |
+| `crates/rezel-lr`        | Static LR/GLR execution, token streams, recovery, parser contexts, dynamic precedence, strict mode, and resource limits.                            |
+| `crates/rezel-generator` | Grammar parsing, token and LR automata, binding validation, typed-schema validation, Rust glue, parser-table blobs, and the `rezel` CLI.            |
+| `crates/rezel-highlight` | Abstract syntax tags, selectors, and mount-aware syntactic highlighting.                                                                            |
+| `languages/*`            | Maintained language definitions, generated artifacts, public parser facades, language-specific adapters, projections, and behavioral package tests. |
+| `tools/codegen`          | Central check/update orchestration for checked-in parser artifacts and generated generator fixtures.                                                |
+| `tools/references/*`     | Pinned behavioral references, snapshots, conformance tooling, and broad-corpus runners.                                                             |
 
 The runtime crates know how to parse a generated language, but they do not know
 the lexical or semantic rules of any particular programming language. A new
@@ -186,7 +190,7 @@ a genuinely reusable parser capability.
 
 Different checks protect different boundaries:
 
-- generated-artifact tests protect the build-time transformation;
+- central generated-artifact checks protect the build-time transformation;
 - contract and tree tests protect parser behavior and source coordinates;
 - typed and lowering tests protect syntax projections;
 - Lezer references check selected parser and CST behavior;

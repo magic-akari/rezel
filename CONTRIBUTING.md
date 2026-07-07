@@ -57,7 +57,7 @@ Use evidence at the layer that owns the behavior:
 - runtime unit tests for generic parser mechanics;
 - generator cases for grammar syntax, conflicts, and deterministic emission;
 - language contract tests for strict acceptance, recovery, and coordinates;
-- generated tests for all committed parser artifacts;
+- repository `rezel-codegen` checks for all committed parser artifacts;
 - typed and lowering tests for CST and AST projections;
 - reference comparisons for behavior defined by a pinned parser or official
   implementation;

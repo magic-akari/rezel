@@ -28,9 +28,6 @@ rezel-highlight = { workspace = true, optional = true }
 rezel-lr.workspace = true
 zerocopy.workspace = true
 
-[dev-dependencies]
-rezel-generator.workspace = true
-
 [lints]
 workspace = true
 ```
@@ -66,7 +63,6 @@ languages/<language>/
     typed.rs
   tests/
     contract.rs
-    generated.rs
     parse.rs
     typed.rs
 ```
@@ -83,20 +79,44 @@ Current language packages are examples of these components, not templates that
 must all be copied. Begin with the smallest package that satisfies the new
 contract.
 
+## Register centralized generation
+
+Checked-in parser artifacts are owned by the repository-level
+[`rezel-codegen`](../../tools/codegen/src/main.rs) workflow, not by a duplicate
+test inside each language crate. Extend its language scope so it reads the new
+grammar, bindings, and typed schema and declares the complete expected output
+set. The conventional scope uses `languages/<language>/grammar/` as input and
+`languages/<language>/src/` as output.
+
+Register the accepted language name in the tool's usage text and
+`Scope::parse`; the existing `Scope::Language` path then performs the common
+five-artifact generation. If a package needs additional generated files,
+extend that scope in `rezel-codegen` so check and update mode continue to share
+one declaration of expected output.
+
+Add matching check and update tasks to [`mise.toml`](../../mise.toml):
+
+```toml
+[tasks."codegen:rezel:<language>"]
+description = "Verify checked-in <language> parser sources"
+run = "cargo run --locked --package rezel-codegen -- <language> --check"
+
+[tasks."codegen:rezel:<language>:update"]
+description = "Regenerate checked-in <language> parser sources"
+run = "cargo run --locked --package rezel-codegen -- <language> --update"
+```
+
+Add only the check task to the dependency list for `tasks.verify`. This makes
+the normal repository gate cover the new language without modifying that
+language's test target. Update tasks remain explicit because they write the
+reviewed artifacts.
+
 ## Generate all parser artifacts
 
-The repository-local `rezel` binary accepts the grammar and the two declarative
-side inputs:
+After registering the scope, generate its artifacts through the update task:
 
 ```sh
-cargo run --locked -p rezel-generator -- generate \
-  languages/<language>/grammar/<language>.grammar \
-  --output languages/<language>/src/generated.rs \
-  --terms languages/<language>/src/terms.rs \
-  --include-names \
-  --bindings languages/<language>/grammar/<language>.bindings.toml \
-  --typed languages/<language>/grammar/<language>.typed.toml \
-  --typed-output languages/<language>/src/typed.rs
+mise run codegen:rezel:<language>:update
 ```
 
 This writes:
@@ -109,9 +129,12 @@ This writes:
 | `terms.rs`         | Stable numeric constants for named or exported grammar terms            |
 | `typed.rs`         | Typed CST kinds, wrappers, unions, and direct-child accessors           |
 
-The two binary file names are derived from `--output`; they are always emitted.
-`--terms` is optional. `--typed` and `--typed-output` must appear together.
-`--include-names` retains term names used by diagnostics and tree-facing APIs.
+The standard language scope fixes this contract: it reads
+`<language>.grammar`, `<language>.bindings.toml`, and
+`<language>.typed.toml`; compiles with term names enabled; and always emits all
+five files under `src/` with the names shown above. These are not optional CLI
+choices in the repository workflow. Change the central scope explicitly if a
+future package needs a different artifact contract.
 
 The Rust library API exposes the same separation. `compile_grammar` produces a
 checked grammar, `RustBindings::from_toml_str` reads the binding manifest,
@@ -167,41 +190,32 @@ Re-export the typed root, unions, node wrappers, and named terms needed by
 consumers. Keep the raw generated module private unless exposing it is part of
 an intentional low-level API.
 
-## Make generation reproducible
+## Check generation centrally
 
-Add a generated-output test with the first parser commit. It should compile the
-checked-in grammar, load and validate the checked-in bindings, emit all
-artifacts, and compare them byte-for-byte:
-
-```rust
-let grammar = compile_grammar(
-    GRAMMAR,
-    Some("grammar/<language>.grammar"),
-    BuildOptions { include_names: true },
-)?;
-let bindings = RustBindings::from_toml_str(BINDINGS)?;
-let generated = emit_rust(&grammar, &bindings)?;
-
-assert_eq!(generated.parser, include_str!("../src/generated.rs"));
-assert_eq!(generated.terms, include_str!("../src/terms.rs"));
-assert_eq!(
-    generated.little_endian_data,
-    include_bytes!("../src/generated.le.bin")
-);
-assert_eq!(
-    generated.big_endian_data,
-    include_bytes!("../src/generated.be.bin")
-);
-
-let typed = emit_typed_syntax(&grammar, TYPED_SCHEMA)?;
-assert_eq!(typed, include_str!("../src/typed.rs"));
-```
-
-Adapt error handling to the test, but keep all five comparisons. Run it with:
+Run the paired check task after generation and before handoff:
 
 ```sh
-cargo test --locked -p rezel-lang-<language> --test generated
+mise run codegen:rezel:<language>
 ```
 
-This test catches stale output and nondeterministic emission. Parser contract
-and reference tests remain responsible for behavioral correctness.
+In check mode, `rezel-codegen` compiles the checked-in grammar, validates the
+bindings and typed schema, reconstructs the declared artifacts, and compares
+their bytes with the working tree. The language scope must account for parser
+source, named terms, little- and big-endian table blobs, and typed source. The
+check reports stale or missing files and generated Rust source that the scope
+owns but no longer declares; update mode applies the same expected set.
+
+For orphan detection, a language scope inspects direct children of its `src/`
+directory. It owns an extra file only when it is an `.rs` file whose generated
+marker and regeneration-command line name that scope's update task. Extra old
+binary files are not inferred as orphans, so removing or renaming a declared
+binary output requires an explicit reviewed deletion.
+
+Do not add a package-local `generated` test or a language-crate development
+dependency on `rezel-generator`. That would duplicate the central comparison
+and allow the package test and repository gate to drift apart. Add or change an
+output by teaching `rezel-codegen` about it, expose its check/update tasks in
+`mise`, and keep the check task in `mise run verify`.
+
+This centralized check proves reproducible emission. Parser contract and
+reference tests remain responsible for behavioral correctness.

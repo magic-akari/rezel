@@ -36,5 +36,8 @@ CFGs, LR conflicts, GLR, CST design, recovery, derivation, and differential
 validation. The adjacent
 [grammar syntax guide](adding-a-language/02-grammar-syntax.md) gives the
 self-contained Rezel notation and links to the deeper Lezer documentation.
+The [language adaptation case studies](adding-a-language/case-studies/README.md)
+show how to audit pinned upstream grammars without turning language-specific
+decisions into generic runtime rules.
 
 Contributor setup begins in [CONTRIBUTING.md](../CONTRIBUTING.md).
