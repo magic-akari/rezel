@@ -14,7 +14,9 @@ use crate::decode::pair;
 use crate::goto_index::GotoIndex;
 use crate::stack::Stack;
 use crate::table::{Action, ReservedTerm, SequenceCode, StateField, StateFlag};
-use crate::token::{AcceptedToken, InputStream, TokenAsciiIndex, TokenTable, Tokenizer};
+use crate::token::{
+    AcceptedToken, InputStream, TokenAsciiIndex, TokenTable, Tokenizer, TokenizerStartIndex,
+};
 
 // Non-incremental parses benefit from amortizing compact-tree allocation over
 // larger buffers than Lezer's incremental-friendly common default.
@@ -490,6 +492,7 @@ pub(crate) struct ParserCore {
     goto_index: Arc<GotoIndex>,
     pub(crate) token_ascii_index: Arc<TokenAsciiIndex>,
     pub(crate) local_token_ascii_indices: Arc<[Option<TokenAsciiIndex>]>,
+    tokenizer_start_index: Arc<TokenizerStartIndex>,
 }
 
 impl fmt::Debug for ParserCore {
@@ -687,6 +690,7 @@ impl LRParser {
             })
             .collect::<Vec<_>>()
             .into();
+        let tokenizer_start_index = Arc::new(TokenizerStartIndex::build(language.tokenizers));
         let core = ParserCore {
             language,
             node_set,
@@ -701,6 +705,7 @@ impl LRParser {
             goto_index,
             token_ascii_index,
             local_token_ascii_indices,
+            tokenizer_start_index,
         };
         Ok(Self {
             core: Arc::new(core),
@@ -1087,8 +1092,12 @@ impl TokenCache {
         let token_start = stream.clip_position(stack.position());
         self.actions.clear();
         let mut main = None;
-        let mut token_start_character = None;
-        let mut remaining = mask;
+        let mut remaining = if core.tokenizer_start_index.has_filtered(mask) {
+            stream.reset(token_start);
+            core.tokenizer_start_index.filter(mask, stream.next())
+        } else {
+            mask
+        };
         while remaining != 0 {
             let index = remaining.trailing_zeros() as usize;
             remaining &= remaining - 1;
@@ -1096,15 +1105,6 @@ impl TokenCache {
             let flags = tokenizer.flags();
             if main.is_some() && !flags.fallback {
                 continue;
-            }
-            if let Some(start) = tokenizer.start() {
-                let next = *token_start_character.get_or_insert_with(|| {
-                    stream.reset(token_start);
-                    stream.next()
-                });
-                if !start.matches(next) {
-                    continue;
-                }
             }
             let stale = {
                 let token = &self.tokens[index];

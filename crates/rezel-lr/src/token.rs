@@ -407,6 +407,67 @@ impl Tokenizer {
     }
 }
 
+/// Precomputed first-code-point masks for external tokenizers.
+///
+/// Parser states already encode the tokenizers that can contribute there. This
+/// index intersects that state mask with the next input code point once, before
+/// dispatch, instead of asking every active external tokenizer separately.
+#[derive(Debug)]
+pub(crate) struct TokenizerStartIndex {
+    ascii: [u32; 128],
+    non_ascii: u32,
+    end: u32,
+    filtered: u32,
+    unfiltered: u32,
+}
+
+impl TokenizerStartIndex {
+    pub(crate) fn build(tokenizers: &[Tokenizer]) -> Self {
+        let mut index = Self {
+            ascii: [0; 128],
+            non_ascii: 0,
+            end: 0,
+            filtered: 0,
+            unfiltered: 0,
+        };
+        for (position, tokenizer) in tokenizers.iter().copied().enumerate() {
+            let bit = 1_u32 << position;
+            let Some(start) = tokenizer.start() else {
+                index.unfiltered |= bit;
+                continue;
+            };
+            index.filtered |= bit;
+            for byte in 0_u8..0x80 {
+                if start.matches(Some(CodePoint::from(byte))) {
+                    index.ascii[usize::from(byte)] |= bit;
+                }
+            }
+            if start.non_ascii {
+                index.non_ascii |= bit;
+            }
+            if start.end {
+                index.end |= bit;
+            }
+        }
+        index
+    }
+
+    #[inline]
+    pub(crate) fn has_filtered(&self, mask: u32) -> bool {
+        mask & self.filtered != 0
+    }
+
+    #[inline]
+    pub(crate) fn filter(&self, mask: u32, next: Option<CodePoint>) -> u32 {
+        let matching = match next {
+            None => self.end,
+            Some(next) if next.as_u32() >= 0x80 => self.non_ascii,
+            Some(next) => self.ascii[next.as_u32() as usize],
+        };
+        mask & (self.unfiltered | matching)
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct StreamCursor {
     range_index: usize,
@@ -1494,6 +1555,43 @@ mod tests {
         assert!(ascii_only.matches(Some(CodePoint::from(b'_'))));
         assert!(!ascii_only.matches(Some(CodePoint::from('µ'))));
         assert!(!ascii_only.matches(None));
+    }
+
+    #[test]
+    fn indexes_external_tokenizer_starts_before_dispatch() {
+        fn accept_zero(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
+            input.accept_token(0)
+        }
+
+        const FLAGS: TokenizerFlags = TokenizerFlags {
+            contextual: false,
+            fallback: false,
+            extend: false,
+        };
+        static UNFILTERED: ExternalTokenizer = ExternalTokenizer::new(accept_zero, FLAGS);
+        static ASCII: ExternalTokenizer = ExternalTokenizer::new(accept_zero, FLAGS)
+            .with_start(ExternalTokenizerStart::NONE.with_ascii(b'$'));
+        static NON_ASCII: ExternalTokenizer = ExternalTokenizer::new(accept_zero, FLAGS)
+            .with_start(ExternalTokenizerStart::NONE.with_non_ascii());
+        static END: ExternalTokenizer = ExternalTokenizer::new(accept_zero, FLAGS)
+            .with_start(ExternalTokenizerStart::NONE.with_end());
+
+        let tokenizers = [
+            Tokenizer::External(&UNFILTERED),
+            Tokenizer::External(&ASCII),
+            Tokenizer::External(&NON_ASCII),
+            Tokenizer::External(&END),
+        ];
+        let index = TokenizerStartIndex::build(&tokenizers);
+        let all = 0b1111;
+
+        assert!(!index.has_filtered(0b0001));
+        assert!(index.has_filtered(0b0010));
+        assert_eq!(index.filter(all, Some(CodePoint::from(b'$'))), 0b0011);
+        assert_eq!(index.filter(all, Some(CodePoint::from(b'a'))), 0b0001);
+        assert_eq!(index.filter(all, Some(CodePoint::from('µ'))), 0b0101);
+        assert_eq!(index.filter(all, None), 0b1001);
+        assert_eq!(index.filter(0b1010, None), 0b1000);
     }
 
     #[test]

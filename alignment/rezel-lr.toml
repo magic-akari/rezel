@@ -145,7 +145,7 @@ representation = "Tokenizer code observes logical code points over cached identi
 rust_item = "rezel_lr::token::ExternalTokenizerStart"
 classification = "rezel-owned"
 invariant = "Skipping an external tokenizer is permitted only when its callback cannot accept at the current logical token-start code point or end-of-input position; enabled tokenizer order, caching, fallback, extend, and action semantics remain unchanged."
-representation = "Language adapters may attach a const two-word ASCII bitmap plus non-ASCII and end-of-input flags to an external tokenizer. TokenCache reads the logical stack-position character once and bypasses callbacks whose conservative set cannot match, while tokenizers without a set follow the pinned runtime path."
+representation = "Language adapters may attach a const two-word ASCII bitmap plus non-ASCII and end-of-input flags to an external tokenizer. Parser construction compiles those filters into per-code-point tokenizer masks; TokenCache reads the logical stack-position character once and intersects the current state's tokenizer mask before dispatch, while tokenizers without a set remain unfiltered."
 evidence_files = [
 	"crates/rezel-lr/src/token.rs",
 	"languages/go/tests/reference.rs",
