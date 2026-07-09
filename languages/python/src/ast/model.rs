@@ -1,3 +1,8 @@
+use std::borrow::Borrow;
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::sync::Arc;
+
 use rezel_common::{TextRange, TextSize};
 
 use super::{PythonAstField, PythonAstKind};
@@ -130,9 +135,9 @@ impl PythonAstNode {
 #[derive(Debug)]
 pub struct PythonAst {
     pub(super) nodes: Vec<PythonAstNode>,
-    pub(super) strings: Vec<String>,
-    pub(super) python_strings: Vec<Vec<u32>>,
-    pub(super) bytes: Vec<Vec<u8>>,
+    pub(super) strings: Vec<Arc<str>>,
+    pub(super) python_strings: Vec<Arc<[u32]>>,
+    pub(super) bytes: Vec<Arc<[u8]>>,
     pub(super) root: AstNodeId,
 }
 
@@ -159,17 +164,17 @@ impl PythonAst {
 
     #[must_use]
     pub fn string(&self, id: StringId) -> Option<&str> {
-        self.strings.get(id.0 as usize).map(String::as_str)
+        self.strings.get(id.0 as usize).map(Arc::as_ref)
     }
 
     #[must_use]
     pub fn python_string(&self, id: PythonStringId) -> Option<&[u32]> {
-        self.python_strings.get(id.0 as usize).map(Vec::as_slice)
+        self.python_strings.get(id.0 as usize).map(Arc::as_ref)
     }
 
     #[must_use]
     pub fn bytes(&self, id: BytesId) -> Option<&[u8]> {
-        self.bytes.get(id.0 as usize).map(Vec::as_slice)
+        self.bytes.get(id.0 as usize).map(Arc::as_ref)
     }
 }
 
@@ -232,20 +237,59 @@ impl std::fmt::Display for AstError {
 
 impl std::error::Error for AstError {}
 
+struct OwnedInterner<T: ?Sized> {
+    values_by_id: Vec<Arc<T>>,
+    ids_by_value: HashMap<Arc<T>, u32>,
+}
+
+impl<T> OwnedInterner<T>
+where
+    T: Eq + Hash + ?Sized,
+{
+    fn new() -> Self {
+        Self {
+            values_by_id: Vec::new(),
+            ids_by_value: HashMap::new(),
+        }
+    }
+
+    fn intern<Q>(&mut self, value: &Q) -> Result<u32, AstError>
+    where
+        Arc<T>: Borrow<Q>,
+        for<'a> Arc<T>: From<&'a Q>,
+        Q: Eq + Hash + ?Sized,
+    {
+        if let Some(id) = self.ids_by_value.get(value).copied() {
+            return Ok(id);
+        }
+
+        let id = u32::try_from(self.values_by_id.len()).map_err(|_| AstError::IndexOverflow)?;
+        let owned = Arc::<T>::from(value);
+        self.values_by_id.push(Arc::clone(&owned));
+        let previous = self.ids_by_value.insert(owned, id);
+        debug_assert!(previous.is_none());
+        Ok(id)
+    }
+
+    fn into_values(self) -> Vec<Arc<T>> {
+        self.values_by_id
+    }
+}
+
 pub(super) struct AstBuilder {
     nodes: Vec<PythonAstNode>,
-    strings: Vec<String>,
-    python_strings: Vec<Vec<u32>>,
-    bytes: Vec<Vec<u8>>,
+    strings: OwnedInterner<str>,
+    python_strings: OwnedInterner<[u32]>,
+    bytes: OwnedInterner<[u8]>,
 }
 
 impl AstBuilder {
-    pub(super) const fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             nodes: Vec::new(),
-            strings: Vec::new(),
-            python_strings: Vec::new(),
-            bytes: Vec::new(),
+            strings: OwnedInterner::new(),
+            python_strings: OwnedInterner::new(),
+            bytes: OwnedInterner::new(),
         }
     }
 
@@ -278,52 +322,29 @@ impl AstBuilder {
     }
 
     pub(super) fn intern(&mut self, value: &str) -> Result<StringId, AstError> {
-        if let Some(index) = self.strings.iter().position(|candidate| candidate == value) {
-            return Ok(StringId(
-                u32::try_from(index).map_err(|_| AstError::IndexOverflow)?,
-            ));
-        }
-        let index = u32::try_from(self.strings.len()).map_err(|_| AstError::IndexOverflow)?;
-        self.strings.push(value.to_owned());
-        Ok(StringId(index))
+        let id = self.strings.intern(value)?;
+        Ok(StringId(id))
     }
 
     pub(super) fn intern_python_string(
         &mut self,
         value: &[u32],
     ) -> Result<PythonStringId, AstError> {
-        if let Some(index) = self
-            .python_strings
-            .iter()
-            .position(|candidate| candidate == value)
-        {
-            return Ok(PythonStringId(
-                u32::try_from(index).map_err(|_| AstError::IndexOverflow)?,
-            ));
-        }
-        let index =
-            u32::try_from(self.python_strings.len()).map_err(|_| AstError::IndexOverflow)?;
-        self.python_strings.push(value.to_owned());
-        Ok(PythonStringId(index))
+        let id = self.python_strings.intern(value)?;
+        Ok(PythonStringId(id))
     }
 
     pub(super) fn intern_bytes(&mut self, value: &[u8]) -> Result<BytesId, AstError> {
-        if let Some(index) = self.bytes.iter().position(|candidate| candidate == value) {
-            return Ok(BytesId(
-                u32::try_from(index).map_err(|_| AstError::IndexOverflow)?,
-            ));
-        }
-        let index = u32::try_from(self.bytes.len()).map_err(|_| AstError::IndexOverflow)?;
-        self.bytes.push(value.to_owned());
-        Ok(BytesId(index))
+        let id = self.bytes.intern(value)?;
+        Ok(BytesId(id))
     }
 
     pub(super) fn finish(self, root: AstNodeId) -> PythonAst {
         PythonAst {
             nodes: self.nodes,
-            strings: self.strings,
-            python_strings: self.python_strings,
-            bytes: self.bytes,
+            strings: self.strings.into_values(),
+            python_strings: self.python_strings.into_values(),
+            bytes: self.bytes.into_values(),
             root,
         }
     }
