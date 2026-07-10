@@ -213,23 +213,36 @@ impl ActionIndex {
         })
     }
 
+    #[cfg(test)]
     pub(crate) fn visit(
         &self,
         state: u16,
         field: StateField,
         term: u16,
-        mut visit: impl FnMut(Action),
+        visit: impl FnMut(Action),
     ) -> Option<Action> {
         let column = match field {
             StateField::Actions => 0,
             StateField::Skip => 1,
             _ => unreachable!("only action sequence fields are indexed"),
         };
-        let filter_rows = field == StateField::Actions;
-        let mut row_id = self.state_rows[usize::from(state)][column];
+        let row_id = self.state_rows[usize::from(state)][column];
+        self.visit_row(row_id, term, visit)
+    }
+
+    pub(crate) fn state_rows(&self, state: u16) -> [u16; 2] {
+        self.state_rows[usize::from(state)]
+    }
+
+    pub(crate) fn visit_row(
+        &self,
+        mut row_id: u16,
+        term: u16,
+        mut visit: impl FnMut(Action),
+    ) -> Option<Action> {
         loop {
             let row = self.rows[usize::from(row_id)];
-            let filter_row = filter_rows && usize::from(row.length) > LINEAR_SEARCH_LIMIT;
+            let filter_row = usize::from(row.length) > LINEAR_SEARCH_LIMIT;
             if !filter_row || row.may_contain(term) {
                 let range = row.range();
                 let start = range.start;
@@ -659,11 +672,24 @@ mod tests {
             });
             assert_eq!(actions, [u32::from(term + 100)]);
             assert_eq!(fallback.map(Action::raw), Some(200));
+
+            actions.clear();
+            let fallback = index.visit(0, StateField::Skip, term, |action| {
+                actions.push(action.raw());
+            });
+            assert_eq!(actions, [u32::from(term + 100)]);
+            assert_eq!(fallback.map(Action::raw), Some(200));
         }
 
         assert_eq!(term_filter_bit(3), term_filter_bit(34));
         let mut actions = Vec::new();
         let fallback = index.visit(0, StateField::Actions, 34, |action| {
+            actions.push(action.raw());
+        });
+        assert!(actions.is_empty());
+        assert_eq!(fallback.map(Action::raw), Some(200));
+
+        let fallback = index.visit(0, StateField::Skip, 34, |action| {
             actions.push(action.raw());
         });
         assert!(actions.is_empty());

@@ -1230,11 +1230,10 @@ fn accepted_or_declined(stream: &InputStream, start: TextSize) -> AcceptedToken 
 
 fn add_actions(stack: &Stack, token: u16, end: TextSize, actions: &mut Vec<TokenAction>) {
     let core = stack.core();
-    let fallback = core
-        .action_index
-        .visit(stack.state(), StateField::Actions, token, |action| {
-            put_action(actions, action, token, end);
-        });
+    let [action_row, skip_row] = core.action_index.state_rows(stack.state());
+    let fallback = core.action_index.visit_row(action_row, token, |action| {
+        put_action(actions, action, token, end);
+    });
     if actions.is_empty()
         && let Some(fallback) = fallback
     {
@@ -1243,11 +1242,9 @@ fn add_actions(stack: &Stack, token: u16, end: TextSize, actions: &mut Vec<Token
     if !core.action_index.skip_may_match(token) {
         return;
     }
-    let fallback = core
-        .action_index
-        .visit(stack.state(), StateField::Skip, token, |action| {
-            put_action(actions, action, token, end);
-        });
+    let fallback = core.action_index.visit_row(skip_row, token, |action| {
+        put_action(actions, action, token, end);
+    });
     if actions.is_empty()
         && let Some(fallback) = fallback
     {
