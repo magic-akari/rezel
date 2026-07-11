@@ -559,6 +559,8 @@ impl ParserCore {
         }
         let data = self.language.state_data;
         let mut index = self.state_slot(state, StateField::Actions) as usize;
+        // Default reductions neither consume input nor split the stack. Run
+        // the complete chain before returning to the parse scheduler.
         loop {
             if data[index] == SequenceCode::End.raw() {
                 if data[index + 1] == SequenceCode::Next.raw() {
@@ -1482,14 +1484,16 @@ impl Parse {
                 &mut self.large_reductions,
             );
         }
-        let default_reduce = Action::from_raw(
-            self.core
-                .state_slot(stack.state(), StateField::DefaultReduce),
-        );
-        if !default_reduce.is_none() {
+        loop {
+            let default_reduce = Action::from_raw(
+                self.core
+                    .state_slot(stack.state(), StateField::DefaultReduce),
+            );
+            if default_reduce.is_none() {
+                break;
+            }
             self.bump_action(stack.position())?;
             stack.reduce(default_reduce, &mut self.stream, &mut self.large_reductions)?;
-            return Ok(true);
         }
         if stack.depth() >= ParsePolicy::CUT_DEPTH {
             while stack.depth() > ParsePolicy::CUT_TO_DEPTH
@@ -1785,8 +1789,68 @@ fn prune_by_score(stacks: &mut Vec<Stack>, maximum: usize) {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::OnceLock;
+
     use super::*;
-    use rezel_common::{Input, LexicalInput, StringInput, TextRange, Utf8Input};
+    use rezel_common::{Input, LexicalInput, NodeFlags, StringInput, TextRange, Utf8Input};
+
+    fn reduction_chain_node_set() -> &'static Arc<NodeSet> {
+        static NODE_SET: OnceLock<Arc<NodeSet>> = OnceLock::new();
+        NODE_SET.get_or_init(|| {
+            Arc::new(NodeSet::new(vec![
+                NodeType::new(0, "⚠", NodeFlags::ERROR),
+                NodeType::new(1, "First", NodeFlags::TOP),
+                NodeType::new(2, "Second", NodeFlags::ANONYMOUS),
+            ]))
+        })
+    }
+
+    static REDUCTION_CHAIN_STATES: [u32; StateField::COUNT * 3] = [
+        0,
+        0,
+        0,
+        0,
+        Action::reduce(1, 0, false, false).raw(),
+        0,
+        0,
+        0,
+        0,
+        0,
+        Action::reduce(2, 0, false, false).raw(),
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    ];
+    static REDUCTION_CHAIN_STATE_DATA: [u16; 2] =
+        [SequenceCode::End.raw(), SequenceCode::Done.raw()];
+    static REDUCTION_CHAIN_GOTO: [u16; 10] = [3, 1, 4, 7, 3, 1, 0, 3, 2, 1];
+    static REDUCTION_CHAIN_TOKEN_TABLE: TokenTable = TokenTable::new(&[], &[], &[], &[]);
+    static REDUCTION_CHAIN_TOP: [TopRule; 1] = [TopRule {
+        name: "Chain",
+        state: 0,
+        term: 1,
+    }];
+    static REDUCTION_CHAIN_LANGUAGE: Language = Language {
+        states: &REDUCTION_CHAIN_STATES,
+        state_data: &REDUCTION_CHAIN_STATE_DATA,
+        goto: &REDUCTION_CHAIN_GOTO,
+        token_table: &REDUCTION_CHAIN_TOKEN_TABLE,
+        tokenizers: &[],
+        top_rules: &REDUCTION_CHAIN_TOP,
+        max_term: 3,
+        min_repeat_term: 3,
+        token_precedence: 0,
+        node_set: reduction_chain_node_set,
+        context: None,
+        dialects: &[],
+        dynamic_precedences: &[],
+        specializers: &[],
+        term_names: &[],
+    };
 
     fn start_context() -> ContextValue {
         ContextValue::new(())
@@ -1866,5 +1930,19 @@ mod tests {
             .with_reduce_terms(&[13]);
         assert!(!reduced.tracks_reduction(3));
         assert!(reduced.tracks_reduction(13));
+    }
+
+    #[test]
+    fn consecutive_default_reductions_run_before_scheduler_reentry() {
+        let parser = LRParser::from_language(&REDUCTION_CHAIN_LANGUAGE);
+        let input: Arc<dyn Input> = Arc::new(StringInput::try_new("").unwrap());
+        let request = ParseRequest::full(input).into_validated().unwrap();
+        let mut parse = Parse::new(Arc::clone(&parser.core), request);
+        let mut stack = parse.stacks.pop().unwrap();
+
+        assert!(!parse.advance_stack(&mut stack, None, None).unwrap());
+        assert_eq!(stack.state(), 2);
+        assert_eq!(stack.depth(), 2);
+        assert_eq!(parse.actions, 2);
     }
 }

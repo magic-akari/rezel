@@ -186,6 +186,20 @@ invariant = "A prepared language request enters the ordinary LR engine exactly o
 representation = "The hidden Rust method separates language-owned request preparation from the shared LR parse constructor."
 
 [[override_item]]
+rust_item = "rezel_lr::parse::Parse::advance_stack"
+classification = "rezel-owned"
+invariant = "Consecutive default reductions execute in generated order with identical action-budget, context, dynamic-precedence, stack, CST, recovery, and completion effects before tokenization resumes at the unchanged input position."
+representation = "The pinned runtime returns to its parse scheduler after each default reduction. Rust exhausts the adjacent default-reduction chain inside one advance-stack call, eliminating repeated token-cache clearing, position checks, and function reentry without crossing a token action or stack split."
+evidence_files = [
+	"crates/rezel-generator/tests/cases.rs",
+	"crates/rezel-generator/tests/parse.rs",
+	"languages/go/tests/reference.rs",
+	"languages/java/tests/reference.rs",
+	"languages/python/tests/reference.rs",
+	"languages/rust/tests/reference.rs",
+]
+
+[[override_item]]
 rust_item = "rezel_lr::parse::ContextTracker::tracks_reduction"
 classification = "rezel-owned"
 invariant = "An omitted reduction callback or a reduction term outside its declared relevant set remains the identity operation and cannot alter the current context."
