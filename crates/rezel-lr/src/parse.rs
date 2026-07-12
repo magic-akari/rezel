@@ -1484,32 +1484,78 @@ impl Parse {
                 &mut self.large_reductions,
             );
         }
+        // Keep the deterministic same-position action chain inside one call.
         loop {
-            let default_reduce = Action::from_raw(
-                self.core
-                    .state_slot(stack.state(), StateField::DefaultReduce),
-            );
-            if default_reduce.is_none() {
-                break;
+            loop {
+                let default_reduce = Action::from_raw(
+                    self.core
+                        .state_slot(stack.state(), StateField::DefaultReduce),
+                );
+                if default_reduce.is_none() {
+                    break;
+                }
+                self.bump_action(stack.position())?;
+                stack.reduce(default_reduce, &mut self.stream, &mut self.large_reductions)?;
             }
-            self.bump_action(stack.position())?;
-            stack.reduce(default_reduce, &mut self.stream, &mut self.large_reductions)?;
-        }
-        if stack.depth() >= ParsePolicy::CUT_DEPTH {
-            while stack.depth() > ParsePolicy::CUT_TO_DEPTH
-                && stack.force_reduce(
-                    &mut self.stream,
-                    &mut self.actions,
-                    &mut self.large_reductions,
-                )?
-            {}
-        }
-        self.tokens.get_actions(stack, &mut self.stream)?;
-        let token_start = self
-            .tokens
-            .main_token
-            .map_or(stack.position(), |token| token.start);
-        if split.is_none() || self.tokens.actions.len() <= 1 {
+            if stack.depth() >= ParsePolicy::CUT_DEPTH {
+                while stack.depth() > ParsePolicy::CUT_TO_DEPTH
+                    && stack.force_reduce(
+                        &mut self.stream,
+                        &mut self.actions,
+                        &mut self.large_reductions,
+                    )?
+                {}
+            }
+            self.tokens.get_actions(stack, &mut self.stream)?;
+            let token_start = self
+                .tokens
+                .main_token
+                .map_or(stack.position(), |token| token.start);
+            let action_count = self.tokens.actions.len();
+            if action_count > 1 && split.is_some() {
+                // Keep the reusable token-action buffer in place while
+                // applying alternatives, as upstream Lezer does. Applying an
+                // action mutates the stack and input stream, but not this cache.
+                for index in 0..action_count {
+                    let choice = self.tokens.actions[index];
+                    let last = index + 1 == action_count;
+                    if last {
+                        self.bump_action(stack.position())?;
+                        stack.apply(
+                            choice.action,
+                            choice.token,
+                            token_start,
+                            choice.end,
+                            &mut self.stream,
+                            &mut self.large_reductions,
+                        )?;
+                        return Ok(true);
+                    }
+                    let mut local = stack.split();
+                    self.bump_action(local.position())?;
+                    local.apply(
+                        choice.action,
+                        choice.token,
+                        token_start,
+                        choice.end,
+                        &mut self.stream,
+                        &mut self.large_reductions,
+                    )?;
+                    if local.position() > start {
+                        advanced
+                            .as_deref_mut()
+                            .expect("split actions provide an advanced stack sink")
+                            .push(local);
+                    } else {
+                        split
+                            .as_deref_mut()
+                            .expect("split actions provide a pending stack sink")
+                            .push(local);
+                    }
+                }
+                return Ok(false);
+            }
+
             let Some(choice) = self.tokens.actions.first().copied() else {
                 return Ok(false);
             };
@@ -1522,51 +1568,10 @@ impl Parse {
                 &mut self.stream,
                 &mut self.large_reductions,
             )?;
-            return Ok(true);
-        }
-
-        // Keep the reusable token-action buffer in place while applying the
-        // alternatives, as upstream Lezer does. Applying an action mutates
-        // the stack and input stream, but not this cache.
-        let action_count = self.tokens.actions.len();
-        for index in 0..action_count {
-            let choice = self.tokens.actions[index];
-            let last = index + 1 == action_count;
-            if last {
-                self.bump_action(stack.position())?;
-                stack.apply(
-                    choice.action,
-                    choice.token,
-                    token_start,
-                    choice.end,
-                    &mut self.stream,
-                    &mut self.large_reductions,
-                )?;
+            if action_count != 1 || stack.position() > start {
                 return Ok(true);
             }
-            let mut local = stack.split();
-            self.bump_action(local.position())?;
-            local.apply(
-                choice.action,
-                choice.token,
-                token_start,
-                choice.end,
-                &mut self.stream,
-                &mut self.large_reductions,
-            )?;
-            if local.position() > start {
-                advanced
-                    .as_deref_mut()
-                    .expect("split actions provide an advanced stack sink")
-                    .push(local);
-            } else {
-                split
-                    .as_deref_mut()
-                    .expect("split actions provide a pending stack sink")
-                    .push(local);
-            }
         }
-        Ok(false)
     }
 
     fn advance_fully(
@@ -1792,7 +1797,10 @@ mod tests {
     use std::sync::OnceLock;
 
     use super::*;
-    use rezel_common::{Input, LexicalInput, NodeFlags, StringInput, TextRange, Utf8Input};
+    use crate::token::{ExternalTokenizer, ExternalTokenizerStart, TokenizerFlags};
+    use rezel_common::{
+        CodePoint, Input, LexicalInput, NodeFlags, StringInput, TextRange, Utf8Input,
+    };
 
     fn reduction_chain_node_set() -> &'static Arc<NodeSet> {
         static NODE_SET: OnceLock<Arc<NodeSet>> = OnceLock::new();
@@ -1841,6 +1849,65 @@ mod tests {
         token_table: &REDUCTION_CHAIN_TOKEN_TABLE,
         tokenizers: &[],
         top_rules: &REDUCTION_CHAIN_TOP,
+        max_term: 3,
+        min_repeat_term: 3,
+        token_precedence: 0,
+        node_set: reduction_chain_node_set,
+        context: None,
+        dialects: &[],
+        dynamic_precedences: &[],
+        specializers: &[],
+        term_names: &[],
+    };
+
+    fn scan_scheduler_token(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
+        if input.next() == Some(CodePoint::from(b'x')) {
+            input.advance(1);
+            input.accept_token(2)?;
+        }
+        Ok(())
+    }
+
+    static SCHEDULER_TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
+        scan_scheduler_token,
+        TokenizerFlags {
+            contextual: false,
+            fallback: false,
+            extend: false,
+        },
+    )
+    .with_start(ExternalTokenizerStart::NONE.with_ascii(b'x'));
+    static SCHEDULER_TOKENIZERS: [Tokenizer; 1] = [Tokenizer::External(&SCHEDULER_TOKENIZER)];
+    static SCHEDULER_STATES: [u32; StateField::COUNT * 3] =
+        [0, 2, 0, 1, 0, 0, 0, 7, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0];
+    static SCHEDULER_STATE_DATA: [u16; 12] = [
+        SequenceCode::End.raw(),
+        SequenceCode::Done.raw(),
+        2,
+        1,
+        1,
+        SequenceCode::End.raw(),
+        SequenceCode::Done.raw(),
+        2,
+        2,
+        0,
+        SequenceCode::End.raw(),
+        SequenceCode::Done.raw(),
+    ];
+    static SCHEDULER_GOTO: [u16; 6] = [3, 1, 4, 1, 1, 1];
+    static SCHEDULER_TOKEN_TABLE: TokenTable = TokenTable::new(&[], &[], &[], &[]);
+    static SCHEDULER_TOP: [TopRule; 1] = [TopRule {
+        name: "Scheduler",
+        state: 0,
+        term: 1,
+    }];
+    static SCHEDULER_LANGUAGE: Language = Language {
+        states: &SCHEDULER_STATES,
+        state_data: &SCHEDULER_STATE_DATA,
+        goto: &SCHEDULER_GOTO,
+        token_table: &SCHEDULER_TOKEN_TABLE,
+        tokenizers: &SCHEDULER_TOKENIZERS,
+        top_rules: &SCHEDULER_TOP,
         max_term: 3,
         min_repeat_term: 3,
         token_precedence: 0,
@@ -1943,6 +2010,19 @@ mod tests {
         assert!(!parse.advance_stack(&mut stack, None, None).unwrap());
         assert_eq!(stack.state(), 2);
         assert_eq!(stack.depth(), 2);
+        assert_eq!(parse.actions, 2);
+    }
+    #[test]
+    fn unique_token_reductions_run_before_scheduler_reentry() {
+        let parser = LRParser::from_language(&SCHEDULER_LANGUAGE);
+        let input: Arc<dyn Input> = Arc::new(StringInput::try_new("x").unwrap());
+        let request = ParseRequest::full(input).into_validated().unwrap();
+        let mut parse = Parse::new(Arc::clone(&parser.core), request);
+        let mut stack = parse.stacks.pop().unwrap();
+
+        assert!(parse.advance_stack(&mut stack, None, None).unwrap());
+        assert_eq!(stack.state(), 2);
+        assert_eq!(stack.position(), TextSize::from(1));
         assert_eq!(parse.actions, 2);
     }
 }

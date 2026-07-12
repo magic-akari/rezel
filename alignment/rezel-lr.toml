@@ -188,9 +188,10 @@ representation = "The hidden Rust method separates language-owned request prepar
 [[override_item]]
 rust_item = "rezel_lr::parse::Parse::advance_stack"
 classification = "rezel-owned"
-invariant = "Consecutive default reductions execute in generated order with identical action-budget, context, dynamic-precedence, stack, CST, recovery, and completion effects before tokenization resumes at the unchanged input position."
-representation = "The pinned runtime returns to its parse scheduler after each default reduction. Rust exhausts the adjacent default-reduction chain inside one advance-stack call, eliminating repeated token-cache clearing, position checks, and function reentry without crossing a token action or stack split."
+invariant = "Consecutive default reductions and unique non-consuming token actions execute in generated order with identical action-budget, cut-depth, token-cache, context, dynamic-precedence, stack, CST, recovery, and completion effects, and batching stops at the first consuming action or ambiguous stack split."
+representation = "The pinned runtime returns to its parse scheduler after each default reduction or token action. Rust exhausts the deterministic same-position chain inside one advance-stack call: adjacent default reductions run as one group, and every unique non-consuming token action is followed by the cut-depth and token-action lookup performed on scheduler reentry, eliminating token-cache invalidation, position checks, and function reentry between them."
 evidence_files = [
+	"crates/rezel-lr/src/parse.rs",
 	"crates/rezel-generator/tests/cases.rs",
 	"crates/rezel-generator/tests/parse.rs",
 	"languages/go/tests/reference.rs",
