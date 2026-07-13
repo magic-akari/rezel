@@ -242,8 +242,7 @@ impl ActionIndex {
     ) -> Option<Action> {
         loop {
             let row = self.rows[usize::from(row_id)];
-            let filter_row = usize::from(row.length) > LINEAR_SEARCH_LIMIT;
-            if !filter_row || row.may_contain(term) {
+            if row.may_contain(term) {
                 let range = row.range();
                 let start = range.start;
                 let terms = &self.terms[range];
@@ -692,6 +691,35 @@ mod tests {
         let fallback = index.visit(0, StateField::Skip, 34, |action| {
             actions.push(action.raw());
         });
+        assert!(actions.is_empty());
+        assert_eq!(fallback.map(Action::raw), Some(200));
+    }
+
+    #[test]
+    fn short_rows_preserve_negative_filters_and_collision_fallbacks() {
+        let states = [0, 0, 0, 0, 0, 0];
+        let data = [3, 103, 0, 4, 104, 0, END, OTHER, 200, 0];
+        let index = ActionIndex::build(&states, &data).unwrap();
+        let [action_row, _] = index.state_rows(0);
+        let row = index.rows[usize::from(action_row)];
+
+        assert!(usize::from(row.length) <= LINEAR_SEARCH_LIMIT);
+        assert!(row.may_contain(3));
+        assert_eq!(term_filter_bit(3), term_filter_bit(34));
+        assert!(row.may_contain(34));
+        assert!(!row.may_contain(5));
+
+        let mut actions = Vec::new();
+        let fallback = index.visit_row(action_row, 3, |action| actions.push(action.raw()));
+        assert_eq!(actions, [103]);
+        assert_eq!(fallback.map(Action::raw), Some(200));
+
+        actions.clear();
+        let fallback = index.visit_row(action_row, 34, |action| actions.push(action.raw()));
+        assert!(actions.is_empty());
+        assert_eq!(fallback.map(Action::raw), Some(200));
+
+        let fallback = index.visit_row(action_row, 5, |action| actions.push(action.raw()));
         assert!(actions.is_empty());
         assert_eq!(fallback.map(Action::raw), Some(200));
     }
