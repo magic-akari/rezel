@@ -1360,7 +1360,6 @@ impl Parse {
         while !pending.is_empty() {
             let mut stack = pending.remove(0);
             loop {
-                self.tokens.main_token = None;
                 if stack.position() > position {
                     advanced.push(stack);
                     break;
@@ -1478,6 +1477,7 @@ impl Parse {
     ) -> Result<bool, ParseError> {
         let start = stack.position();
         if self.stopped_at.is_some_and(|stop| start > stop) {
+            self.tokens.main_token = None;
             return stack.force_reduce(
                 &mut self.stream,
                 &mut self.actions,
@@ -2012,6 +2012,23 @@ mod tests {
         assert_eq!(stack.depth(), 2);
         assert_eq!(parse.actions, 2);
     }
+
+    #[test]
+    fn stop_boundary_clears_a_snapshot_without_tokenization() {
+        let parser = LRParser::from_language(&SCHEDULER_LANGUAGE);
+        let input: Arc<dyn Input> = Arc::new(StringInput::try_new("x").unwrap());
+        let request = ParseRequest::full(input).into_validated().unwrap();
+        let mut parse = Parse::new(Arc::clone(&parser.core), request);
+
+        assert!(parse.step().unwrap().is_none());
+        assert!(parse.tokens.main_token.is_some());
+        parse.stop_at(TextSize::from(0)).unwrap();
+        let mut stack = parse.stacks.pop().unwrap();
+
+        assert!(!parse.advance_stack(&mut stack, None, None).unwrap());
+        assert!(parse.tokens.main_token.is_none());
+    }
+
     #[test]
     fn unique_token_reductions_run_before_scheduler_reentry() {
         let parser = LRParser::from_language(&SCHEDULER_LANGUAGE);
