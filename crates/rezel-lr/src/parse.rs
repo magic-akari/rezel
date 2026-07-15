@@ -546,12 +546,16 @@ impl ParserCore {
         self.action_index.first_action(state, terminal)
     }
 
+    pub(crate) fn default_reduce(&self, state: u16) -> Action {
+        self.action_index.default_reduce(state)
+    }
+
     pub(crate) fn all_actions<T>(
         &self,
         state: u16,
         mut visit: impl FnMut(Action) -> Option<T>,
     ) -> Option<T> {
-        let default = Action::from_raw(self.state_slot(state, StateField::DefaultReduce));
+        let default = self.default_reduce(state);
         if !default.is_none()
             && let Some(result) = visit(default)
         {
@@ -1487,10 +1491,7 @@ impl Parse {
         // Keep the deterministic same-position action chain inside one call.
         loop {
             loop {
-                let default_reduce = Action::from_raw(
-                    self.core
-                        .state_slot(stack.state(), StateField::DefaultReduce),
-                );
+                let default_reduce = self.core.default_reduce(stack.state());
                 if default_reduce.is_none() {
                     break;
                 }

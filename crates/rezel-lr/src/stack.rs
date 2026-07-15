@@ -234,10 +234,7 @@ impl Stack {
     pub fn can_shift(&self, term: u16) -> bool {
         let mut simulation = SimulatedStack::new(self);
         loop {
-            let default = Action::from_raw(
-                self.core
-                    .state_slot(simulation.state, StateField::DefaultReduce),
-            );
+            let default = self.core.default_reduce(simulation.state);
             let action = if default.is_none() {
                 self.core.has_action(simulation.state, term)
             } else {
@@ -783,8 +780,7 @@ impl Stack {
             return false;
         }
         let action_offset = self.core.state_slot(self.state, StateField::Actions) as usize;
-        let default_reduce =
-            Action::from_raw(self.core.state_slot(self.state, StateField::DefaultReduce));
+        let default_reduce = self.core.default_reduce(self.state);
         self.core.language.state_data[action_offset] == SequenceCode::End.raw()
             && default_reduce.is_none()
     }

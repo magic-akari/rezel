@@ -33,10 +33,16 @@ struct DecodedRow {
     fallback: Action,
 }
 
+#[derive(Clone, Copy, Debug)]
+struct StateActions {
+    rows: [u16; 2],
+    default_reduce: Action,
+}
+
 /// Parser-private terminal-action projection over compact generated tables.
 #[derive(Debug)]
 pub(crate) struct ActionIndex {
-    state_rows: Box<[[u16; 2]]>,
+    states: Box<[StateActions]>,
     rows: Box<[ActionRow]>,
     terms: Box<[u16]>,
     actions: Box<[Action]>,
@@ -55,7 +61,8 @@ impl ActionIndex {
             let base = state * StateField::COUNT;
             let actions = states[base + StateField::Actions.index()] as usize;
             let skip = states[base + StateField::Skip.index()] as usize;
-            roots.push([actions, skip]);
+            let default_reduce = Action::from_raw(states[base + StateField::DefaultReduce.index()]);
+            roots.push(([actions, skip], default_reduce));
             queue_offset(&mut offsets, &mut queued, actions)?;
             queue_offset(&mut offsets, &mut queued, skip)?;
         }
@@ -121,14 +128,19 @@ impl ActionIndex {
             });
         }
         reject_cycles(&rows)?;
-        let state_rows = roots
+        let states = roots
             .into_iter()
-            .map(|roots| Ok([row_id(&offsets, roots[0])?, row_id(&offsets, roots[1])?]))
+            .map(|(roots, default_reduce)| {
+                Ok(StateActions {
+                    rows: [row_id(&offsets, roots[0])?, row_id(&offsets, roots[1])?],
+                    default_reduce,
+                })
+            })
             .collect::<Result<Box<[_]>, &'static str>>()?;
-        let (skip_terms, skip_has_catch_all) = build_skip_filter(&state_rows, &rows, &terms);
+        let (skip_terms, skip_has_catch_all) = build_skip_filter(&states, &rows, &terms);
 
         Ok(Self {
-            state_rows,
+            states,
             rows: rows.into_boxed_slice(),
             terms: terms.into_boxed_slice(),
             actions: actions.into_boxed_slice(),
@@ -164,7 +176,7 @@ impl ActionIndex {
             StateField::Skip => 1,
             _ => unreachable!("only action sequence fields are indexed"),
         };
-        let mut row_id = self.state_rows[usize::from(state)][column];
+        let mut row_id = self.states[usize::from(state)].rows[column];
         loop {
             let row = self.rows[usize::from(row_id)];
             let terminal = self.first_terminal(row, term);
@@ -226,12 +238,16 @@ impl ActionIndex {
             StateField::Skip => 1,
             _ => unreachable!("only action sequence fields are indexed"),
         };
-        let row_id = self.state_rows[usize::from(state)][column];
+        let row_id = self.states[usize::from(state)].rows[column];
         self.visit_row(row_id, term, visit)
     }
 
     pub(crate) fn state_rows(&self, state: u16) -> [u16; 2] {
-        self.state_rows[usize::from(state)]
+        self.states[usize::from(state)].rows
+    }
+
+    pub(crate) fn default_reduce(&self, state: u16) -> Action {
+        self.states[usize::from(state)].default_reduce
     }
 
     pub(crate) fn visit_row(
@@ -282,15 +298,15 @@ const fn term_filter_bit(term: u16) -> u32 {
 }
 
 fn build_skip_filter(
-    state_rows: &[[u16; 2]],
+    states: &[StateActions],
     rows: &[ActionRow],
     terms: &[u16],
 ) -> (Box<[u64]>, bool) {
     let mut visited = vec![false; rows.len()];
     let mut skip_terms = Vec::new();
     let mut skip_has_catch_all = false;
-    for state in state_rows {
-        let mut row_id = usize::from(state[1]);
+    for state in states {
+        let mut row_id = usize::from(state.rows[1]);
         while !visited[row_id] {
             visited[row_id] = true;
             let row = rows[row_id];
@@ -421,6 +437,31 @@ mod tests {
     const END: u16 = SequenceCode::End.raw();
     const NEXT: u16 = SequenceCode::Next.raw();
     const OTHER: u16 = SequenceCode::Other.raw();
+
+    #[test]
+    fn state_projection_stays_compact_and_preserves_default_reductions() {
+        let reduction = Action::reduce(7, 2, false, false);
+        let states = [
+            0,
+            0,
+            0,
+            0,
+            Action::NONE.raw(),
+            0,
+            0,
+            0,
+            0,
+            0,
+            reduction.raw(),
+            0,
+        ];
+        let data = [END, SequenceCode::Done.raw()];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert_eq!(core::mem::size_of::<StateActions>(), 8);
+        assert_eq!(index.default_reduce(0), Action::NONE);
+        assert_eq!(index.default_reduce(1), reduction);
+    }
 
     #[test]
     fn preserves_chained_actions_and_fallbacks() {
