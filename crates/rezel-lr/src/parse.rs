@@ -1362,7 +1362,11 @@ impl Parse {
         advanced.clear();
         let mut stopped = Vec::new();
         while !pending.is_empty() {
-            let mut stack = pending.remove(0);
+            let mut stack = if pending.len() == 1 {
+                pending.pop().expect("pending stack exists")
+            } else {
+                pending.remove(0)
+            };
             loop {
                 if stack.position() > position {
                     advanced.push(stack);
