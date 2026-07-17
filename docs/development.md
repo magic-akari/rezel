@@ -214,10 +214,15 @@ reference comparisons, or corpus evidence as appropriate.
 
 Measure a named boundary. Parser throughput should exclude AST lowering,
 highlighting, and validation unless those operations are the subject of the
-measurement. Record the corpus, build profile, machine, number of runs, and the
-mechanism expected to change.
+measurement. Record the corpus, build profile, machine, number of runs, and
+measured results with the benchmark artifacts rather than in a commit message.
 
 Prefer changes that remove a known operation, allocation, or representation
 conversion. Re-run correctness gates before drawing performance conclusions;
 faster behavior outside the language or safety contract is not an
 optimization.
+
+Performance commits follow the repository's
+[commit-message policy](../CONTRIBUTING.md#write-performance-commits): their
+bodies record the mechanism, eliminated work, preserved invariants, and
+correctness evidence, while measured results remain with the benchmark output.

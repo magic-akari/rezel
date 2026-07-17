@@ -92,3 +92,23 @@ Use focused commits when practical. Explain non-obvious grammar conflicts,
 representation changes, snapshot updates, and reference disagreements with a
 minimal source case. Preserve third-party licenses and attribution when
 adapting grammar or implementation code.
+
+## Write performance commits
+
+A `perf(<scope>): ...` commit must include a body that identifies the work
+removed from the hot path and explains why removing it preserves observable
+behavior. Describe, in order:
+
+1. the mechanism and the repeated work it eliminates;
+2. the invariants, fallback paths, and public boundaries it preserves;
+3. the focused correctness evidence and any source-alignment update.
+
+Use the subject to name the mechanism, not a measured result. Do not put
+throughput, elapsed time, percentages, ratios, median or p95 values, or
+benchmark-corpus results in commit messages. Keep those measurements with the
+benchmark artifacts. Numeric constants that define the implementation or a
+safety boundary are appropriate.
+
+A change that alters accepted syntax, public behavior, or another semantic
+contract is not solely a performance change. Classify it as `fix` or `feat`,
+or split the semantic and performance changes.
