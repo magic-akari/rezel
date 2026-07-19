@@ -483,6 +483,7 @@ pub(crate) struct ParserCore {
     pub(crate) node_set: Arc<NodeSet>,
     max_node: u16,
     min_repeat_term: u16,
+    specializer_filter: u64,
     pub(crate) dialect: Dialect,
     top: ParserTop,
     pub(crate) buffer_length: TextSize,
@@ -536,6 +537,11 @@ impl ParserCore {
             .get(usize::from(term))
             .copied()
             .map_or(0, i32::from)
+    }
+
+    pub(crate) fn specializer_may_match(&self, term: u16) -> bool {
+        let bit = 1_u64 << (term & 63);
+        self.specializer_filter & bit != 0
     }
 
     pub(crate) fn get_goto(&self, state: u16, term: u16, loose: bool) -> Option<u16> {
@@ -673,6 +679,12 @@ impl LRParser {
         validate_node_set(language, &node_set)?;
         let max_node = u16::try_from(node_set.types().len() - 1)
             .expect("node-set length was validated at build time");
+        let specializer_filter = language
+            .specializers
+            .iter()
+            .fold(0_u64, |filter, specializer| {
+                filter | 1_u64 << (specializer.term & 63)
+            });
         let top = *language.top_rules.first().ok_or_else(|| {
             ParseError::new(
                 ParseErrorKind::Configuration,
@@ -702,6 +714,7 @@ impl LRParser {
             node_set,
             max_node,
             min_repeat_term: language.min_repeat_term,
+            specializer_filter,
             dialect,
             top: ParserTop::new(top),
             buffer_length: DEFAULT_PARSE_BUFFER_LENGTH,
@@ -1205,20 +1218,23 @@ fn update_cached_token(
     };
     if token.value != Some(ReservedTerm::Error.raw()) {
         let core = stack.core();
-        for specializer in core.language.specializers {
-            if Some(specializer.term) != token.value {
-                continue;
-            }
-            if let Some(lexeme) = stream.read_scalar_at_boundaries(token.start, token.end)
-                && let Some(result) = (specializer.get)(&lexeme, stack)
-                && core.dialect.allows(result.term)
-            {
-                match result.kind {
-                    Specialize::Replace => token.value = Some(result.term),
-                    Specialize::Extend => token.extended = Some(result.term),
+        let term = token.value.expect("accepted tokens always have a value");
+        if core.specializer_may_match(term) {
+            for specializer in core.language.specializers {
+                if specializer.term != term {
+                    continue;
                 }
+                if let Some(lexeme) = stream.read_scalar_at_boundaries(token.start, token.end)
+                    && let Some(result) = (specializer.get)(&lexeme, stack)
+                    && core.dialect.allows(result.term)
+                {
+                    match result.kind {
+                        Specialize::Replace => token.value = Some(result.term),
+                        Specialize::Extend => token.extended = Some(result.term),
+                    }
+                }
+                break;
             }
-            break;
         }
     }
     Ok(token)
