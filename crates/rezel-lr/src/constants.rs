@@ -148,6 +148,15 @@ pub enum SequenceCode {
     End = u16::MAX,
 }
 
+/// Goto-group tag reserved for delta-compressed source-state lists.
+///
+/// The low bit remains the end-of-term marker. All other tag values retain
+/// the legacy `source_count << 1` representation, including empty groups.
+pub const GOTO_COMPRESSED_TAG: u16 = 1 << 15;
+
+/// Goto-table marker for a delta-compressed term header.
+pub const GOTO_COMPRESSED_HEADER: u16 = u16::MAX;
+
 impl SequenceCode {
     #[must_use]
     pub const fn raw(self) -> u16 {

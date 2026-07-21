@@ -1,7 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use rezel_common::NodeFlags;
-use rezel_lr::table::{Action as RuntimeAction, SequenceCode, StateField, StateFlag};
+use rezel_lr::table::{
+    Action as RuntimeAction, GOTO_COMPRESSED_HEADER, GOTO_COMPRESSED_TAG, SequenceCode, StateField,
+    StateFlag,
+};
 
 use crate::automaton::{
     Action, FirstSets, State, build_full_automaton, compute_first_sets, finish_automaton,
@@ -3805,10 +3808,9 @@ fn compute_goto_table(states: &[State], terms: &TermSet) -> Result<Vec<u16>, Gen
     }
     let mut data = DataBuilder::default();
     let mut index = Vec::new();
-    let offset = usize::from(max_term) + 2;
     for term in 0..=max_term {
         let Some(entries) = goto.get(&term) else {
-            index.push(1);
+            index.push(None);
             continue;
         };
         let mut table = Vec::new();
@@ -3822,24 +3824,139 @@ fn compute_goto_table(states: &[State], terms: &TermSet) -> Result<Vec<u16>, Gen
         let default = groups.remove(default_index);
         groups.push(default);
         for (entry_index, (target, sources)) in groups.iter().copied().enumerate() {
-            let last = usize::from(entry_index + 1 == groups.len());
-            let length = u16::try_from(sources.len())
-                .map_err(|_| GeneratorError::new("Goto group too large", None))?;
-            table.push((length << 1) | u16::try_from(last).expect("last bit fits"));
-            table.push(*target);
-            table.extend_from_slice(sources);
+            let last = entry_index + 1 == groups.len();
+            store_goto_group(&mut table, *target, sources, last)?;
         }
-        let position = data.store_array(&table)? + offset;
-        index.push(
-            u16::try_from(position)
-                .map_err(|_| GeneratorError::new("Goto table too large", None))?,
-        );
+        let position = data.store_array(&table)?;
+        index.push(Some(position));
     }
+    finish_goto_table(&index, data.finish())
+}
+
+fn finish_goto_table(index: &[Option<usize>], data: Vec<u16>) -> Result<Vec<u16>, GeneratorError> {
+    let term_count =
+        u16::try_from(index.len()).map_err(|_| GeneratorError::new("Too many goto terms", None))?;
+    if term_count == GOTO_COMPRESSED_HEADER {
+        return Err(GeneratorError::new("Too many goto terms", None));
+    }
+
+    let compressed = encode_goto_header(index);
+    let compressed_header_length = compressed.len() + 3;
+    let raw_header_length = index.len() + 1;
     let mut result = Vec::new();
-    result.push(max_term + 1);
-    result.extend(index);
-    result.extend(data.finish());
+    if compressed_header_length < raw_header_length {
+        let compressed_length = u16::try_from(compressed.len())
+            .map_err(|_| GeneratorError::new("Goto header too large", None))?;
+        result.push(GOTO_COMPRESSED_HEADER);
+        result.push(term_count);
+        result.push(compressed_length);
+        result.extend(compressed);
+    } else {
+        result.push(term_count);
+        for position in index {
+            let position = position.map_or(1, |position| position + raw_header_length);
+            result.push(
+                u16::try_from(position)
+                    .map_err(|_| GeneratorError::new("Goto table too large", None))?,
+            );
+        }
+    }
+    result.extend(data);
+    if result.len() > usize::from(u16::MAX) {
+        return Err(GeneratorError::new("Goto table too large", None));
+    }
     Ok(result)
+}
+
+fn encode_goto_header(index: &[Option<usize>]) -> Vec<u16> {
+    let mut bytes = Vec::new();
+    let mut previous = 0_i64;
+    for position in index {
+        let Some(position) = position else {
+            encode_varint(&mut bytes, 0);
+            continue;
+        };
+        let position = i64::try_from(*position).expect("goto table positions fit i64");
+        let delta = position - previous;
+        let zigzag =
+            u64::try_from((delta << 1) ^ (delta >> 63)).expect("zigzag encoding is nonnegative");
+        encode_varint(&mut bytes, zigzag + 1);
+        previous = position;
+    }
+    pack_bytes(&bytes)
+}
+
+fn store_goto_group(
+    table: &mut Vec<u16>,
+    target: u16,
+    sources: &[u16],
+    last: bool,
+) -> Result<(), GeneratorError> {
+    let source_count = u16::try_from(sources.len())
+        .map_err(|_| GeneratorError::new("Goto group too large", None))?;
+    let compressed = encode_goto_source_deltas(sources)?;
+    if compressed.len() + 1 < sources.len() {
+        table.push(GOTO_COMPRESSED_TAG | u16::from(last));
+        table.push(target);
+        table.push(source_count);
+        table.extend(compressed);
+        return Ok(());
+    }
+
+    let tag = source_count
+        .checked_mul(2)
+        .and_then(|value| value.checked_add(u16::from(last)))
+        .ok_or_else(|| GeneratorError::new("Goto group too large", None))?;
+    table.push(tag);
+    table.push(target);
+    table.extend_from_slice(sources);
+    Ok(())
+}
+
+fn encode_goto_source_deltas(sources: &[u16]) -> Result<Vec<u16>, GeneratorError> {
+    let mut bytes = Vec::new();
+    let mut previous = 0_u16;
+    for (index, source) in sources.iter().copied().enumerate() {
+        let delta = if index == 0 {
+            source
+        } else {
+            source
+                .checked_sub(previous)
+                .filter(|delta| *delta != 0)
+                .ok_or_else(|| {
+                    GeneratorError::new("Goto group sources must be strictly increasing", None)
+                })?
+        };
+        previous = source;
+
+        encode_varint(&mut bytes, u64::from(delta));
+    }
+    Ok(pack_bytes(&bytes))
+}
+
+fn encode_varint(bytes: &mut Vec<u8>, mut value: u64) {
+    loop {
+        let mut byte = u8::try_from(value & 0x7f).expect("masked varint fits a byte");
+        value >>= 7;
+        if value != 0 {
+            byte |= 0x80;
+        }
+        bytes.push(byte);
+        if value == 0 {
+            return;
+        }
+    }
+}
+
+fn pack_bytes(bytes: &[u8]) -> Vec<u16> {
+    bytes
+        .chunks(2)
+        .map(|bytes| {
+            let low = u16::from(bytes[0]);
+            let high = bytes.get(1).copied().map_or(0, u16::from);
+            low | (high << 8)
+        })
+        .collect()
 }
 
 fn creates_forced_cycle(
@@ -4098,4 +4215,27 @@ fn same_rule_without_name(left: &Rule, right: &Rule) -> bool {
         && left.skip == right.skip
         && left.parts == right.parts
         && left.conflicts == right.conflicts
+}
+
+#[cfg(test)]
+mod goto_encoding_tests {
+    use super::{encode_goto_header, encode_goto_source_deltas};
+
+    #[test]
+    fn packs_empty_and_shared_goto_header_entries() {
+        let encoded = encode_goto_header(&[Some(0), None, Some(0), Some(130), Some(129)]);
+        assert_eq!(encoded, [0x0001, 0x8501, 0x0202]);
+    }
+
+    #[test]
+    fn packs_sorted_source_deltas_two_bytes_per_word() {
+        let encoded = encode_goto_source_deltas(&[0, 1, 130, 131, 400]).unwrap();
+        assert_eq!(encoded, [0x0100, 0x0181, 0x8d01, 0x0002]);
+    }
+
+    #[test]
+    fn rejects_unsorted_or_duplicate_sources() {
+        assert!(encode_goto_source_deltas(&[1, 1]).is_err());
+        assert!(encode_goto_source_deltas(&[2, 1]).is_err());
+    }
 }

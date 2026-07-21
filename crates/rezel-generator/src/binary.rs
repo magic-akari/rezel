@@ -17,6 +17,8 @@ const TOKEN_STATE_SIZE: usize = size_of::<rezel_lr::TokenState>();
 const TOKEN_ACCEPT_SIZE: usize = size_of::<rezel_lr::TokenAccept>();
 const TOKEN_EDGE_SIZE: usize = size_of::<rezel_lr::TokenEdge>();
 const TOKEN_EOF_SIZE: usize = size_of::<rezel_lr::TokenEof>();
+const DYNAMIC_PRECEDENCE_SIZE: usize = size_of::<rezel_lr::DynamicPrecedence>();
+const GENERATED_TABLES_ALIGNMENT: usize = 64;
 
 pub(crate) struct TokenTableFields {
     pub(crate) states: Ident,
@@ -64,24 +66,6 @@ impl BinaryTables {
         )
     }
 
-    pub(crate) fn push_i16(&mut self, name: &str, values: &[i16]) -> Ident {
-        let mut little_endian = Vec::with_capacity(values.len() * U16_SIZE);
-        let mut big_endian = Vec::with_capacity(values.len() * U16_SIZE);
-        for value in values {
-            little_endian.extend_from_slice(&value.to_le_bytes());
-            big_endian.extend_from_slice(&value.to_be_bytes());
-        }
-        self.push_field(
-            name,
-            quote!(i16),
-            align_of::<i16>(),
-            U16_SIZE,
-            values.len(),
-            little_endian,
-            big_endian,
-        )
-    }
-
     pub(crate) fn push_u32(&mut self, name: &str, values: &[u32]) -> Ident {
         let mut little_endian = Vec::with_capacity(values.len() * U32_SIZE);
         let mut big_endian = Vec::with_capacity(values.len() * U32_SIZE);
@@ -117,13 +101,34 @@ impl BinaryTables {
         }
     }
 
+    pub(crate) fn push_dynamic_precedences(&mut self, name: &str, values: &[(u16, i16)]) -> Ident {
+        let mut little_endian = Vec::with_capacity(values.len() * DYNAMIC_PRECEDENCE_SIZE);
+        let mut big_endian = Vec::with_capacity(values.len() * DYNAMIC_PRECEDENCE_SIZE);
+        for (term, value) in values {
+            little_endian.extend_from_slice(&term.to_le_bytes());
+            little_endian.extend_from_slice(&value.to_le_bytes());
+            big_endian.extend_from_slice(&term.to_be_bytes());
+            big_endian.extend_from_slice(&value.to_be_bytes());
+        }
+        self.push_field(
+            name,
+            quote!(rezel_lr::DynamicPrecedence),
+            align_of::<rezel_lr::DynamicPrecedence>(),
+            DYNAMIC_PRECEDENCE_SIZE,
+            values.len(),
+            little_endian,
+            big_endian,
+        )
+    }
+
     pub(crate) fn finish(
         mut self,
         little_endian_path: &str,
         big_endian_path: &str,
     ) -> BinaryTableOutput {
-        pad_to(&mut self.little_endian, self.alignment);
-        pad_to(&mut self.big_endian, self.alignment);
+        let alignment = self.alignment.max(GENERATED_TABLES_ALIGNMENT);
+        pad_to(&mut self.little_endian, alignment);
+        pad_to(&mut self.big_endian, alignment);
         assert_eq!(self.little_endian.len(), self.big_endian.len());
 
         let fields = self.fields.iter().map(|field| {
@@ -135,7 +140,7 @@ impl BinaryTables {
         let little_endian_path = LitStr::new(little_endian_path, Span::call_site());
         let big_endian_path = LitStr::new(big_endian_path, Span::call_site());
         let declaration = quote! {
-            #[repr(C, align(4))]
+            #[repr(C, align(64))]
             #[derive(zerocopy::FromBytes, zerocopy::Immutable)]
             struct GeneratedTables {
                 #(#fields,)*
@@ -314,14 +319,18 @@ mod tests {
         tables.push_u32("words", &[0x1234_5678]);
         let output = tables.finish("tables.le.bin", "tables.be.bin");
 
+        assert_eq!(output.little_endian.len(), GENERATED_TABLES_ALIGNMENT);
+        assert_eq!(output.big_endian.len(), GENERATED_TABLES_ALIGNMENT);
         assert_eq!(
-            output.little_endian,
-            [0x34, 0x12, 0, 0, 0x78, 0x56, 0x34, 0x12]
+            &output.little_endian[..8],
+            &[0x34, 0x12, 0, 0, 0x78, 0x56, 0x34, 0x12]
         );
         assert_eq!(
-            output.big_endian,
-            [0x12, 0x34, 0, 0, 0x12, 0x34, 0x56, 0x78]
+            &output.big_endian[..8],
+            &[0x12, 0x34, 0, 0, 0x12, 0x34, 0x56, 0x78]
         );
+        assert!(output.little_endian[8..].iter().all(|byte| *byte == 0));
+        assert!(output.big_endian[8..].iter().all(|byte| *byte == 0));
     }
 
     #[test]
@@ -338,9 +347,21 @@ mod tests {
         tables.push_token_table("token", &table);
         let output = tables.finish("tables.le.bin", "tables.be.bin");
 
+        assert_eq!(output.little_endian.len(), GENERATED_TABLES_ALIGNMENT);
         assert_eq!(
-            &output.little_endian,
+            &output.little_endian[..12],
             &[0x34, 0x12, 0, 0, 0xff, 0xff, 0x10, 0, 7, 0, 0, 0]
         );
+        assert!(output.little_endian[12..].iter().all(|byte| *byte == 0));
+    }
+
+    #[test]
+    fn writes_sparse_dynamic_precedences_for_both_byte_orders() {
+        let mut tables = BinaryTables::default();
+        tables.push_dynamic_precedences("dynamic", &[(0x1234, -2)]);
+        let output = tables.finish("tables.le.bin", "tables.be.bin");
+
+        assert_eq!(&output.little_endian[..4], &[0x34, 0x12, 0xfe, 0xff]);
+        assert_eq!(&output.big_endian[..4], &[0x12, 0x34, 0xff, 0xfe]);
     }
 }

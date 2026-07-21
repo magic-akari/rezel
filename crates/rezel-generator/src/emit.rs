@@ -103,8 +103,7 @@ fn emit_parser(
     let local_names = emit_parser_arrays(&mut glue, &mut tables, grammar);
     let tokenizer_values = emit_tokenizers(grammar, bindings, &local_names)?;
     let dialects = emit_dialects(&mut tables, grammar);
-    let dynamic_precedences = dynamic_precedences(grammar);
-    tables.push_i16("dynamic_precedences", &dynamic_precedences);
+    tables.push_dynamic_precedences("dynamic_precedences", &grammar.dynamic_precedences);
     let binary = tables.finish(little_endian_path, big_endian_path);
     source.push_str(&binary.declaration.to_string());
     source.push_str(&glue);
@@ -502,17 +501,6 @@ fn specialize_kind(extend: bool) -> TokenStream {
 
 fn option_u16(value: Option<u16>) -> TokenStream {
     value.map_or_else(|| quote!(None), |value| quote!(Some(#value)))
-}
-
-fn dynamic_precedences(grammar: &CompiledGrammar) -> Vec<i16> {
-    if grammar.dynamic_precedences.is_empty() {
-        return Vec::new();
-    }
-    let mut values = vec![0_i16; usize::from(grammar.max_term) + 1];
-    for &(term, precedence) in &grammar.dynamic_precedences {
-        values[usize::from(term)] = precedence;
-    }
-    values
 }
 
 fn write_token_table(

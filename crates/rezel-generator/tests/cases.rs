@@ -12,7 +12,10 @@ mod support;
 
 use rezel_common::{Input, ParseErrorKind, ParseRequest, Parser, StringInput, TextRange};
 use rezel_generator::{BuildOptions, compile_grammar};
-use rezel_lr::LRParser;
+use rezel_lr::{
+    LRParser,
+    table::{GOTO_COMPRESSED_HEADER, GOTO_COMPRESSED_TAG},
+};
 
 use case_format::{expected_diagnostic, split_case_file};
 use support::file_tests::file_tests;
@@ -205,23 +208,20 @@ fn goto_defaults_cover_the_dominant_source_groups() {
 }
 
 fn assert_dominant_goto_defaults(case: &str, table: &[u16]) -> usize {
-    let term_count = usize::from(table[0]);
-    let header_length = term_count + 1;
     let mut multiple_target_terms = 0;
-    for term in 0..term_count {
-        let mut position = usize::from(table[term + 1]);
-        if position < header_length {
+    for (term, position) in goto_header_positions(table).into_iter().enumerate() {
+        let Some(mut position) = position else {
             continue;
-        }
+        };
         let mut group_count = 0;
         let mut largest_length = 0;
         loop {
             let group_tag = table[position];
-            let group_length = usize::from(group_tag >> 1);
             let last = group_tag & 1 != 0;
+            let (group_length, end) = goto_group_length_and_end(table, position + 2, group_tag);
             group_count += 1;
             largest_length = largest_length.max(group_length);
-            position += 2 + group_length;
+            position = end;
             if last {
                 assert_eq!(
                     group_length, largest_length,
@@ -233,6 +233,82 @@ fn assert_dominant_goto_defaults(case: &str, table: &[u16]) -> usize {
         multiple_target_terms += usize::from(group_count > 1);
     }
     multiple_target_terms
+}
+
+fn goto_header_positions(table: &[u16]) -> Vec<Option<usize>> {
+    if table[0] != GOTO_COMPRESSED_HEADER {
+        let term_count = usize::from(table[0]);
+        let header_length = term_count + 1;
+        return table[1..header_length]
+            .iter()
+            .map(|position| {
+                let position = usize::from(*position);
+                (position >= header_length).then_some(position)
+            })
+            .collect();
+    }
+
+    let term_count = usize::from(table[1]);
+    let header_words = usize::from(table[2]);
+    let data_start = 3 + header_words;
+    let mut positions = Vec::with_capacity(term_count);
+    let mut previous = 0_i64;
+    let mut byte_index = 0_usize;
+    for _ in 0..term_count {
+        let mut code = 0_u64;
+        let mut shift = 0_u32;
+        loop {
+            let word = table[3 + byte_index / 2];
+            let byte = if byte_index & 1 == 0 {
+                word & 0xff
+            } else {
+                word >> 8
+            };
+            byte_index += 1;
+            code |= u64::from(byte & 0x7f) << shift;
+            if byte & 0x80 == 0 {
+                break;
+            }
+            shift += 7;
+        }
+        if code == 0 {
+            positions.push(None);
+            continue;
+        }
+        let zigzag = code - 1;
+        let magnitude = i64::try_from(zigzag >> 1).unwrap();
+        let sign = -i64::try_from(zigzag & 1).unwrap();
+        previous += magnitude ^ sign;
+        positions.push(Some(data_start + usize::try_from(previous).unwrap()));
+    }
+    positions
+}
+
+fn goto_group_length_and_end(table: &[u16], position: usize, group_tag: u16) -> (usize, usize) {
+    let compressed = group_tag & !1 == GOTO_COMPRESSED_TAG;
+    if !compressed {
+        let raw_length = usize::from(group_tag >> 1);
+        return (raw_length, position + raw_length);
+    }
+
+    let source_count = usize::from(table[position]);
+    let sources = position + 1;
+    let mut byte_index = 0_usize;
+    for _ in 0..source_count {
+        loop {
+            let word = table[sources + byte_index / 2];
+            let byte = if byte_index & 1 == 0 {
+                word & 0xff
+            } else {
+                word >> 8
+            };
+            byte_index += 1;
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+    }
+    (source_count, sources + byte_index.div_ceil(2))
 }
 
 fn generated_case(name: &str) -> &'static case_registry::GeneratedCase {

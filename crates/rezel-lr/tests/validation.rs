@@ -2,7 +2,7 @@ use std::sync::{Arc, OnceLock};
 
 use rezel_common::{NodeFlags, NodeSet, NodeType, ParseErrorKind};
 use rezel_lr::table::SequenceCode;
-use rezel_lr::{LRParser, Language, TokenTable, TopRule};
+use rezel_lr::{DynamicPrecedence, LRParser, Language, TokenTable, TopRule};
 
 fn node_set() -> &'static Arc<NodeSet> {
     static NODE_SET: OnceLock<Arc<NodeSet>> = OnceLock::new();
@@ -17,7 +17,10 @@ static TOP_RULES: [TopRule; 1] = [TopRule {
 }];
 static EMPTY_TOKEN_TABLE: TokenTable = TokenTable::new(&[], &[], &[], &[]);
 
-const fn language_with_tables(goto: &'static [u16]) -> Language {
+const fn language_with_data(
+    goto: &'static [u16],
+    dynamic_precedences: &'static [DynamicPrecedence],
+) -> Language {
     Language {
         states: &[0, 0, 0, 0, 0, 0],
         state_data: &EMPTY_STATE_DATA,
@@ -31,15 +34,25 @@ const fn language_with_tables(goto: &'static [u16]) -> Language {
         node_set,
         context: None,
         dialects: &[],
-        dynamic_precedences: &[],
+        dynamic_precedences,
         specializers: &[],
         term_names: &[],
     }
 }
 
+const fn language_with_tables(goto: &'static [u16]) -> Language {
+    language_with_data(goto, &[])
+}
+
 static TRUNCATED_GOTO: Language = language_with_tables(&[1, 2, 0]);
 static UNKNOWN_GOTO_TARGET: Language = language_with_tables(&[1, 2, 3, 1, 0]);
 static UNKNOWN_GOTO_SOURCE: Language = language_with_tables(&[1, 2, 3, 0, 1]);
+static UNKNOWN_DYNAMIC_PRECEDENCE: Language =
+    language_with_data(&[1, 1], &[DynamicPrecedence::new(2, 1)]);
+static DUPLICATE_DYNAMIC_PRECEDENCE: Language = language_with_data(
+    &[1, 1],
+    &[DynamicPrecedence::new(0, 1), DynamicPrecedence::new(0, 2)],
+);
 
 #[test]
 fn malformed_static_tables_are_rejected_at_construction() {
@@ -47,6 +60,8 @@ fn malformed_static_tables_are_rejected_at_construction() {
         (&TRUNCATED_GOTO, "goto"),
         (&UNKNOWN_GOTO_TARGET, "target"),
         (&UNKNOWN_GOTO_SOURCE, "source"),
+        (&UNKNOWN_DYNAMIC_PRECEDENCE, "unknown term"),
+        (&DUPLICATE_DYNAMIC_PRECEDENCE, "duplicate term"),
     ] {
         let error = LRParser::try_from_language(language).unwrap_err();
         assert_eq!(error.kind(), ParseErrorKind::Configuration);

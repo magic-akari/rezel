@@ -8,10 +8,11 @@ use rezel_common::{
     NodeSet, NodeType, ParseError, ParseErrorKind, ParseRequest, ParseWrapper, Parser,
     PartialParse, TextSize, Tree, TreeBuild,
 };
+use zerocopy::{FromBytes, Immutable};
 
 use crate::action_index::ActionIndex;
 use crate::decode::pair;
-use crate::goto_index::GotoIndex;
+use crate::goto_index::{GotoIndex, decode_goto_header, decode_goto_sources};
 use crate::stack::Stack;
 use crate::table::{Action, ReservedTerm, SequenceCode, StateField, StateFlag};
 use crate::token::{
@@ -371,6 +372,23 @@ impl fmt::Debug for SpecializerSpec {
     }
 }
 
+/// One generated dynamic reduction precedence.
+#[repr(C, align(2))]
+#[derive(Clone, Copy, Debug, Eq, FromBytes, Immutable, PartialEq)]
+pub struct DynamicPrecedence {
+    term: u16,
+    value: i16,
+}
+
+impl DynamicPrecedence {
+    /// Construct one generated dynamic-precedence entry.
+    #[doc(hidden)]
+    #[must_use]
+    pub const fn new(term: u16, value: i16) -> Self {
+        Self { term, value }
+    }
+}
+
 /// Static parser data emitted for one grammar.
 pub struct Language {
     /// Six compact words per LR state.
@@ -397,8 +415,8 @@ pub struct Language {
     pub context: Option<&'static ContextTracker>,
     /// Dialect declarations.
     pub dialects: &'static [DialectSpec],
-    /// Dynamic reduction precedences.
-    pub dynamic_precedences: &'static [i16],
+    /// Sparse dynamic reduction precedences.
+    pub dynamic_precedences: &'static [DynamicPrecedence],
     /// Token specializers.
     pub specializers: &'static [SpecializerSpec],
     /// Optional names for terms outside the node set.
@@ -492,6 +510,7 @@ pub(crate) struct ParserCore {
     pub(crate) context: Option<&'static ContextTracker>,
     action_index: Arc<ActionIndex>,
     goto_index: Arc<GotoIndex>,
+    dynamic_precedences: Arc<[i16]>,
     pub(crate) token_ascii_index: Arc<TokenAsciiIndex>,
     pub(crate) local_token_ascii_indices: Arc<[Option<TokenAsciiIndex>]>,
     tokenizer_start_index: Arc<TokenizerStartIndex>,
@@ -533,8 +552,7 @@ impl ParserCore {
     }
 
     pub(crate) fn dynamic_precedence(&self, term: u16) -> i32 {
-        self.language
-            .dynamic_precedences
+        self.dynamic_precedences
             .get(usize::from(term))
             .copied()
             .map_or(0, i32::from)
@@ -713,6 +731,7 @@ impl LRParser {
                 .map_err(configuration_error)?,
         );
         let goto_index = Arc::new(GotoIndex::build(language.goto).map_err(configuration_error)?);
+        let dynamic_precedences = build_dynamic_precedences(language)?;
         let token_ascii_index = Arc::new(TokenAsciiIndex::build(language.token_table));
         let local_token_ascii_indices = language
             .tokenizers
@@ -738,6 +757,7 @@ impl LRParser {
             context: language.context,
             action_index,
             goto_index,
+            dynamic_precedences,
             token_ascii_index,
             local_token_ascii_indices,
             tokenizer_start_index,
@@ -1000,21 +1020,39 @@ fn validate_language(language: &Language) -> Result<(), ParseError> {
     Ok(())
 }
 
-fn validate_goto_table(table: &[u16], state_count: usize) -> Result<(), ParseError> {
-    let Some(&term_count) = table.first() else {
-        return Err(configuration_error("goto table cannot be empty"));
-    };
-    let header_length = usize::from(term_count) + 1;
-    if table.len() < header_length {
-        return Err(configuration_error("goto table header is truncated"));
+fn build_dynamic_precedences(language: &Language) -> Result<Arc<[i16]>, ParseError> {
+    if language.dynamic_precedences.is_empty() {
+        return Ok(Arc::from([]));
     }
-    for term in 0..usize::from(term_count) {
-        let mut position = usize::from(table[term + 1]);
-        if position < header_length {
-            if position != 1 {
-                return Err(configuration_error("goto table has an invalid empty entry"));
-            }
+
+    let mut values = vec![None; usize::from(language.max_term) + 1];
+    for entry in language.dynamic_precedences {
+        let Some(slot) = values.get_mut(usize::from(entry.term)) else {
+            return Err(configuration_error(
+                "dynamic precedence refers to an unknown term",
+            ));
+        };
+        if slot.replace(entry.value).is_some() {
+            return Err(configuration_error(
+                "dynamic precedence contains a duplicate term",
+            ));
+        }
+    }
+    Ok(values
+        .into_iter()
+        .map(|value| value.unwrap_or(0))
+        .collect::<Vec<_>>()
+        .into())
+}
+
+fn validate_goto_table(table: &[u16], state_count: usize) -> Result<(), ParseError> {
+    let (positions, data_start) = decode_goto_header(table).map_err(configuration_error)?;
+    for position in positions {
+        let Some(mut position) = position else {
             continue;
+        };
+        if position < data_start {
+            return Err(configuration_error("goto group points inside its header"));
         }
         loop {
             let Some(&group_tag) = table.get(position) else {
@@ -1029,12 +1067,8 @@ fn validate_goto_table(table: &[u16], state_count: usize) -> Result<(), ParseErr
                 ));
             }
             position += 2;
-            let end = position
-                .checked_add(usize::from(group_tag >> 1))
-                .ok_or_else(|| configuration_error("goto group length overflows"))?;
-            let Some(sources) = table.get(position..end) else {
-                return Err(configuration_error("goto group sources are truncated"));
-            };
+            let (sources, end) =
+                decode_goto_sources(table, position, group_tag).map_err(configuration_error)?;
             if sources
                 .iter()
                 .any(|source| usize::from(*source) >= state_count)
