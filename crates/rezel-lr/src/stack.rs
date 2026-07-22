@@ -812,6 +812,10 @@ impl Stack {
         self.core.dialect.allows(term)
     }
 
+    pub(crate) fn has_disabled_dialect_terms(&self) -> bool {
+        self.core.dialect.has_disabled_terms()
+    }
+
     #[inline]
     fn shift_context(
         &mut self,

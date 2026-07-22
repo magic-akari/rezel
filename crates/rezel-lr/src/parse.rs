@@ -109,6 +109,10 @@ impl Dialect {
             .as_ref()
             .is_none_or(|disabled| !disabled.get(usize::from(term)).copied().unwrap_or(true))
     }
+
+    pub(crate) const fn has_disabled_terms(&self) -> bool {
+        self.disabled.is_some()
+    }
 }
 
 /// Type-erased immutable context value used by a context tracker.

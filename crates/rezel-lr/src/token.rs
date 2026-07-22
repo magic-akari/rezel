@@ -1363,6 +1363,38 @@ fn read_token(
     precedence_data: &[u16],
     precedence_offset: usize,
 ) {
+    if stack.has_disabled_dialect_terms() {
+        read_token_inner::<true>(
+            table,
+            ascii_index,
+            input,
+            stack,
+            group,
+            precedence_data,
+            precedence_offset,
+        );
+    } else {
+        read_token_inner::<false>(
+            table,
+            ascii_index,
+            input,
+            stack,
+            group,
+            precedence_data,
+            precedence_offset,
+        );
+    }
+}
+
+fn read_token_inner<const CHECK_DIALECT: bool>(
+    table: &TokenTable,
+    ascii_index: Option<&TokenAsciiIndex>,
+    input: &mut InputStream,
+    stack: &Stack,
+    group: u8,
+    precedence_data: &[u16],
+    precedence_offset: usize,
+) {
     let mut state = 0_usize;
     let group_mask = 1_u16 << group;
     'scan: loop {
@@ -1374,7 +1406,7 @@ fn read_token(
             if accept.group_mask & group_mask != 0 {
                 let term = accept.term;
                 let current = input.accepted_value();
-                let can_accept = stack.dialect_allows(term)
+                let can_accept = (!CHECK_DIALECT || stack.dialect_allows(term))
                     && current.is_none_or(|previous| {
                         previous == term
                             || overrides(term, previous, precedence_data, precedence_offset)
