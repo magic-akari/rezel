@@ -264,9 +264,13 @@ impl ActionIndex {
                 let terms = &self.terms[range];
                 if terms.len() <= LINEAR_SEARCH_LIMIT {
                     for (index, candidate) in terms.iter().copied().enumerate() {
-                        if candidate == term {
-                            visit(self.actions[start + index]);
+                        if candidate < term {
+                            continue;
                         }
+                        if candidate > term {
+                            break;
+                        }
+                        visit(self.actions[start + index]);
                     }
                 } else {
                     let mut index = terms.partition_point(|candidate| *candidate < term);
