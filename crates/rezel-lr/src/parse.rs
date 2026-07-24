@@ -1142,11 +1142,81 @@ struct TokenAction {
     end: TextSize,
 }
 
+impl TokenAction {
+    const EMPTY: Self = Self {
+        action: Action::NONE,
+        token: 0,
+        end: TextSize::new(0),
+    };
+}
+
+#[derive(Debug)]
+struct TokenActions {
+    first: TokenAction,
+    rest: Vec<TokenAction>,
+    length: usize,
+}
+
+impl TokenActions {
+    fn new() -> Self {
+        Self {
+            first: TokenAction::EMPTY,
+            rest: Vec::new(),
+            length: 0,
+        }
+    }
+
+    fn clear(&mut self) {
+        self.length = 0;
+        self.rest.clear();
+    }
+
+    const fn len(&self) -> usize {
+        self.length
+    }
+
+    const fn is_empty(&self) -> bool {
+        self.length == 0
+    }
+
+    fn first(&self) -> Option<&TokenAction> {
+        (self.length != 0).then_some(&self.first)
+    }
+
+    fn get(&self, index: usize) -> Option<&TokenAction> {
+        if index == 0 {
+            return self.first();
+        }
+        if index >= self.length {
+            return None;
+        }
+        self.rest.get(index - 1)
+    }
+
+    fn put(&mut self, candidate: TokenAction) {
+        if self.length == 0 {
+            self.first = candidate;
+            self.length = 1;
+            return;
+        }
+        if self.first.action == candidate.action
+            || self
+                .rest
+                .iter()
+                .any(|existing| existing.action == candidate.action)
+        {
+            return;
+        }
+        self.rest.push(candidate);
+        self.length += 1;
+    }
+}
+
 #[derive(Debug)]
 struct TokenCache {
     tokens: Vec<CachedToken>,
     main_token: Option<MainToken>,
-    actions: Vec<TokenAction>,
+    actions: TokenActions,
 }
 
 impl TokenCache {
@@ -1154,7 +1224,7 @@ impl TokenCache {
         Self {
             tokens: vec![CachedToken::default(); tokenizer_count],
             main_token: None,
-            actions: Vec::new(),
+            actions: TokenActions::new(),
         }
     }
 
@@ -1297,7 +1367,7 @@ fn accepted_or_declined(stream: &InputStream, start: TextSize) -> AcceptedToken 
     })
 }
 
-fn add_actions(stack: &Stack, token: u16, end: TextSize, actions: &mut Vec<TokenAction>) {
+fn add_actions(stack: &Stack, token: u16, end: TextSize, actions: &mut TokenActions) {
     let core = stack.core();
     let [action_row, skip_row] = core.action_index.state_rows(stack.state());
     let fallback = core.action_index.visit_row(action_row, token, |action| {
@@ -1321,11 +1391,8 @@ fn add_actions(stack: &Stack, token: u16, end: TextSize, actions: &mut Vec<Token
     }
 }
 
-fn put_action(actions: &mut Vec<TokenAction>, action: Action, token: u16, end: TextSize) {
-    if actions.iter().any(|candidate| candidate.action == action) {
-        return;
-    }
-    actions.push(TokenAction { action, token, end });
+fn put_action(actions: &mut TokenActions, action: Action, token: u16, end: TextSize) {
+    actions.put(TokenAction { action, token, end });
 }
 
 /// Fixed policy that bounds parse-wide recovery and LR/GLR exploration.
@@ -1585,7 +1652,11 @@ impl Parse {
                 // applying alternatives, as upstream Lezer does. Applying an
                 // action mutates the stack and input stream, but not this cache.
                 for index in 0..action_count {
-                    let choice = self.tokens.actions[index];
+                    let choice = *self
+                        .tokens
+                        .actions
+                        .get(index)
+                        .expect("token action index stays within the captured length");
                     let last = index + 1 == action_count;
                     if last {
                         self.bump_action(stack.position())?;
@@ -2012,6 +2083,49 @@ mod tests {
 
     fn hash_context(_context: &ContextValue) -> u64 {
         0
+    }
+
+    #[test]
+    fn token_actions_store_the_deterministic_choice_inline() {
+        let first = TokenAction {
+            action: Action::shift(1, false, false),
+            token: 3,
+            end: TextSize::new(5),
+        };
+        let second = TokenAction {
+            action: Action::shift(2, false, false),
+            token: 4,
+            end: TextSize::new(7),
+        };
+        let mut actions = TokenActions::new();
+
+        actions.put(first);
+        assert_eq!(actions.len(), 1);
+        assert_eq!(actions.rest.capacity(), 0);
+        assert_eq!(
+            actions.first().map(|choice| choice.action),
+            Some(first.action)
+        );
+
+        actions.put(TokenAction { token: 9, ..first });
+        assert_eq!(actions.len(), 1);
+
+        actions.put(second);
+        assert_eq!(actions.len(), 2);
+        assert_eq!(
+            actions.get(0).map(|choice| choice.action),
+            Some(first.action)
+        );
+        assert_eq!(
+            actions.get(1).map(|choice| choice.action),
+            Some(second.action)
+        );
+        actions.put(TokenAction { token: 9, ..second });
+        assert_eq!(actions.len(), 2);
+
+        actions.clear();
+        assert!(actions.is_empty());
+        assert!(actions.first().is_none());
     }
 
     #[test]
