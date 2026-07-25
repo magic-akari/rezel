@@ -1230,6 +1230,14 @@ fn end_cursor(ranges: &[TextRange]) -> StreamCursor {
 }
 
 fn cursor_at_or_after(ranges: &[TextRange], position: TextSize) -> StreamCursor {
+    if let [range] = ranges {
+        let byte = position.max(range.start());
+        let byte = byte.min(range.end());
+        return StreamCursor {
+            range_index: 0,
+            byte,
+        };
+    }
     let mut range_index = ranges.partition_point(|range| range.end() <= position);
     while ranges
         .get(range_index)
@@ -1795,6 +1803,27 @@ mod tests {
         assert_eq!(input.advance(1), None);
         assert_eq!(input.position(), TextSize::from(2));
         assert_eq!(input.next(), None);
+    }
+
+    #[test]
+    fn single_selected_range_clips_positions_at_its_boundaries() {
+        let ranges = Arc::from([TextRange::new(2.into(), 5.into())]);
+        let input = stream("XXabcY", ranges);
+
+        assert_eq!(input.position(), TextSize::from(2));
+        assert_eq!(input.next(), Some(CodePoint::from(b'a')));
+        assert_eq!(input.clip_position(0.into()), TextSize::from(2));
+        assert_eq!(input.clip_position(3.into()), TextSize::from(3));
+        assert_eq!(input.clip_position(6.into()), TextSize::from(5));
+        assert_eq!(input.next_position_from(0.into()), Some(TextSize::from(3)));
+        assert_eq!(input.next_position_from(5.into()), None);
+
+        let ranges = Arc::from([TextRange::new(2.into(), 2.into())]);
+        let empty = stream("XX", ranges);
+        assert_eq!(empty.position(), TextSize::from(2));
+        assert_eq!(empty.next(), None);
+        assert_eq!(empty.clip_position(0.into()), TextSize::from(2));
+        assert_eq!(empty.clip_position(3.into()), TextSize::from(2));
     }
 
     #[test]
