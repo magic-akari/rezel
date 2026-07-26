@@ -39,7 +39,6 @@ struct Frame {
 struct StackContext {
     tracker: &'static ContextTracker,
     value: ContextValue,
-    hash: u64,
 }
 
 impl std::fmt::Debug for StackContext {
@@ -47,7 +46,6 @@ impl std::fmt::Debug for StackContext {
         formatter
             .debug_struct("StackContext")
             .field("value", &self.value)
-            .field("hash", &self.hash)
             .finish_non_exhaustive()
     }
 }
@@ -154,6 +152,7 @@ pub struct Stack {
     branch_buffer_base: usize,
     parent_buffer: Option<Arc<BufferChunk>>,
     context: Option<StackContext>,
+    context_hash: u64,
     parse_start: TextSize,
 }
 
@@ -171,21 +170,21 @@ impl std::fmt::Debug for Stack {
             .field("position", &self.position)
             .field("score", &self.score)
             .field("buffer_records", &(self.buffer.len() / 4))
+            .field("context_hash", &self.context_hash)
             .finish_non_exhaustive()
     }
 }
 
 impl Stack {
     pub(crate) fn start(core: Arc<ParserCore>, state: u16, position: TextSize) -> Self {
-        let context = core.context.map(|tracker| {
-            let value = tracker.start();
-            let hash = tracker.hash(&value);
-            StackContext {
-                tracker,
-                value,
-                hash,
+        let (context, context_hash) = match core.context {
+            Some(tracker) => {
+                let value = tracker.start();
+                let hash = tracker.hash(&value);
+                (Some(StackContext { tracker, value }), hash)
             }
-        });
+            None => (None, 0),
+        };
         Self {
             core,
             frames: Vec::new(),
@@ -198,6 +197,7 @@ impl Stack {
             branch_buffer_base: 0,
             parent_buffer: None,
             context,
+            context_hash,
             parse_start: position,
         }
     }
@@ -263,8 +263,8 @@ impl Stack {
         &self.core
     }
 
-    pub(crate) fn context_hash(&self) -> u64 {
-        self.context.as_ref().map_or(0, |context| context.hash)
+    pub(crate) const fn context_hash(&self) -> u64 {
+        self.context_hash
     }
 
     pub(crate) const fn reduce_position(&self) -> TextSize {
@@ -587,6 +587,7 @@ impl Stack {
             branch_buffer_base,
             parent_buffer: self.parent_buffer.clone(),
             context: self.context.clone(),
+            context_hash: self.context_hash,
             parse_start: self.parse_start,
         }
     }
@@ -849,10 +850,10 @@ impl Stack {
             return Ok(());
         }
         let hash = context.tracker.hash(&value);
+        self.context_hash = hash;
         self.context = Some(StackContext {
             tracker: context.tracker,
             value,
-            hash,
         });
         Ok(())
     }
@@ -890,10 +891,10 @@ impl Stack {
             return Ok(());
         }
         let hash = context.tracker.hash(&value);
+        self.context_hash = hash;
         self.context = Some(StackContext {
             tracker: context.tracker,
             value,
-            hash,
         });
         Ok(())
     }
