@@ -373,7 +373,7 @@ impl Stack {
         })?;
 
         if is_node || action.is_repeat_reduction() {
-            let end = if self.core.state_flag(self.state, StateFlag::Skipped) {
+            let end = if self.core.state_is_skipped(self.state) {
                 self.position
             } else {
                 self.reduce_position
@@ -509,7 +509,7 @@ impl Stack {
         if !action.is_stay() {
             let next_state = action.value();
             self.position = end;
-            let skipped = self.core.state_flag(next_state, StateFlag::Skipped);
+            let skipped = self.core.state_is_skipped(next_state);
             if !skipped && (end > start || is_node) {
                 self.reduce_position = end;
             }

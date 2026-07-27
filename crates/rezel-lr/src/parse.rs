@@ -541,6 +541,10 @@ impl ParserCore {
         self.state_slot(state, StateField::Flags) & flag.mask() != 0
     }
 
+    pub(crate) fn state_is_skipped(&self, state: u16) -> bool {
+        self.action_index.state_is_skipped(state)
+    }
+
     pub(crate) fn eof_term(&self) -> u16 {
         self.max_node()
             .checked_add(1)

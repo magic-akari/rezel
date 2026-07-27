@@ -1,4 +1,4 @@
-use crate::table::{Action, ReservedTerm, SequenceCode, StateField};
+use crate::table::{Action, ReservedTerm, SequenceCode, StateField, StateFlag};
 
 const NO_ROW: u16 = u16::MAX;
 const NO_ENTRY: u16 = u16::MAX;
@@ -43,6 +43,7 @@ struct StateActions {
 #[derive(Debug)]
 pub(crate) struct ActionIndex {
     states: Box<[StateActions]>,
+    skipped_states: Box<[bool]>,
     rows: Box<[ActionRow]>,
     terms: Box<[u16]>,
     actions: Box<[Action]>,
@@ -55,6 +56,7 @@ impl ActionIndex {
     pub(crate) fn build(states: &[u32], state_data: &[u16]) -> Result<Self, &'static str> {
         let state_count = states.len() / StateField::COUNT;
         let mut roots = Vec::with_capacity(state_count);
+        let mut skipped_states = Vec::with_capacity(state_count);
         let mut offsets = Vec::new();
         let mut queued = vec![false; state_data.len()];
         for state in 0..state_count {
@@ -63,6 +65,8 @@ impl ActionIndex {
             let skip = states[base + StateField::Skip.index()] as usize;
             let default_reduce = Action::from_raw(states[base + StateField::DefaultReduce.index()]);
             roots.push(([actions, skip], default_reduce));
+            skipped_states
+                .push(states[base + StateField::Flags.index()] & StateFlag::Skipped.mask() != 0);
             queue_offset(&mut offsets, &mut queued, actions)?;
             queue_offset(&mut offsets, &mut queued, skip)?;
         }
@@ -141,6 +145,7 @@ impl ActionIndex {
 
         Ok(Self {
             states,
+            skipped_states: skipped_states.into_boxed_slice(),
             rows: rows.into_boxed_slice(),
             terms: terms.into_boxed_slice(),
             actions: actions.into_boxed_slice(),
@@ -248,6 +253,10 @@ impl ActionIndex {
 
     pub(crate) fn default_reduce(&self, state: u16) -> Action {
         self.states[usize::from(state)].default_reduce
+    }
+
+    pub(crate) fn state_is_skipped(&self, state: u16) -> bool {
+        self.skipped_states[usize::from(state)]
     }
 
     pub(crate) fn visit_row(
@@ -446,7 +455,7 @@ mod tests {
     fn state_projection_stays_compact_and_preserves_default_reductions() {
         let reduction = Action::reduce(7, 2, false, false);
         let states = [
-            0,
+            StateFlag::Skipped.mask(),
             0,
             0,
             0,
@@ -465,6 +474,8 @@ mod tests {
         assert_eq!(core::mem::size_of::<StateActions>(), 8);
         assert_eq!(index.default_reduce(0), Action::NONE);
         assert_eq!(index.default_reduce(1), reduction);
+        assert!(index.state_is_skipped(0));
+        assert!(!index.state_is_skipped(1));
     }
 
     #[test]
