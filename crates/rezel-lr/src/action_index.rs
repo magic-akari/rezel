@@ -44,6 +44,7 @@ struct StateActions {
 pub(crate) struct ActionIndex {
     states: Box<[StateActions]>,
     skipped_states: Box<[bool]>,
+    tokenizer_masks: Box<[u32]>,
     rows: Box<[ActionRow]>,
     terms: Box<[u16]>,
     actions: Box<[Action]>,
@@ -57,6 +58,7 @@ impl ActionIndex {
         let state_count = states.len() / StateField::COUNT;
         let mut roots = Vec::with_capacity(state_count);
         let mut skipped_states = Vec::with_capacity(state_count);
+        let mut tokenizer_masks = Vec::with_capacity(state_count);
         let mut offsets = Vec::new();
         let mut queued = vec![false; state_data.len()];
         for state in 0..state_count {
@@ -67,6 +69,7 @@ impl ActionIndex {
             roots.push(([actions, skip], default_reduce));
             skipped_states
                 .push(states[base + StateField::Flags.index()] & StateFlag::Skipped.mask() != 0);
+            tokenizer_masks.push(states[base + StateField::TokenizerMask.index()]);
             queue_offset(&mut offsets, &mut queued, actions)?;
             queue_offset(&mut offsets, &mut queued, skip)?;
         }
@@ -146,6 +149,7 @@ impl ActionIndex {
         Ok(Self {
             states,
             skipped_states: skipped_states.into_boxed_slice(),
+            tokenizer_masks: tokenizer_masks.into_boxed_slice(),
             rows: rows.into_boxed_slice(),
             terms: terms.into_boxed_slice(),
             actions: actions.into_boxed_slice(),
@@ -257,6 +261,10 @@ impl ActionIndex {
 
     pub(crate) fn state_is_skipped(&self, state: u16) -> bool {
         self.skipped_states[usize::from(state)]
+    }
+
+    pub(crate) fn tokenizer_mask(&self, state: u16) -> u32 {
+        self.tokenizer_masks[usize::from(state)]
     }
 
     pub(crate) fn visit_row(
@@ -458,13 +466,13 @@ mod tests {
             StateFlag::Skipped.mask(),
             0,
             0,
-            0,
+            0b0101,
             Action::NONE.raw(),
             0,
             0,
             0,
             0,
-            0,
+            0b1010,
             reduction.raw(),
             0,
         ];
@@ -476,6 +484,8 @@ mod tests {
         assert_eq!(index.default_reduce(1), reduction);
         assert!(index.state_is_skipped(0));
         assert!(!index.state_is_skipped(1));
+        assert_eq!(index.tokenizer_mask(0), 0b0101);
+        assert_eq!(index.tokenizer_mask(1), 0b1010);
     }
 
     #[test]

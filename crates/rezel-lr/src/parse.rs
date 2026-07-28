@@ -545,6 +545,10 @@ impl ParserCore {
         self.action_index.state_is_skipped(state)
     }
 
+    pub(crate) fn tokenizer_mask(&self, state: u16) -> u32 {
+        self.action_index.tokenizer_mask(state)
+    }
+
     pub(crate) fn eof_term(&self) -> u16 {
         self.max_node()
             .checked_add(1)
@@ -1234,7 +1238,7 @@ impl TokenCache {
 
     fn get_actions(&mut self, stack: &Stack, stream: &mut InputStream) -> Result<(), ParseError> {
         let core = stack.core();
-        let mask = core.state_slot(stack.state(), StateField::TokenizerMask);
+        let mask = core.tokenizer_mask(stack.state());
         let context = stack.context_hash();
         let token_start = stream.clip_position(stack.position());
         self.actions.clear();
