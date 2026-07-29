@@ -212,18 +212,19 @@ impl ActionIndex {
         let start = range.start;
         let terms = &self.terms[range];
         if terms.len() <= LINEAR_SEARCH_LIMIT {
-            return terms
-                .iter()
-                .copied()
-                .enumerate()
-                .filter(|(_, candidate)| *candidate == term)
-                .map(|(index, _)| {
-                    (
-                        self.entry_orders[start + index],
-                        self.actions[start + index],
-                    )
-                })
-                .min_by_key(|(order, _)| *order);
+            for (index, candidate) in terms.iter().copied().enumerate() {
+                if candidate < term {
+                    continue;
+                }
+                if candidate > term {
+                    return None;
+                }
+                return Some((
+                    self.entry_orders[start + index],
+                    self.actions[start + index],
+                ));
+            }
+            return None;
         }
         let index = terms.partition_point(|candidate| *candidate < term);
         (terms.get(index) == Some(&term)).then(|| {
@@ -535,6 +536,35 @@ mod tests {
 
         assert_eq!(index.first(0, StateField::Actions, 5).raw(), 14);
         assert_eq!(index.first(0, StateField::Actions, 99).raw(), 15);
+    }
+
+    #[test]
+    fn first_preserves_source_order_on_short_rows() {
+        let states = [0, 0, 0, 0, 0, 0];
+        let data = [
+            7,
+            107,
+            0,
+            2,
+            102,
+            0,
+            5,
+            105,
+            0,
+            5,
+            205,
+            0,
+            6,
+            106,
+            0,
+            END,
+            SequenceCode::Done.raw(),
+        ];
+        let index = ActionIndex::build(&states, &data).unwrap();
+
+        assert_eq!(index.first(0, StateField::Actions, 5).raw(), 105);
+        assert_eq!(index.first(0, StateField::Actions, 6).raw(), 106);
+        assert!(index.first(0, StateField::Actions, 4).is_none());
     }
 
     #[test]
