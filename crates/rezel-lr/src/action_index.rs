@@ -188,14 +188,14 @@ impl ActionIndex {
         let mut row_id = self.states[usize::from(state)].rows[column];
         loop {
             let row = self.rows[usize::from(row_id)];
-            let terminal = self.first_terminal(row, term);
+            let terminal = self.first_terminal_index(row, term);
             if row.error_order != NO_ENTRY
-                && terminal.is_none_or(|(order, _)| row.error_order <= order)
+                && terminal.is_none_or(|index| row.error_order <= self.entry_orders[index])
             {
                 return row.error_action;
             }
-            if let Some((_, action)) = terminal {
-                return action;
+            if let Some(index) = terminal {
+                return self.actions[index];
             }
             if row.next == NO_ROW {
                 return row.fallback;
@@ -204,7 +204,7 @@ impl ActionIndex {
         }
     }
 
-    fn first_terminal(&self, row: ActionRow, term: u16) -> Option<(u16, Action)> {
+    fn first_terminal_index(&self, row: ActionRow, term: u16) -> Option<usize> {
         if !row.may_contain(term) {
             return None;
         }
@@ -219,20 +219,12 @@ impl ActionIndex {
                 if candidate > term {
                     return None;
                 }
-                return Some((
-                    self.entry_orders[start + index],
-                    self.actions[start + index],
-                ));
+                return Some(start + index);
             }
             return None;
         }
         let index = terms.partition_point(|candidate| *candidate < term);
-        (terms.get(index) == Some(&term)).then(|| {
-            (
-                self.entry_orders[start + index],
-                self.actions[start + index],
-            )
-        })
+        (terms.get(index) == Some(&term)).then_some(start + index)
     }
 
     #[cfg(test)]
