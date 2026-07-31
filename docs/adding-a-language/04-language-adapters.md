@@ -307,13 +307,12 @@ returns an optional specialized term. Use it when a finite declarative
 `@specialize` or `@extend` table cannot express the classification. Its result
 must depend only on syntactic context available at that point.
 
-The result is cached with the base tokenizer's result. An external specializer
-has no independent `contextual` flag. Therefore its use of `Stack` must be
-invariant for the base tokenizer's cache key: source position, tokenizer mask,
-and context hash. In particular, do not call `Stack::can_shift` when the base
-is a generated token. Exact-stack dependence is safe only when the base comes
-from an external tokenizer that is itself `contextual`, or after the runtime
-gains a separate specializer cache policy.
+The runtime caches the base tokenizer result and applies the specializer to
+that raw token for each parser stack. The callback may therefore inspect exact
+stack state without making a token cached for one GLR branch observable in
+another. Keep the callback deterministic for its token text and stack, and
+avoid repeating input scans or other work already performed by the base
+tokenizer.
 
 The callback has the same Rust shape for specialization and extension. For
 `@external specialize`, a returned term replaces the scanned base term. For
