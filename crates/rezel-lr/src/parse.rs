@@ -1129,7 +1129,7 @@ fn configuration_error(message: &'static str) -> ParseError {
 #[derive(Clone, Copy, Debug, Default)]
 struct CachedToken {
     start: TextSize,
-    value: Option<u16>,
+    value: u16,
     end: TextSize,
     mask: u32,
     context: u64,
@@ -1275,18 +1275,16 @@ impl TokenCache {
                 )?;
             }
             let (token, extended) = specialize_cached_token(self.tokens[index], stack, stream);
-            if token.value != Some(ReservedTerm::Error.raw()) {
+            if token.value != ReservedTerm::Error.raw() {
                 let before = self.actions.len();
                 if let Some(extended) = extended {
                     add_actions(stack, extended, token.end, &mut self.actions);
                 }
-                if let Some(value) = token.value {
-                    add_actions(stack, value, token.end, &mut self.actions);
-                }
+                add_actions(stack, token.value, token.end, &mut self.actions);
                 if !flags.extend {
                     main = Some(MainToken {
                         start: token.start,
-                        value: token.value.expect("accepted main token has a value"),
+                        value: token.value,
                         end: token.end,
                     });
                     if self.actions.len() > before {
@@ -1341,7 +1339,7 @@ fn update_cached_token(
     let accepted = accepted_or_declined(stream, start);
     Ok(CachedToken {
         start,
-        value: Some(accepted.value),
+        value: accepted.value,
         end: accepted.end,
         mask,
         context,
@@ -1354,16 +1352,16 @@ fn specialize_cached_token(
     stream: &InputStream,
 ) -> (CachedToken, Option<u16>) {
     let mut extended = None;
-    if token.value != Some(ReservedTerm::Error.raw()) {
+    if token.value != ReservedTerm::Error.raw() {
         let core = stack.core();
-        let base_term = token.value.expect("accepted tokens always have a value");
+        let base_term = token.value;
         if let Some(specializer) = core.specializer(base_term)
             && let Some(lexeme) = stream.read_scalar_at_boundaries(token.start, token.end)
             && let Some(result) = (specializer.get)(&lexeme, stack)
         {
             match result.kind {
                 Specialize::Replace if core.dialect.allows(result.term) => {
-                    token.value = Some(result.term);
+                    token.value = result.term;
                 }
                 Specialize::Extend if core.dialect.allows(result.term) => {
                     extended = Some(result.term);
@@ -2191,6 +2189,9 @@ mod tests {
 
     #[test]
     fn declined_tokenizer_endpoints_remain_lazy() {
+        let empty = CachedToken::default();
+        assert_eq!(empty.value, ReservedTerm::Error.raw());
+
         let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("x").unwrap());
         let lexical: Arc<dyn LexicalInput> = Arc::new(Utf8Input::new(raw));
         let ranges: Arc<[TextRange]> = Arc::from([TextRange::new(0.into(), 1.into())]);
@@ -2216,7 +2217,7 @@ mod tests {
         let stream = InputStream::new(lexical, ranges);
         let cached = CachedToken {
             start: 0.into(),
-            value: Some(2),
+            value: 2,
             end: 1.into(),
             mask: 0,
             context: 0,
@@ -2227,9 +2228,9 @@ mod tests {
         let (replaced, _) = specialize_cached_token(cached, &replacing, &stream);
         let (retained, _) = specialize_cached_token(cached, &retaining, &stream);
 
-        assert_eq!(replaced.value, Some(3));
-        assert_eq!(retained.value, Some(2));
-        assert_eq!(cached.value, Some(2));
+        assert_eq!(replaced.value, 3);
+        assert_eq!(retained.value, 2);
+        assert_eq!(cached.value, 2);
     }
 
     #[test]
