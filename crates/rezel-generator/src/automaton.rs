@@ -344,8 +344,18 @@ impl State {
                 Action::Reduce { .. } => "reduce/reduce",
             };
             let term = &terms.terms[value.term()].name;
+            let incoming_rules = full_positions
+                .iter()
+                .map(|position| terms.terms[rules[position.rule].name].name.as_str())
+                .collect::<BTreeSet<_>>();
+            let existing_rules = action_positions
+                .iter()
+                .map(|position| terms.terms[rules[position.rule].name].name.as_str())
+                .collect::<BTreeSet<_>>();
             return Err(GeneratorError::new(
-                format!("{conflict_kind} conflict on token {term}"),
+                format!(
+                    "{conflict_kind} conflict on token {term} between {incoming_rules:?} and {existing_rules:?}"
+                ),
                 None,
             ));
         }
@@ -1010,14 +1020,12 @@ fn collapse_automaton(states: &[State], rules: &[Rule], terms: &TermSet) -> Vec<
             group_id
         } else {
             let group_id = groups.len();
-            groups.push(Group {
-                origin: group_id,
-                members: vec![state_id],
-            });
+            groups.push(Group::new(group_id, state_id));
             group_id
         };
         mapping.push(group_id);
     }
+    let mut memo = CollapseMemo::new(states);
     let context = CollapseContext {
         states,
         rules,
@@ -1029,24 +1037,43 @@ fn collapse_automaton(states: &[State], rules: &[Rule], terms: &TermSet) -> Vec<
         let mut conflicts = false;
         let initial_group_count = groups.len();
         for group_id in 0..initial_group_count {
+            if groups[group_id].is_validated(&memo) {
+                continue;
+            }
+            let mut spilled_from_group = false;
             let mut left = 0;
             while left + 1 < groups[group_id].members.len() {
                 let mut right = left + 1;
                 while right < groups[group_id].members.len() {
                     let left_state = groups[group_id].members[left];
                     let right_state = groups[group_id].members[right];
+                    let revision = memo.pair_revision(left_state, right_state);
+                    if memo.true_pairs.get(&(left_state, right_state)) == Some(&revision) {
+                        right += 1;
+                        continue;
+                    }
                     if context.can_merge(
                         &context.states[left_state],
                         &context.states[right_state],
                         &mapping,
                     ) {
+                        memo.true_pairs.insert((left_state, right_state), revision);
                         right += 1;
                         continue;
                     }
                     conflicts = true;
-                    context.spill(group_id, right, &mut groups, &mut mapping);
+                    let spill = context.spill(group_id, right, &mut groups, &mut mapping);
+                    if spill.mapping_changed {
+                        memo.mapping_changed(spill.state_id);
+                    }
+                    groups[group_id].membership_changed();
+                    groups[spill.destination].membership_changed();
+                    spilled_from_group = true;
                 }
                 left += 1;
+            }
+            if !spilled_from_group {
+                groups[group_id].mark_validated(&memo);
             }
         }
         if !conflicts {
@@ -1059,6 +1086,123 @@ fn collapse_automaton(states: &[State], rules: &[Rule], terms: &TermSet) -> Vec<
 struct Group {
     origin: usize,
     members: Vec<usize>,
+    membership_revision: u64,
+    // A spill-free scan remains valid until membership or an outgoing mapped
+    // target of one of the members changes.
+    validated: Option<GroupSignature>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct GroupSignature {
+    membership_revision: u64,
+    dependency_revision: u64,
+}
+
+impl Group {
+    fn new(origin: usize, state_id: usize) -> Self {
+        Self {
+            origin,
+            members: vec![state_id],
+            membership_revision: 0,
+            validated: None,
+        }
+    }
+
+    fn signature(&self, memo: &CollapseMemo) -> GroupSignature {
+        let dependency_revision = self
+            .members
+            .iter()
+            .map(|state_id| memo.dependency_revision(*state_id))
+            .max()
+            .unwrap_or(0);
+        GroupSignature {
+            membership_revision: self.membership_revision,
+            dependency_revision,
+        }
+    }
+
+    fn is_validated(&self, memo: &CollapseMemo) -> bool {
+        self.validated == Some(self.signature(memo))
+    }
+
+    fn mark_validated(&mut self, memo: &CollapseMemo) {
+        self.validated = Some(self.signature(memo));
+    }
+
+    fn membership_changed(&mut self) {
+        self.membership_revision = self
+            .membership_revision
+            .checked_add(1)
+            .expect("collapse group membership revision counter does not overflow");
+        self.validated = None;
+    }
+}
+
+/// Memoize compatible canonical-state pairs between collapse passes.
+///
+/// `can_merge` observes the mutable mapping only through outgoing shift and
+/// goto targets. Each permanent remapping gets a globally increasing stamp,
+/// which is propagated through a reverse target index to every dependent
+/// source state. Thus a pair revision is an O(1) maximum over its sources.
+/// Speculative remappings inside `spill` bypass the memo entirely.
+struct CollapseMemo {
+    reverse_dependencies: Vec<Vec<usize>>,
+    dependency_revisions: Vec<u64>,
+    next_revision: u64,
+    true_pairs: HashMap<(usize, usize), u64>,
+}
+
+impl CollapseMemo {
+    fn new(states: &[State]) -> Self {
+        let dependencies = states
+            .iter()
+            .map(|state| {
+                let mut targets = state
+                    .actions
+                    .iter()
+                    .chain(&state.gotos)
+                    .filter_map(|action| match action {
+                        Action::Shift { target, .. } => Some(*target),
+                        Action::Reduce { .. } => None,
+                    })
+                    .collect::<Vec<_>>();
+                targets.sort_unstable();
+                targets.dedup();
+                targets
+            })
+            .collect::<Vec<_>>();
+        let mut reverse_dependencies = vec![Vec::new(); states.len()];
+        for (source, targets) in dependencies.iter().enumerate() {
+            for target in targets {
+                reverse_dependencies[*target].push(source);
+            }
+        }
+        Self {
+            reverse_dependencies,
+            dependency_revisions: vec![0; states.len()],
+            next_revision: 0,
+            true_pairs: HashMap::new(),
+        }
+    }
+
+    fn pair_revision(&self, left: usize, right: usize) -> u64 {
+        self.dependency_revision(left)
+            .max(self.dependency_revision(right))
+    }
+
+    fn dependency_revision(&self, state_id: usize) -> u64 {
+        self.dependency_revisions[state_id]
+    }
+
+    fn mapping_changed(&mut self, state_id: usize) {
+        self.next_revision = self
+            .next_revision
+            .checked_add(1)
+            .expect("collapse mapping revision counter does not overflow");
+        for source in &self.reverse_dependencies[state_id] {
+            self.dependency_revisions[*source] = self.next_revision;
+        }
+    }
 }
 
 struct CollapseContext<'a> {
@@ -1068,9 +1212,23 @@ struct CollapseContext<'a> {
     action_indexes: &'a ActionIndexCache,
 }
 
+#[derive(Clone, Copy, Debug)]
+struct Spill {
+    state_id: usize,
+    destination: usize,
+    mapping_changed: bool,
+}
+
 impl CollapseContext<'_> {
-    fn spill(&self, group_id: usize, index: usize, groups: &mut Vec<Group>, mapping: &mut [usize]) {
+    fn spill(
+        &self,
+        group_id: usize,
+        index: usize,
+        groups: &mut Vec<Group>,
+        mapping: &mut [usize],
+    ) -> Spill {
         let state_id = groups[group_id].members.swap_remove(index);
+        let previous_mapping = mapping[state_id];
         let origin = groups[group_id].origin;
         let destination = ((group_id + 1)..groups.len()).find(|candidate| {
             mapping[state_id] = *candidate;
@@ -1081,13 +1239,20 @@ impl CollapseContext<'_> {
         });
         if let Some(destination) = destination {
             groups[destination].members.push(state_id);
-            return;
+            return Spill {
+                state_id,
+                destination,
+                mapping_changed: mapping[state_id] != previous_mapping,
+            };
         }
-        mapping[state_id] = groups.len();
-        groups.push(Group {
-            origin,
-            members: vec![state_id],
-        });
+        let destination = groups.len();
+        mapping[state_id] = destination;
+        groups.push(Group::new(origin, state_id));
+        Spill {
+            state_id,
+            destination,
+            mapping_changed: mapping[state_id] != previous_mapping,
+        }
     }
 
     fn can_merge(&self, left: &State, right: &State, mapping: &[usize]) -> bool {
@@ -1319,4 +1484,110 @@ fn union_strings(left: &[String], right: &[String]) -> Vec<String> {
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Action, CollapseMemo, Group, State};
+
+    #[test]
+    fn collapse_memo_ignores_unrelated_target_changes() {
+        let mut left = State::new(0, Vec::new(), 0, None);
+        left.actions.push(Action::Shift { term: 0, target: 2 });
+        left.gotos.push(Action::Shift { term: 1, target: 2 });
+        let mut right = State::new(1, Vec::new(), 0, None);
+        right.gotos.push(Action::Shift { term: 0, target: 3 });
+        let states = [
+            left,
+            right,
+            State::new(2, Vec::new(), 0, None),
+            State::new(3, Vec::new(), 0, None),
+            State::new(4, Vec::new(), 0, None),
+        ];
+        let mut memo = CollapseMemo::new(&states);
+
+        assert_eq!(memo.reverse_dependencies[2], vec![0]);
+        assert_eq!(memo.reverse_dependencies[3], vec![1]);
+        assert_eq!(memo.pair_revision(0, 1), 0);
+
+        memo.mapping_changed(4);
+        assert_eq!(memo.pair_revision(0, 1), 0);
+    }
+
+    #[test]
+    fn collapse_memo_invalidates_related_target_changes() {
+        let mut left = State::new(0, Vec::new(), 0, None);
+        left.actions.push(Action::Shift { term: 0, target: 2 });
+        let right = State::new(1, Vec::new(), 0, None);
+        let states = [
+            left,
+            right,
+            State::new(2, Vec::new(), 0, None),
+            State::new(3, Vec::new(), 0, None),
+        ];
+        let mut memo = CollapseMemo::new(&states);
+
+        memo.mapping_changed(2);
+        let first_revision = memo.pair_revision(0, 1);
+        assert_ne!(first_revision, 0);
+
+        memo.mapping_changed(3);
+        assert_eq!(memo.pair_revision(0, 1), first_revision);
+
+        memo.mapping_changed(2);
+        assert!(memo.pair_revision(0, 1) > first_revision);
+    }
+
+    #[test]
+    fn collapse_group_validation_tracks_dependency_changes() {
+        let mut source = State::new(0, Vec::new(), 0, None);
+        source.actions.push(Action::Shift { term: 0, target: 2 });
+        let states = [
+            source,
+            State::new(1, Vec::new(), 0, None),
+            State::new(2, Vec::new(), 0, None),
+            State::new(3, Vec::new(), 0, None),
+        ];
+        let mut memo = CollapseMemo::new(&states);
+        let mut group = Group::new(0, 0);
+
+        group.mark_validated(&memo);
+        assert!(group.is_validated(&memo));
+
+        memo.mapping_changed(3);
+        assert!(group.is_validated(&memo));
+
+        memo.mapping_changed(2);
+        assert!(!group.is_validated(&memo));
+    }
+
+    #[test]
+    fn collapse_group_spill_invalidates_source_and_destination() {
+        let mut source_state = State::new(0, Vec::new(), 0, None);
+        source_state
+            .actions
+            .push(Action::Shift { term: 0, target: 2 });
+        let states = [
+            source_state,
+            State::new(1, Vec::new(), 0, None),
+            State::new(2, Vec::new(), 0, None),
+        ];
+        let memo = CollapseMemo::new(&states);
+        let mut source = Group::new(0, 0);
+        source.members.push(1);
+        let mut destination = Group::new(0, 2);
+
+        source.mark_validated(&memo);
+        destination.mark_validated(&memo);
+        assert!(source.is_validated(&memo));
+        assert!(destination.is_validated(&memo));
+
+        source.members.swap_remove(1);
+        destination.members.push(1);
+        source.membership_changed();
+        destination.membership_changed();
+
+        assert!(!source.is_validated(&memo));
+        assert!(!destination.is_validated(&memo));
+    }
 }
