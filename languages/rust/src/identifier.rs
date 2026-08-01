@@ -282,10 +282,18 @@ fn is_reserved_prefix_delimiter(value: u32) -> bool {
 }
 
 fn is_xid_start(value: u32) -> bool {
+    if value < 0x80 {
+        let value = u8::try_from(value).expect("ASCII code points fit in u8");
+        return value.is_ascii_alphabetic();
+    }
     char::from_u32(value).is_some_and(unicode_ident::is_xid_start)
 }
 
 fn is_xid_continue(value: u32) -> bool {
+    if value < 0x80 {
+        let value = u8::try_from(value).expect("ASCII code points fit in u8");
+        return value.is_ascii_alphanumeric() || value == b'_';
+    }
     char::from_u32(value).is_some_and(unicode_ident::is_xid_continue)
 }
 
@@ -310,6 +318,18 @@ mod tests {
         assert!(is_xid_continue(u32::from('9')));
         assert!(!is_xid_start(u32::from('_')));
         assert!(!is_xid_continue(u32::from('😀')));
+    }
+
+    #[test]
+    fn ascii_fast_path_matches_unicode_ident_across_the_byte_range() {
+        for value in 0..=u32::from(u8::MAX) {
+            let character = char::from_u32(value).expect("byte values are Unicode scalars");
+            assert_eq!(is_xid_start(value), unicode_ident::is_xid_start(character));
+            assert_eq!(
+                is_xid_continue(value),
+                unicode_ident::is_xid_continue(character)
+            );
+        }
     }
 
     #[test]
