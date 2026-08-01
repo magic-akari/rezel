@@ -245,14 +245,26 @@ cardinality = "optional"
 selector = { node = "QualifiedScope" }
 
 [[node.field]]
-name = "segments"
-type = "RustValuePathSegment"
+name = "components"
+type = "RustPathComponent"
 cardinality = "many"
-selector = { union = "RustValuePathSegment" }
+selector = { union = "RustPathComponent" }
+
+[[node.field]]
+name = "type_arguments"
+type = "RustTypeArgumentList"
+cardinality = "many"
+selector = { node = "TypeArgList" }
 
 [[node]]
-name = "RustScopedTypeIdentifier"
-kind = "ScopedTypeIdentifier"
+name = "RustTypePath"
+kind = "TypePath"
+
+[[node.field]]
+name = "prefix"
+type = "RustTypePath"
+cardinality = "optional"
+selector = { node = "TypePath" }
 
 [[node.field]]
 name = "qualified_scope"
@@ -261,15 +273,15 @@ cardinality = "optional"
 selector = { node = "QualifiedScope" }
 
 [[node.field]]
-name = "segments"
-type = "RustTypePathSegment"
-cardinality = "many"
-selector = { union = "RustTypePathSegment" }
+name = "segment"
+type = "RustPathSegment"
+cardinality = "one"
+selector = { union = "RustPathSegment" }
 
 [[node.field]]
 name = "type_arguments"
 type = "RustTypeArgumentList"
-cardinality = "many"
+cardinality = "optional"
 selector = { node = "TypeArgList" }
 
 [[node]]
@@ -410,7 +422,6 @@ selector = { union = "RustTypeBindingName" }
 name = "ty"
 type = "RustType"
 cardinality = "optional"
-occurrence = 1
 selector = { union = "RustType" }
 
 [[node.field]]
@@ -427,7 +438,7 @@ kind = "GenericType"
 name = "path"
 type = "RustTypePath"
 cardinality = "one"
-selector = { union = "RustTypePath" }
+selector = { node = "TypePath" }
 
 [[node.field]]
 name = "arguments"
@@ -640,26 +651,6 @@ cardinality = "one"
 selector = { union = "RustApplicableTraitBound" }
 
 [[node]]
-name = "RustSelfType"
-kind = "SelfType"
-
-[[node.field]]
-name = "self_keyword"
-type = "RustSelfKeyword"
-cardinality = "one"
-selector = { node = "self" }
-
-[[node]]
-name = "RustMetaType"
-kind = "MetaType"
-
-[[node.field]]
-name = "metavariable"
-type = "RustMetavariable"
-cardinality = "one"
-selector = { node = "Metavariable" }
-
-[[node]]
 name = "RustFunctionType"
 kind = "FunctionType"
 
@@ -673,7 +664,7 @@ selector = { node = "ForLifetimes" }
 name = "path"
 type = "RustTypePath"
 cardinality = "optional"
-selector = { union = "RustTypePath" }
+selector = { node = "TypePath" }
 
 [[node.field]]
 name = "parameters"
@@ -837,9 +828,9 @@ kind = "TuplePattern"
 
 [[node.field]]
 name = "path"
-type = "RustStructPath"
+type = "RustPath"
 cardinality = "optional"
-selector = { union = "RustStructPath" }
+selector = { union = "RustPath" }
 
 [[node.field]]
 name = "patterns"
@@ -853,9 +844,9 @@ kind = "StructPattern"
 
 [[node.field]]
 name = "path"
-type = "RustStructPath"
+type = "RustPath"
 cardinality = "one"
-selector = { union = "RustStructPath" }
+selector = { union = "RustPath" }
 
 [[node.field]]
 name = "fields"
@@ -1534,9 +1525,9 @@ kind = "StructExpression"
 
 [[node.field]]
 name = "path"
-type = "RustStructPath"
+type = "RustPath"
 cardinality = "one"
-selector = { union = "RustStructPath" }
+selector = { union = "RustPath" }
 
 [[node.field]]
 name = "type_arguments"
@@ -2337,7 +2328,6 @@ selector = { node = "WhereClause" }
 name = "ty"
 type = "RustType"
 cardinality = "one"
-occurrence = 1
 selector = { union = "RustType" }
 
 [[node]]
@@ -2500,9 +2490,9 @@ kind = "ScopedUseList"
 
 [[node.field]]
 name = "segments"
-type = "RustValuePathSegment"
+type = "RustPathComponent"
 cardinality = "many"
-selector = { union = "RustValuePathSegment" }
+selector = { union = "RustPathComponent" }
 
 [[node.field]]
 name = "list"
@@ -2516,9 +2506,9 @@ kind = "UseWildcard"
 
 [[node.field]]
 name = "segments"
-type = "RustValuePathSegment"
+type = "RustPathComponent"
 cardinality = "many"
-selector = { union = "RustValuePathSegment" }
+selector = { union = "RustPathComponent" }
 
 [[node]]
 name = "RustExternCrateDeclaration"
@@ -2546,11 +2536,9 @@ variants = [
 ]
 
 [[union]]
-name = "RustValuePathSegment"
+name = "RustPathSegment"
 variants = [
-	{ name = "Scope", type = "RustScopeIdentifier" },
 	{ name = "Identifier", type = "RustIdentifier" },
-	{ name = "Binding", type = "RustBoundIdentifier" },
 	{ name = "Metavariable", type = "RustMetavariable" },
 	{ name = "SelfKeyword", type = "RustSelfKeyword" },
 	{ name = "SuperKeyword", type = "RustSuperKeyword" },
@@ -2558,10 +2546,12 @@ variants = [
 ]
 
 [[union]]
-name = "RustTypePathSegment"
+name = "RustPathComponent"
 variants = [
+	{ name = "Scoped", type = "RustScopedIdentifier" },
 	{ name = "Scope", type = "RustScopeIdentifier" },
-	{ name = "Identifier", type = "RustTypeIdentifier" },
+	{ name = "Identifier", type = "RustIdentifier" },
+	{ name = "Binding", type = "RustBoundIdentifier" },
 	{ name = "Metavariable", type = "RustMetavariable" },
 	{ name = "SelfKeyword", type = "RustSelfKeyword" },
 	{ name = "SuperKeyword", type = "RustSuperKeyword" },
@@ -2759,26 +2749,6 @@ name = "RustPath"
 variants = [
 	{ name = "Identifier", type = "RustIdentifier" },
 	{ name = "Scoped", type = "RustScopedIdentifier" },
-	{ name = "Metavariable", type = "RustMetavariable" },
-	{ name = "SelfKeyword", type = "RustSelfKeyword" },
-	{ name = "SuperKeyword", type = "RustSuperKeyword" },
-	{ name = "CrateKeyword", type = "RustCrateKeyword" },
-]
-
-[[union]]
-name = "RustTypePath"
-variants = [
-	{ name = "SelfType", type = "RustSelfType" },
-	{ name = "Metavariable", type = "RustMetaType" },
-	{ name = "Identifier", type = "RustTypeIdentifier" },
-	{ name = "Scoped", type = "RustScopedTypeIdentifier" },
-]
-
-[[union]]
-name = "RustStructPath"
-variants = [
-	{ name = "Identifier", type = "RustTypeIdentifier" },
-	{ name = "Scoped", type = "RustScopedTypeIdentifier" },
 	{ name = "Metavariable", type = "RustMetavariable" },
 	{ name = "SelfKeyword", type = "RustSelfKeyword" },
 	{ name = "SuperKeyword", type = "RustSuperKeyword" },

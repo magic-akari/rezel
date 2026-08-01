@@ -169,11 +169,19 @@ fn rust_highlighting() -> NodePropSource {
             ("ScopeIdentifier", TagSet::from(tags.namespace)),
             ("TypeIdentifier", TagSet::from(tags.type_name)),
             (
-                "MacroInvocation/Identifier MacroInvocation/ScopedIdentifier/Identifier",
-                TagSet::from(tags.macro_name),
+                "TypePath/Identifier",
+                TagSet::from(tags.type_name),
             ),
             (
-                "MacroInvocation/TypeIdentifier MacroInvocation/ScopedIdentifier/TypeIdentifier",
+                "TypePath/TypePath/Identifier ScopedIdentifier/ScopedIdentifier/Identifier",
+                TagSet::from(tags.namespace),
+            ),
+            (
+                "StructExpression/Identifier StructExpression/ScopedIdentifier/Identifier StructPattern/Identifier StructPattern/ScopedIdentifier/Identifier TuplePattern/Identifier TuplePattern/ScopedIdentifier/Identifier",
+                TagSet::from(tags.type_name),
+            ),
+            (
+                "MacroInvocation/Identifier MacroInvocation/ScopedIdentifier/Identifier MacroInvocation/TypePath/Identifier",
                 TagSet::from(tags.macro_name),
             ),
             ("\"!\"", TagSet::from(tags.macro_name)),

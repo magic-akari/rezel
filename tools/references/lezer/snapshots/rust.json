@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/rust/grammar/rust.grammar",
-				"sha256": "1f594b9ac6c9c6b22df3111a982a0dc0fe78280dd51d264dcb420565ca370adf"
+				"sha256": "08fa66b416e5074b098b64855f83fa25cc6c4609e99c979811854eb0a9f076a8"
 			}
 		}
 	},
@@ -199,9 +199,16 @@
 														"to": 67
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 68,
-														"to": 73
+														"to": 73,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 68,
+																"to": 73
+															}
+														]
 													}
 												]
 											}
@@ -255,9 +262,16 @@
 														"to": 90
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 91,
-														"to": 92
+														"to": 92,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 91,
+																"to": 92
+															}
+														]
 													}
 												]
 											}
@@ -289,9 +303,16 @@
 												"to": 114,
 												"children": [
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 105,
-														"to": 111
+														"to": 111,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 105,
+																"to": 111
+															}
+														]
 													},
 													{
 														"name": "TypeArgList",
@@ -304,9 +325,16 @@
 																"to": 112
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 112,
-																"to": 113
+																"to": 113,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 112,
+																		"to": 113
+																	}
+																]
 															},
 															{
 																"name": ">",
@@ -401,9 +429,16 @@
 														"to": 145
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 145,
-														"to": 146
+														"to": 146,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 145,
+																"to": 146
+															}
+														]
 													},
 													{
 														"name": ")",
@@ -455,9 +490,16 @@
 																"to": 171
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 172,
-																"to": 175
+																"to": 175,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 172,
+																		"to": 175
+																	}
+																]
 															}
 														]
 													},
@@ -633,9 +675,16 @@
 																"to": 255
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 256,
-																"to": 257
+																"to": 257,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 256,
+																		"to": 257
+																	}
+																]
 															}
 														]
 													},
@@ -657,9 +706,16 @@
 												"to": 284,
 												"children": [
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 262,
-														"to": 268
+														"to": 268,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 262,
+																"to": 268
+															}
+														]
 													},
 													{
 														"name": "TypeArgList",
@@ -672,9 +728,16 @@
 																"to": 269
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 269,
-																"to": 270
+																"to": 270,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 269,
+																		"to": 270
+																	}
+																]
 															},
 															{
 																"name": ",",
@@ -682,14 +745,21 @@
 																"to": 271
 															},
 															{
-																"name": "ScopedTypeIdentifier",
+																"name": "TypePath",
 																"from": 272,
 																"to": 283,
 																"children": [
 																	{
-																		"name": "ScopeIdentifier",
+																		"name": "TypePath",
 																		"from": 272,
-																		"to": 276
+																		"to": 276,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 272,
+																				"to": 276
+																			}
+																		]
 																	},
 																	{
 																		"name": "::",
@@ -697,7 +767,7 @@
 																		"to": 278
 																	},
 																	{
-																		"name": "TypeIdentifier",
+																		"name": "Identifier",
 																		"from": 278,
 																		"to": 283
 																	}
@@ -779,14 +849,28 @@
 														"to": 300
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 301,
-														"to": 306
+														"to": 306,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 301,
+																"to": 306
+															}
+														]
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 309,
-														"to": 314
+														"to": 314,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 309,
+																"to": 314
+															}
+														]
 													}
 												]
 											}
@@ -805,9 +889,16 @@
 								"to": 327,
 								"children": [
 									{
-										"name": "TypeIdentifier",
+										"name": "TypePath",
 										"from": 316,
-										"to": 320
+										"to": 320,
+										"children": [
+											{
+												"name": "Identifier",
+												"from": 316,
+												"to": 320
+											}
+										]
 									},
 									{
 										"name": "TypeArgList",
@@ -830,9 +921,16 @@
 												"to": 324
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 325,
-												"to": 326
+												"to": 326,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 325,
+														"to": 326
+													}
+												]
 											},
 											{
 												"name": ">",
@@ -935,9 +1033,16 @@
 														"to": 360
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 361,
-														"to": 362
+														"to": 362,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 361,
+																"to": 362
+															}
+														]
 													}
 												]
 											},
@@ -1064,9 +1169,16 @@
 																"to": 18
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 18,
-																"to": 21
+																"to": 21,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 18,
+																		"to": 21
+																	}
+																]
 															},
 															{
 																"name": "]",
@@ -1092,9 +1204,16 @@
 								"to": 26
 							},
 							{
-								"name": "TypeIdentifier",
+								"name": "TypePath",
 								"from": 27,
-								"to": 30
+								"to": 30,
+								"children": [
+									{
+										"name": "Identifier",
+										"from": 27,
+										"to": 30
+									}
+								]
 							},
 							{
 								"name": "Block",
@@ -1763,9 +1882,16 @@
 														"to": 48
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 49,
-														"to": 52
+														"to": 52,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 49,
+																"to": 52
+															}
+														]
 													}
 												]
 											},
@@ -1943,9 +2069,16 @@
 								"to": 131
 							},
 							{
-								"name": "TypeIdentifier",
+								"name": "TypePath",
 								"from": 132,
-								"to": 136
+								"to": 136,
+								"children": [
+									{
+										"name": "Identifier",
+										"from": 132,
+										"to": 136
+									}
+								]
 							},
 							{
 								"name": "Block",
@@ -1968,7 +2101,7 @@
 												"to": 169,
 												"children": [
 													{
-														"name": "TypeIdentifier",
+														"name": "Identifier",
 														"from": 143,
 														"to": 147
 													},
@@ -2114,9 +2247,16 @@
 														"to": 13
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 14,
-														"to": 18
+														"to": 18,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 14,
+																"to": 18
+															}
+														]
 													}
 												]
 											}
@@ -2155,9 +2295,16 @@
 												"to": 26
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 27,
-												"to": 28
+												"to": 28,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 27,
+														"to": 28
+													}
+												]
 											}
 										]
 									},
@@ -2325,9 +2472,16 @@
 																		"to": 156
 																	},
 																	{
-																		"name": "TypeIdentifier",
+																		"name": "TypePath",
 																		"from": 157,
-																		"to": 160
+																		"to": 160,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 157,
+																				"to": 160
+																			}
+																		]
 																	}
 																]
 															},
@@ -2352,9 +2506,16 @@
 																		"to": 168
 																	},
 																	{
-																		"name": "TypeIdentifier",
+																		"name": "TypePath",
 																		"from": 169,
-																		"to": 172
+																		"to": 172,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 169,
+																				"to": 172
+																			}
+																		]
 																	}
 																]
 															},
@@ -2422,9 +2583,16 @@
 												"to": 216,
 												"children": [
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 203,
-														"to": 209
+														"to": 209,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 203,
+																"to": 209
+															}
+														]
 													},
 													{
 														"name": "TypeArgList",
@@ -2437,9 +2605,16 @@
 																"to": 210
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 210,
-																"to": 211
+																"to": 211,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 210,
+																		"to": 211
+																	}
+																]
 															},
 															{
 																"name": ",",
@@ -2620,9 +2795,16 @@
 														"to": 29
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 30,
-														"to": 33
+														"to": 33,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 30,
+																"to": 33
+															}
+														]
 													}
 												]
 											}
@@ -2646,9 +2828,16 @@
 								"to": 57,
 								"children": [
 									{
-										"name": "TypeIdentifier",
+										"name": "TypePath",
 										"from": 38,
-										"to": 44
+										"to": 44,
+										"children": [
+											{
+												"name": "Identifier",
+												"from": 38,
+												"to": 44
+											}
+										]
 									},
 									{
 										"name": "TypeArgList",
@@ -2676,9 +2865,16 @@
 														"to": 48
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 49,
-														"to": 52
+														"to": 52,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 49,
+																"to": 52
+															}
+														]
 													}
 												]
 											},
@@ -2995,9 +3191,16 @@
 																"to": 58,
 																"children": [
 																	{
-																		"name": "TypeIdentifier",
+																		"name": "TypePath",
 																		"from": 47,
-																		"to": 53
+																		"to": 53,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 47,
+																				"to": 53
+																			}
+																		]
 																	},
 																	{
 																		"name": "TypeArgList",
@@ -3010,9 +3213,16 @@
 																				"to": 54
 																			},
 																			{
-																				"name": "TypeIdentifier",
+																				"name": "TypePath",
 																				"from": 54,
-																				"to": 57
+																				"to": 57,
+																				"children": [
+																					{
+																						"name": "Identifier",
+																						"from": 54,
+																						"to": 57
+																					}
+																				]
 																			},
 																			{
 																				"name": ">",
@@ -3047,9 +3257,16 @@
 								"to": 63
 							},
 							{
-								"name": "TypeIdentifier",
+								"name": "TypePath",
 								"from": 64,
-								"to": 67
+								"to": 67,
+								"children": [
+									{
+										"name": "Identifier",
+										"from": 64,
+										"to": 67
+									}
+								]
 							},
 							{
 								"name": "Block",
@@ -3077,7 +3294,7 @@
 												"to": 95,
 												"children": [
 													{
-														"name": "TypeIdentifier",
+														"name": "Identifier",
 														"from": 78,
 														"to": 82
 													},
@@ -3092,7 +3309,7 @@
 														"to": 94,
 														"children": [
 															{
-																"name": "TypeIdentifier",
+																"name": "Identifier",
 																"from": 83,
 																"to": 87
 															},
@@ -3333,7 +3550,7 @@
 																		"to": 194,
 																		"children": [
 																			{
-																				"name": "TypeIdentifier",
+																				"name": "Identifier",
 																				"from": 178,
 																				"to": 182
 																			},
@@ -3348,7 +3565,7 @@
 																				"to": 193,
 																				"children": [
 																					{
-																						"name": "TypeIdentifier",
+																						"name": "Identifier",
 																						"from": 183,
 																						"to": 187
 																					},
@@ -3440,7 +3657,7 @@
 																		"to": 241,
 																		"children": [
 																			{
-																				"name": "TypeIdentifier",
+																				"name": "Identifier",
 																				"from": 224,
 																				"to": 228
 																			},
@@ -3455,7 +3672,7 @@
 																				"to": 240,
 																				"children": [
 																					{
-																						"name": "TypeIdentifier",
+																						"name": "Identifier",
 																						"from": 229,
 																						"to": 233
 																					},
@@ -3621,9 +3838,16 @@
 																								"to": 317
 																							},
 																							{
-																								"name": "TypeIdentifier",
+																								"name": "TypePath",
 																								"from": 318,
-																								"to": 321
+																								"to": 321,
+																								"children": [
+																									{
+																										"name": "Identifier",
+																										"from": 318,
+																										"to": 321
+																									}
+																								]
 																							}
 																						]
 																					},
@@ -3640,9 +3864,16 @@
 																				"to": 325
 																			},
 																			{
-																				"name": "TypeIdentifier",
+																				"name": "TypePath",
 																				"from": 326,
-																				"to": 329
+																				"to": 329,
+																				"children": [
+																					{
+																						"name": "Identifier",
+																						"from": 326,
+																						"to": 329
+																					}
+																				]
 																			},
 																			{
 																				"name": "Block",
@@ -3864,7 +4095,7 @@
 																		"to": 425,
 																		"children": [
 																			{
-																				"name": "TypeIdentifier",
+																				"name": "Identifier",
 																				"from": 408,
 																				"to": 412
 																			},
@@ -3879,7 +4110,7 @@
 																				"to": 424,
 																				"children": [
 																					{
-																						"name": "TypeIdentifier",
+																						"name": "Identifier",
 																						"from": 413,
 																						"to": 417
 																					},
@@ -4113,7 +4344,7 @@
 																		"to": 524,
 																		"children": [
 																			{
-																				"name": "TypeIdentifier",
+																				"name": "Identifier",
 																				"from": 513,
 																				"to": 517
 																			},
@@ -4165,7 +4396,7 @@
 																								"to": 543,
 																								"children": [
 																									{
-																										"name": "TypeIdentifier",
+																										"name": "Identifier",
 																										"from": 532,
 																										"to": 536
 																									},
@@ -4610,9 +4841,16 @@
 														"to": 149
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 150,
-														"to": 153
+														"to": 153,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 150,
+																"to": 153
+															}
+														]
 													}
 												]
 											}
@@ -5603,9 +5841,16 @@
 																"to": 77
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 78,
-																"to": 81
+																"to": 81,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 78,
+																		"to": 81
+																	}
+																]
 															}
 														]
 													},
@@ -5622,9 +5867,16 @@
 												"to": 85
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 86,
-												"to": 89
+												"to": 89,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 86,
+														"to": 89
+													}
+												]
 											},
 											{
 												"name": ";",
@@ -5701,9 +5953,16 @@
 																		"to": 137
 																	},
 																	{
-																		"name": "TypeIdentifier",
+																		"name": "TypePath",
 																		"from": 138,
-																		"to": 140
+																		"to": 140,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 138,
+																				"to": 140
+																			}
+																		]
 																	}
 																]
 															}
@@ -5722,9 +5981,16 @@
 												"to": 144
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 145,
-												"to": 150
+												"to": 150,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 145,
+														"to": 150
+													}
+												]
 											},
 											{
 												"name": ";",
@@ -5852,9 +6118,16 @@
 																		"to": 223
 																	},
 																	{
-																		"name": "TypeIdentifier",
+																		"name": "TypePath",
 																		"from": 224,
-																		"to": 226
+																		"to": 226,
+																		"children": [
+																			{
+																				"name": "Identifier",
+																				"from": 224,
+																				"to": 226
+																			}
+																		]
 																	}
 																]
 															}
@@ -5939,9 +6212,16 @@
 												"to": 271
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 272,
-												"to": 275
+												"to": 275,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 272,
+														"to": 275
+													}
+												]
 											},
 											{
 												"name": ";",
@@ -5988,9 +6268,16 @@
 												"to": 315
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 316,
-												"to": 319
+												"to": 319,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 316,
+														"to": 319
+													}
+												]
 											},
 											{
 												"name": ";",
@@ -6037,9 +6324,16 @@
 												"to": 348
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 349,
-												"to": 352
+												"to": 352,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 349,
+														"to": 352
+													}
+												]
 											},
 											{
 												"name": ";",
@@ -6113,9 +6407,16 @@
 														"to": 383
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 384,
-														"to": 387
+														"to": 387,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 384,
+																"to": 387
+															}
+														]
 													}
 												]
 											}
@@ -6154,9 +6455,16 @@
 												"to": 399
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 400,
-												"to": 403
+												"to": 403,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 400,
+														"to": 403
+													}
+												]
 											}
 										]
 									},
@@ -6176,9 +6484,16 @@
 												"to": 409
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 410,
-												"to": 413
+												"to": 413,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 410,
+														"to": 413
+													}
+												]
 											}
 										]
 									},
@@ -6516,9 +6831,16 @@
 												"to": 581
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 582,
-												"to": 587
+												"to": 587,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 582,
+														"to": 587
+													}
+												]
 											}
 										]
 									},
@@ -6570,9 +6892,16 @@
 														"to": 604
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 605,
-														"to": 606
+														"to": 606,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 605,
+																"to": 606
+															}
+														]
 													}
 												]
 											}
@@ -6609,9 +6938,16 @@
 														"to": 620
 													},
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 620,
-														"to": 622
+														"to": 622,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 620,
+																"to": 622
+															}
+														]
 													},
 													{
 														"name": ";",
@@ -6665,9 +7001,16 @@
 												"to": 637
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 638,
-												"to": 643
+												"to": 643,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 638,
+														"to": 643
+													}
+												]
 											}
 										]
 									},
@@ -6836,9 +7179,16 @@
 												"to": 710
 											},
 											{
-												"name": "TypeIdentifier",
+												"name": "TypePath",
 												"from": 711,
-												"to": 716
+												"to": 716,
+												"children": [
+													{
+														"name": "Identifier",
+														"from": 711,
+														"to": 716
+													}
+												]
 											}
 										]
 									},
@@ -7412,9 +7762,16 @@
 												"to": 23,
 												"children": [
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 17,
-														"to": 20
+														"to": 20,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 17,
+																"to": 20
+															}
+														]
 													},
 													{
 														"name": "TypeArgList",
@@ -7427,9 +7784,16 @@
 																"to": 21
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 21,
-																"to": 22
+																"to": 22,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 21,
+																		"to": 22
+																	}
+																]
 															},
 															{
 																"name": ">",
@@ -7524,9 +7888,16 @@
 												"to": 35,
 												"children": [
 													{
-														"name": "TypeIdentifier",
+														"name": "TypePath",
 														"from": 23,
-														"to": 29
+														"to": 29,
+														"children": [
+															{
+																"name": "Identifier",
+																"from": 23,
+																"to": 29
+															}
+														]
 													},
 													{
 														"name": "TypeArgList",
@@ -7539,9 +7910,16 @@
 																"to": 30
 															},
 															{
-																"name": "TypeIdentifier",
+																"name": "TypePath",
 																"from": 30,
-																"to": 33
+																"to": 33,
+																"children": [
+																	{
+																		"name": "Identifier",
+																		"from": 30,
+																		"to": 33
+																	}
+																]
 															},
 															{
 																"name": ",",

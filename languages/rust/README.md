@@ -2,10 +2,12 @@
 
 Rust 1.95.0 parser and typed concrete syntax for Rezel.
 
-The package starts from the pinned `@lezer/rust` 1.0.2 grammar and preserves
-its CST and recovery behavior as a bootstrap baseline. The first maintained
-Rust 1.95.0 / Edition 2024 delta adds let-else statements, let chains,
-`if let` match guards, async closures, and inline const blocks.
+The package starts from the pinned `@lezer/rust` 1.0.2 grammar as its source
+provenance and bootstrap semantic baseline. The maintained grammar may refine
+the CST when a different shape expresses the same Rust syntax with fewer
+parser conflicts or a clearer typed interface. The first maintained Rust
+1.95.0 / Edition 2024 delta adds let-else statements, let chains, `if let`
+match guards, async closures, and inline const blocks.
 The maintained lexical layer uses Rust 1.95's Unicode 17 identifier profile
 and covers raw identifiers and lifetimes, C and raw C strings, literal escape
 and radix validation, Edition 2024 reserved guards and prefixes, and the full
@@ -124,6 +126,13 @@ fields and closed unions. Every visible grammar kind has a typed wrapper, and
 compound syntax exposes grammar-checked direct-child accessors wherever the
 CST distinguishes a stable role. The typed API remains a zero-copy CST view;
 it does not normalize ambiguous grammar shapes or construct an owned Rust AST.
+
+Type paths use a recursive `RustTypePath`: each node exposes its final segment,
+an optional path prefix or qualified scope, and optional type arguments.
+Value, struct, use, and pattern paths expose the corresponding recursive
+`RustPath` / `RustScopedIdentifier` components. This keeps path structure
+explicit without assigning different leaf kinds to otherwise identical Rust
+identifiers.
 
 ## Highlighting
 

@@ -24,17 +24,14 @@ pub enum RustKind {
     Super,
     Crate,
     ScopedIdentifier,
-    PathSeparator,
     QualifiedScope,
     AbstractType,
     Impl,
-    SelfType,
-    MetaType,
-    TypeIdentifier,
-    ScopedTypeIdentifier,
-    ScopeIdentifier,
+    TypePath,
+    PathSeparator,
     TypeArgList,
     TypeBinding,
+    TypeIdentifier,
     GenericType,
     Equals,
     TraitBounds,
@@ -84,6 +81,7 @@ pub enum RustKind {
     ArithOp,
     MetaPattern,
     SelfPattern,
+    ScopeIdentifier,
     TuplePattern,
     Comma,
     StructPattern,
@@ -280,265 +278,262 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             18u16 => RustKind::Super,
             19u16 => RustKind::Crate,
             21u16 => RustKind::ScopedIdentifier,
-            82u16 => RustKind::ScopedIdentifier,
-            244u16 => RustKind::ScopedIdentifier,
-            246u16 => RustKind::ScopedIdentifier,
-            22u16 => RustKind::PathSeparator,
-            23u16 => RustKind::QualifiedScope,
-            24u16 => RustKind::AbstractType,
-            25u16 => RustKind::Impl,
-            26u16 => RustKind::SelfType,
-            27u16 => RustKind::MetaType,
-            28u16 => RustKind::TypeIdentifier,
-            29u16 => RustKind::ScopedTypeIdentifier,
-            84u16 => RustKind::ScopedTypeIdentifier,
-            30u16 => RustKind::ScopeIdentifier,
-            31u16 => RustKind::TypeArgList,
-            32u16 => RustKind::TypeBinding,
-            33u16 => RustKind::GenericType,
-            34u16 => RustKind::Equals,
-            35u16 => RustKind::TraitBounds,
-            36u16 => RustKind::Colon,
-            37u16 => RustKind::Lifetime,
-            38u16 => RustKind::HigherRankedTraitBound,
-            39u16 => RustKind::For,
-            40u16 => RustKind::TypeParamList,
-            41u16 => RustKind::Attribute,
-            42u16 => RustKind::ConstrainedTypeParameter,
-            43u16 => RustKind::OptionalTypeParameter,
-            44u16 => RustKind::ConstParameter,
-            45u16 => RustKind::Const,
-            46u16 => RustKind::BoundIdentifier,
-            47u16 => RustKind::RightBrace,
-            48u16 => RustKind::LeftBrace,
-            49u16 => RustKind::Block,
-            50u16 => RustKind::Semicolon,
-            51u16 => RustKind::ConstItem,
-            52u16 => RustKind::Vis,
-            53u16 => RustKind::Pub,
-            54u16 => RustKind::LeftParen,
-            55u16 => RustKind::In,
-            56u16 => RustKind::RightParen,
-            57u16 => RustKind::Underscore,
-            58u16 => RustKind::UnsafeBlock,
-            59u16 => RustKind::Unsafe,
-            60u16 => RustKind::AsyncBlock,
-            61u16 => RustKind::Async,
-            62u16 => RustKind::Move,
-            63u16 => RustKind::ConstBlock,
-            64u16 => RustKind::TryBlock,
-            65u16 => RustKind::Try,
-            66u16 => RustKind::LabeledBlock,
-            67u16 => RustKind::LoopLabel,
-            68u16 => RustKind::IfExpression,
-            69u16 => RustKind::If,
-            70u16 => RustKind::LetChain,
-            71u16 => RustKind::LetCondition,
-            72u16 => RustKind::Let,
-            73u16 => RustKind::LiteralPattern,
-            74u16 => RustKind::String,
-            75u16 => RustKind::Escape,
-            76u16 => RustKind::Char,
-            77u16 => RustKind::Boolean,
-            78u16 => RustKind::Integer,
-            79u16 => RustKind::ArithOp,
-            106u16 => RustKind::ArithOp,
-            115u16 => RustKind::ArithOp,
-            137u16 => RustKind::ArithOp,
-            144u16 => RustKind::ArithOp,
-            145u16 => RustKind::ArithOp,
-            256u16 => RustKind::ArithOp,
-            260u16 => RustKind::ArithOp,
-            80u16 => RustKind::MetaPattern,
-            81u16 => RustKind::SelfPattern,
-            83u16 => RustKind::TuplePattern,
-            85u16 => RustKind::Comma,
-            86u16 => RustKind::StructPattern,
-            87u16 => RustKind::FieldPatternList,
-            88u16 => RustKind::FieldPattern,
-            89u16 => RustKind::Ref,
-            90u16 => RustKind::Mut,
-            91u16 => RustKind::FieldIdentifier,
-            92u16 => RustKind::DotDot,
-            93u16 => RustKind::RefPattern,
-            94u16 => RustKind::SlicePattern,
-            95u16 => RustKind::CapturedPattern,
-            96u16 => RustKind::ReferencePattern,
-            97u16 => RustKind::Ampersand,
-            98u16 => RustKind::MutPattern,
-            99u16 => RustKind::RangePattern,
-            100u16 => RustKind::DotDotDot,
-            101u16 => RustKind::OrPattern,
-            102u16 => RustKind::MacroPattern,
-            103u16 => RustKind::ParenthesizedTokens,
-            104u16 => RustKind::TokenBinding,
-            105u16 => RustKind::TokenRepetition,
-            107u16 => RustKind::BitOp,
+            79u16 => RustKind::ScopedIdentifier,
+            241u16 => RustKind::ScopedIdentifier,
+            243u16 => RustKind::ScopedIdentifier,
+            22u16 => RustKind::QualifiedScope,
+            23u16 => RustKind::AbstractType,
+            24u16 => RustKind::Impl,
+            25u16 => RustKind::TypePath,
+            26u16 => RustKind::PathSeparator,
+            27u16 => RustKind::TypeArgList,
+            28u16 => RustKind::TypeBinding,
+            29u16 => RustKind::TypeIdentifier,
+            30u16 => RustKind::GenericType,
+            31u16 => RustKind::Equals,
+            32u16 => RustKind::TraitBounds,
+            33u16 => RustKind::Colon,
+            34u16 => RustKind::Lifetime,
+            35u16 => RustKind::HigherRankedTraitBound,
+            36u16 => RustKind::For,
+            37u16 => RustKind::TypeParamList,
+            38u16 => RustKind::Attribute,
+            39u16 => RustKind::ConstrainedTypeParameter,
+            40u16 => RustKind::OptionalTypeParameter,
+            41u16 => RustKind::ConstParameter,
+            42u16 => RustKind::Const,
+            43u16 => RustKind::BoundIdentifier,
+            44u16 => RustKind::RightBrace,
+            45u16 => RustKind::LeftBrace,
+            46u16 => RustKind::Block,
+            47u16 => RustKind::Semicolon,
+            48u16 => RustKind::ConstItem,
+            49u16 => RustKind::Vis,
+            50u16 => RustKind::Pub,
+            51u16 => RustKind::LeftParen,
+            52u16 => RustKind::In,
+            53u16 => RustKind::RightParen,
+            54u16 => RustKind::Underscore,
+            55u16 => RustKind::UnsafeBlock,
+            56u16 => RustKind::Unsafe,
+            57u16 => RustKind::AsyncBlock,
+            58u16 => RustKind::Async,
+            59u16 => RustKind::Move,
+            60u16 => RustKind::ConstBlock,
+            61u16 => RustKind::TryBlock,
+            62u16 => RustKind::Try,
+            63u16 => RustKind::LabeledBlock,
+            64u16 => RustKind::LoopLabel,
+            65u16 => RustKind::IfExpression,
+            66u16 => RustKind::If,
+            67u16 => RustKind::LetChain,
+            68u16 => RustKind::LetCondition,
+            69u16 => RustKind::Let,
+            70u16 => RustKind::LiteralPattern,
+            71u16 => RustKind::String,
+            72u16 => RustKind::Escape,
+            73u16 => RustKind::Char,
+            74u16 => RustKind::Boolean,
+            75u16 => RustKind::Integer,
+            76u16 => RustKind::ArithOp,
+            103u16 => RustKind::ArithOp,
+            112u16 => RustKind::ArithOp,
+            134u16 => RustKind::ArithOp,
+            141u16 => RustKind::ArithOp,
+            142u16 => RustKind::ArithOp,
+            253u16 => RustKind::ArithOp,
+            257u16 => RustKind::ArithOp,
+            77u16 => RustKind::MetaPattern,
+            78u16 => RustKind::SelfPattern,
+            80u16 => RustKind::ScopeIdentifier,
+            81u16 => RustKind::TuplePattern,
+            82u16 => RustKind::Comma,
+            83u16 => RustKind::StructPattern,
+            84u16 => RustKind::FieldPatternList,
+            85u16 => RustKind::FieldPattern,
+            86u16 => RustKind::Ref,
+            87u16 => RustKind::Mut,
+            88u16 => RustKind::FieldIdentifier,
+            89u16 => RustKind::DotDot,
+            90u16 => RustKind::RefPattern,
+            91u16 => RustKind::SlicePattern,
+            92u16 => RustKind::CapturedPattern,
+            93u16 => RustKind::ReferencePattern,
+            94u16 => RustKind::Ampersand,
+            95u16 => RustKind::MutPattern,
+            96u16 => RustKind::RangePattern,
+            97u16 => RustKind::DotDotDot,
+            98u16 => RustKind::OrPattern,
+            99u16 => RustKind::MacroPattern,
+            100u16 => RustKind::ParenthesizedTokens,
+            101u16 => RustKind::TokenBinding,
+            102u16 => RustKind::TokenRepetition,
+            104u16 => RustKind::BitOp,
+            143u16 => RustKind::BitOp,
+            144u16 => RustKind::BitOp,
+            145u16 => RustKind::BitOp,
             146u16 => RustKind::BitOp,
-            147u16 => RustKind::BitOp,
-            148u16 => RustKind::BitOp,
-            149u16 => RustKind::BitOp,
-            108u16 => RustKind::LogicOp,
-            139u16 => RustKind::LogicOp,
-            150u16 => RustKind::LogicOp,
-            151u16 => RustKind::LogicOp,
-            109u16 => RustKind::UpdateOp,
-            110u16 => RustKind::CompareOp,
-            111u16 => RustKind::ThinArrow,
-            112u16 => RustKind::FatArrow,
-            113u16 => RustKind::MetavariableExpression,
-            114u16 => RustKind::BracedTokens,
-            116u16 => RustKind::Abstract,
-            117u16 => RustKind::Become,
-            118u16 => RustKind::Box,
-            119u16 => RustKind::Do,
-            120u16 => RustKind::Final,
-            121u16 => RustKind::Gen,
-            122u16 => RustKind::Macro,
-            123u16 => RustKind::Override,
-            124u16 => RustKind::Priv,
-            125u16 => RustKind::Typeof,
-            126u16 => RustKind::Unsized,
-            127u16 => RustKind::Virtual,
-            128u16 => RustKind::Yield,
-            129u16 => RustKind::BracketedTokens,
-            130u16 => RustKind::Else,
-            131u16 => RustKind::MatchExpression,
-            132u16 => RustKind::Match,
-            133u16 => RustKind::MatchBlock,
-            134u16 => RustKind::MatchArm,
-            185u16 => RustKind::MatchArm,
-            135u16 => RustKind::Guard,
-            136u16 => RustKind::UnaryExpression,
-            138u16 => RustKind::DerefOp,
-            140u16 => RustKind::ReferenceExpression,
-            141u16 => RustKind::Raw,
-            142u16 => RustKind::TryExpression,
-            143u16 => RustKind::BinaryExpression,
-            152u16 => RustKind::AssignmentExpression,
-            153u16 => RustKind::AssignmentExpression,
-            154u16 => RustKind::TypeCastExpression,
-            155u16 => RustKind::As,
-            156u16 => RustKind::ReturnExpression,
-            157u16 => RustKind::Return,
-            158u16 => RustKind::RangeExpression,
-            159u16 => RustKind::CallExpression,
-            160u16 => RustKind::ArgList,
-            161u16 => RustKind::AwaitExpression,
-            162u16 => RustKind::Await,
-            163u16 => RustKind::FieldExpression,
-            164u16 => RustKind::GenericFunction,
-            165u16 => RustKind::BreakExpression,
-            166u16 => RustKind::Break,
-            167u16 => RustKind::ContinueExpression,
-            168u16 => RustKind::Continue,
-            169u16 => RustKind::IndexExpression,
-            170u16 => RustKind::ArrayExpression,
-            171u16 => RustKind::InferredConst,
-            172u16 => RustKind::TupleExpression,
-            173u16 => RustKind::MacroInvocation,
-            191u16 => RustKind::MacroInvocation,
-            274u16 => RustKind::MacroInvocation,
-            174u16 => RustKind::UnitExpression,
-            175u16 => RustKind::ClosureExpression,
-            176u16 => RustKind::ParamList,
-            206u16 => RustKind::ParamList,
-            231u16 => RustKind::ParamList,
-            263u16 => RustKind::ParamList,
-            264u16 => RustKind::ParamList,
-            177u16 => RustKind::Parameter,
-            178u16 => RustKind::Parameter,
-            207u16 => RustKind::Parameter,
-            232u16 => RustKind::Parameter,
-            265u16 => RustKind::Parameter,
-            179u16 => RustKind::ParenthesizedExpression,
-            180u16 => RustKind::StructExpression,
-            181u16 => RustKind::FieldInitializerList,
-            182u16 => RustKind::ShorthandFieldInitializer,
-            183u16 => RustKind::FieldInitializer,
-            184u16 => RustKind::BaseFieldInitializer,
-            186u16 => RustKind::WhileExpression,
-            187u16 => RustKind::While,
-            188u16 => RustKind::LoopExpression,
-            189u16 => RustKind::Loop,
-            190u16 => RustKind::ForExpression,
-            192u16 => RustKind::MacroDefinition,
-            193u16 => RustKind::MacroRule,
-            194u16 => RustKind::DeclarativeMacroItem,
-            195u16 => RustKind::EmptyStatement,
-            196u16 => RustKind::ModItem,
-            197u16 => RustKind::Mod,
-            198u16 => RustKind::DeclarationList,
-            202u16 => RustKind::DeclarationList,
-            199u16 => RustKind::AttributeItem,
-            200u16 => RustKind::ForeignModItem,
-            201u16 => RustKind::Extern,
-            203u16 => RustKind::FunctionItem,
-            229u16 => RustKind::FunctionItem,
-            204u16 => RustKind::Safe,
-            205u16 => RustKind::Fn,
-            208u16 => RustKind::VariadicParameter,
-            234u16 => RustKind::VariadicParameter,
-            235u16 => RustKind::VariadicParameter,
-            266u16 => RustKind::VariadicParameter,
-            209u16 => RustKind::WhereClause,
-            210u16 => RustKind::Where,
-            211u16 => RustKind::LifetimeClause,
-            212u16 => RustKind::TypeBoundClause,
-            213u16 => RustKind::StaticItem,
-            251u16 => RustKind::StaticItem,
-            214u16 => RustKind::Static,
-            215u16 => RustKind::ForeignTypeItem,
-            216u16 => RustKind::Type,
-            217u16 => RustKind::StructItem,
-            218u16 => RustKind::Struct,
-            219u16 => RustKind::FieldDeclarationList,
-            220u16 => RustKind::FieldDeclaration,
-            221u16 => RustKind::OrderedFieldDeclarationList,
-            222u16 => RustKind::UnionItem,
-            223u16 => RustKind::Union,
-            224u16 => RustKind::EnumItem,
-            225u16 => RustKind::Enum,
-            226u16 => RustKind::EnumVariantList,
-            227u16 => RustKind::EnumVariant,
-            228u16 => RustKind::TypeItem,
-            230u16 => RustKind::Default,
-            233u16 => RustKind::SelfParameter,
-            236u16 => RustKind::ImplItem,
-            237u16 => RustKind::TraitItem,
-            238u16 => RustKind::Auto,
-            239u16 => RustKind::Trait,
-            240u16 => RustKind::AssociatedType,
-            241u16 => RustKind::LetDeclaration,
-            242u16 => RustKind::UseDeclaration,
-            243u16 => RustKind::Use,
-            245u16 => RustKind::UseAsClause,
-            247u16 => RustKind::UseList,
-            248u16 => RustKind::ScopedUseList,
-            249u16 => RustKind::UseWildcard,
-            250u16 => RustKind::ExternCrateDeclaration,
-            252u16 => RustKind::AttributeStatement,
-            253u16 => RustKind::ExpressionStatement,
-            254u16 => RustKind::ExpressionStatement,
-            255u16 => RustKind::ExpressionStatement,
-            257u16 => RustKind::RemovedTraitBound,
-            258u16 => RustKind::ConstTraitBound,
-            259u16 => RustKind::NegativeConstArgument,
-            261u16 => RustKind::FunctionType,
-            262u16 => RustKind::ForLifetimes,
-            267u16 => RustKind::ParenthesizedTraitBound,
-            268u16 => RustKind::InferredType,
-            269u16 => RustKind::ReferenceType,
-            270u16 => RustKind::PointerType,
-            271u16 => RustKind::TupleType,
-            272u16 => RustKind::UnitType,
-            273u16 => RustKind::ArrayType,
-            275u16 => RustKind::EmptyType,
-            276u16 => RustKind::DynamicType,
-            277u16 => RustKind::Dyn,
-            278u16 => RustKind::BoundedType,
-            279u16 => RustKind::UseBound,
-            280u16 => RustKind::UnsafeAttribute,
+            105u16 => RustKind::LogicOp,
+            136u16 => RustKind::LogicOp,
+            147u16 => RustKind::LogicOp,
+            148u16 => RustKind::LogicOp,
+            106u16 => RustKind::UpdateOp,
+            107u16 => RustKind::CompareOp,
+            108u16 => RustKind::ThinArrow,
+            109u16 => RustKind::FatArrow,
+            110u16 => RustKind::MetavariableExpression,
+            111u16 => RustKind::BracedTokens,
+            113u16 => RustKind::Abstract,
+            114u16 => RustKind::Become,
+            115u16 => RustKind::Box,
+            116u16 => RustKind::Do,
+            117u16 => RustKind::Final,
+            118u16 => RustKind::Gen,
+            119u16 => RustKind::Macro,
+            120u16 => RustKind::Override,
+            121u16 => RustKind::Priv,
+            122u16 => RustKind::Typeof,
+            123u16 => RustKind::Unsized,
+            124u16 => RustKind::Virtual,
+            125u16 => RustKind::Yield,
+            126u16 => RustKind::BracketedTokens,
+            127u16 => RustKind::Else,
+            128u16 => RustKind::MatchExpression,
+            129u16 => RustKind::Match,
+            130u16 => RustKind::MatchBlock,
+            131u16 => RustKind::MatchArm,
+            182u16 => RustKind::MatchArm,
+            132u16 => RustKind::Guard,
+            133u16 => RustKind::UnaryExpression,
+            135u16 => RustKind::DerefOp,
+            137u16 => RustKind::ReferenceExpression,
+            138u16 => RustKind::Raw,
+            139u16 => RustKind::TryExpression,
+            140u16 => RustKind::BinaryExpression,
+            149u16 => RustKind::AssignmentExpression,
+            150u16 => RustKind::AssignmentExpression,
+            151u16 => RustKind::TypeCastExpression,
+            152u16 => RustKind::As,
+            153u16 => RustKind::ReturnExpression,
+            154u16 => RustKind::Return,
+            155u16 => RustKind::RangeExpression,
+            156u16 => RustKind::CallExpression,
+            157u16 => RustKind::ArgList,
+            158u16 => RustKind::AwaitExpression,
+            159u16 => RustKind::Await,
+            160u16 => RustKind::FieldExpression,
+            161u16 => RustKind::GenericFunction,
+            162u16 => RustKind::BreakExpression,
+            163u16 => RustKind::Break,
+            164u16 => RustKind::ContinueExpression,
+            165u16 => RustKind::Continue,
+            166u16 => RustKind::IndexExpression,
+            167u16 => RustKind::ArrayExpression,
+            168u16 => RustKind::InferredConst,
+            169u16 => RustKind::TupleExpression,
+            170u16 => RustKind::MacroInvocation,
+            188u16 => RustKind::MacroInvocation,
+            271u16 => RustKind::MacroInvocation,
+            171u16 => RustKind::UnitExpression,
+            172u16 => RustKind::ClosureExpression,
+            173u16 => RustKind::ParamList,
+            203u16 => RustKind::ParamList,
+            228u16 => RustKind::ParamList,
+            260u16 => RustKind::ParamList,
+            261u16 => RustKind::ParamList,
+            174u16 => RustKind::Parameter,
+            175u16 => RustKind::Parameter,
+            204u16 => RustKind::Parameter,
+            229u16 => RustKind::Parameter,
+            262u16 => RustKind::Parameter,
+            176u16 => RustKind::ParenthesizedExpression,
+            177u16 => RustKind::StructExpression,
+            178u16 => RustKind::FieldInitializerList,
+            179u16 => RustKind::ShorthandFieldInitializer,
+            180u16 => RustKind::FieldInitializer,
+            181u16 => RustKind::BaseFieldInitializer,
+            183u16 => RustKind::WhileExpression,
+            184u16 => RustKind::While,
+            185u16 => RustKind::LoopExpression,
+            186u16 => RustKind::Loop,
+            187u16 => RustKind::ForExpression,
+            189u16 => RustKind::MacroDefinition,
+            190u16 => RustKind::MacroRule,
+            191u16 => RustKind::DeclarativeMacroItem,
+            192u16 => RustKind::EmptyStatement,
+            193u16 => RustKind::ModItem,
+            194u16 => RustKind::Mod,
+            195u16 => RustKind::DeclarationList,
+            199u16 => RustKind::DeclarationList,
+            196u16 => RustKind::AttributeItem,
+            197u16 => RustKind::ForeignModItem,
+            198u16 => RustKind::Extern,
+            200u16 => RustKind::FunctionItem,
+            226u16 => RustKind::FunctionItem,
+            201u16 => RustKind::Safe,
+            202u16 => RustKind::Fn,
+            205u16 => RustKind::VariadicParameter,
+            231u16 => RustKind::VariadicParameter,
+            232u16 => RustKind::VariadicParameter,
+            263u16 => RustKind::VariadicParameter,
+            206u16 => RustKind::WhereClause,
+            207u16 => RustKind::Where,
+            208u16 => RustKind::LifetimeClause,
+            209u16 => RustKind::TypeBoundClause,
+            210u16 => RustKind::StaticItem,
+            248u16 => RustKind::StaticItem,
+            211u16 => RustKind::Static,
+            212u16 => RustKind::ForeignTypeItem,
+            213u16 => RustKind::Type,
+            214u16 => RustKind::StructItem,
+            215u16 => RustKind::Struct,
+            216u16 => RustKind::FieldDeclarationList,
+            217u16 => RustKind::FieldDeclaration,
+            218u16 => RustKind::OrderedFieldDeclarationList,
+            219u16 => RustKind::UnionItem,
+            220u16 => RustKind::Union,
+            221u16 => RustKind::EnumItem,
+            222u16 => RustKind::Enum,
+            223u16 => RustKind::EnumVariantList,
+            224u16 => RustKind::EnumVariant,
+            225u16 => RustKind::TypeItem,
+            227u16 => RustKind::Default,
+            230u16 => RustKind::SelfParameter,
+            233u16 => RustKind::ImplItem,
+            234u16 => RustKind::TraitItem,
+            235u16 => RustKind::Auto,
+            236u16 => RustKind::Trait,
+            237u16 => RustKind::AssociatedType,
+            238u16 => RustKind::LetDeclaration,
+            239u16 => RustKind::UseDeclaration,
+            240u16 => RustKind::Use,
+            242u16 => RustKind::UseAsClause,
+            244u16 => RustKind::UseList,
+            245u16 => RustKind::ScopedUseList,
+            246u16 => RustKind::UseWildcard,
+            247u16 => RustKind::ExternCrateDeclaration,
+            249u16 => RustKind::AttributeStatement,
+            250u16 => RustKind::ExpressionStatement,
+            251u16 => RustKind::ExpressionStatement,
+            252u16 => RustKind::ExpressionStatement,
+            254u16 => RustKind::RemovedTraitBound,
+            255u16 => RustKind::ConstTraitBound,
+            256u16 => RustKind::NegativeConstArgument,
+            258u16 => RustKind::FunctionType,
+            259u16 => RustKind::ForLifetimes,
+            264u16 => RustKind::ParenthesizedTraitBound,
+            265u16 => RustKind::InferredType,
+            266u16 => RustKind::ReferenceType,
+            267u16 => RustKind::PointerType,
+            268u16 => RustKind::TupleType,
+            269u16 => RustKind::UnitType,
+            270u16 => RustKind::ArrayType,
+            272u16 => RustKind::EmptyType,
+            273u16 => RustKind::DynamicType,
+            274u16 => RustKind::Dyn,
+            275u16 => RustKind::BoundedType,
+            276u16 => RustKind::UseBound,
+            277u16 => RustKind::UnsafeAttribute,
             _ => return None,
         };
         Some(kind)
@@ -990,21 +985,25 @@ impl RustScopedIdentifier {
             .nth(0)
     }
     #[must_use]
-    pub fn segments(&self) -> rezel_common::TypedChildren<RustValuePathSegment> {
+    pub fn components(&self) -> rezel_common::TypedChildren<RustPathComponent> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
+    #[must_use]
+    pub fn type_arguments(&self) -> rezel_common::TypedChildren<RustTypeArgumentList> {
         rezel_common::TypedChildren::new(self.syntax.children())
     }
 }
 #[derive(Clone, Debug)]
-pub struct RustScopedTypeIdentifier {
+pub struct RustTypePath {
     syntax: rezel_common::SyntaxNode,
 }
-impl rezel_common::TypedNode for RustScopedTypeIdentifier {
+impl rezel_common::TypedNode for RustTypePath {
     type Language = RustLanguage;
     fn downcast_from(
         node: rezel_common::SyntaxNode,
     ) -> Result<Self, rezel_common::SyntaxNode> {
         let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
-        if kind == Some(RustKind::ScopedTypeIdentifier) {
+        if kind == Some(RustKind::TypePath) {
             Ok(Self { syntax: node })
         } else {
             Err(node)
@@ -1017,7 +1016,16 @@ impl rezel_common::TypedNode for RustScopedTypeIdentifier {
         self.syntax
     }
 }
-impl RustScopedTypeIdentifier {
+impl RustTypePath {
+    #[must_use]
+    pub fn prefix(&self) -> Option<RustTypePath> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustTypePath as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
+    }
     #[must_use]
     pub fn qualified_scope(&self) -> Option<RustQualifiedScope> {
         self.syntax
@@ -1028,12 +1036,23 @@ impl RustScopedTypeIdentifier {
             .nth(0)
     }
     #[must_use]
-    pub fn segments(&self) -> rezel_common::TypedChildren<RustTypePathSegment> {
-        rezel_common::TypedChildren::new(self.syntax.children())
+    pub fn segment(&self) -> Option<RustPathSegment> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustPathSegment as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
     }
     #[must_use]
-    pub fn type_arguments(&self) -> rezel_common::TypedChildren<RustTypeArgumentList> {
-        rezel_common::TypedChildren::new(self.syntax.children())
+    pub fn type_arguments(&self) -> Option<RustTypeArgumentList> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustTypeArgumentList as rezel_common::TypedNode>::downcast_from(node)
+                    .ok()
+            })
+            .nth(0)
     }
 }
 #[derive(Clone, Debug)]
@@ -1654,7 +1673,7 @@ impl RustTypeBinding {
             .filter_map(|node| {
                 <RustType as rezel_common::TypedNode>::downcast_from(node).ok()
             })
-            .nth(1)
+            .nth(0)
     }
     #[must_use]
     pub fn bounds(&self) -> Option<RustTraitBounds> {
@@ -2288,74 +2307,6 @@ impl RustAbstractType {
     }
 }
 #[derive(Clone, Debug)]
-pub struct RustSelfType {
-    syntax: rezel_common::SyntaxNode,
-}
-impl rezel_common::TypedNode for RustSelfType {
-    type Language = RustLanguage;
-    fn downcast_from(
-        node: rezel_common::SyntaxNode,
-    ) -> Result<Self, rezel_common::SyntaxNode> {
-        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
-        if kind == Some(RustKind::SelfType) {
-            Ok(Self { syntax: node })
-        } else {
-            Err(node)
-        }
-    }
-    fn syntax(&self) -> &rezel_common::SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> rezel_common::SyntaxNode {
-        self.syntax
-    }
-}
-impl RustSelfType {
-    #[must_use]
-    pub fn self_keyword(&self) -> Option<RustSelfKeyword> {
-        self.syntax
-            .children()
-            .filter_map(|node| {
-                <RustSelfKeyword as rezel_common::TypedNode>::downcast_from(node).ok()
-            })
-            .nth(0)
-    }
-}
-#[derive(Clone, Debug)]
-pub struct RustMetaType {
-    syntax: rezel_common::SyntaxNode,
-}
-impl rezel_common::TypedNode for RustMetaType {
-    type Language = RustLanguage;
-    fn downcast_from(
-        node: rezel_common::SyntaxNode,
-    ) -> Result<Self, rezel_common::SyntaxNode> {
-        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
-        if kind == Some(RustKind::MetaType) {
-            Ok(Self { syntax: node })
-        } else {
-            Err(node)
-        }
-    }
-    fn syntax(&self) -> &rezel_common::SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> rezel_common::SyntaxNode {
-        self.syntax
-    }
-}
-impl RustMetaType {
-    #[must_use]
-    pub fn metavariable(&self) -> Option<RustMetavariable> {
-        self.syntax
-            .children()
-            .filter_map(|node| {
-                <RustMetavariable as rezel_common::TypedNode>::downcast_from(node).ok()
-            })
-            .nth(0)
-    }
-}
-#[derive(Clone, Debug)]
 pub struct RustFunctionType {
     syntax: rezel_common::SyntaxNode,
 }
@@ -2877,11 +2828,11 @@ impl rezel_common::TypedNode for RustTuplePattern {
 }
 impl RustTuplePattern {
     #[must_use]
-    pub fn path(&self) -> Option<RustStructPath> {
+    pub fn path(&self) -> Option<RustPath> {
         self.syntax
             .children()
             .filter_map(|node| {
-                <RustStructPath as rezel_common::TypedNode>::downcast_from(node).ok()
+                <RustPath as rezel_common::TypedNode>::downcast_from(node).ok()
             })
             .nth(0)
     }
@@ -2915,11 +2866,11 @@ impl rezel_common::TypedNode for RustStructPattern {
 }
 impl RustStructPattern {
     #[must_use]
-    pub fn path(&self) -> Option<RustStructPath> {
+    pub fn path(&self) -> Option<RustPath> {
         self.syntax
             .children()
             .filter_map(|node| {
-                <RustStructPath as rezel_common::TypedNode>::downcast_from(node).ok()
+                <RustPath as rezel_common::TypedNode>::downcast_from(node).ok()
             })
             .nth(0)
     }
@@ -4700,11 +4651,11 @@ impl rezel_common::TypedNode for RustStructExpression {
 }
 impl RustStructExpression {
     #[must_use]
-    pub fn path(&self) -> Option<RustStructPath> {
+    pub fn path(&self) -> Option<RustPath> {
         self.syntax
             .children()
             .filter_map(|node| {
-                <RustStructPath as rezel_common::TypedNode>::downcast_from(node).ok()
+                <RustPath as rezel_common::TypedNode>::downcast_from(node).ok()
             })
             .nth(0)
     }
@@ -6587,7 +6538,7 @@ impl RustTypeItem {
             .filter_map(|node| {
                 <RustType as rezel_common::TypedNode>::downcast_from(node).ok()
             })
-            .nth(1)
+            .nth(0)
     }
 }
 #[derive(Clone, Debug)]
@@ -6974,7 +6925,7 @@ impl rezel_common::TypedNode for RustScopedUseList {
 }
 impl RustScopedUseList {
     #[must_use]
-    pub fn segments(&self) -> rezel_common::TypedChildren<RustValuePathSegment> {
+    pub fn segments(&self) -> rezel_common::TypedChildren<RustPathComponent> {
         rezel_common::TypedChildren::new(self.syntax.children())
     }
     #[must_use]
@@ -7012,7 +6963,7 @@ impl rezel_common::TypedNode for RustUseWildcard {
 }
 impl RustUseWildcard {
     #[must_use]
-    pub fn segments(&self) -> rezel_common::TypedChildren<RustValuePathSegment> {
+    pub fn segments(&self) -> rezel_common::TypedChildren<RustPathComponent> {
         rezel_common::TypedChildren::new(self.syntax.children())
     }
 }
@@ -7092,7 +7043,79 @@ impl rezel_common::TypedNode for RustNumericLiteral {
     }
 }
 #[derive(Clone, Debug)]
-pub enum RustValuePathSegment {
+pub enum RustPathSegment {
+    Identifier(RustIdentifier),
+    Metavariable(RustMetavariable),
+    SelfKeyword(RustSelfKeyword),
+    SuperKeyword(RustSuperKeyword),
+    CrateKeyword(RustCrateKeyword),
+}
+impl rezel_common::TypedNode for RustPathSegment {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::Identifier) => {
+                let typed = <RustIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Identifier(typed))
+            }
+            Some(RustKind::Metavariable) => {
+                let typed = <RustMetavariable as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Metavariable(typed))
+            }
+            Some(RustKind::SelfKeyword) => {
+                let typed = <RustSelfKeyword as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::SelfKeyword(typed))
+            }
+            Some(RustKind::Super) => {
+                let typed = <RustSuperKeyword as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::SuperKeyword(typed))
+            }
+            Some(RustKind::Crate) => {
+                let typed = <RustCrateKeyword as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::CrateKeyword(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Identifier(node) => rezel_common::TypedNode::syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::syntax(node),
+            Self::SelfKeyword(node) => rezel_common::TypedNode::syntax(node),
+            Self::SuperKeyword(node) => rezel_common::TypedNode::syntax(node),
+            Self::CrateKeyword(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Identifier(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::SelfKeyword(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::SuperKeyword(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::CrateKeyword(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum RustPathComponent {
+    Scoped(RustScopedIdentifier),
     Scope(RustScopeIdentifier),
     Identifier(RustIdentifier),
     Binding(RustBoundIdentifier),
@@ -7101,12 +7124,19 @@ pub enum RustValuePathSegment {
     SuperKeyword(RustSuperKeyword),
     CrateKeyword(RustCrateKeyword),
 }
-impl rezel_common::TypedNode for RustValuePathSegment {
+impl rezel_common::TypedNode for RustPathComponent {
     type Language = RustLanguage;
     fn downcast_from(
         node: rezel_common::SyntaxNode,
     ) -> Result<Self, rezel_common::SyntaxNode> {
         match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::ScopedIdentifier) => {
+                let typed = <RustScopedIdentifier as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Scoped(typed))
+            }
             Some(RustKind::ScopeIdentifier) => {
                 let typed = <RustScopeIdentifier as rezel_common::TypedNode>::downcast_from(
                         node,
@@ -7161,6 +7191,7 @@ impl rezel_common::TypedNode for RustValuePathSegment {
     }
     fn syntax(&self) -> &rezel_common::SyntaxNode {
         match self {
+            Self::Scoped(node) => rezel_common::TypedNode::syntax(node),
             Self::Scope(node) => rezel_common::TypedNode::syntax(node),
             Self::Identifier(node) => rezel_common::TypedNode::syntax(node),
             Self::Binding(node) => rezel_common::TypedNode::syntax(node),
@@ -7172,90 +7203,10 @@ impl rezel_common::TypedNode for RustValuePathSegment {
     }
     fn into_syntax(self) -> rezel_common::SyntaxNode {
         match self {
+            Self::Scoped(node) => rezel_common::TypedNode::into_syntax(node),
             Self::Scope(node) => rezel_common::TypedNode::into_syntax(node),
             Self::Identifier(node) => rezel_common::TypedNode::into_syntax(node),
             Self::Binding(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::SelfKeyword(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::SuperKeyword(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::CrateKeyword(node) => rezel_common::TypedNode::into_syntax(node),
-        }
-    }
-}
-#[derive(Clone, Debug)]
-pub enum RustTypePathSegment {
-    Scope(RustScopeIdentifier),
-    Identifier(RustTypeIdentifier),
-    Metavariable(RustMetavariable),
-    SelfKeyword(RustSelfKeyword),
-    SuperKeyword(RustSuperKeyword),
-    CrateKeyword(RustCrateKeyword),
-}
-impl rezel_common::TypedNode for RustTypePathSegment {
-    type Language = RustLanguage;
-    fn downcast_from(
-        node: rezel_common::SyntaxNode,
-    ) -> Result<Self, rezel_common::SyntaxNode> {
-        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
-            Some(RustKind::ScopeIdentifier) => {
-                let typed = <RustScopeIdentifier as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Scope(typed))
-            }
-            Some(RustKind::TypeIdentifier) => {
-                let typed = <RustTypeIdentifier as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Identifier(typed))
-            }
-            Some(RustKind::Metavariable) => {
-                let typed = <RustMetavariable as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Metavariable(typed))
-            }
-            Some(RustKind::SelfKeyword) => {
-                let typed = <RustSelfKeyword as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::SelfKeyword(typed))
-            }
-            Some(RustKind::Super) => {
-                let typed = <RustSuperKeyword as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::SuperKeyword(typed))
-            }
-            Some(RustKind::Crate) => {
-                let typed = <RustCrateKeyword as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::CrateKeyword(typed))
-            }
-            _ => Err(node),
-        }
-    }
-    fn syntax(&self) -> &rezel_common::SyntaxNode {
-        match self {
-            Self::Scope(node) => rezel_common::TypedNode::syntax(node),
-            Self::Identifier(node) => rezel_common::TypedNode::syntax(node),
-            Self::Metavariable(node) => rezel_common::TypedNode::syntax(node),
-            Self::SelfKeyword(node) => rezel_common::TypedNode::syntax(node),
-            Self::SuperKeyword(node) => rezel_common::TypedNode::syntax(node),
-            Self::CrateKeyword(node) => rezel_common::TypedNode::syntax(node),
-        }
-    }
-    fn into_syntax(self) -> rezel_common::SyntaxNode {
-        match self {
-            Self::Scope(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::Identifier(node) => rezel_common::TypedNode::into_syntax(node),
             Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
             Self::SelfKeyword(node) => rezel_common::TypedNode::into_syntax(node),
             Self::SuperKeyword(node) => rezel_common::TypedNode::into_syntax(node),
@@ -7279,10 +7230,7 @@ impl rezel_common::TypedNode for RustGenericArgument {
     ) -> Result<Self, rezel_common::SyntaxNode> {
         match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
             Some(RustKind::AbstractType)
-            | Some(RustKind::SelfType)
-            | Some(RustKind::MetaType)
-            | Some(RustKind::TypeIdentifier)
-            | Some(RustKind::ScopedTypeIdentifier)
+            | Some(RustKind::TypePath)
             | Some(RustKind::GenericType)
             | Some(RustKind::MacroInvocation)
             | Some(RustKind::FunctionType)
@@ -7415,10 +7363,7 @@ impl rezel_common::TypedNode for RustTypeBound {
     ) -> Result<Self, rezel_common::SyntaxNode> {
         match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
             Some(RustKind::AbstractType)
-            | Some(RustKind::SelfType)
-            | Some(RustKind::MetaType)
-            | Some(RustKind::TypeIdentifier)
-            | Some(RustKind::ScopedTypeIdentifier)
+            | Some(RustKind::TypePath)
             | Some(RustKind::GenericType)
             | Some(RustKind::MacroInvocation)
             | Some(RustKind::FunctionType)
@@ -7701,10 +7646,7 @@ impl rezel_common::TypedNode for RustWhereSubject {
     ) -> Result<Self, rezel_common::SyntaxNode> {
         match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
             Some(RustKind::AbstractType)
-            | Some(RustKind::SelfType)
-            | Some(RustKind::MetaType)
-            | Some(RustKind::TypeIdentifier)
-            | Some(RustKind::ScopedTypeIdentifier)
+            | Some(RustKind::TypePath)
             | Some(RustKind::GenericType)
             | Some(RustKind::MacroInvocation)
             | Some(RustKind::FunctionType)
@@ -7757,10 +7699,7 @@ impl rezel_common::TypedNode for RustTraitBoundCore {
     ) -> Result<Self, rezel_common::SyntaxNode> {
         match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
             Some(RustKind::AbstractType)
-            | Some(RustKind::SelfType)
-            | Some(RustKind::MetaType)
-            | Some(RustKind::TypeIdentifier)
-            | Some(RustKind::ScopedTypeIdentifier)
+            | Some(RustKind::TypePath)
             | Some(RustKind::GenericType)
             | Some(RustKind::MacroInvocation)
             | Some(RustKind::FunctionType)
@@ -7824,10 +7763,7 @@ impl rezel_common::TypedNode for RustBoundedTypeElement {
     ) -> Result<Self, rezel_common::SyntaxNode> {
         match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
             Some(RustKind::AbstractType)
-            | Some(RustKind::SelfType)
-            | Some(RustKind::MetaType)
-            | Some(RustKind::TypeIdentifier)
-            | Some(RustKind::ScopedTypeIdentifier)
+            | Some(RustKind::TypePath)
             | Some(RustKind::GenericType)
             | Some(RustKind::MacroInvocation)
             | Some(RustKind::FunctionType)
@@ -7906,10 +7842,7 @@ impl rezel_common::TypedNode for RustApplicableTraitBound {
     ) -> Result<Self, rezel_common::SyntaxNode> {
         match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
             Some(RustKind::AbstractType)
-            | Some(RustKind::SelfType)
-            | Some(RustKind::MetaType)
-            | Some(RustKind::TypeIdentifier)
-            | Some(RustKind::ScopedTypeIdentifier)
+            | Some(RustKind::TypePath)
             | Some(RustKind::GenericType)
             | Some(RustKind::HigherRankedTraitBound)
             | Some(RustKind::MacroInvocation)
@@ -8132,10 +8065,7 @@ impl rezel_common::TypedNode for RustMacroPath {
                     .expect("kind was checked before generated downcast");
                 Ok(Self::Value(typed))
             }
-            Some(RustKind::SelfType)
-            | Some(RustKind::MetaType)
-            | Some(RustKind::TypeIdentifier)
-            | Some(RustKind::ScopedTypeIdentifier) => {
+            Some(RustKind::TypePath) => {
                 let typed = <RustTypePath as rezel_common::TypedNode>::downcast_from(
                         node,
                     )
@@ -8688,148 +8618,6 @@ impl rezel_common::TypedNode for RustPath {
     }
 }
 #[derive(Clone, Debug)]
-pub enum RustTypePath {
-    SelfType(RustSelfType),
-    Metavariable(RustMetaType),
-    Identifier(RustTypeIdentifier),
-    Scoped(RustScopedTypeIdentifier),
-}
-impl rezel_common::TypedNode for RustTypePath {
-    type Language = RustLanguage;
-    fn downcast_from(
-        node: rezel_common::SyntaxNode,
-    ) -> Result<Self, rezel_common::SyntaxNode> {
-        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
-            Some(RustKind::SelfType) => {
-                let typed = <RustSelfType as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::SelfType(typed))
-            }
-            Some(RustKind::MetaType) => {
-                let typed = <RustMetaType as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Metavariable(typed))
-            }
-            Some(RustKind::TypeIdentifier) => {
-                let typed = <RustTypeIdentifier as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Identifier(typed))
-            }
-            Some(RustKind::ScopedTypeIdentifier) => {
-                let typed = <RustScopedTypeIdentifier as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Scoped(typed))
-            }
-            _ => Err(node),
-        }
-    }
-    fn syntax(&self) -> &rezel_common::SyntaxNode {
-        match self {
-            Self::SelfType(node) => rezel_common::TypedNode::syntax(node),
-            Self::Metavariable(node) => rezel_common::TypedNode::syntax(node),
-            Self::Identifier(node) => rezel_common::TypedNode::syntax(node),
-            Self::Scoped(node) => rezel_common::TypedNode::syntax(node),
-        }
-    }
-    fn into_syntax(self) -> rezel_common::SyntaxNode {
-        match self {
-            Self::SelfType(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::Identifier(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::Scoped(node) => rezel_common::TypedNode::into_syntax(node),
-        }
-    }
-}
-#[derive(Clone, Debug)]
-pub enum RustStructPath {
-    Identifier(RustTypeIdentifier),
-    Scoped(RustScopedTypeIdentifier),
-    Metavariable(RustMetavariable),
-    SelfKeyword(RustSelfKeyword),
-    SuperKeyword(RustSuperKeyword),
-    CrateKeyword(RustCrateKeyword),
-}
-impl rezel_common::TypedNode for RustStructPath {
-    type Language = RustLanguage;
-    fn downcast_from(
-        node: rezel_common::SyntaxNode,
-    ) -> Result<Self, rezel_common::SyntaxNode> {
-        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
-            Some(RustKind::TypeIdentifier) => {
-                let typed = <RustTypeIdentifier as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Identifier(typed))
-            }
-            Some(RustKind::ScopedTypeIdentifier) => {
-                let typed = <RustScopedTypeIdentifier as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Scoped(typed))
-            }
-            Some(RustKind::Metavariable) => {
-                let typed = <RustMetavariable as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::Metavariable(typed))
-            }
-            Some(RustKind::SelfKeyword) => {
-                let typed = <RustSelfKeyword as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::SelfKeyword(typed))
-            }
-            Some(RustKind::Super) => {
-                let typed = <RustSuperKeyword as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::SuperKeyword(typed))
-            }
-            Some(RustKind::Crate) => {
-                let typed = <RustCrateKeyword as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::CrateKeyword(typed))
-            }
-            _ => Err(node),
-        }
-    }
-    fn syntax(&self) -> &rezel_common::SyntaxNode {
-        match self {
-            Self::Identifier(node) => rezel_common::TypedNode::syntax(node),
-            Self::Scoped(node) => rezel_common::TypedNode::syntax(node),
-            Self::Metavariable(node) => rezel_common::TypedNode::syntax(node),
-            Self::SelfKeyword(node) => rezel_common::TypedNode::syntax(node),
-            Self::SuperKeyword(node) => rezel_common::TypedNode::syntax(node),
-            Self::CrateKeyword(node) => rezel_common::TypedNode::syntax(node),
-        }
-    }
-    fn into_syntax(self) -> rezel_common::SyntaxNode {
-        match self {
-            Self::Identifier(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::Scoped(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::Metavariable(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::SelfKeyword(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::SuperKeyword(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::CrateKeyword(node) => rezel_common::TypedNode::into_syntax(node),
-        }
-    }
-}
-#[derive(Clone, Debug)]
 pub enum RustType {
     Abstract(RustAbstractType),
     Path(RustTypePath),
@@ -8859,10 +8647,7 @@ impl rezel_common::TypedNode for RustType {
                     .expect("kind was checked before generated downcast");
                 Ok(Self::Abstract(typed))
             }
-            Some(RustKind::SelfType)
-            | Some(RustKind::MetaType)
-            | Some(RustKind::TypeIdentifier)
-            | Some(RustKind::ScopedTypeIdentifier) => {
+            Some(RustKind::TypePath) => {
                 let typed = <RustTypePath as rezel_common::TypedNode>::downcast_from(
                         node,
                     )

@@ -3,9 +3,9 @@
 use rezel_lang_rust::{
     RustAssignmentOperand, RustBinaryOperator, RustCondition, RustDeclaration,
     RustDeclarationStatement, RustDelimitedTokenTree, RustExpression, RustFieldList,
-    RustFunctionItem, RustFunctionName, RustFunctionParameter, RustLiteral, RustPath, RustPattern,
-    RustPrefixOperator, RustSourceFile, RustStatement, RustTokenTreeElement, RustType,
-    RustTypeParameter, RustUseTree, TypedNode,
+    RustFunctionItem, RustFunctionName, RustFunctionParameter, RustGenericArgument, RustLiteral,
+    RustPath, RustPathComponent, RustPattern, RustPrefixOperator, RustSourceFile, RustStatement,
+    RustTokenTreeElement, RustType, RustTypeParameter, RustUseTree, TypedNode,
 };
 
 fn syntax_text<'source>(node: &rezel_common::SyntaxNode, source: &'source str) -> &'source str {
@@ -288,6 +288,109 @@ fn inspect<T>(items: &[T], fallback: T) {}
     };
     assert!(slice.length().is_none());
     assert!(matches!(fallback.ty(), Some(RustType::Path(_))));
+}
+
+#[test]
+fn typed_syntax_navigates_recursive_paths() {
+    let source = r"
+fn inspect<T>(
+    value: crate::module::Container<super::Item>,
+) -> crate::module::Trait<T>::Assoc {
+    crate::module::Record { value }
+}
+";
+    let function = parse_function(source);
+    let parameters = function
+        .parameters()
+        .unwrap()
+        .parameters()
+        .collect::<Vec<_>>();
+    let [RustFunctionParameter::Parameter(value)] = parameters.as_slice() else {
+        panic!("expected one ordinary parameter");
+    };
+    let RustType::Generic(container) = value.ty().unwrap() else {
+        panic!("expected a generic container type");
+    };
+    let container_path = container.path().unwrap();
+    assert_eq!(
+        container_path.segment().unwrap().text(source),
+        Some("Container")
+    );
+    let module_path = container_path.prefix().unwrap();
+    assert_eq!(module_path.segment().unwrap().text(source), Some("module"));
+    assert_eq!(
+        module_path
+            .prefix()
+            .unwrap()
+            .segment()
+            .unwrap()
+            .text(source),
+        Some("crate")
+    );
+
+    let arguments = container
+        .arguments()
+        .unwrap()
+        .arguments()
+        .collect::<Vec<_>>();
+    let [RustGenericArgument::Type(RustType::Path(item_path))] = arguments.as_slice() else {
+        panic!("expected one path type argument");
+    };
+    assert_eq!(item_path.segment().unwrap().text(source), Some("Item"));
+    assert_eq!(
+        item_path.prefix().unwrap().segment().unwrap().text(source),
+        Some("super")
+    );
+
+    let RustType::Path(associated_type) = function.return_type().unwrap() else {
+        panic!("expected an associated type path");
+    };
+    assert_eq!(
+        associated_type.segment().unwrap().text(source),
+        Some("Assoc")
+    );
+    assert_eq!(
+        associated_type.type_arguments().unwrap().text(source),
+        Some("<T>")
+    );
+    assert_eq!(
+        associated_type
+            .prefix()
+            .unwrap()
+            .segment()
+            .unwrap()
+            .text(source),
+        Some("Trait")
+    );
+
+    let Some(RustStatement::Expression(tail)) = function.body().unwrap().statements().next() else {
+        panic!("expected a struct expression");
+    };
+    let RustExpression::Struct(record) = tail.expression().unwrap() else {
+        panic!("expected a struct expression");
+    };
+    let RustPath::Scoped(record_path) = record.path().unwrap() else {
+        panic!("expected a scoped struct path");
+    };
+    let components = record_path.components().collect::<Vec<_>>();
+    let [
+        RustPathComponent::Scoped(prefix),
+        RustPathComponent::Identifier(record_name),
+    ] = components.as_slice()
+    else {
+        panic!("expected a recursive prefix and final record name");
+    };
+    assert_eq!(record_name.text(source), Some("Record"));
+    let prefix_components = prefix.components().collect::<Vec<_>>();
+    let [
+        RustPathComponent::CrateKeyword(crate_keyword),
+        RustPathComponent::Identifier(module_name),
+    ] = prefix_components.as_slice()
+    else {
+        panic!("expected crate and module path components");
+    };
+    assert_eq!(crate_keyword.text(source), Some("crate"));
+    assert_eq!(module_name.text(source), Some("module"));
 }
 
 #[test]
