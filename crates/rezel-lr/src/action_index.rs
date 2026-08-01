@@ -9,8 +9,6 @@ struct ActionRow {
     start: u32,
     term_filter: u32,
     fallback: Action,
-    error_action: Action,
-    error_order: u16,
     length: u16,
     next: u16,
 }
@@ -24,6 +22,18 @@ impl ActionRow {
     fn may_contain(self, term: u16) -> bool {
         self.term_filter & term_filter_bit(term) != 0
     }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct ErrorEntry {
+    action: Action,
+    order: u16,
+}
+
+#[derive(Debug)]
+struct ErrorIndex {
+    rows: Box<[ErrorEntry]>,
+    entry_orders: Box<[u16]>,
 }
 
 #[derive(Debug)]
@@ -48,7 +58,7 @@ pub(crate) struct ActionIndex {
     rows: Box<[ActionRow]>,
     terms: Box<[u16]>,
     actions: Box<[Action]>,
-    entry_orders: Box<[u16]>,
+    errors: Option<Box<ErrorIndex>>,
     skip_terms: Box<[u64]>,
     skip_has_catch_all: bool,
 }
@@ -96,20 +106,13 @@ impl ActionIndex {
         let mut terms = Vec::new();
         let mut actions = Vec::new();
         let mut entry_orders = Vec::new();
+        let mut error_rows = Vec::with_capacity(decoded_rows.len());
         for (_, decoded) in decoded_rows {
             let length = u16::try_from(decoded.entries.len())
                 .map_err(|_| "action sequence has too many entries")?;
             let term_filter = build_term_filter(&decoded.entries);
             let mut indexed_entries = decoded.entries.into_iter().enumerate().collect::<Vec<_>>();
-            let (error_order, error_action) = indexed_entries
-                .iter()
-                .find(|(_, (term, _))| *term == ReservedTerm::Error.raw())
-                .map_or((NO_ENTRY, Action::NONE), |(order, (_, action))| {
-                    (
-                        u16::try_from(*order).expect("entry count was validated"),
-                        *action,
-                    )
-                });
+            let error = find_error_entry(&indexed_entries);
             indexed_entries.sort_by_key(|(_, (term, _))| *term);
             let start = u32::try_from(terms.len()).map_err(|_| "action projection is too large")?;
             for (order, (term, action)) in indexed_entries {
@@ -128,11 +131,10 @@ impl ActionIndex {
                 start,
                 term_filter,
                 fallback: decoded.fallback,
-                error_action,
-                error_order,
                 length,
                 next,
             });
+            error_rows.push(error);
         }
         reject_cycles(&rows)?;
         let states = roots
@@ -144,7 +146,9 @@ impl ActionIndex {
                 })
             })
             .collect::<Result<Box<[_]>, &'static str>>()?;
-        let (skip_terms, skip_has_catch_all) = build_skip_filter(&states, &rows, &terms);
+        let errors = build_error_index(error_rows, entry_orders);
+        let (skip_terms, skip_has_catch_all) =
+            build_skip_filter(&states, &rows, &terms, errors.as_deref());
 
         Ok(Self {
             states,
@@ -153,7 +157,7 @@ impl ActionIndex {
             rows: rows.into_boxed_slice(),
             terms: terms.into_boxed_slice(),
             actions: actions.into_boxed_slice(),
-            entry_orders: entry_orders.into_boxed_slice(),
+            errors,
             skip_terms,
             skip_has_catch_all,
         })
@@ -185,14 +189,37 @@ impl ActionIndex {
             StateField::Skip => 1,
             _ => unreachable!("only action sequence fields are indexed"),
         };
-        let mut row_id = self.states[usize::from(state)].rows[column];
+        let row_id = self.states[usize::from(state)].rows[column];
+        match self.errors.as_deref() {
+            Some(errors) => self.first_with_errors(row_id, term, errors),
+            None => self.first_without_errors(row_id, term),
+        }
+    }
+
+    fn first_without_errors(&self, mut row_id: u16, term: u16) -> Action {
         loop {
             let row = self.rows[usize::from(row_id)];
             let terminal = self.first_terminal_index(row, term);
-            if row.error_order != NO_ENTRY
-                && terminal.is_none_or(|index| row.error_order <= self.entry_orders[index])
+            if let Some(index) = terminal {
+                return self.actions[index];
+            }
+            if row.next == NO_ROW {
+                return row.fallback;
+            }
+            row_id = row.next;
+        }
+    }
+
+    fn first_with_errors(&self, mut row_id: u16, term: u16, errors: &ErrorIndex) -> Action {
+        loop {
+            let row_index = usize::from(row_id);
+            let row = self.rows[row_index];
+            let error = errors.rows[row_index];
+            let terminal = self.first_terminal_index(row, term);
+            if error.order != NO_ENTRY
+                && terminal.is_none_or(|index| error.order <= errors.entry_orders[index])
             {
-                return row.error_action;
+                return error.action;
             }
             if let Some(index) = terminal {
                 return self.actions[index];
@@ -298,6 +325,31 @@ impl ActionIndex {
     }
 }
 
+fn find_error_entry(indexed_entries: &[(usize, (u16, Action))]) -> ErrorEntry {
+    indexed_entries
+        .iter()
+        .find(|(_, (term, _))| *term == ReservedTerm::Error.raw())
+        .map_or(
+            ErrorEntry {
+                action: Action::NONE,
+                order: NO_ENTRY,
+            },
+            |(order, (_, action))| ErrorEntry {
+                action: *action,
+                order: u16::try_from(*order).expect("entry count was validated"),
+            },
+        )
+}
+
+fn build_error_index(rows: Vec<ErrorEntry>, entry_orders: Vec<u16>) -> Option<Box<ErrorIndex>> {
+    rows.iter().any(|error| error.order != NO_ENTRY).then(|| {
+        Box::new(ErrorIndex {
+            rows: rows.into_boxed_slice(),
+            entry_orders: entry_orders.into_boxed_slice(),
+        })
+    })
+}
+
 fn build_term_filter(entries: &[(u16, Action)]) -> u32 {
     let mut filter = 0;
     for (term, _) in entries {
@@ -315,6 +367,7 @@ fn build_skip_filter(
     states: &[StateActions],
     rows: &[ActionRow],
     terms: &[u16],
+    errors: Option<&ErrorIndex>,
 ) -> (Box<[u64]>, bool) {
     let mut visited = vec![false; rows.len()];
     let mut skip_terms = Vec::new();
@@ -325,7 +378,9 @@ fn build_skip_filter(
             visited[row_id] = true;
             let row = rows[row_id];
             skip_terms.extend_from_slice(&terms[row.range()]);
-            skip_has_catch_all |= row.error_order != NO_ENTRY || !row.fallback.is_none();
+            skip_has_catch_all |= errors
+                .is_some_and(|errors| errors.rows[row_id].order != NO_ENTRY)
+                || !row.fallback.is_none();
             if row.next == NO_ROW {
                 break;
             }
@@ -473,6 +528,9 @@ mod tests {
         let index = ActionIndex::build(&states, &data).unwrap();
 
         assert_eq!(core::mem::size_of::<StateActions>(), 8);
+        assert_eq!(core::mem::size_of::<ActionRow>(), 16);
+        assert_eq!(core::mem::size_of::<ErrorEntry>(), 8);
+        assert!(index.errors.is_none());
         assert_eq!(index.default_reduce(0), Action::NONE);
         assert_eq!(index.default_reduce(1), reduction);
         assert!(index.state_is_skipped(0));
@@ -514,6 +572,7 @@ mod tests {
         ];
         let index = ActionIndex::build(&states, &data).unwrap();
 
+        assert!(index.errors.is_some());
         assert_eq!(index.first(0, StateField::Actions, 3).raw(), 10);
         assert_eq!(index.first(0, StateField::Actions, 4).raw(), 11);
         assert_eq!(index.first(0, StateField::Actions, 5).raw(), 11);
