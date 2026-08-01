@@ -165,6 +165,23 @@ fn floats() {
         .expect("Rust 1.95 lexes f16 and f128 suffixes as floating-point literals");
 }
 
+#[test]
+fn identifier_runs_preserve_ascii_unicode_and_tokenizer_boundaries() {
+    let source = r"
+macro_rules! ascii_rules {
+    ($ascii東42:ident) => { fn $ascii東42() {} };
+}
+
+fn ascii東42<'life_ascii>(r#raw_ascii42: usize) -> usize {
+    r#raw_ascii42
+}
+";
+    rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .expect("Rust identifiers retain ASCII runs around Unicode and tokenizer prefixes");
+}
+
 fn raw_string_source(hash_count: usize) -> String {
     let hashes = "#".repeat(hash_count);
     format!("fn lexical() {{ let _ = r{hashes}\"body\"{hashes}; }}")

@@ -130,15 +130,42 @@ fn scan_identifier_body(
     } else {
         IdentifierSpelling::Untracked
     };
-    push_ascii(&mut spelling, first);
-    input.advance(1);
-    while let Some(value) = current(input)
-        && is_xid_continue(value)
-    {
+    if first < 0x80 {
+        advance_ascii_identifier(input, &mut spelling);
+    } else {
+        push_ascii(&mut spelling, first);
+        input.advance(1);
+        advance_ascii_identifier(input, &mut spelling);
+    }
+    while let Some(value) = current(input) {
+        // An ASCII byte left after the bulk scan cannot continue this
+        // identifier. Only a non-ASCII continuation needs scalar fallback.
+        if value < 0x80 {
+            break;
+        }
+        if !is_xid_continue(value) {
+            break;
+        }
         push_ascii(&mut spelling, value);
         input.advance(1);
+        advance_ascii_identifier(input, &mut spelling);
     }
     Some(spelling)
+}
+
+fn advance_ascii_identifier(input: &mut InputStream, spelling: &mut IdentifierSpelling) -> usize {
+    match spelling {
+        IdentifierSpelling::Untracked | IdentifierSpelling::NonAscii => {
+            input.advance_ascii_while(|byte| is_xid_continue(u32::from(byte)))
+        }
+        IdentifierSpelling::Ascii(text) => input.advance_ascii_while(|byte| {
+            if !is_xid_continue(u32::from(byte)) {
+                return false;
+            }
+            text.push(char::from(byte));
+            true
+        }),
+    }
 }
 
 fn push_ascii(spelling: &mut IdentifierSpelling, value: u32) {
