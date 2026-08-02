@@ -16,7 +16,6 @@ const UNDERSCORE: u32 = b'_' as u32;
 const MACRO_RULES: &str = "macro_rules";
 
 enum IdentifierSpelling {
-    Untracked,
     Ascii(String),
     NonAscii,
 }
@@ -51,7 +50,7 @@ pub(crate) static METAVARIABLE_TOKENIZER: ExternalTokenizer =
     ExternalTokenizer::new(scan_metavariable, FLAGS).with_start(METAVARIABLE_START);
 
 fn scan_macro_rules(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
-    let Some(name) = scan_identifier_body(input, true) else {
+    let Some(name) = scan_captured_identifier_body(input) else {
         return Ok(());
     };
     if current(input).is_some_and(is_reserved_prefix_delimiter) {
@@ -75,17 +74,19 @@ fn scan_identifier_as(input: &mut InputStream, term: u16) -> Result<(), ParseErr
     let raw = current(input) == Some(LOWER_R) && peek(input, 1) == Some(HASH);
     if raw {
         input.advance(2);
-    }
-
-    let Some(name) = scan_identifier_body(input, raw) else {
-        return Ok(());
-    };
-    if raw {
+        let Some(name) = scan_captured_identifier_body(input) else {
+            return Ok(());
+        };
         if name.is_reserved_raw_name() {
             return Ok(());
         }
-    } else if current(input).is_some_and(is_reserved_prefix_delimiter) {
-        return Ok(());
+    } else {
+        if !scan_untracked_identifier_body(input) {
+            return Ok(());
+        }
+        if current(input).is_some_and(is_reserved_prefix_delimiter) {
+            return Ok(());
+        }
     }
 
     input.accept_token(term)
@@ -93,7 +94,7 @@ fn scan_identifier_as(input: &mut InputStream, term: u16) -> Result<(), ParseErr
 
 fn scan_metavariable(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     input.advance(1);
-    if scan_identifier_body(input, false).is_none() {
+    if !scan_untracked_identifier_body(input) {
         return Ok(());
     }
     input.accept_token(terms::Metavariable)
@@ -104,64 +105,82 @@ fn scan_lifetime(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseErr
     let raw = current(input) == Some(LOWER_R) && peek(input, 1) == Some(HASH);
     if raw {
         input.advance(2);
-    }
-
-    let Some(name) = scan_identifier_body(input, raw) else {
-        return Ok(());
-    };
-    if current(input) == Some(QUOTE) {
-        return Ok(());
-    }
-    if raw {
-        if name.is_reserved_raw_name() {
+        let Some(name) = scan_captured_identifier_body(input) else {
+            return Ok(());
+        };
+        if current(input) == Some(QUOTE) || name.is_reserved_raw_name() {
             return Ok(());
         }
-    } else if current(input) == Some(HASH) {
-        return Ok(());
+    } else {
+        if !scan_untracked_identifier_body(input) {
+            return Ok(());
+        }
+        if matches!(current(input), Some(QUOTE | HASH)) {
+            return Ok(());
+        }
     }
     input.accept_token(terms::quoteIdentifier)
 }
 
-fn scan_identifier_body(
-    input: &mut InputStream,
-    capture_ascii: bool,
-) -> Option<IdentifierSpelling> {
+fn scan_untracked_identifier_body(input: &mut InputStream) -> bool {
+    let Some(first) = current(input) else {
+        return false;
+    };
+    if first != UNDERSCORE && !is_xid_start(first) {
+        return false;
+    }
+
+    if first < 0x80 {
+        advance_untracked_ascii_identifier(input);
+    } else {
+        input.advance(1);
+        advance_untracked_ascii_identifier(input);
+    }
+    while let Some(value) = current(input) {
+        if value < 0x80 || !is_xid_continue(value) {
+            break;
+        }
+        input.advance(1);
+        advance_untracked_ascii_identifier(input);
+    }
+    true
+}
+
+fn advance_untracked_ascii_identifier(input: &mut InputStream) -> usize {
+    input.advance_ascii_while(|byte| is_xid_continue(u32::from(byte)))
+}
+
+fn scan_captured_identifier_body(input: &mut InputStream) -> Option<IdentifierSpelling> {
     let first = current(input)?;
     if first != UNDERSCORE && !is_xid_start(first) {
         return None;
     }
 
-    let mut spelling = if capture_ascii {
-        IdentifierSpelling::Ascii(String::new())
-    } else {
-        IdentifierSpelling::Untracked
-    };
+    let mut spelling = IdentifierSpelling::Ascii(String::new());
     if first < 0x80 {
-        advance_ascii_identifier(input, &mut spelling);
+        advance_captured_ascii_identifier(input, &mut spelling);
     } else {
         push_ascii(&mut spelling, first);
         input.advance(1);
-        advance_ascii_identifier(input, &mut spelling);
+        advance_captured_ascii_identifier(input, &mut spelling);
     }
     while let Some(value) = current(input) {
-        // An ASCII byte left after the bulk scan cannot continue this
-        // identifier. Only a non-ASCII continuation needs scalar fallback.
-        if value < 0x80 {
-            break;
-        }
-        if !is_xid_continue(value) {
+        if value < 0x80 || !is_xid_continue(value) {
             break;
         }
         push_ascii(&mut spelling, value);
         input.advance(1);
-        advance_ascii_identifier(input, &mut spelling);
+        advance_captured_ascii_identifier(input, &mut spelling);
     }
     Some(spelling)
 }
 
-fn advance_ascii_identifier(input: &mut InputStream, spelling: &mut IdentifierSpelling) -> usize {
+fn advance_captured_ascii_identifier(
+    input: &mut InputStream,
+    spelling: &mut IdentifierSpelling,
+) -> usize {
     match spelling {
-        IdentifierSpelling::Untracked | IdentifierSpelling::NonAscii => {
+        IdentifierSpelling::NonAscii => {
             input.advance_ascii_while(|byte| is_xid_continue(u32::from(byte)))
         }
         IdentifierSpelling::Ascii(text) => input.advance_ascii_while(|byte| {
@@ -285,25 +304,23 @@ where
         return false;
     }
 
-    let mut spelling = if raw {
-        IdentifierSpelling::Ascii(String::new())
-    } else {
-        IdentifierSpelling::Untracked
-    };
-    push_ascii(&mut spelling, first);
-    while tokens.peek().copied().is_some_and(is_xid_continue) {
-        let value = tokens.next().expect("peeked identifier continuation");
-        push_ascii(&mut spelling, value);
+    if raw {
+        let mut spelling = IdentifierSpelling::Ascii(String::new());
+        push_ascii(&mut spelling, first);
+        while tokens.peek().copied().is_some_and(is_xid_continue) {
+            let value = tokens.next().expect("peeked identifier continuation");
+            push_ascii(&mut spelling, value);
+        }
+        return !spelling.is_reserved_raw_name();
     }
 
-    if raw {
-        !spelling.is_reserved_raw_name()
-    } else {
-        tokens
-            .peek()
-            .copied()
-            .is_none_or(|value| !is_reserved_prefix_delimiter(value))
+    while tokens.peek().copied().is_some_and(is_xid_continue) {
+        tokens.next();
     }
+    tokens
+        .peek()
+        .copied()
+        .is_none_or(|value| !is_reserved_prefix_delimiter(value))
 }
 
 fn is_reserved_raw_name(name: &str) -> bool {
