@@ -50,16 +50,29 @@ pub(crate) static METAVARIABLE_TOKENIZER: ExternalTokenizer =
     ExternalTokenizer::new(scan_metavariable, FLAGS).with_start(METAVARIABLE_START);
 
 fn scan_macro_rules(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
-    let Some(name) = scan_captured_identifier_body(input) else {
+    if !scan_macro_rules_name(input) {
         return Ok(());
-    };
+    }
     if current(input).is_some_and(is_reserved_prefix_delimiter) {
         return Ok(());
     }
-    if name.is_ascii(MACRO_RULES) && macro_rules_definition_follows(input) {
+    if macro_rules_definition_follows(input) {
         input.accept_token(terms::macroRulesKeyword)?;
     }
     Ok(())
+}
+
+fn scan_macro_rules_name(input: &mut InputStream) -> bool {
+    let expected = MACRO_RULES.as_bytes();
+    let mut matched = 0;
+    input.advance_ascii_while(|byte| {
+        if expected.get(matched) != Some(&byte) {
+            return false;
+        }
+        matched += 1;
+        true
+    });
+    matched == expected.len() && current(input).is_none_or(|value| !is_xid_continue(value))
 }
 
 fn scan_token_identifier(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
@@ -221,10 +234,6 @@ fn push_ascii(spelling: &mut IdentifierSpelling, value: u32) {
 }
 
 impl IdentifierSpelling {
-    fn is_ascii(&self, expected: &str) -> bool {
-        matches!(self, Self::Ascii(name) if name == expected)
-    }
-
     fn is_reserved_raw_name(&self) -> bool {
         matches!(self, Self::Ascii(name) if is_reserved_raw_name(name))
     }
