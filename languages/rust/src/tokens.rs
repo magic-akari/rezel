@@ -54,13 +54,14 @@ pub(crate) static TYPE_PARAMETER_DELIMITERS: ExternalTokenizer =
 fn scan_literals(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     match current(input) {
         Some(value) if is_number(value) => scan_number(input),
-        Some(B | C | R) => scan_raw_string(input),
+        Some(prefix @ (B | C | R)) => scan_raw_string(input, prefix),
         _ => Ok(()),
     }
 }
 
 fn scan_number(input: &mut InputStream) -> Result<(), ParseError> {
     let mut is_float = false;
+    input.advance(1);
     advance_while(input, is_number_or_underscore);
 
     if current(input) == Some(DOT) {
@@ -115,12 +116,12 @@ fn scan_number(input: &mut InputStream) -> Result<(), ParseError> {
     Ok(())
 }
 
-fn scan_raw_string(input: &mut InputStream) -> Result<(), ParseError> {
-    if matches!(current(input), Some(B | C)) {
+fn scan_raw_string(input: &mut InputStream, prefix: u32) -> Result<(), ParseError> {
+    if matches!(prefix, B | C) {
         input.advance(1);
-    }
-    if current(input) != Some(R) {
-        return Ok(());
+        if current(input) != Some(R) {
+            return Ok(());
+        }
     }
     input.advance(1);
 
