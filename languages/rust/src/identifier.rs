@@ -15,11 +15,6 @@ const STAR: u32 = b'*' as u32;
 const UNDERSCORE: u32 = b'_' as u32;
 const MACRO_RULES: &str = "macro_rules";
 
-enum IdentifierSpelling {
-    Ascii(String),
-    NonAscii,
-}
-
 /// Unicode version used by Rust 1.95 identifiers.
 pub(crate) const UNICODE_VERSION: &str = "17.0.0";
 
@@ -90,10 +85,10 @@ fn scan_identifier_as(input: &mut InputStream, term: u16) -> Result<(), ParseErr
     let raw = first == LOWER_R && peek(input, 1) == Some(HASH);
     if raw {
         input.advance(2);
-        let Some(name) = scan_captured_identifier_body(input) else {
+        let Some(reserved) = scan_raw_identifier_body(input) else {
             return Ok(());
         };
-        if name.is_reserved_raw_name() {
+        if reserved {
             return Ok(());
         }
     } else {
@@ -121,10 +116,10 @@ fn scan_lifetime(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseErr
     let raw = current(input) == Some(LOWER_R) && peek(input, 1) == Some(HASH);
     if raw {
         input.advance(2);
-        let Some(name) = scan_captured_identifier_body(input) else {
+        let Some(reserved) = scan_raw_identifier_body(input) else {
             return Ok(());
         };
-        if current(input) == Some(QUOTE) || name.is_reserved_raw_name() {
+        if current(input) == Some(QUOTE) || reserved {
             return Ok(());
         }
     } else {
@@ -179,64 +174,13 @@ fn advance_untracked_ascii_identifier(input: &mut InputStream) -> usize {
     input.advance_ascii_while(|byte| is_xid_continue(u32::from(byte)))
 }
 
-fn scan_captured_identifier_body(input: &mut InputStream) -> Option<IdentifierSpelling> {
-    let first = current(input)?;
-    if first != UNDERSCORE && !is_xid_start(first) {
+fn scan_raw_identifier_body(input: &mut InputStream) -> Option<bool> {
+    let start = input.position();
+    if !scan_untracked_identifier_body(input) {
         return None;
     }
-
-    let mut spelling = IdentifierSpelling::Ascii(String::new());
-    if first < 0x80 {
-        advance_captured_ascii_identifier(input, &mut spelling);
-    } else {
-        push_ascii(&mut spelling, first);
-        input.advance(1);
-        advance_captured_ascii_identifier(input, &mut spelling);
-    }
-    while let Some(value) = current(input) {
-        if value < 0x80 || !is_xid_continue(value) {
-            break;
-        }
-        push_ascii(&mut spelling, value);
-        input.advance(1);
-        advance_captured_ascii_identifier(input, &mut spelling);
-    }
-    Some(spelling)
-}
-
-fn advance_captured_ascii_identifier(
-    input: &mut InputStream,
-    spelling: &mut IdentifierSpelling,
-) -> usize {
-    match spelling {
-        IdentifierSpelling::NonAscii => {
-            input.advance_ascii_while(|byte| is_xid_continue(u32::from(byte)))
-        }
-        IdentifierSpelling::Ascii(text) => input.advance_ascii_while(|byte| {
-            if !is_xid_continue(u32::from(byte)) {
-                return false;
-            }
-            text.push(char::from(byte));
-            true
-        }),
-    }
-}
-
-fn push_ascii(spelling: &mut IdentifierSpelling, value: u32) {
-    let IdentifierSpelling::Ascii(text) = spelling else {
-        return;
-    };
-    let Ok(byte) = u8::try_from(value) else {
-        *spelling = IdentifierSpelling::NonAscii;
-        return;
-    };
-    text.push(char::from(byte));
-}
-
-impl IdentifierSpelling {
-    fn is_reserved_raw_name(&self) -> bool {
-        matches!(self, Self::Ascii(name) if is_reserved_raw_name(name))
-    }
+    let name = input.read_scalar(start, input.position())?;
+    Some(is_reserved_raw_name(&name))
 }
 
 fn macro_rules_definition_follows(input: &InputStream) -> bool {
@@ -330,13 +274,7 @@ where
     }
 
     if raw {
-        let mut spelling = IdentifierSpelling::Ascii(String::new());
-        push_ascii(&mut spelling, first);
-        while tokens.peek().copied().is_some_and(is_xid_continue) {
-            let value = tokens.next().expect("peeked identifier continuation");
-            push_ascii(&mut spelling, value);
-        }
-        return !spelling.is_reserved_raw_name();
+        return !consume_reserved_raw_name(first, tokens);
     }
 
     while tokens.peek().copied().is_some_and(is_xid_continue) {
@@ -348,8 +286,40 @@ where
         .is_none_or(|value| !is_reserved_prefix_delimiter(value))
 }
 
+fn consume_reserved_raw_name<I>(first: u32, tokens: &mut Peekable<I>) -> bool
+where
+    I: Iterator<Item = u32>,
+{
+    let mut spelling = [0_u8; 5];
+    let mut length = 0;
+    let mut possible = push_reserved_raw_name_byte(&mut spelling, &mut length, first);
+    while tokens.peek().copied().is_some_and(is_xid_continue) {
+        let value = tokens.next().expect("peeked identifier continuation");
+        if possible {
+            possible = push_reserved_raw_name_byte(&mut spelling, &mut length, value);
+        }
+    }
+    possible && is_reserved_raw_name_bytes(&spelling[..length])
+}
+
+fn push_reserved_raw_name_byte(spelling: &mut [u8; 5], length: &mut usize, value: u32) -> bool {
+    let Ok(byte) = u8::try_from(value) else {
+        return false;
+    };
+    let Some(slot) = spelling.get_mut(*length) else {
+        return false;
+    };
+    *slot = byte;
+    *length += 1;
+    true
+}
+
 fn is_reserved_raw_name(name: &str) -> bool {
-    matches!(name, "_" | "crate" | "self" | "Self" | "super")
+    is_reserved_raw_name_bytes(name.as_bytes())
+}
+
+fn is_reserved_raw_name_bytes(name: &[u8]) -> bool {
+    matches!(name, b"_" | b"crate" | b"self" | b"Self" | b"super")
 }
 
 fn is_reserved_prefix_delimiter(value: u32) -> bool {
@@ -409,11 +379,25 @@ mod tests {
 
     #[test]
     fn reserved_raw_names_match_the_reference() {
-        for name in ["_", "crate", "self", "Self", "super"] {
-            assert!(is_reserved_raw_name(name));
+        for (name, reserved) in [
+            ("_", true),
+            ("crate", true),
+            ("self", true),
+            ("Self", true),
+            ("super", true),
+            ("gen", false),
+            ("selfish", false),
+            ("super_long", false),
+            ("crate東", false),
+        ] {
+            assert_eq!(is_reserved_raw_name(name), reserved);
+            let mut characters = name.chars().map(u32::from);
+            let first = characters.next().expect("raw-name fixture is nonempty");
+            assert_eq!(
+                consume_reserved_raw_name(first, &mut characters.peekable()),
+                reserved
+            );
         }
-        assert!(!is_reserved_raw_name("gen"));
-        assert!(!is_reserved_raw_name("selfish"));
     }
 
     #[test]
