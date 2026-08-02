@@ -71,7 +71,10 @@ fn scan_identifier(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseE
 }
 
 fn scan_identifier_as(input: &mut InputStream, term: u16) -> Result<(), ParseError> {
-    let raw = current(input) == Some(LOWER_R) && peek(input, 1) == Some(HASH);
+    let Some(first) = current(input) else {
+        return Ok(());
+    };
+    let raw = first == LOWER_R && peek(input, 1) == Some(HASH);
     if raw {
         input.advance(2);
         let Some(name) = scan_captured_identifier_body(input) else {
@@ -81,7 +84,7 @@ fn scan_identifier_as(input: &mut InputStream, term: u16) -> Result<(), ParseErr
             return Ok(());
         }
     } else {
-        if !scan_untracked_identifier_body(input) {
+        if !scan_filtered_untracked_identifier_body(input, first) {
             return Ok(());
         }
         if current(input).is_some_and(is_reserved_prefix_delimiter) {
@@ -130,6 +133,20 @@ fn scan_untracked_identifier_body(input: &mut InputStream) -> bool {
         return false;
     }
 
+    scan_valid_untracked_identifier_body(input, first);
+    true
+}
+
+fn scan_filtered_untracked_identifier_body(input: &mut InputStream, first: u32) -> bool {
+    if first >= 0x80 && !is_xid_start(first) {
+        return false;
+    }
+
+    scan_valid_untracked_identifier_body(input, first);
+    true
+}
+
+fn scan_valid_untracked_identifier_body(input: &mut InputStream, first: u32) {
     if first < 0x80 {
         advance_untracked_ascii_identifier(input);
     } else {
@@ -143,7 +160,6 @@ fn scan_untracked_identifier_body(input: &mut InputStream) -> bool {
         input.advance(1);
         advance_untracked_ascii_identifier(input);
     }
-    true
 }
 
 fn advance_untracked_ascii_identifier(input: &mut InputStream) -> usize {
