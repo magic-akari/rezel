@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type { NodePropSource } from "@lezer/common";
 import { buildParser } from "@lezer/generator";
-import { ExternalTokenizer, type InputStream, type Stack } from "@lezer/lr";
+import { ExternalTokenizer, type InputStream } from "@lezer/lr";
 
 interface BuildRustParserOptions {
 	grammar: string;
@@ -13,14 +13,6 @@ interface BuildRustParserOptions {
 interface LiteralTerms {
 	float: number;
 	rawString: number;
-}
-
-interface IdentifierTerms {
-	identifier: number;
-	macroRulesKeyword: number;
-	metavariable: number;
-	quoteIdentifier: number;
-	tokenIdentifier: number;
 }
 
 interface CodePoint {
@@ -191,14 +183,16 @@ export function buildRustParser(options: BuildRustParserOptions): ReturnType<typ
 						float: requiredTerm(terms, "Float"),
 						rawString: requiredTerm(terms, "RawString"),
 					});
+				case "rustMacroRules":
+					return rustMacroRules(requiredTerm(terms, "macroRulesKeyword"));
+				case "rustTokenIdentifiers":
+					return rustIdentifiers(requiredTerm(terms, "tokenIdentifier"));
 				case "rustIdentifiers":
-					return rustIdentifiers({
-						identifier: requiredTerm(terms, "identifier"),
-						macroRulesKeyword: requiredTerm(terms, "macroRulesKeyword"),
-						metavariable: requiredTerm(terms, "Metavariable"),
-						quoteIdentifier: requiredTerm(terms, "quoteIdentifier"),
-						tokenIdentifier: requiredTerm(terms, "tokenIdentifier"),
-					});
+					return rustIdentifiers(requiredTerm(terms, "identifier"));
+				case "rustLifetimes":
+					return rustLifetimes(requiredTerm(terms, "quoteIdentifier"));
+				case "rustMetavariables":
+					return rustMetavariables(requiredTerm(terms, "Metavariable"));
 				default:
 					throw new Error(`unexpected Rust external tokenizer ${name}`);
 			}
@@ -221,29 +215,45 @@ function literalTokens(terms: LiteralTerms): ExternalTokenizer {
 	});
 }
 
-function rustIdentifiers(terms: IdentifierTerms): ExternalTokenizer {
-	return new ExternalTokenizer(
-		(input, stack) => {
-			if (next(input) === DOLLAR && stack.canShift(terms.metavariable)) {
-				scanMetavariable(input, terms.metavariable);
-			} else if (next(input) === SINGLE_QUOTE && stack.canShift(terms.quoteIdentifier)) {
-				scanLifetime(input, terms.quoteIdentifier);
-			} else {
-				scanIdentifier(input, stack, terms);
-			}
-		},
-		{ contextual: true },
-	);
+function rustMacroRules(term: number): ExternalTokenizer {
+	return new ExternalTokenizer((input) => {
+		if (next(input) !== LOWER_M) {
+			return;
+		}
+		const name = scanIdentifierBody(input, true);
+		if (name === MACRO_RULES && !isReservedPrefixDelimiter(next(input)) && macroRulesDefinitionFollows(input)) {
+			input.acceptToken(term);
+		}
+	});
 }
 
-function scanIdentifier(input: InputStream, stack: Stack, terms: IdentifierTerms): void {
+function rustIdentifiers(term: number): ExternalTokenizer {
+	return new ExternalTokenizer((input) => scanIdentifier(input, term));
+}
+
+function rustLifetimes(term: number): ExternalTokenizer {
+	return new ExternalTokenizer((input) => {
+		if (next(input) === SINGLE_QUOTE) {
+			scanLifetime(input, term);
+		}
+	});
+}
+
+function rustMetavariables(term: number): ExternalTokenizer {
+	return new ExternalTokenizer((input) => {
+		if (next(input) === DOLLAR) {
+			scanMetavariable(input, term);
+		}
+	});
+}
+
+function scanIdentifier(input: InputStream, term: number): void {
 	const raw = next(input) === LOWER_R && input.peek(1) === HASH;
 	if (raw) {
 		input.advance(2);
 	}
 
-	const macroRulesCandidate = !raw && next(input) === LOWER_M && stack.canShift(terms.macroRulesKeyword);
-	const name = scanIdentifierBody(input, raw || macroRulesCandidate);
+	const name = scanIdentifierBody(input, raw);
 	if (name === undefined) {
 		return;
 	}
@@ -251,12 +261,6 @@ function scanIdentifier(input: InputStream, stack: Stack, terms: IdentifierTerms
 		return;
 	}
 
-	const term =
-		macroRulesCandidate && name === MACRO_RULES && macroRulesDefinitionFollows(input)
-			? terms.macroRulesKeyword
-			: stack.canShift(terms.tokenIdentifier)
-				? terms.tokenIdentifier
-				: terms.identifier;
 	input.acceptToken(term);
 }
 

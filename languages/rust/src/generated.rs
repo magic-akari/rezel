@@ -281,7 +281,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     6u16,
-                    "Identifier",
+                    "macro_rules",
                     rezel_common::NodeFlags::default(),
                 );
                 nodes.push(node);
@@ -289,6 +289,14 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
             {
                 let mut node = rezel_common::NodeType::new(
                     7u16,
+                    "Identifier",
+                    rezel_common::NodeFlags::default(),
+                );
+                nodes.push(node);
+            }
+            {
+                let mut node = rezel_common::NodeType::new(
+                    8u16,
                     "Metavariable",
                     rezel_common::NodeFlags::default(),
                 );
@@ -297,14 +305,6 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                     .deserialize("Expression")
                     .expect("generated grammar property must deserialize");
                 node = node.with_prop(property, value);
-                nodes.push(node);
-            }
-            {
-                let mut node = rezel_common::NodeType::new(
-                    8u16,
-                    "macro_rules",
-                    rezel_common::NodeFlags::default(),
-                );
                 nodes.push(node);
             }
             {
@@ -3265,7 +3265,11 @@ static TOKENIZERS: &[rezel_lr::Tokenizer] = &[
     rezel_lr::Tokenizer::External(&crate::tokens::CLOSURE_PARAM),
     rezel_lr::Tokenizer::External(&crate::tokens::TYPE_PARAMETER_DELIMITERS),
     rezel_lr::Tokenizer::External(&crate::tokens::LITERALS),
-    rezel_lr::Tokenizer::External(&crate::identifier::TOKENIZER),
+    rezel_lr::Tokenizer::External(&crate::identifier::MACRO_RULES_TOKENIZER),
+    rezel_lr::Tokenizer::External(&crate::identifier::TOKEN_IDENTIFIER_TOKENIZER),
+    rezel_lr::Tokenizer::External(&crate::identifier::IDENTIFIER_TOKENIZER),
+    rezel_lr::Tokenizer::External(&crate::identifier::LIFETIME_TOKENIZER),
+    rezel_lr::Tokenizer::External(&crate::identifier::METAVARIABLE_TOKENIZER),
     rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(0u8)),
     rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(1u8)),
     rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(2u8)),
@@ -3291,9 +3295,9 @@ static TERM_NAMES: &[(u16, &str)] = &[
     (3u16, "tpClose"),
     (4u16, "RawString"),
     (5u16, "Float"),
-    (6u16, "tokenIdentifier"),
-    (7u16, "Metavariable"),
-    (8u16, "macroRulesKeyword"),
+    (6u16, "macroRulesKeyword"),
+    (7u16, "tokenIdentifier"),
+    (8u16, "Metavariable"),
     (9u16, "LineComment"),
     (10u16, "BlockComment"),
     (11u16, "@top"),

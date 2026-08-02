@@ -758,13 +758,15 @@ plusSep<expr> { expr (!plusSep "+" expr)* }
 
 @external tokens literalTokens from "./tokens" { RawString[isolate], Float }
 
-@external tokens rustIdentifiers from "./identifier" {
-  identifier
-  tokenIdentifier[@name=Identifier]
-  quoteIdentifier
-  Metavariable
-  macroRulesKeyword[@name="macro_rules"]
-}
+@external tokens rustMacroRules from "./identifier" { macroRulesKeyword[@name="macro_rules"] }
+
+@external tokens rustTokenIdentifiers from "./identifier" { tokenIdentifier[@name=Identifier] }
+
+@external tokens rustIdentifiers from "./identifier" { identifier }
+
+@external tokens rustLifetimes from "./identifier" { quoteIdentifier }
+
+@external tokens rustMetavariables from "./identifier" { Metavariable }
 
 @tokens {
   whitespace { $[\t-\r \u{0085}\u{200e}\u{200f}\u{2028}\u{2029}] }

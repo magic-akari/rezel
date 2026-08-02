@@ -5,10 +5,8 @@ use std::iter::Peekable;
 use crate::{input::is_whitespace, terms};
 
 const BANG: u32 = b'!' as u32;
-const DOLLAR: u32 = b'$' as u32;
 const HASH: u32 = b'#' as u32;
 const LINE_FEED: u32 = b'\n' as u32;
-const LOWER_M: u32 = b'm' as u32;
 const QUOTE: u32 = b'\'' as u32;
 const DOUBLE_QUOTE: u32 = b'"' as u32;
 const LOWER_R: u32 = b'r' as u32;
@@ -27,41 +25,59 @@ enum IdentifierSpelling {
 pub(crate) const UNICODE_VERSION: &str = "17.0.0";
 
 const IDENTIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
-    .with_ascii(b'$')
-    .with_ascii(b'\'')
     .with_ascii(b'_')
     .with_ascii_range(b'A'..=b'Z')
     .with_ascii_range(b'a'..=b'z')
     .with_non_ascii();
+const MACRO_RULES_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE.with_ascii(b'm');
+const LIFETIME_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE.with_ascii(b'\'');
+const METAVARIABLE_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE.with_ascii(b'$');
 
-pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
-    scan,
-    TokenizerFlags {
-        contextual: true,
-        fallback: false,
-        extend: false,
-    },
-)
-.with_start(IDENTIFIER_START);
+const FLAGS: TokenizerFlags = TokenizerFlags {
+    contextual: false,
+    fallback: false,
+    extend: false,
+};
 
-fn scan(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
-    match current(input) {
-        Some(DOLLAR) if stack.can_shift(terms::Metavariable) => scan_metavariable(input),
-        Some(QUOTE) if stack.can_shift(terms::quoteIdentifier) => scan_lifetime(input),
-        Some(_) => scan_identifier(input, stack),
-        None => Ok(()),
+pub(crate) static MACRO_RULES_TOKENIZER: ExternalTokenizer =
+    ExternalTokenizer::new(scan_macro_rules, FLAGS).with_start(MACRO_RULES_START);
+pub(crate) static TOKEN_IDENTIFIER_TOKENIZER: ExternalTokenizer =
+    ExternalTokenizer::new(scan_token_identifier, FLAGS).with_start(IDENTIFIER_START);
+pub(crate) static IDENTIFIER_TOKENIZER: ExternalTokenizer =
+    ExternalTokenizer::new(scan_identifier, FLAGS).with_start(IDENTIFIER_START);
+pub(crate) static LIFETIME_TOKENIZER: ExternalTokenizer =
+    ExternalTokenizer::new(scan_lifetime, FLAGS).with_start(LIFETIME_START);
+pub(crate) static METAVARIABLE_TOKENIZER: ExternalTokenizer =
+    ExternalTokenizer::new(scan_metavariable, FLAGS).with_start(METAVARIABLE_START);
+
+fn scan_macro_rules(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
+    let Some(name) = scan_identifier_body(input, true) else {
+        return Ok(());
+    };
+    if current(input).is_some_and(is_reserved_prefix_delimiter) {
+        return Ok(());
     }
+    if name.is_ascii(MACRO_RULES) && macro_rules_definition_follows(input) {
+        input.accept_token(terms::macroRulesKeyword)?;
+    }
+    Ok(())
 }
 
-fn scan_identifier(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+fn scan_token_identifier(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
+    scan_identifier_as(input, terms::tokenIdentifier)
+}
+
+fn scan_identifier(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
+    scan_identifier_as(input, terms::identifier)
+}
+
+fn scan_identifier_as(input: &mut InputStream, term: u16) -> Result<(), ParseError> {
     let raw = current(input) == Some(LOWER_R) && peek(input, 1) == Some(HASH);
     if raw {
         input.advance(2);
     }
 
-    let macro_rules_candidate =
-        !raw && current(input) == Some(LOWER_M) && stack.can_shift(terms::macroRulesKeyword);
-    let Some(name) = scan_identifier_body(input, raw || macro_rules_candidate) else {
+    let Some(name) = scan_identifier_body(input, raw) else {
         return Ok(());
     };
     if raw {
@@ -72,20 +88,10 @@ fn scan_identifier(input: &mut InputStream, stack: &Stack) -> Result<(), ParseEr
         return Ok(());
     }
 
-    let term = if macro_rules_candidate
-        && name.is_ascii(MACRO_RULES)
-        && macro_rules_definition_follows(input)
-    {
-        terms::macroRulesKeyword
-    } else if stack.can_shift(terms::tokenIdentifier) {
-        terms::tokenIdentifier
-    } else {
-        terms::identifier
-    };
     input.accept_token(term)
 }
 
-fn scan_metavariable(input: &mut InputStream) -> Result<(), ParseError> {
+fn scan_metavariable(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     input.advance(1);
     if scan_identifier_body(input, false).is_none() {
         return Ok(());
@@ -93,7 +99,7 @@ fn scan_metavariable(input: &mut InputStream) -> Result<(), ParseError> {
     input.accept_token(terms::Metavariable)
 }
 
-fn scan_lifetime(input: &mut InputStream) -> Result<(), ParseError> {
+fn scan_lifetime(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     input.advance(1);
     let raw = current(input) == Some(LOWER_R) && peek(input, 1) == Some(HASH);
     if raw {
