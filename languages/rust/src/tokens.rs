@@ -168,9 +168,11 @@ fn scan_type_parameter_delimiters(
     _stack: &Stack,
 ) -> Result<(), ParseError> {
     match current(input) {
-        Some(LESS_THAN) if peek(input, 1) != Some(EQUAL) => {
+        Some(LESS_THAN) => {
             input.advance(1);
-            input.accept_token(terms::tpOpen)?;
+            if current(input) != Some(EQUAL) {
+                input.accept_token(terms::tpOpen)?;
+            }
         }
         Some(GREATER_THAN) => {
             input.advance(1);
