@@ -88,25 +88,9 @@ fn scan_number(input: &mut InputStream) -> Result<(), ParseError> {
     }
 
     if current(input) == Some(F) {
-        let after = peek(input, 1);
-        let after_after = peek(input, 2);
-        let after_after_after = peek(input, 3);
-        let suffix_width = if matches!(
-            (after, after_after),
-            (Some(value), Some(next))
-                if (value == ZERO + 1 && next == ZERO + 6)
-                    || (value == ZERO + 3 && next == ZERO + 2)
-                    || (value == ZERO + 6 && next == ZERO + 4)
-        ) {
-            3
-        } else if (after, after_after, after_after_after)
-            == (Some(ZERO + 1), Some(ZERO + 2), Some(ZERO + 8))
-        {
-            4
-        } else {
+        if !scan_float_suffix(input) {
             return Ok(());
-        };
-        input.advance(suffix_width);
+        }
         is_float = true;
     }
 
@@ -114,6 +98,25 @@ fn scan_number(input: &mut InputStream) -> Result<(), ParseError> {
         input.accept_token(terms::Float)?;
     }
     Ok(())
+}
+
+fn scan_float_suffix(input: &mut InputStream) -> bool {
+    input.advance(1);
+    if consume(input, ZERO + 1) {
+        return consume(input, ZERO + 6) || (consume(input, ZERO + 2) && consume(input, ZERO + 8));
+    }
+    if consume(input, ZERO + 3) {
+        return consume(input, ZERO + 2);
+    }
+    consume(input, ZERO + 6) && consume(input, ZERO + 4)
+}
+
+fn consume(input: &mut InputStream, value: u32) -> bool {
+    if current(input) != Some(value) {
+        return false;
+    }
+    input.advance(1);
+    true
 }
 
 fn scan_raw_string(input: &mut InputStream, prefix: u32) -> Result<(), ParseError> {
@@ -185,10 +188,6 @@ fn scan_type_parameter_delimiters(
 
 fn current(input: &InputStream) -> Option<u32> {
     input.next().map(CodePoint::as_u32)
-}
-
-fn peek(input: &InputStream, offset: isize) -> Option<u32> {
-    input.peek(offset).map(CodePoint::as_u32)
 }
 
 fn advance_while(input: &mut InputStream, predicate: impl Fn(u32) -> bool) {

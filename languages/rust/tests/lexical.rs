@@ -150,11 +150,13 @@ fn recovering_mode_keeps_a_tree_for_strict_literal_errors() {
 }
 
 #[test]
-fn unstable_float_width_suffixes_follow_rust_1_95_lexing() {
+fn float_width_suffixes_follow_rust_1_95_lexing() {
     let source = r"
 fn floats() {
     let _: f16 = 1f16;
     let _: f16 = 10000.0_f16;
+    let _: f32 = 1f32;
+    let _: f64 = 1f64;
     let _: f128 = 1f128;
     let _: f128 = 3.14159265358979323846264338327950288419716939937510_f128;
 }
