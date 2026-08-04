@@ -12,7 +12,7 @@ Install [mise](https://mise.jdx.dev/) and then install the pinned tools:
 mise install
 ```
 
-The workspace pins dprint, Go, Java, Node.js, and Python in
+The workspace pins dprint, Go, Java, Kotlin, Node.js, and Python in
 [`mise.toml`](../mise.toml). The post-install hook also installs the Node.js
 dependencies used by the Lezer reference runner and the traceability checker.
 Rust is managed outside mise; use a toolchain capable of building the
@@ -55,6 +55,7 @@ failure:
 | Rust API documentation       | `mise run docs`                                                                    |
 | Traceability manifests       | `mise run alignment`                                                               |
 | Pinned parser references     | `mise run reference:go`, `reference:javac`, `reference:cpython`, `reference:lezer` |
+| Distribution corpora         | `mise run reference:distribution`                                                  |
 | Standard-library corpora     | `mise run reference:stdlib`                                                        |
 
 The task definitions in [`mise.toml`](../mise.toml) and Cargo aliases in
@@ -186,11 +187,13 @@ diagnostics, tests, and AST construction instead of treating its command or API
 as a black box. Record the revision and relevant implementation location when
 that reading informs a grammar, adapter, validation, or lowering decision.
 
-For broad coverage, the standard-library runners parse Go, Java, and Python
-source trees. Their optional `:ast` variants compare owned AST projections with
-the corresponding official implementation:
+For broad coverage, the standard-library runners parse Go, Java, Kotlin,
+Python, and Rust source trees. The Go, Java, and Python `:ast` variants compare
+owned AST projections with the corresponding official implementation:
 
 ```sh
+mise run reference:distribution:kotlin
+mise run reference:stdlib:kotlin
 mise run reference:stdlib:go:ast
 mise run reference:stdlib:java:ast
 mise run reference:stdlib:python:ast

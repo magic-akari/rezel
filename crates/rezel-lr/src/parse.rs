@@ -153,6 +153,8 @@ type ContextTransition =
     fn(&ContextValue, u16, &Stack, &mut InputStream) -> Result<ContextValue, ParseError>;
 type ContextTransitionWithoutInput =
     fn(&ContextValue, u16, &Stack) -> Result<ContextValue, ParseError>;
+type ContextOnlyShiftTransition =
+    fn(&ContextValue, u16) -> Result<Option<ContextValue>, ParseError>;
 
 #[derive(Clone, Copy)]
 enum ContextTransitionKind {
@@ -160,12 +162,22 @@ enum ContextTransitionKind {
     WithoutInput(ContextTransitionWithoutInput),
 }
 
+#[derive(Clone, Copy)]
+enum ShiftContextTransitionKind {
+    WithInput(ContextTransition),
+    WithoutInput(ContextTransitionWithoutInput),
+    ContextOnly(ContextOnlyShiftTransition),
+}
+
 /// Statically linked non-incremental context tracker.
 pub struct ContextTracker {
     start: fn() -> ContextValue,
-    shift: Option<ContextTransitionKind>,
+    shift: Option<ShiftContextTransitionKind>,
     shift_term_filter: u64,
     shift_input_terms: Option<&'static [u16]>,
+    input_shift_override: Option<ContextTransition>,
+    input_shift_override_terms: &'static [u16],
+    input_shift_override_filter: u64,
     reduce: Option<ContextTransitionKind>,
     reduce_term_filter: u64,
     hash: fn(&ContextValue) -> u64,
@@ -186,11 +198,14 @@ impl ContextTracker {
         Self {
             start,
             shift: match shift {
-                Some(shift) => Some(ContextTransitionKind::WithInput(shift)),
+                Some(shift) => Some(ShiftContextTransitionKind::WithInput(shift)),
                 None => None,
             },
             shift_term_filter: u64::MAX,
             shift_input_terms: None,
+            input_shift_override: None,
+            input_shift_override_terms: &[],
+            input_shift_override_filter: 0,
             reduce: match reduce {
                 Some(reduce) => Some(ContextTransitionKind::WithInput(reduce)),
                 None => None,
@@ -205,7 +220,18 @@ impl ContextTracker {
     /// The runtime does not reposition the input stream before this callback.
     #[must_use]
     pub const fn with_shift_without_input(mut self, shift: ContextTransitionWithoutInput) -> Self {
-        self.shift = Some(ContextTransitionKind::WithoutInput(shift));
+        self.shift = Some(ShiftContextTransitionKind::WithoutInput(shift));
+        self
+    }
+
+    /// Replace the shift transition with one that observes only its context.
+    ///
+    /// Returning `None` preserves the current context identity. This avoids
+    /// cloning the type-erased value or the surrounding stack context when a
+    /// transition neither reads parser state nor changes its value.
+    #[must_use]
+    pub const fn with_context_only_shift(mut self, shift: ContextOnlyShiftTransition) -> Self {
+        self.shift = Some(ShiftContextTransitionKind::ContextOnly(shift));
         self
     }
 
@@ -227,6 +253,23 @@ impl ContextTracker {
     #[must_use]
     pub const fn with_shift_input_terms(mut self, terms: &'static [u16]) -> Self {
         self.shift_input_terms = Some(terms);
+        self
+    }
+
+    /// Override selected shifts with a transition that observes input.
+    ///
+    /// Other shifted terms continue to use the tracker's primary transition.
+    /// This lets a context-only fast path coexist with a small number of
+    /// lexical-mode transitions that need the shifted source spelling.
+    #[must_use]
+    pub const fn with_input_shift_for_terms(
+        mut self,
+        shift: ContextTransition,
+        terms: &'static [u16],
+    ) -> Self {
+        self.input_shift_override = Some(shift);
+        self.input_shift_override_terms = terms;
+        self.input_shift_override_filter = context_term_filter(terms);
         self
     }
 
@@ -256,19 +299,39 @@ impl ContextTracker {
         (self.start)()
     }
 
+    #[inline]
     pub(crate) fn shift_uses_input(&self, term: u16) -> bool {
-        matches!(self.shift, Some(ContextTransitionKind::WithInput(_)))
-            && self
-                .shift_input_terms
-                .is_none_or(|terms| terms.contains(&term))
+        self.uses_input_shift_override(term)
+            || matches!(self.shift, Some(ShiftContextTransitionKind::WithInput(_)))
+                && self
+                    .shift_input_terms
+                    .is_none_or(|terms| terms.contains(&term))
     }
 
     pub(crate) const fn tracks_shift(&self, term: u16) -> bool {
         self.shift.is_some() && self.shift_term_filter & context_term_bit(term) != 0
+            || self.input_shift_override.is_some()
+                && self.input_shift_override_filter & context_term_bit(term) != 0
     }
 
     pub(crate) const fn tracks_reduction(&self, term: u16) -> bool {
         self.reduce.is_some() && self.reduce_term_filter & context_term_bit(term) != 0
+    }
+
+    #[inline]
+    pub(crate) const fn has_context_only_shift(&self) -> bool {
+        matches!(self.shift, Some(ShiftContextTransitionKind::ContextOnly(_)))
+    }
+
+    pub(crate) fn context_only_shift(
+        &self,
+        context: &ContextValue,
+        term: u16,
+    ) -> Result<Option<ContextValue>, ParseError> {
+        let Some(ShiftContextTransitionKind::ContextOnly(shift)) = self.shift else {
+            return Ok(None);
+        };
+        shift(context, term)
     }
 
     pub(crate) const fn reduction_uses_input(&self) -> bool {
@@ -282,9 +345,20 @@ impl ContextTracker {
         stack: &Stack,
         input: &mut InputStream,
     ) -> Result<ContextValue, ParseError> {
+        if self.uses_input_shift_override(term) {
+            let shift = self
+                .input_shift_override
+                .expect("an input shift override callback is configured");
+            return shift(context, term, stack, input);
+        }
         match self.shift {
-            Some(ContextTransitionKind::WithInput(shift)) => shift(context, term, stack, input),
-            Some(ContextTransitionKind::WithoutInput(shift)) => shift(context, term, stack),
+            Some(ShiftContextTransitionKind::WithInput(shift)) => {
+                shift(context, term, stack, input)
+            }
+            Some(ShiftContextTransitionKind::WithoutInput(shift)) => shift(context, term, stack),
+            Some(ShiftContextTransitionKind::ContextOnly(shift)) => {
+                Ok(shift(context, term)?.unwrap_or_else(|| context.clone()))
+            }
             None => Ok(context.clone()),
         }
     }
@@ -305,6 +379,13 @@ impl ContextTracker {
 
     pub(crate) fn hash(&self, context: &ContextValue) -> u64 {
         (self.hash)(context)
+    }
+
+    #[inline]
+    fn uses_input_shift_override(&self, term: u16) -> bool {
+        self.input_shift_override.is_some()
+            && self.input_shift_override_filter & context_term_bit(term) != 0
+            && self.input_shift_override_terms.contains(&term)
     }
 }
 
@@ -2123,6 +2204,22 @@ mod tests {
         Ok(context.clone())
     }
 
+    #[allow(clippy::unnecessary_wraps)]
+    fn shift_context_only(
+        context: &ContextValue,
+        term: u16,
+    ) -> Result<Option<ContextValue>, ParseError> {
+        if term != 7 {
+            return Ok(None);
+        }
+        let previous = context.downcast_ref::<bool>().copied().unwrap_or(false);
+        if previous {
+            Ok(None)
+        } else {
+            Ok(Some(ContextValue::new(true)))
+        }
+    }
+
     fn hash_context(_context: &ContextValue) -> u64 {
         0
     }
@@ -2185,6 +2282,34 @@ mod tests {
             .with_shift_without_input(shift_without_input)
             .with_shift_input_terms(&[7]);
         assert!(!state_only.shift_uses_input(7));
+
+        let hybrid = ContextTracker::new(start_context, None, None, hash_context)
+            .with_context_only_shift(shift_context_only)
+            .with_input_shift_for_terms(shift_with_input, &[7, 11]);
+        assert!(hybrid.has_context_only_shift());
+        assert!(!hybrid.shift_uses_input(3));
+        assert!(hybrid.shift_uses_input(7));
+        assert!(hybrid.shift_uses_input(11));
+        assert!(hybrid.tracks_shift(3));
+        assert!(hybrid.tracks_shift(7));
+    }
+
+    #[test]
+    fn context_only_shifts_report_identity_preserving_transitions() {
+        let tracker = ContextTracker::new(start_context, None, None, hash_context)
+            .with_context_only_shift(shift_context_only);
+        let initial = ContextValue::new(false);
+
+        assert!(tracker.has_context_only_shift());
+        assert!(!tracker.shift_uses_input(7));
+        assert!(tracker.context_only_shift(&initial, 3).unwrap().is_none());
+
+        let changed = tracker
+            .context_only_shift(&initial, 7)
+            .unwrap()
+            .expect("term 7 changes the context");
+        assert_eq!(changed.downcast_ref::<bool>(), Some(&true));
+        assert!(tracker.context_only_shift(&changed, 7).unwrap().is_none());
     }
 
     #[test]

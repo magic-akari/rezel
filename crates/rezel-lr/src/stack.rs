@@ -830,11 +830,42 @@ impl Stack {
         if !context.tracker.tracks_shift(term) {
             return Ok(());
         }
+        if context.tracker.shift_uses_input(term) {
+            let context = context.clone();
+            return self.shift_tracked_context(&context, term, start, input);
+        }
+        if context.tracker.has_context_only_shift() {
+            return self.shift_context_only(term);
+        }
         let context = context.clone();
         self.shift_tracked_context(&context, term, start, input)
     }
 
-    #[inline(never)]
+    #[inline]
+    fn shift_context_only(&mut self, term: u16) -> Result<(), ParseError> {
+        let update = {
+            let context = self
+                .context
+                .as_ref()
+                .expect("a context-only shift requires an active context");
+            let Some(value) = context.tracker.context_only_shift(&context.value, term)? else {
+                return Ok(());
+            };
+            if context.value.same_identity(&value) {
+                return Ok(());
+            }
+            (context.tracker, value)
+        };
+        let hash = update.0.hash(&update.1);
+        self.context_hash = hash;
+        self.context = Some(StackContext {
+            tracker: update.0,
+            value: update.1,
+        });
+        Ok(())
+    }
+
+    #[inline]
     fn shift_tracked_context(
         &mut self,
         context: &StackContext,

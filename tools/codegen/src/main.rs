@@ -14,7 +14,7 @@ use rezel_generator::{
 };
 
 const USAGE: &str = "Usage: rezel-codegen \
-     (json | java | go | python | rust | swift | fixtures) (--check | --update)";
+     (json | java | go | kotlin | python | rust | swift | fixtures) (--check | --update)";
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
@@ -355,6 +355,7 @@ impl Scope {
             "json" => Some(Self::Language("json")),
             "java" => Some(Self::Language("java")),
             "go" => Some(Self::Language("go")),
+            "kotlin" => Some(Self::Language("kotlin")),
             "python" => Some(Self::Language("python")),
             "rust" => Some(Self::Language("rust")),
             "swift" => Some(Self::Language("swift")),

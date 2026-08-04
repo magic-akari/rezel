@@ -1,0 +1,15 @@
+[package]
+name = "rezel-kotlin-stdlib-reference"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+description = "Kotlin standard-library source verifier for Rezel"
+
+[dependencies]
+rezel-lang-kotlin = { path = "../../../../languages/kotlin" }
+sha2.workspace = true
+
+[lints]
+workspace = true

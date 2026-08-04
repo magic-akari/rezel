@@ -1,0 +1,49 @@
+[package]
+name = "rezel-lang-kotlin"
+version.workspace = true
+autotests = false
+categories = ["parser-implementations"]
+edition.workspace = true
+include = [
+	"/grammar/**",
+	"/examples/**",
+	"/src/**",
+	"/Cargo.toml",
+	"/README.md",
+	"/THIRD_PARTY_NOTICES.md",
+	"/LICENSE-APACHE",
+	"/LICENSE-MIT",
+]
+keywords = ["kotlin", "parser", "syntax-tree", "cst"]
+license.workspace = true
+repository.workspace = true
+description = "Kotlin 2.4 parser and typed syntax for Rezel"
+
+[[test]]
+name = "parser"
+path = "tests/parser.rs"
+
+[[test]]
+name = "parser_positive"
+path = "tests/parser_positive.rs"
+
+[[test]]
+name = "reference"
+path = "tests/reference.rs"
+
+[[test]]
+name = "typed_foundation"
+path = "tests/typed_foundation.rs"
+
+[features]
+default = []
+highlight = ["dep:rezel-highlight"]
+
+[dependencies]
+rezel-common.workspace = true
+rezel-highlight = { workspace = true, optional = true }
+rezel-lr.workspace = true
+zerocopy.workspace = true
+
+[lints]
+workspace = true

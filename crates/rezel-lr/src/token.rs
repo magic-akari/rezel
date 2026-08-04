@@ -643,6 +643,28 @@ impl InputStream {
         }
     }
 
+    /// Return the remaining raw UTF-8 bytes in the current identity-mapped chunk.
+    ///
+    /// The slice stops at the current selected-range or translation boundary.
+    /// An empty slice does not imply end of input: callers that need to cross a
+    /// boundary must fall back to [`Self::lookahead`]. External tokenizers may
+    /// use this as a fast path when their decision is defined entirely by ASCII
+    /// bytes and preserve the code-point iterator as the authoritative fallback.
+    #[must_use]
+    pub fn identity_lookahead_chunk(&self) -> &[u8] {
+        let Some(window) = self.window.as_ref() else {
+            return &[];
+        };
+        let Some(start) = window.source_position(self.cursor.byte) else {
+            return &[];
+        };
+        window
+            .source
+            .as_bytes()
+            .get(start..window.source_end)
+            .unwrap_or_default()
+    }
+
     /// Iterate backward from immediately before the current position in Unicode code points.
     ///
     /// Like [`Self::lookahead`], this follows the stream's selected-range
@@ -1925,6 +1947,23 @@ mod tests {
                 CodePoint::from(b'c'),
             ]
         );
+        assert_eq!(stream.identity_lookahead_chunk(), b"ab");
+    }
+
+    #[test]
+    fn identity_lookahead_chunk_stops_at_each_selected_range() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 2.into()),
+            TextRange::new(3.into(), 5.into()),
+        ]);
+        let mut input = stream("abXcd", ranges);
+
+        assert_eq!(input.identity_lookahead_chunk(), b"ab");
+        input.advance(2);
+        assert_eq!(input.position(), TextSize::from(3));
+        assert_eq!(input.identity_lookahead_chunk(), b"cd");
+        input.advance(2);
+        assert!(input.identity_lookahead_chunk().is_empty());
     }
 
     #[test]

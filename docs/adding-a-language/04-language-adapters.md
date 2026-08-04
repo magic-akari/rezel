@@ -282,8 +282,12 @@ Use `with_shift_without_input` or `with_reduce_without_input` when a transition
 does not read source, so the runtime need not reposition the stream. Use
 `with_shift_input_terms` when only a declared subset of shifted terms needs
 input; the callback still runs for other terms and must not inspect or advance
-the stream for them. When a transition makes no logical change, return a clone
-of the existing `ContextValue` so its identity and cached hash remain intact.
+the stream for them. Use `with_context_only_shift` when a shift observes neither
+input nor parser state. Its callback returns `None` when the logical value does
+not change, allowing the runtime to preserve the context identity without
+cloning it. Other transition forms should return a clone of the existing
+`ContextValue` when they make no logical change so its identity and cached hash
+remain intact.
 
 Rezel's current tracker is non-incremental. It has no callback for reused tree
 fragments and no equivalent of Lezer's node-reuse `strict` option. Record those

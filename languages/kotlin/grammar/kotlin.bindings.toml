@@ -1,0 +1,113 @@
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "importKeywords"
+rust_path = "crate::tokens::IMPORT_KEYWORDS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "tryClauseKeywords"
+rust_path = "crate::tokens::TRY_CLAUSE_KEYWORDS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "controlFunctionKeywords"
+rust_path = "crate::tokens::CONTROL_FUNCTION_KEYWORDS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "directControlLambdaGuards"
+rust_path = "crate::tokens::DIRECT_CONTROL_LAMBDA_GUARDS"
+
+[[binding]]
+kind = "context-tracker"
+source = "./tokens"
+name = "trackLineBreak"
+rust_path = "crate::tokens::TRACK_LINE_BREAK"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "sameLineJumpGuards"
+rust_path = "crate::tokens::SAME_LINE_JUMP_GUARDS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "sameLineGuards"
+rust_path = "crate::tokens::SAME_LINE_GUARDS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "sameLineLambdaGuards"
+rust_path = "crate::tokens::SAME_LINE_LAMBDA_GUARDS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "nullableReceiverQuestions"
+rust_path = "crate::tokens::NULLABLE_RECEIVER_QUESTIONS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "genericNullableCallableQuestions"
+rust_path = "crate::tokens::GENERIC_NULLABLE_CALLABLE_QUESTIONS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "multiDollarStringStarts"
+rust_path = "crate::tokens::MULTI_DOLLAR_STRING_STARTS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "multiDollarStringSegments"
+rust_path = "crate::tokens::MULTI_DOLLAR_STRING_SEGMENTS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "multiDollarStringContents"
+rust_path = "crate::tokens::MULTI_DOLLAR_STRING_CONTENTS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "adjacentAnnotationIdentifiers"
+rust_path = "crate::tokens::ADJACENT_ANNOTATION_IDENTIFIERS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "adjacentClassMemberEnds"
+rust_path = "crate::tokens::ADJACENT_CLASS_MEMBER_ENDS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "sameLineFallbackGuards"
+rust_path = "crate::tokens::SAME_LINE_FALLBACK_GUARDS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "lineBreakPrefixes"
+rust_path = "crate::tokens::LINE_BREAK_PREFIXES"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "statementEnds"
+rust_path = "crate::tokens::STATEMENT_ENDS"
+
+[[binding]]
+kind = "property-source"
+source = "./highlight"
+name = "kotlinHighlighting"
+rust_path = "crate::kotlin_highlighting"
