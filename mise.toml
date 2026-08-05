@@ -263,6 +263,19 @@ run = "cargo run --locked --package rezel-python-stdlib-reference -- --ast-oracl
 description = "Verify Rust 1.95 standard-library source acceptance"
 run = "cargo run --locked --package rezel-rust-stdlib-reference"
 
+[tasks."benchmark:datasets"]
+description = "Restore pinned parser benchmark datasets"
+run = "cargo run --locked --manifest-path tools/benchmarks/parser/Cargo.toml --bin restore-datasets"
+
+[tasks."benchmark:gungraun"]
+description = "Compare Rezel and Tree-sitter parser instruction counts"
+depends = ["benchmark:datasets"]
+run = "cargo bench --locked --manifest-path tools/benchmarks/parser/Cargo.toml --bench gungraun"
+
+[tasks."benchmark:compare"]
+description = "Compare parser instructions across implementations and commits"
+run = "cargo run --locked --manifest-path tools/benchmarks/parser/Cargo.toml --bin compare-revisions --"
+
 [tasks.test]
 description = "Run Rust tests"
 run = [

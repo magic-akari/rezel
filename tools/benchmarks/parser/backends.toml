@@ -1,0 +1,23 @@
+schema = "rezel.parser-backends.v1"
+primary = "rezel"
+gungraun = "0.19.4"
+
+[[backend]]
+id = "rezel"
+label = "Rezel"
+bench = "gungraun"
+function = "parse_rezel"
+filter = "*::parse_rezel::*"
+kind = "library"
+scope = "parse"
+languages = ["go", "java", "json", "kotlin", "python", "rust", "swift"]
+
+[[backend]]
+id = "tree-sitter"
+label = "Tree-sitter"
+bench = "gungraun"
+function = "parse_tree_sitter"
+filter = "*::parse_tree_sitter::*"
+kind = "library"
+scope = "parse"
+languages = ["go", "java", "json", "kotlin", "python", "rust", "swift"]

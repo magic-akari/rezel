@@ -1,0 +1,239 @@
+schema = "rezel.parser-datasets.v1"
+
+[[repository]]
+id = "grpc-go"
+url = "https://github.com/grpc/grpc-go"
+commit = "ec035398ca140ed857ecd151ebc35f9511f32847"
+
+[[repository]]
+id = "spring-framework"
+url = "https://github.com/spring-projects/spring-framework"
+commit = "e78d3df566a30786d586702fb91c6f2e79f91eba"
+
+[[repository]]
+id = "django"
+url = "https://github.com/django/django"
+commit = "c6be0bf3bb744d234947cefd6def9f31d9655800"
+
+[[repository]]
+id = "tokio"
+url = "https://github.com/tokio-rs/tokio"
+commit = "625954f365727668cb02d04172b34f1149637728"
+
+[[repository]]
+id = "kotlinx-coroutines"
+url = "https://github.com/Kotlin/kotlinx.coroutines"
+commit = "3eadf938b1506351bffd7c015445d08faf1c4315"
+
+[[repository]]
+id = "swift-nio"
+url = "https://github.com/apple/swift-nio"
+commit = "48119dbbd23e3eabba48952ac7f75ebeeb87c217"
+
+[[repository]]
+id = "schemastore"
+url = "https://github.com/SchemaStore/schemastore"
+commit = "4f9683522f38836c9483a60b2370345dbd4237d6"
+
+[datasets.go]
+repository = "grpc-go"
+
+"10kb" = [
+	"credentials/google/gcp_service_account_identity_credentials.go",
+]
+
+"50kb" = [
+	"internal/xds/bootstrap/bootstrap.go",
+	"internal/balancergroup/balancergroup.go",
+]
+
+"100kb" = [
+	"internal/xds/xdsclient/xdsresource/unmarshal_cds.go",
+	"balancer/pickfirst/pickfirst.go",
+	"internal/xds/balancer/outlierdetection/balancer.go",
+]
+
+"500kb" = [
+	"internal/xds/httpfilter/extproc/ext_proc.go",
+	"clientconn.go",
+	"stream.go",
+	"server.go",
+	"internal/transport/http2_client.go",
+	"internal/transport/http2_server.go",
+	"internal/xds/clients/xdsclient/authority.go",
+	"rpc_util.go",
+	"internal/xds/xdsdepmgr/xds_dependency_manager.go",
+]
+
+[datasets.java]
+repository = "spring-framework"
+
+"10kb" = [
+	"spring-web/src/main/java/org/springframework/http/client/SubscriberInputStream.java",
+]
+
+"50kb" = [
+	"spring-core/src/main/java/org/springframework/core/io/support/PathMatchingResourcePatternResolver.java",
+]
+
+"100kb" = [
+	"spring-webmvc/src/main/java/org/springframework/web/servlet/DispatcherServlet.java",
+	"spring-webmvc/src/main/java/org/springframework/web/servlet/config/annotation/WebMvcConfigurationSupport.java",
+]
+
+"500kb" = [
+	"spring-web/src/main/java/org/springframework/web/util/WhatWgUrlParser.java",
+	"spring-beans/src/main/java/org/springframework/beans/factory/support/AbstractAutowireCapableBeanFactory.java",
+	"spring-web/src/main/java/org/springframework/http/HttpHeaders.java",
+	"spring-core/src/main/java/org/springframework/core/annotation/AnnotationUtils.java",
+	"spring-webflux/src/main/java/org/springframework/web/reactive/function/server/RouterFunctions.java",
+	"spring-jms/src/main/java/org/springframework/jms/listener/DefaultMessageListenerContainer.java",
+	"spring-tx/src/main/java/org/springframework/transaction/support/AbstractPlatformTransactionManager.java",
+]
+
+[datasets.python]
+repository = "django"
+
+"10kb" = [
+	"django/contrib/auth/password_validation.py",
+]
+
+"50kb" = [
+	"django/forms/fields.py",
+]
+
+"100kb" = [
+	"django/db/models/base.py",
+]
+
+"500kb" = [
+	"django/db/models/sql/query.py",
+	"django/db/models/query.py",
+	"django/contrib/admin/options.py",
+	"django/db/models/fields/__init__.py",
+	"django/db/models/fields/related_descriptors.py",
+]
+
+[datasets.rust]
+repository = "tokio"
+
+"10kb" = [
+	"tokio/src/io/blocking.rs",
+]
+
+"50kb" = [
+	"tokio/src/sync/watch.rs",
+]
+
+"100kb" = [
+	"tokio/src/net/unix/datagram/socket.rs",
+	"tokio/src/sync/notify.rs",
+]
+
+"500kb" = [
+	"tokio/src/net/windows/named_pipe.rs",
+	"tokio/src/net/udp.rs",
+	"tokio/src/runtime/builder.rs",
+	"tokio/src/sync/mpsc/bounded.rs",
+	"tokio/src/process/mod.rs",
+	"tokio/src/sync/broadcast.rs",
+	"tokio/src/io/async_fd.rs",
+]
+
+[datasets.kotlin]
+repository = "kotlinx-coroutines"
+
+"10kb" = [
+	"kotlinx-coroutines-core/common/src/Timeout.kt",
+]
+
+"50kb" = [
+	"kotlinx-coroutines-core/jvm/src/CoroutineContext.kt",
+	"kotlinx-coroutines-core/common/src/channels/Produce.kt",
+	"kotlinx-coroutines-core/common/src/internal/LockFreeTaskQueue.kt",
+	"kotlinx-coroutines-core/common/src/flow/SharingStarted.kt",
+]
+
+"100kb" = [
+	"kotlinx-coroutines-core/common/src/channels/Deprecated.kt",
+	"kotlinx-coroutines-core/common/src/flow/operators/Share.kt",
+	"kotlinx-coroutines-core/common/src/EventLoop.common.kt",
+	"kotlinx-coroutines-core/common/src/flow/StateFlow.kt",
+	"kotlinx-coroutines-core/common/src/channels/BroadcastChannel.kt",
+]
+
+"500kb" = [
+	"kotlinx-coroutines-core/common/src/channels/BufferedChannel.kt",
+	"kotlinx-coroutines-core/common/src/JobSupport.kt",
+	"kotlinx-coroutines-core/jvm/src/scheduling/CoroutineScheduler.kt",
+	"kotlinx-coroutines-core/common/src/selects/Select.kt",
+	"kotlinx-coroutines-core/common/src/flow/SharedFlow.kt",
+	"kotlinx-coroutines-core/common/src/Job.kt",
+	"kotlinx-coroutines-core/common/src/CancellableContinuationImpl.kt",
+	"kotlinx-coroutines-core/common/src/Builders.common.kt",
+	"kotlinx-coroutines-core/jvm/src/debug/internal/DebugProbesImpl.kt",
+	"kotlinx-coroutines-core/common/src/CancellableContinuation.kt",
+]
+
+[datasets.swift]
+repository = "swift-nio"
+
+"10kb" = [
+	"Sources/NIOFS/Internal/System Calls/Mocking.swift",
+]
+
+"50kb" = [
+	"Sources/NIOCore/NIOSplitLinesMessageDecoder.swift",
+	"Sources/NIOCore/ByteBuffer-binaryEncodedLengthPrefix.swift",
+	"Sources/NIOWebSocket/WebSocketFrame.swift",
+]
+
+"100kb" = [
+	"Sources/NIOCore/FileHandle.swift",
+	"Sources/NIOHTTP1/NIOTypedHTTPServerUpgraderStateMachine.swift",
+	"Sources/NIOCore/AsyncSequences/NIOAsyncSequenceProducer.swift",
+	"Sources/NIOPosix/ControlMessage.swift",
+	"Sources/NIOConcurrencyHelpers/NIOAtomic.swift",
+	"Sources/NIOFS/Internal/System Calls/SystemPackage+Windows.swift",
+]
+
+"500kb" = [
+	"Sources/NIOHTTP1/HTTPPipelineSetup.swift",
+	"Sources/NIOCore/EventLoopFuture+AssumeIsolated.swift",
+	"Sources/NIOFS/FileSystemError+Syscall.swift",
+	"Sources/NIOHTTP1/HTTPEncoder.swift",
+	"Sources/NIOFS/FileHandleProtocol.swift",
+	"Sources/NIOEmbedded/AsyncTestingChannel.swift",
+	"Sources/NIOConcurrencyHelpers/atomics.swift",
+	"Sources/NIOPosix/LinuxUring.swift",
+	"Sources/NIOPosix/BSDSocketAPIWindows.swift",
+	"Sources/NIOEmbedded/AsyncTestingEventLoop.swift",
+	"Sources/NIOTLS/SNIHandler.swift",
+	"Sources/NIOPosix/SelectorWSAPoll.swift",
+	"Sources/NIOFoundationEssentialsCompat/ByteBuffer-foundation.swift",
+	"Sources/NIOPosix/SelectorKqueue.swift",
+	"Sources/NIOCore/ByteBuffer-hex.swift",
+	"Sources/NIOCore/Interfaces.swift",
+	"Sources/NIOCore/SingleStepByteToMessageDecoder.swift",
+	"Sources/NIOPosix/SelectorUring.swift",
+]
+
+[datasets.json]
+repository = "schemastore"
+
+"10kb" = [
+	"src/schemas/json/gitleaks.json",
+]
+
+"50kb" = [
+	"src/schemas/json/cargo-make.json",
+]
+
+"100kb" = [
+	"src/schemas/json/expo-46.0.0.json",
+]
+
+"500kb" = [
+	"src/schemas/json/cloudify.json",
+	"src/schemas/json/traefik-v3-file-provider.json",
+]
