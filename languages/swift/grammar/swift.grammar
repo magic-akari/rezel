@@ -2033,15 +2033,29 @@ codeItemSeparator { ";" | lineBreak }
   keywordIdentifierToken[@name=Identifier]
 }
 
-@external tokens swiftLayoutTokens from "./tokens" {
+@external tokens swiftGenericRequirementContinuation from "./tokens" {
+  genericRequirementContinuation
+}
+
+@external tokens swiftCodeItemLayout from "./tokens" {
   lineBreak
   declarationEffectLineLookahead
   enumCaseParameterLineLookahead
   postfixIfConfigLookahead
-  genericRequirementContinuation
 }
 
-@external tokens swiftAttributeAndTypePathTokens from "./tokens" {
+@external tokens swiftAccessorLookaheads from "./tokens" {
+  initializedPropertyBlockLookahead
+  accessorBlockLookahead
+}
+
+@external tokens swiftTypePathLookaheads from "./tokens" {
+  qualifiedDeclTypeLookahead
+  keyPathDottedOptionalComponentLookahead
+  keyPathGenericArgumentLookahead
+}
+
+@external tokens swiftAttributeTokens from "./tokens" {
   AttributeName
   AttributeNameWithArguments
   customAttributeNameWithArguments[@name=AttributeNameWithArguments]
@@ -2051,7 +2065,6 @@ codeItemSeparator { ";" | lineBreak }
   differentiableAttributeNameWithArguments[@name=AttributeNameWithArguments]
   derivativeAttributeNameWithArguments[@name=AttributeNameWithArguments]
   abiAttributeNameWithArguments[@name=AttributeNameWithArguments]
-  qualifiedDeclTypeLookahead
   attributeIfConfigNonemptyLookahead
   attributeIfConfigStructuralLookahead
   switchCaseAttributeLookahead
@@ -2061,15 +2074,32 @@ codeItemSeparator { ";" | lineBreak }
   switchCaseBodyDiagnosticLookahead
   moduleSelectedAttributeAtSign[@name="@"]
   poundSourceLocation[@name="#sourceLocation"]
-  keyPathDottedOptionalComponentLookahead
-  keyPathGenericArgumentLookahead
-  initializedPropertyBlockLookahead
-  accessorBlockLookahead
 }
 
-@external tokens swiftLiteralsAndOperators from "./tokens" {
+@external tokens swiftLiterals from "./tokens" {
   RegexLiteral
   StringLiteral[isolate]
+}
+
+@external tokens swiftGenericValueLookaheads from "./tokens" {
+  parenthesizedGenericValueLookahead
+  inlineArrayTypeExpressionLookahead
+}
+
+@external tokens swiftSyntaxLookaheads from "./tokens" {
+  postfixMemberLookahead
+  attributedTypeExpressionLookahead
+  nonisolatedSpecifierArgumentLookahead
+  conditionListEndLookahead
+  conditionTrailingClosureLookahead
+  postfixIfConfigClauseLookahead
+  genericArgumentLookahead
+  declNameArgumentsLookahead
+  contextualAnyTypeLookahead
+  usingDeclarationLookahead
+}
+
+@external tokens swiftOperators from "./tokens" {
   prefixTilde
   prefixAmpersand
   binaryAmpersand
@@ -2084,24 +2114,15 @@ codeItemSeparator { ";" | lineBreak }
   functionCustomOperator
   optionalTypeQuestionMark[@name="?"]
   typeExclamationMark[@name="!"]
-  postfixMemberLookahead
-  attributedTypeExpressionLookahead
-  nonisolatedSpecifierArgumentLookahead
-  conditionListEndLookahead
-  conditionTrailingClosureLookahead
-  postfixIfConfigClauseLookahead
-  genericArgumentLookahead
   postfixQuestionMark
   infixQuestionMark
-  parenthesizedGenericValueLookahead
-  inlineArrayTypeExpressionLookahead
-  declNameArgumentsLookahead
-  contextualAnyTypeLookahead
-  usingDeclarationLookahead
 }
 
-@external tokens swiftPatternContexts from "./tokens" {
+@external tokens swiftCatchPatternContext from "./tokens" {
   catchPatternLookahead
+}
+
+@external tokens swiftClosureSignatureContext from "./tokens" {
   closureSignatureLookahead
 }
 

@@ -13,23 +13,65 @@ rust_path = "crate::tokens::KEYWORD_IDENTIFIERS"
 [[binding]]
 kind = "external-tokenizer"
 source = "./tokens"
-name = "swiftLayoutTokens"
-rust_path = "crate::tokens::LAYOUT_TOKENS"
+name = "swiftGenericRequirementContinuation"
+rust_path = "crate::tokens::GENERIC_REQUIREMENT_CONTINUATION"
 
 [[binding]]
 kind = "external-tokenizer"
 source = "./tokens"
-name = "swiftAttributeAndTypePathTokens"
-rust_path = "crate::tokens::ATTRIBUTE_AND_TYPE_PATH_TOKENS"
+name = "swiftCodeItemLayout"
+rust_path = "crate::tokens::CODE_ITEM_LAYOUT"
 
 [[binding]]
 kind = "external-tokenizer"
 source = "./tokens"
-name = "swiftLiteralsAndOperators"
-rust_path = "crate::tokens::LITERALS_AND_OPERATORS"
+name = "swiftAccessorLookaheads"
+rust_path = "crate::tokens::ACCESSOR_LOOKAHEADS"
 
 [[binding]]
 kind = "external-tokenizer"
 source = "./tokens"
-name = "swiftPatternContexts"
-rust_path = "crate::tokens::PATTERN_CONTEXT_TOKENS"
+name = "swiftTypePathLookaheads"
+rust_path = "crate::tokens::TYPE_PATH_LOOKAHEADS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftAttributeTokens"
+rust_path = "crate::tokens::ATTRIBUTE_TOKENS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftLiterals"
+rust_path = "crate::tokens::LITERALS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftGenericValueLookaheads"
+rust_path = "crate::tokens::GENERIC_VALUE_LOOKAHEADS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftSyntaxLookaheads"
+rust_path = "crate::tokens::SYNTAX_LOOKAHEADS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftOperators"
+rust_path = "crate::tokens::OPERATORS"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftCatchPatternContext"
+rust_path = "crate::tokens::CATCH_PATTERN_CONTEXT"
+
+[[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "swiftClosureSignatureContext"
+rust_path = "crate::tokens::CLOSURE_SIGNATURE_CONTEXT"

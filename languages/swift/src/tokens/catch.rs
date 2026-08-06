@@ -5,7 +5,7 @@
 //! matching-expression automaton.
 
 use rezel_common::{CodePoint, ParseError};
-use rezel_lr::{InputStream, Stack};
+use rezel_lr::InputStream;
 
 use super::lexical::{LookaheadIdentifier, scan_lookahead_identifier};
 use crate::terms;
@@ -17,10 +17,7 @@ const LEFT_PAREN: u32 = b'(' as u32;
 const COMMA: u32 = b',' as u32;
 const RIGHT_PAREN: u32 = b')' as u32;
 
-pub(super) fn scan(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
-    if !stack.can_shift(terms::catchPatternLookahead) {
-        return Ok(());
-    }
+pub(super) fn scan(input: &mut InputStream) -> Result<(), ParseError> {
     let requires_matching = {
         let mut lookahead = input.lookahead().map(CodePoint::as_u32).peekable();
         catch_pattern_requires_matching(&mut lookahead)

@@ -41,7 +41,6 @@ const LEFT_PAREN: u32 = b'(' as u32;
 const COMMA: u32 = b',' as u32;
 const PERIOD: u32 = b'.' as u32;
 const QUESTION: u32 = b'?' as u32;
-const DOUBLE_QUOTE: u32 = b'"' as u32;
 const UNDERSCORE: u32 = b'_' as u32;
 
 const CONTEXTUAL_TOKENIZER: TokenizerFlags = TokenizerFlags {
@@ -78,15 +77,8 @@ const KEYWORD_IDENTIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart:
     .with_ascii_range(b'A'..=b'Z')
     .with_ascii_range(b'a'..=b'z');
 
-const ATTRIBUTE_AND_TYPE_PATH_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
-    .with_ascii(b'!')
-    .with_ascii(b'#')
-    .with_ascii(b'.')
-    .with_ascii(b'<')
-    .with_ascii(b'?')
+const ACCESSOR_LOOKAHEAD_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
     .with_ascii(b'@')
-    .with_ascii(b'A')
-    .with_ascii(b'[')
     .with_ascii(b'_')
     .with_ascii(b'a')
     .with_ascii(b'b')
@@ -103,13 +95,40 @@ const ATTRIBUTE_AND_TYPE_PATH_START: ExternalTokenizerStart = ExternalTokenizerS
     .with_ascii(b'y')
     .with_ascii(b'{');
 
-const LITERAL_AND_OPERATOR_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
-    .with_ascii(b'!')
+const TYPE_PATH_LOOKAHEAD_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'.')
+    .with_ascii(b'<')
+    .with_ascii(b'A');
+
+const ATTRIBUTE_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'#')
+    .with_ascii(b'@');
+
+const LITERAL_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
     .with_ascii(b'"')
     .with_ascii(b'#')
+    .with_ascii(b'/');
+
+const GENERIC_VALUE_LOOKAHEAD_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'(')
+    .with_ascii(b'[');
+
+const SYNTAX_LOOKAHEAD_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'(')
+    .with_ascii(b'.')
+    .with_ascii(b'<')
+    .with_ascii(b'@')
+    .with_ascii(b'a')
+    .with_ascii(b'e')
+    .with_ascii(b'i')
+    .with_ascii(b'n')
+    .with_ascii(b'u')
+    .with_ascii(b'{');
+
+const OPERATOR_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'!')
     .with_ascii(b'%')
     .with_ascii(b'&')
-    .with_ascii(b'(')
     .with_ascii(b'*')
     .with_ascii(b'+')
     .with_ascii(b'-')
@@ -119,21 +138,30 @@ const LITERAL_AND_OPERATOR_START: ExternalTokenizerStart = ExternalTokenizerStar
     .with_ascii(b'=')
     .with_ascii(b'>')
     .with_ascii(b'?')
-    .with_ascii(b'@')
     .with_ascii(b'^')
-    .with_ascii(b'[')
-    .with_ascii(b'a')
-    .with_ascii(b'e')
-    .with_ascii(b'i')
-    .with_ascii(b'n')
-    .with_ascii(b'u')
-    .with_ascii(b'{')
     .with_ascii(b'|')
     .with_ascii(b'~')
     .with_non_ascii();
 
-pub(crate) static LAYOUT_TOKENS: ExternalTokenizer =
-    ExternalTokenizer::new(scan_layout, CONTEXTUAL_TOKENIZER).with_start(TRIVIA_START);
+const CLOSURE_SIGNATURE_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii_range(b'\t'..=b'\r')
+    .with_ascii(b' ')
+    .with_ascii(b'/')
+    .with_ascii(b'@')
+    .with_ascii(b'[')
+    .with_ascii(b'(')
+    .with_ascii(b'`')
+    .with_ascii_range(b'A'..=b'Z')
+    .with_ascii(b'_')
+    .with_ascii_range(b'a'..=b'z')
+    .with_non_ascii();
+
+pub(crate) static GENERIC_REQUIREMENT_CONTINUATION: ExternalTokenizer =
+    ExternalTokenizer::new(scan_generic_requirement_continuation, CONTEXTUAL_TOKENIZER)
+        .with_start(TRIVIA_START);
+
+pub(crate) static CODE_ITEM_LAYOUT: ExternalTokenizer =
+    ExternalTokenizer::new(scan_code_item_separator, CONTEXTUAL_TOKENIZER).with_start(TRIVIA_START);
 
 pub(crate) static METATYPE_TOKENS: ExternalTokenizer =
     ExternalTokenizer::new(scan_metatype, METATYPE_TOKENIZER).with_start(METATYPE_START);
@@ -142,16 +170,37 @@ pub(crate) static KEYWORD_IDENTIFIERS: ExternalTokenizer =
     ExternalTokenizer::new(scan_keyword_identifier, KEYWORD_IDENTIFIER_TOKENIZER)
         .with_start(KEYWORD_IDENTIFIER_START);
 
-pub(crate) static ATTRIBUTE_AND_TYPE_PATH_TOKENS: ExternalTokenizer =
-    ExternalTokenizer::new(scan_attribute_or_type_path, CONTEXTUAL_TOKENIZER)
-        .with_start(ATTRIBUTE_AND_TYPE_PATH_START);
+pub(crate) static ACCESSOR_LOOKAHEADS: ExternalTokenizer =
+    ExternalTokenizer::new(scan_accessor_lookahead, CONTEXTUAL_TOKENIZER)
+        .with_start(ACCESSOR_LOOKAHEAD_START);
 
-pub(crate) static LITERALS_AND_OPERATORS: ExternalTokenizer =
-    ExternalTokenizer::new(scan_literal_or_operator, CONTEXTUAL_TOKENIZER)
-        .with_start(LITERAL_AND_OPERATOR_START);
+pub(crate) static TYPE_PATH_LOOKAHEADS: ExternalTokenizer =
+    ExternalTokenizer::new(scan_type_path_lookahead, CONTEXTUAL_TOKENIZER)
+        .with_start(TYPE_PATH_LOOKAHEAD_START);
 
-pub(crate) static PATTERN_CONTEXT_TOKENS: ExternalTokenizer =
-    ExternalTokenizer::new(scan_pattern_context, CONTEXTUAL_TOKENIZER);
+pub(crate) static ATTRIBUTE_TOKENS: ExternalTokenizer =
+    ExternalTokenizer::new(scan_attribute, CONTEXTUAL_TOKENIZER).with_start(ATTRIBUTE_START);
+
+pub(crate) static LITERALS: ExternalTokenizer =
+    ExternalTokenizer::new(scan_literal, CONTEXTUAL_TOKENIZER).with_start(LITERAL_START);
+
+pub(crate) static GENERIC_VALUE_LOOKAHEADS: ExternalTokenizer =
+    ExternalTokenizer::new(scan_generic_value_lookahead, CONTEXTUAL_TOKENIZER)
+        .with_start(GENERIC_VALUE_LOOKAHEAD_START);
+
+pub(crate) static SYNTAX_LOOKAHEADS: ExternalTokenizer =
+    ExternalTokenizer::new(scan_syntax_lookahead_token, CONTEXTUAL_TOKENIZER)
+        .with_start(SYNTAX_LOOKAHEAD_START);
+
+pub(crate) static OPERATORS: ExternalTokenizer =
+    ExternalTokenizer::new(scan_operator, CONTEXTUAL_TOKENIZER).with_start(OPERATOR_START);
+
+pub(crate) static CATCH_PATTERN_CONTEXT: ExternalTokenizer =
+    ExternalTokenizer::new(scan_catch_pattern_context, CONTEXTUAL_TOKENIZER);
+
+pub(crate) static CLOSURE_SIGNATURE_CONTEXT: ExternalTokenizer =
+    ExternalTokenizer::new(scan_closure_signature_context, CONTEXTUAL_TOKENIZER)
+        .with_start(CLOSURE_SIGNATURE_START);
 
 fn starts_exact_ascii_identifier(input: &InputStream, expected: &[u8]) -> bool {
     let mut offset = 0_isize;
@@ -230,13 +279,19 @@ fn starts_using_declaration(input: &InputStream) -> bool {
 }
 
 fn scan_type_path_lookahead(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+    if current(input) == Some(u32::from(b'A'))
+        && stack.can_shift(terms::qualifiedDeclTypeLookahead)
+        && starts_exact_ascii_identifier(input, b"Any")
+    {
+        return input.accept_token(terms::qualifiedDeclTypeLookahead);
+    }
     if let Some(term) = type_path_lookahead_term(input, stack) {
         input.accept_token_to(term, input.mark())?;
     }
     Ok(())
 }
 
-fn scan_attribute_or_type_path(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+fn scan_accessor_lookahead(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let first = current(input);
     if first == Some(LEFT_BRACE) && accessor::scan_initialized_property_block(input, stack)? {
         return Ok(());
@@ -244,12 +299,7 @@ fn scan_attribute_or_type_path(input: &mut InputStream, stack: &Stack) -> Result
     if first.is_some_and(accessor::is_block_start) && accessor::scan_block(input, stack)? {
         return Ok(());
     }
-    match first {
-        Some(PERIOD | LEFT_ANGLE) => scan_type_path_lookahead(input, stack),
-        Some(AT_SIGN | POUND) => scan_attribute(input, stack),
-        Some(first) if first == u32::from(b'A') => scan_attribute(input, stack),
-        _ => Ok(()),
-    }
+    Ok(())
 }
 
 fn type_path_lookahead_term(input: &InputStream, stack: &Stack) -> Option<u16> {
@@ -283,42 +333,32 @@ fn type_path_period_lookahead(input: &InputStream, stack: &Stack) -> Option<u16>
     None
 }
 
-fn scan_literal_or_operator(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+fn scan_literal(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+    literal::scan_literal(input, stack).map(|_| ())
+}
+
+fn scan_generic_value_lookahead(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+    generic::scan_value_lookahead(input, stack).map(|_| ())
+}
+
+fn scan_syntax_lookahead_token(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let Some(first) = current(input) else {
         return Ok(());
     };
-    if matches!(first, LEFT_BRACKET | LEFT_PAREN) && generic::scan_value_lookahead(input, stack)? {
+    scan_syntax_lookahead(input, stack, first).map(|_| ())
+}
+
+fn scan_operator(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+    let Some(first) = current(input) else {
         return Ok(());
-    }
+    };
     if first == QUESTION && operator::scan_question_mark(input, stack)? {
-        return Ok(());
-    }
-    if matches!(first, SLASH | POUND | DOUBLE_QUOTE) {
-        // Literal scanning preceded operator scanning before these callbacks
-        // were combined. A slash falls through only when no regex was accepted.
-        let accepted = literal::scan_literal(input, stack)?;
-        if accepted || first != SLASH {
-            return Ok(());
-        }
-    }
-    if may_start_syntax_lookahead(first) && scan_syntax_lookahead(input, stack, first)? {
         return Ok(());
     }
     if !is_operator_start(first) {
         return Ok(());
     }
     operator::scan(input, stack, first)
-}
-
-fn may_start_syntax_lookahead(first: u32) -> bool {
-    matches!(
-        first,
-        LEFT_ANGLE | LEFT_BRACE | LEFT_PAREN | PERIOD | AT_SIGN
-    ) || first == u32::from(b'a')
-        || first == u32::from(b'e')
-        || first == u32::from(b'i')
-        || first == u32::from(b'n')
-        || first == u32::from(b'u')
 }
 
 fn scan_syntax_lookahead(
@@ -413,13 +453,6 @@ fn starts_dotted_key_path_optional_component(
 
 fn scan_attribute(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     match current(input) {
-        Some(first)
-            if first == u32::from(b'A')
-                && stack.can_shift(terms::qualifiedDeclTypeLookahead)
-                && starts_exact_ascii_identifier(input, b"Any") =>
-        {
-            input.accept_token(terms::qualifiedDeclTypeLookahead)
-        }
         Some(AT_SIGN) => {
             if stack.can_shift(terms::switchCaseAttributeLookahead)
                 && switch_case::starts_attribute(input)
@@ -538,13 +571,6 @@ fn scan_code_item_separator(input: &mut InputStream, stack: &Stack) -> Result<()
     Ok(())
 }
 
-fn scan_layout(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
-    if stack.can_shift(terms::genericRequirementContinuation) {
-        return scan_generic_requirement_continuation(input, stack);
-    }
-    scan_code_item_separator(input, stack)
-}
-
 fn scan_generic_requirement_continuation(
     input: &mut InputStream,
     _stack: &Stack,
@@ -559,14 +585,15 @@ fn scan_generic_requirement_continuation(
     Ok(())
 }
 
-fn scan_pattern_context(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
-    if stack.can_shift(terms::catchPatternLookahead) {
-        return catch::scan(input, stack);
-    }
-    if stack.can_shift(terms::closureSignatureLookahead) {
-        return closure::scan(input, stack);
-    }
-    Ok(())
+fn scan_catch_pattern_context(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
+    catch::scan(input)
+}
+
+fn scan_closure_signature_context(
+    input: &mut InputStream,
+    stack: &Stack,
+) -> Result<(), ParseError> {
+    closure::scan(input, stack)
 }
 
 #[cfg(test)]
