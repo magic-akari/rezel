@@ -61,8 +61,46 @@ pub(super) fn classify_code_item_boundary(
     mut stop_after_line_break: impl FnMut(&InputStream) -> bool,
     mut can_shift: impl FnMut(ShiftRole) -> bool,
 ) -> CodeItemBoundary {
+    let chunk = input.identity_lookahead_chunk();
+    let remaining = u32::from(input.end() - input.position());
+    // Iterator exhaustion is authoritative only when one identity chunk spans
+    // the full remainder. A non-ASCII byte falls back before Unicode decoding.
+    if u32::try_from(chunk.len()) == Ok(remaining) {
+        let mut encountered_non_ascii = false;
+        let boundary = {
+            let ascii = chunk.iter().copied().map_while(|byte| {
+                if byte.is_ascii() {
+                    Some(u32::from(byte))
+                } else {
+                    encountered_non_ascii = true;
+                    None
+                }
+            });
+            classify_code_item_boundary_from(
+                &mut ascii.peekable(),
+                &mut || stop_after_line_break(input),
+                &mut can_shift,
+            )
+        };
+        if !encountered_non_ascii {
+            return boundary;
+        }
+    }
+
     let mut lookahead = input.lookahead().map(CodePoint::as_u32).peekable();
-    let first = match scan_trivia_boundary(&mut lookahead, || stop_after_line_break(input)) {
+    classify_code_item_boundary_from(
+        &mut lookahead,
+        &mut || stop_after_line_break(input),
+        &mut can_shift,
+    )
+}
+
+fn classify_code_item_boundary_from(
+    lookahead: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
+    stop_after_line_break: &mut impl FnMut() -> bool,
+    can_shift: &mut impl FnMut(ShiftRole) -> bool,
+) -> CodeItemBoundary {
+    let first = match scan_trivia_boundary(lookahead, stop_after_line_break) {
         TriviaBoundary::StoppedAtLineBreak
         | TriviaBoundary::Complete {
             has_line_break: false,
@@ -76,14 +114,14 @@ pub(super) fn classify_code_item_boundary(
         }
         Some(POUND)
             if can_shift(ShiftRole::PostfixIfConfig)
-                && starts_postfix_if_config_after_pound(&mut lookahead) =>
+                && starts_postfix_if_config_after_pound(lookahead) =>
         {
             CodeItemBoundary::PostfixIfConfig
         }
         Some(LEFT_BRACE | COLON | COMMA | RIGHT_PAREN | RIGHT_BRACKET) => CodeItemBoundary::None,
         Some(MINUS) if lookahead.peek() == Some(&RIGHT_ANGLE) => CodeItemBoundary::None,
         Some(PERIOD)
-            if starts_member_access_continuation(&mut lookahead)
+            if starts_member_access_continuation(lookahead)
                 && can_shift(ShiftRole::PostfixMember) =>
         {
             CodeItemBoundary::None
@@ -91,7 +129,7 @@ pub(super) fn classify_code_item_boundary(
         Some(first) if is_operator_start(first) => {
             if starts_binary_operator_like_continuation(
                 first,
-                &mut lookahead,
+                lookahead,
                 can_shift(ShiftRole::BinaryOperator),
             ) {
                 CodeItemBoundary::None
@@ -100,7 +138,7 @@ pub(super) fn classify_code_item_boundary(
             }
         }
         Some(first) if is_boundary_identifier_start(first) => {
-            classify_identifier_boundary(first, &mut lookahead, &mut can_shift)
+            classify_identifier_boundary(first, lookahead, can_shift)
         }
         _ => CodeItemBoundary::LineBreak,
     }
