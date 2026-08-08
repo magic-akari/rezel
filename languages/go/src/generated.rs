@@ -4,9 +4,9 @@
 #[repr(C, align(64))]
 #[derive(zerocopy::FromBytes, zerocopy::Immutable)]
 struct GeneratedTables {
-    states: [u32; 3480usize],
-    state_data: [u16; 5592usize],
-    goto: [u16; 2395usize],
+    states: [u32; 3696usize],
+    state_data: [u16; 6445usize],
+    goto: [u16; 2590usize],
     token_states: [rezel_lr::TokenState; 69usize],
     token_accepts: [rezel_lr::TokenAccept; 52usize],
     token_edges: [rezel_lr::TokenEdge; 174usize],
@@ -2116,7 +2116,7 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     top_rules: TOP_RULES,
     max_term: 219u16,
     min_repeat_term: 154u16,
-    token_precedence: 5587usize,
+    token_precedence: 6440usize,
     node_set,
     context: Some(&crate::tokens::TRACK_TOKENS),
     dialects: DIALECTS,

@@ -142,7 +142,7 @@ expr[@isGroup=Expr] {
     expr !index ~bracket "[" type "," type ("," type)* ","? "]"
   } |
   SliceExpr { expr !slice ~bracket "[" expr? ":" expr? (":" expr)? "]" } |
-  TypeAssertion { expr !type "." "(" type ")" } |
+  TypeAssertion { (VariableName | expr) !type "." "(" type ")" } |
   CallExpr { (expr | ParameterizedExpr) !call Arguments } |
   CallExpr { (@extend[@name=make]<identifier, "make"> | @extend[@name=new]<identifier, "new">) !call newArguments } |
   UnaryExp { (ArithOp<"+" | "-"> | LogicOp<"!"> | BitOp<"^"> | DerefOp<"*" ~star | "&"> | "<-") !unary expr } |
@@ -155,7 +155,7 @@ expr[@isGroup=Expr] {
   }
 }
 
-SelectorExpr { expr !dot ~dot "." FieldName }
+SelectorExpr { (VariableName | expr) !dot ~dot "." FieldName }
 
 ParameterizedExpr { (VariableName | SelectorExpr) ~bracket TypeArgs }
 
@@ -184,7 +184,7 @@ statement[@isGroup=Statement] {
     kw<"switch"> (simpleStatement semi)? expr? SwitchBlock
   } |
   TypeSwitchStatement {
-    kw<"switch"> (simpleStatement semi)? (DefName ~shortvar ":=")? expr "." "(" kw<"type"> ")" typeSwitchBlock
+    kw<"switch"> (simpleStatement semi)? (DefName ~shortvar ":=")? (VariableName | expr) "." "(" kw<"type"> ")" typeSwitchBlock
   } |
   ForStatement {
     kw<"for"> (expr | ForClause | RangeClause)? Block

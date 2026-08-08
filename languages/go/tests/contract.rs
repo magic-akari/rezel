@@ -112,3 +112,28 @@ fn qualified_types_follow_the_spec_package_shape() {
             .is_err()
     );
 }
+
+#[test]
+fn variable_name_postfix_prefixes_keep_each_dot_role() {
+    let source = r"package p
+
+var _ = pkg.Value
+var _ = pkg.Func(value)
+
+func inspect(value any) {
+	_ = value.(pkg.Type)
+	switch typed := value.(type) { default: _ = typed }
+}
+";
+    let tree = rezel_lang_go::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let rendered = tree.to_string();
+
+    assert_eq!(rendered.matches("SelectorExpr").count(), 2);
+    assert!(rendered.contains("CallExpr"));
+    assert!(rendered.contains("TypeAssertion"));
+    assert!(rendered.contains("TypeSwitchStatement"));
+    assert!(!rendered.contains('⚠'));
+}
