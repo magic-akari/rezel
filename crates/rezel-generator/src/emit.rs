@@ -319,7 +319,7 @@ fn emit_specializers(
     bindings: &RustBindings,
 ) -> Result<(TokenStream, Vec<TokenStream>), GeneratorError> {
     let mut functions = TokenStream::new();
-    let mut values = Vec::new();
+    let mut emitted = Vec::new();
     for (index, specializer) in grammar.specializers.iter().enumerate() {
         match specializer {
             SpecializerMetadata::Table { term, entries } => {
@@ -343,12 +343,7 @@ fn emit_specializers(
                         }
                     }
                 });
-                values.push(quote! {
-                    rezel_lr::SpecializerSpec {
-                        term: #term,
-                        get: #function,
-                    }
-                });
+                emitted.push((*term, function));
             }
             SpecializerMetadata::External {
                 term,
@@ -370,16 +365,76 @@ fn emit_specializers(
                         })
                     }
                 });
-                values.push(quote! {
-                    rezel_lr::SpecializerSpec {
-                        term: #term,
-                        get: #function,
-                    }
-                });
+                emitted.push((*term, function));
             }
         }
     }
+    let values = if grammar.dialects.is_empty() {
+        combine_specializers(&mut functions, emitted)
+    } else {
+        emitted
+            .into_iter()
+            .map(|(term, function)| specializer_spec(term, &function))
+            .collect()
+    };
     Ok((functions, values))
+}
+
+fn combine_specializers(
+    functions: &mut TokenStream,
+    emitted: Vec<(u16, Ident)>,
+) -> Vec<TokenStream> {
+    let mut groups: Vec<(u16, Vec<Ident>)> = Vec::new();
+    for (term, function) in emitted {
+        if let Some((_, members)) = groups
+            .iter_mut()
+            .find(|(known_term, _)| *known_term == term)
+        {
+            members.push(function);
+        } else {
+            groups.push((term, vec![function]));
+        }
+    }
+
+    groups
+        .into_iter()
+        .enumerate()
+        .map(|(index, (term, members))| {
+            let function = if members.len() == 1 {
+                members[0].clone()
+            } else {
+                let combined =
+                    Ident::new(&format!("specialize_combined_{index}"), Span::call_site());
+                let attempts = members.iter().map(|member| {
+                    quote! {
+                        if let Some(result) = #member(value, stack) {
+                            return Some(result);
+                        }
+                    }
+                });
+                functions.extend(quote! {
+                    fn #combined(
+                        value: &str,
+                        stack: &rezel_lr::Stack,
+                    ) -> Option<rezel_lr::SpecializedToken> {
+                        #(#attempts)*
+                        None
+                    }
+                });
+                combined
+            };
+            specializer_spec(term, &function)
+        })
+        .collect()
+}
+
+fn specializer_spec(term: u16, function: &Ident) -> TokenStream {
+    quote! {
+        rezel_lr::SpecializerSpec {
+            term: #term,
+            get: #function,
+        }
+    }
 }
 
 fn emit_node_set(
@@ -622,6 +677,7 @@ fn is_rust_keyword(name: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{BuildOptions, compile_grammar};
 
     #[test]
     fn rust_2024_keywords_are_escaped_in_generated_identifiers() {
@@ -629,5 +685,43 @@ mod tests {
 
         assert_eq!(rust_identifier("gen", &mut used).to_string(), "_gen");
         assert_eq!(rust_identifier("_gen", &mut used).to_string(), "_gen_1");
+    }
+
+    #[test]
+    fn same_base_specializers_are_combined_in_source_order_without_dialects() {
+        let grammar = compile_grammar(
+            r#"
+@top T { (Contextual | kw<"word"> | Name)+ }
+kw<word> { @specialize[@name={word}]<Name, word> }
+@external specialize { Name } contextual from "./tokens" {
+  Contextual[@name=contextual]
+}
+@tokens { Name { @asciiLetter+ } }
+"#,
+            None,
+            BuildOptions::default(),
+        )
+        .unwrap();
+        let bindings = RustBindings::from_toml_str(
+            r#"
+[[binding]]
+kind = "external-specializer"
+source = "./tokens"
+name = "contextual"
+rust_path = "crate::contextual"
+"#,
+        )
+        .unwrap();
+
+        let source = emit_rust(&grammar, &bindings).unwrap().parser;
+        let external = source.find("crate::contextual(value, stack)").unwrap();
+        let table = source.find("fn specialize_1(").unwrap();
+        let first = source.find("specialize_0(value, stack)").unwrap();
+        let second = source.find("specialize_1(value, stack)").unwrap();
+
+        assert!(external < table);
+        assert!(first < second);
+        assert_eq!(source.matches("SpecializerSpec {").count(), 1);
+        assert!(source.contains("get: specialize_combined_0"));
     }
 }

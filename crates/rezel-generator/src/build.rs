@@ -986,6 +986,18 @@ impl Builder {
 
     fn gather_specializers(&self) -> Vec<SpecializerMetadata> {
         let mut result = Vec::new();
+        for external in &self.external_specializers {
+            result.push(SpecializerMetadata::External {
+                term: self.terms.output_id(
+                    external
+                        .term
+                        .expect("external specializer is resolved during build"),
+                ),
+                binding: external.declaration.id.name.clone(),
+                source: external.declaration.source.clone(),
+                extend: external.declaration.kind == SpecializeKind::Extend,
+            });
+        }
         for (base, entries) in &self.specialized {
             let entries = entries
                 .iter()
@@ -1005,18 +1017,6 @@ impl Builder {
                     entries,
                 });
             }
-        }
-        for external in &self.external_specializers {
-            result.push(SpecializerMetadata::External {
-                term: self.terms.output_id(
-                    external
-                        .term
-                        .expect("external specializer is resolved during build"),
-                ),
-                binding: external.declaration.id.name.clone(),
-                source: external.declaration.source.clone(),
-                extend: external.declaration.kind == SpecializeKind::Extend,
-            });
         }
         result
     }

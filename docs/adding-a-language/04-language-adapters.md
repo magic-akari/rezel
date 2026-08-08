@@ -316,7 +316,11 @@ that raw token for each parser stack. The callback may therefore inspect exact
 stack state without making a token cached for one GLR branch observable in
 another. Keep the callback deterministic for its token text and stack, and
 avoid repeating input scans or other work already performed by the base
-tokenizer.
+tokenizer. When several specializers target the same base term, they run in
+generated order until one returns a term enabled by the active dialect. A
+declined or dialect-disabled result falls through to the next callback. For
+grammars without dialects, the generator may encode the same ordering as one
+static callback chain.
 
 The callback has the same Rust shape for specialization and extension. For
 `@external specialize`, a returned term replaces the scanned base term. For

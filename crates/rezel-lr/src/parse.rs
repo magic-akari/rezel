@@ -651,19 +651,32 @@ impl ParserCore {
             .map_or(0, i32::from)
     }
 
-    pub(crate) fn specializer(&self, term: u16) -> Option<SpecializerSpec> {
+    pub(crate) fn has_specializer(&self, term: u16) -> bool {
         let bit = 1_u64 << (term & 63);
-        if self.specializer_filter & bit == 0 {
-            return None;
-        }
+        self.specializer_filter & bit != 0
+    }
+
+    pub(crate) fn specialize(
+        &self,
+        term: u16,
+        value: &str,
+        stack: &Stack,
+    ) -> Option<SpecializedToken> {
         if let Some(specializer) = self.single_specializer {
-            return (specializer.term == term).then_some(specializer);
+            if specializer.term != term {
+                return None;
+            }
+            let result = (specializer.get)(value, stack)?;
+            return self.dialect.allows(result.term).then_some(result);
         }
         self.language
             .specializers
             .iter()
-            .copied()
-            .find(|specializer| specializer.term == term)
+            .filter(|specializer| specializer.term == term)
+            .find_map(|specializer| {
+                let result = (specializer.get)(value, stack)?;
+                self.dialect.allows(result.term).then_some(result)
+            })
     }
 
     pub(crate) fn get_goto(&self, state: u16, term: u16, loose: bool) -> Option<u16> {
@@ -1436,18 +1449,17 @@ fn specialize_cached_token(
     if token.value != ReservedTerm::Error.raw() {
         let core = stack.core();
         let base_term = token.value;
-        if let Some(specializer) = core.specializer(base_term)
+        if core.has_specializer(base_term)
             && let Some(lexeme) = stream.read_scalar_at_boundaries(token.start, token.end)
-            && let Some(result) = (specializer.get)(&lexeme, stack)
+            && let Some(result) = core.specialize(base_term, &lexeme, stack)
         {
             match result.kind {
-                Specialize::Replace if core.dialect.allows(result.term) => {
+                Specialize::Replace => {
                     token.value = result.term;
                 }
-                Specialize::Extend if core.dialect.allows(result.term) => {
+                Specialize::Extend => {
                     extended = Some(result.term);
                 }
-                Specialize::Replace | Specialize::Extend => {}
             }
         }
     }
@@ -2159,9 +2171,24 @@ mod tests {
         (value == "x" && stack.state() == 0).then(|| SpecializedToken::new(3, Specialize::Replace))
     }
 
-    static STATE_SPECIALIZERS: [SpecializerSpec; 1] = [SpecializerSpec {
-        term: 2,
-        get: specialize_scheduler_token,
+    fn specialize_scheduler_fallback(value: &str, _stack: &Stack) -> Option<SpecializedToken> {
+        (value == "x").then(|| SpecializedToken::new(4, Specialize::Replace))
+    }
+
+    static STATE_SPECIALIZERS: [SpecializerSpec; 2] = [
+        SpecializerSpec {
+            term: 2,
+            get: specialize_scheduler_token,
+        },
+        SpecializerSpec {
+            term: 2,
+            get: specialize_scheduler_fallback,
+        },
+    ];
+    static STATE_DIALECT_TERMS: [u16; 1] = [3];
+    static STATE_DIALECTS: [DialectSpec; 1] = [DialectSpec {
+        name: "state",
+        terms: &STATE_DIALECT_TERMS,
     }];
     static STATE_SPECIALIZER_LANGUAGE: Language = Language {
         states: &SCHEDULER_STATES,
@@ -2170,12 +2197,12 @@ mod tests {
         token_table: &SCHEDULER_TOKEN_TABLE,
         tokenizers: &SCHEDULER_TOKENIZERS,
         top_rules: &SCHEDULER_TOP,
-        max_term: 3,
+        max_term: 4,
         min_repeat_term: 3,
         token_precedence: 0,
         node_set: reduction_chain_node_set,
         context: None,
-        dialects: &[],
+        dialects: &STATE_DIALECTS,
         dynamic_precedences: &[],
         specializers: &STATE_SPECIALIZERS,
         term_names: &[],
@@ -2336,6 +2363,7 @@ mod tests {
     #[test]
     fn cached_base_tokens_are_specialized_for_each_stack() {
         let parser = LRParser::from_language(&STATE_SPECIALIZER_LANGUAGE);
+        let dialect_parser = parser.clone().with_dialect("state").unwrap();
         let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("x").unwrap());
         let lexical: Arc<dyn LexicalInput> = Arc::new(Utf8Input::new(raw));
         let ranges: Arc<[TextRange]> = Arc::from([TextRange::new(0.into(), 1.into())]);
@@ -2347,14 +2375,17 @@ mod tests {
             mask: 0,
             context: 0,
         };
+        let dialect_replacing = Stack::start(Arc::clone(&dialect_parser.core), 0, 0.into());
         let replacing = Stack::start(Arc::clone(&parser.core), 0, 0.into());
-        let retaining = Stack::start(Arc::clone(&parser.core), 1, 0.into());
+        let retaining = Stack::start(Arc::clone(&dialect_parser.core), 1, 0.into());
 
+        let (dialect_replaced, _) = specialize_cached_token(cached, &dialect_replacing, &stream);
         let (replaced, _) = specialize_cached_token(cached, &replacing, &stream);
         let (retained, _) = specialize_cached_token(cached, &retaining, &stream);
 
-        assert_eq!(replaced.value, 3);
-        assert_eq!(retained.value, 2);
+        assert_eq!(dialect_replaced.value, 3);
+        assert_eq!(replaced.value, 4);
+        assert_eq!(retained.value, 4);
         assert_eq!(cached.value, 2);
     }
 

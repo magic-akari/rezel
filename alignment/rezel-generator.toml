@@ -130,7 +130,7 @@ upstream_symbols = [
 	"isLiteralToken",
 ]
 invariant = "Grammar normalization, skip scopes, specialization, token conflicts, parser tables, dialects, node properties, and runtime metadata preserve the pinned generator's observable parse behavior except at documented Rezel-owned boundaries."
-representation = "One Rust builder produces typed metadata for a static Rust backend; warnings are returned as structured diagnostics, external declarations remain symbolic until emission, and goto groups retain the pinned compact ABI with an explicitly selected loose default."
+representation = "One Rust builder produces typed metadata for a static Rust backend; warnings are returned as structured diagnostics, external declarations remain symbolic until emission, external specializers precede generated specialization tables as in the pinned builder, and goto groups retain the pinned compact ABI with an explicitly selected loose default."
 evidence_files = [
 	"crates/rezel-generator/tests/cases.rs",
 	"crates/rezel-generator/tests/parse.rs",
@@ -148,7 +148,7 @@ evidence_files = ["crates/rezel-generator/tests/cases.rs"]
 rust_file = "emit.rs"
 classification = "rezel-owned"
 invariant = "A compiled grammar deterministically emits valid static parser data, thin Rust glue, node metadata, term identifiers, and direct external symbol references."
-representation = "quote and proc-macro2 generate the typed loader and executable Rust glue, syn validates it, prettyplease formats it, and binary table serialization is delegated to the generator-owned native-layout writer."
+representation = "quote and proc-macro2 generate the typed loader and executable Rust glue, syn validates it, prettyplease formats it, and binary table serialization is delegated to the generator-owned native-layout writer; when no dialect can suppress a result, same-base specializers are emitted as one source-ordered static callback chain."
 evidence_files = [
 	"crates/rezel-generator/tests/cases.rs",
 	"tools/codegen/src/main.rs",

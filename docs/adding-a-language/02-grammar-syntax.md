@@ -189,7 +189,10 @@ parse branches.
 
 Use an external specializer when classification needs Rust code rather than a
 finite declarative word set. It must be declared in the grammar and resolved by
-the binding manifest.
+the binding manifest. Multiple generated or external specializers may share a
+base token. They run in declaration order and stop at the first result allowed
+by the active dialect; declining or dialect-disabled results continue to the
+next specializer.
 
 ## Precedence, associativity, and cuts
 
