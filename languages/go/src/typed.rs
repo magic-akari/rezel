@@ -2222,8 +2222,13 @@ impl rezel_common::TypedNode for GoQualifiedType {
 }
 impl GoQualifiedType {
     #[must_use]
-    pub fn qualifiers(&self) -> rezel_common::TypedChildren<GoVariableName> {
-        rezel_common::TypedChildren::new(self.syntax.children())
+    pub fn qualifier(&self) -> Option<GoVariableName> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <GoVariableName as rezel_common::TypedNode>::downcast_from(node).ok()
+            })
+            .nth(0)
     }
     #[must_use]
     pub fn name(&self) -> Option<GoTypeName> {

@@ -91,3 +91,24 @@ var _ = generic[struct{ X int }]
     assert!(rendered.contains("StructType"));
     assert!(!rendered.contains('⚠'));
 }
+
+#[test]
+fn qualified_types_follow_the_spec_package_shape() {
+    let source = "package p\nvar value pkg.Type\nvar _ = pkg.Type{}\n";
+    let tree = rezel_lang_go::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let rendered = tree.to_string();
+
+    assert_eq!(rendered.matches("QualifiedType").count(), 2);
+    assert!(!rendered.contains('⚠'));
+
+    let invalid = "package p\nvar value root.pkg.Type\n";
+    assert!(
+        rezel_lang_go::parser()
+            .with_strict(true)
+            .parse(invalid)
+            .is_err()
+    );
+}

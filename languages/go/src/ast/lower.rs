@@ -962,23 +962,8 @@ impl<'source> Lowerer<'source> {
             "qualified type",
             "QualifiedType",
         )?;
-        let mut qualifiers = qualified_type.qualifiers();
-        let first = required(qualifiers.next(), "qualified type", "qualifier")?;
-        let mut qualifier = self.lower_ident(first.syntax())?;
-        for name in qualifiers {
-            let selected = self.lower_ident(name.syntax())?;
-            let from = self.ast_node_start(qualifier).unwrap_or(node.from());
-            let to = self.ast_node_end(selected).unwrap_or(name.syntax().to());
-            let selector = self.ast.push_node(
-                GoAstKind::SelectorExpr,
-                GoSourceRange::new(Some(from), Some(to)),
-            )?;
-            self.ast
-                .push_node_field(selector, GoAstField::X, Some(qualifier))?;
-            self.ast
-                .push_node_field(selector, GoAstField::Sel, Some(selected))?;
-            qualifier = selector;
-        }
+        let qualifier = required(qualified_type.qualifier(), "qualified type", "qualifier")?;
+        let qualifier = self.lower_ident(qualifier.syntax())?;
         let selected = required(
             qualified_type.name(),
             "qualified type",

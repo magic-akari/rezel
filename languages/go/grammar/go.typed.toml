@@ -799,9 +799,9 @@ name = "GoQualifiedType"
 kind = "QualifiedType"
 
 [[node.field]]
-name = "qualifiers"
+name = "qualifier"
 type = "GoVariableName"
-cardinality = "many"
+cardinality = "one"
 selector = { node = "VariableName" }
 
 [[node.field]]

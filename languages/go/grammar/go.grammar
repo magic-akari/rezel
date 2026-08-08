@@ -31,7 +31,10 @@
 
 TypeName[@dynamicPrecedence=-1] { identifier ~identifier }
 
-typeName { QualifiedType { (VariableName ~dot ".")+ TypeName } | TypeName }
+// The specification's QualifiedIdent has exactly one package qualifier. Keeping
+// additional selector segments here makes the first dot fork against every
+// ordinary selector expression without accepting any additional valid type.
+typeName { QualifiedType { VariableName ~dot "." TypeName } | TypeName }
 
 VariableName { identifier ~identifier }
 
