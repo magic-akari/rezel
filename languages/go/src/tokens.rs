@@ -64,7 +64,7 @@ pub(crate) static INDEX_TYPE: ExternalTokenizer = ExternalTokenizer::new(
 
 pub(crate) static TRACK_TOKENS: ContextTracker =
     ContextTracker::new(start_context, None, None, hash_context)
-        .with_shift_without_input(shift_context);
+        .with_context_only_shift(shift_context);
 
 fn scan_semicolon(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let context = stack.context::<bool>().copied().unwrap_or(false);
@@ -222,11 +222,7 @@ fn start_context() -> ContextValue {
 // Context transitions are fallible at the shared runtime boundary even though
 // this particular transition is total.
 #[allow(clippy::unnecessary_wraps)]
-fn shift_context(
-    context: &ContextValue,
-    term: u16,
-    _stack: &Stack,
-) -> Result<ContextValue, ParseError> {
+fn shift_context(context: &ContextValue, term: u16) -> Result<Option<ContextValue>, ParseError> {
     let previous = context.downcast_ref::<bool>().copied().unwrap_or(false);
     let next = if term == terms::space {
         previous
@@ -234,9 +230,9 @@ fn shift_context(
         is_semicolon_predecessor(term)
     };
     if next == previous {
-        Ok(context.clone())
+        Ok(None)
     } else {
-        Ok(boolean_context(next))
+        Ok(Some(boolean_context(next)))
     }
 }
 
