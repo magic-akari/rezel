@@ -16,6 +16,9 @@ const SLASH: u32 = 47;
 const ASTERISK: u32 = 42;
 const CLOSE_PAREN: u32 = 41;
 const CLOSE_BRACE: u32 = 125;
+const OPEN_BRACKET: u32 = 91;
+const LESS_THAN: u32 = 60;
+const MINUS: u32 = 45;
 
 static BOOLEAN_CONTEXTS: LazyLock<[ContextValue; 2]> =
     LazyLock::new(|| [ContextValue::new(false), ContextValue::new(true)]);
@@ -40,6 +43,25 @@ pub(crate) static SEMICOLON: ExternalTokenizer = ExternalTokenizer::new(
 )
 .with_start(SEMICOLON_START);
 
+const INDEX_TYPE_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
+    .with_ascii(b'[')
+    .with_ascii(b'<')
+    .with_ascii(b'c')
+    .with_ascii(b'f')
+    .with_ascii(b'i')
+    .with_ascii(b'm')
+    .with_ascii(b's');
+
+pub(crate) static INDEX_TYPE: ExternalTokenizer = ExternalTokenizer::new(
+    scan_index_type,
+    TokenizerFlags {
+        contextual: false,
+        fallback: false,
+        extend: true,
+    },
+)
+.with_start(INDEX_TYPE_START);
+
 pub(crate) static TRACK_TOKENS: ContextTracker =
     ContextTracker::new(start_context, None, None, hash_context)
         .with_shift_without_input(shift_context);
@@ -59,6 +81,97 @@ fn scan_semicolon(input: &mut InputStream, stack: &Stack) -> Result<(), ParseErr
         input.accept_token(terms::insertedSemi)?;
     }
     Ok(())
+}
+
+fn scan_index_type(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+    if !stack.can_shift(terms::indexTypeStart) {
+        return Ok(());
+    }
+    let starts = {
+        let mut lookahead = input.lookahead().map(CodePoint::as_u32).peekable();
+        match lookahead.peek().copied() {
+            Some(OPEN_BRACKET) => true,
+            Some(LESS_THAN) => starts_receive_channel_type(&mut lookahead),
+            Some(_) => starts_type_keyword(&mut lookahead),
+            None => false,
+        }
+    };
+    if starts {
+        input.accept_token(terms::indexTypeStart)?;
+    }
+    Ok(())
+}
+
+fn starts_type_keyword(input: &mut std::iter::Peekable<impl Iterator<Item = u32>>) -> bool {
+    match input.peek().copied() {
+        Some(next) if next == u32::from(b'c') => next_word_is(input, b"chan"),
+        Some(next) if next == u32::from(b'f') => next_word_is(input, b"func"),
+        Some(next) if next == u32::from(b'i') => next_word_is(input, b"interface"),
+        Some(next) if next == u32::from(b'm') => next_word_is(input, b"map"),
+        Some(next) if next == u32::from(b's') => next_word_is(input, b"struct"),
+        _ => false,
+    }
+}
+
+fn starts_receive_channel_type(input: &mut std::iter::Peekable<impl Iterator<Item = u32>>) -> bool {
+    if input.next() != Some(LESS_THAN) || input.next() != Some(MINUS) {
+        return false;
+    }
+    skip_go_trivia(input) && next_word_is(input, b"chan")
+}
+
+fn next_word_is(
+    input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
+    expected: &[u8],
+) -> bool {
+    for &byte in expected {
+        if input.next() != Some(u32::from(byte)) {
+            return false;
+        }
+    }
+    input.peek().copied().is_none_or(|next| {
+        let is_ascii_alphanumeric =
+            u8::try_from(next).is_ok_and(|next| next.is_ascii_alphanumeric());
+        next < 128 && next != u32::from(b'_') && !is_ascii_alphanumeric
+    })
+}
+
+fn skip_go_trivia(input: &mut std::iter::Peekable<impl Iterator<Item = u32>>) -> bool {
+    loop {
+        while matches!(
+            input.peek().copied(),
+            Some(SPACE | TAB | NEWLINE | CARRIAGE_RETURN)
+        ) {
+            input.next();
+        }
+        if input.peek() != Some(&SLASH) {
+            return true;
+        }
+        input.next();
+        match input.next() {
+            Some(SLASH) => {
+                for next in input.by_ref() {
+                    if matches!(next, NEWLINE | CARRIAGE_RETURN) {
+                        break;
+                    }
+                }
+            }
+            Some(ASTERISK) => {
+                let mut closed = false;
+                while let Some(next) = input.next() {
+                    if next == ASTERISK && input.peek() == Some(&SLASH) {
+                        input.next();
+                        closed = true;
+                        break;
+                    }
+                }
+                if !closed {
+                    return false;
+                }
+            }
+            _ => return true,
+        }
+    }
 }
 
 fn scan_semicolon_lookahead(input: &InputStream, context: bool) -> bool {

@@ -5,6 +5,12 @@ name = "semicolon"
 rust_path = "crate::tokens::SEMICOLON"
 
 [[binding]]
+kind = "external-tokenizer"
+source = "./tokens"
+name = "indexType"
+rust_path = "crate::tokens::INDEX_TYPE"
+
+[[binding]]
 kind = "context-tracker"
 source = "./tokens"
 name = "trackTokens"

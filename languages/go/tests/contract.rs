@@ -60,3 +60,34 @@ func visit(true bool) {
     assert!(rendered.contains("RangeClause"));
     assert!(!rendered.contains('⚠'));
 }
+
+#[test]
+fn index_type_lookahead_keeps_type_only_arguments_and_receive_indexes_distinct() {
+    let source = r"package p
+
+var _ = values[<-ch]
+var _ = values[mapValue]
+var _ = generic[[16]byte]
+var _ = generic[map[string]int]
+var _ = generic[chan int]
+var _ = generic[<- /* direction */ chan int]
+var _ = generic[func(int) string]
+var _ = generic[interface{ M() }]
+var _ = generic[struct{ X int }]
+";
+    let tree = rezel_lang_go::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let rendered = tree.to_string();
+
+    assert_eq!(rendered.matches("IndexExpr").count(), 9);
+    assert!(rendered.contains("UnaryExp"));
+    assert!(rendered.contains("ArrayType"));
+    assert!(rendered.contains("MapType"));
+    assert!(rendered.contains("ChannelType"));
+    assert!(rendered.contains("FunctionType"));
+    assert!(rendered.contains("InterfaceType"));
+    assert!(rendered.contains("StructType"));
+    assert!(!rendered.contains('⚠'));
+}

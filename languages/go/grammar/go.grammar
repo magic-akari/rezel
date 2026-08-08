@@ -134,7 +134,7 @@ expr[@isGroup=Expr] {
   FunctionLiteral { kw<"func"> signature Block } |
   Conversion[@dynamicPrecedence=-1] { type !convert ~paren "(" expr ","? ")" } |
   SelectorExpr |
-  IndexExpr { expr !index ~bracket "[" (expr | type) ","? "]" } |
+  IndexExpr { expr !index ~bracket "[" (expr | indexTypeStart type) ","? "]" } |
   IndexListExpr {
     expr !index ~bracket "[" type "," type ("," type)* ","? "]"
   } |
@@ -265,6 +265,8 @@ star[@name="*"] { "*" }
 }
 
 @external tokens semicolon from "./tokens" { insertedSemi }
+
+@external tokens indexType from "./tokens" { indexTypeStart }
 
 @context trackTokens from "./tokens"
 
