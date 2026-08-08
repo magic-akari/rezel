@@ -58,6 +58,18 @@ fn parser_exposes_strict_and_recovery_modes() {
 }
 
 #[test]
+fn record_keyword_specialization_is_contextual() {
+    let parser = rezel_lang_java::parser().with_strict(true);
+
+    parser
+        .parse("record Point(int x) {} record Line(int y) {}")
+        .expect("record declarations specialize the contextual keyword");
+    parser
+        .parse("class Names { int record; int record() { int record = 1; return record; } }")
+        .expect("record remains an identifier outside record declarations");
+}
+
+#[test]
 fn malformed_unicode_escapes_are_strict_lexical_errors() {
     for source in [
         "class Sample { // \\u12xz\n}",

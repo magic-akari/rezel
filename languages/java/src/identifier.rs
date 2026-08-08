@@ -49,6 +49,15 @@ fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     input.accept_token(crate::terms::identifier)
 }
 
+pub(crate) fn specialize_record(value: &str, stack: &Stack) -> Option<u16> {
+    if value != "record" {
+        return None;
+    }
+    stack
+        .can_shift(crate::terms::record)
+        .then_some(crate::terms::record)
+}
+
 fn is_java_identifier_start(value: u32) -> bool {
     if value < 0xa0 {
         return matches!(value, 0x24 | 0x41..=0x5a | 0x5f | 0x61..=0x7a);

@@ -1,4 +1,10 @@
 [[binding]]
+kind = "external-specializer"
+source = "./identifier"
+name = "javaRecordKeyword"
+rust_path = "crate::identifier::specialize_record"
+
+[[binding]]
 kind = "external-tokenizer"
 source = "./identifier"
 name = "javaIdentifiers"

@@ -792,7 +792,7 @@ RecordDeclaration[@dynamicPrecedence=1] {
 }
 
 RecordDeclarationCore {
-  ckw<"record"> Definition TypeParameters? RecordHeader SuperInterfaces? RecordBody
+  record Definition TypeParameters? RecordHeader SuperInterfaces? RecordBody
 }
 
 RecordHeader[@dynamicPrecedence=1] {
@@ -1009,6 +1009,10 @@ commaSep1<expr> { expr ("," expr)* }
 commaSepTrailing<expr> { (expr ("," expr?)*)? }
 
 @skip { LineComment | BlockComment | whitespace }
+
+@external specialize { identifier } javaRecordKeyword from "./identifier" {
+  record[@name=record]
+}
 
 @external tokens javaIdentifiers from "./identifier" {
   identifier
