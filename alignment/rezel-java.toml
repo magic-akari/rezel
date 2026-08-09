@@ -34,8 +34,8 @@ representation = "A feature-gated Rust NodePropSource replaces the JavaScript st
 [[scope]]
 rust_file = "identifier.rs"
 classification = "standard-algorithm"
-invariant = "External Java identifier tokenization follows Java 26 Character identifier properties, removes identifier-ignorable code points only when deriving cooked names, and specializes record only where the parser can shift the contextual keyword."
-representation = "Generated Unicode 17 scalar ranges, a Latin-1 equivalent fast path, and a Unicode code-point scanner replace calls into the Java Character API; identity-mapped ASCII identifier runs advance in bulk and fall back at translations and non-ASCII input, while one exact-spelling external specializer consults the current LR stack before classifying record."
+invariant = "Recovering Java identifiers use a permissive scalar candidate range; strict parsing combines unicode-ident XID with Java Character additions, cooked names remove identifier-ignorable code points, and record specializes only where the parser can shift it."
+representation = "The external scanner bulk-advances simple ASCII candidates and admits broad non-ASCII and ignorable ranges without Unicode lookup; a strict token hook applies unicode-ident XID plus compact Java 26 additions before the LR action, while the exact-spelling record specializer consults the current stack."
 evidence_files = [
 	"languages/java/tests/contract.rs",
 	"languages/java/tests/reference/javac.rs",
@@ -131,13 +131,6 @@ classification = "rezel-owned"
 invariant = "Try-with-resources entries expose declaration and expression forms with exact source extents."
 representation = "An ephemeral resource view normalizes delimiter-sensitive typed children before AST projection."
 evidence_files = ["languages/java/tests/lowering.rs"]
-
-[[scope]]
-rust_file = "unicode17.rs"
-classification = "standard-algorithm"
-invariant = "Identifier start, part, and ignorable tables exactly reproduce the Java 26 Character classification over Unicode 17 scalar values."
-representation = "A pinned Java 26 reference program generates checked inclusive scalar ranges for zero-runtime-dependency lookup."
-evidence_files = ["tools/references/javac/java/JdkIdentifierTables.java"]
 
 [[scope]]
 rust_file = "ast/mod.rs"

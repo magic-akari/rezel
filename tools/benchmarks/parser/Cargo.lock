@@ -390,6 +390,7 @@ version = "0.0.0"
 dependencies = [
  "rezel-common",
  "rezel-lr",
+ "unicode-ident",
  "zerocopy",
 ]
 
@@ -399,6 +400,7 @@ version = "0.0.0"
 dependencies = [
  "rezel-common",
  "rezel-lr",
+ "unicode-ident",
  "zerocopy",
 ]
 
@@ -417,6 +419,7 @@ version = "0.0.0"
 dependencies = [
  "rezel-common",
  "rezel-lr",
+ "unicode-ident",
  "zerocopy",
 ]
 
@@ -426,6 +429,7 @@ version = "0.0.0"
 dependencies = [
  "rezel-common",
  "rezel-lr",
+ "unicode-ident",
  "unicode-normalization",
  "unicode_names2",
  "zerocopy",
@@ -447,6 +451,7 @@ version = "0.0.0"
 dependencies = [
  "rezel-common",
  "rezel-lr",
+ "unicode-ident",
  "zerocopy",
 ]
 

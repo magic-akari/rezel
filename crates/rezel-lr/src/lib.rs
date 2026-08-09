@@ -15,7 +15,8 @@ pub mod table;
 
 pub use parse::{
     ContextTracker, ContextValue, Dialect, DialectSpec, DynamicPrecedence, ExternalSpecializer,
-    LRParser, Language, ParseLimits, Specialize, SpecializedToken, SpecializerSpec, TopRule,
+    LRParser, Language, ParseLimits, Specialize, SpecializedToken, SpecializerSpec,
+    StrictTokenValidationError, StrictTokenValidator, TopRule,
 };
 pub use stack::Stack;
 pub use token::{

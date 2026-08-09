@@ -49,7 +49,9 @@ pub fn highlight_spans(tree: &Tree, range: Option<TextRange>, put_span: impl FnM
 fn default_parser() -> &'static LRParser {
     static PARSER: OnceLock<LRParser> = OnceLock::new();
     PARSER.get_or_init(|| {
-        LRParser::from_language(&generated::LANGUAGE).with_create_parse(create_java_parse)
+        LRParser::from_language(&generated::LANGUAGE)
+            .with_strict_token_validators(&identifier::STRICT_TOKEN_VALIDATORS)
+            .with_create_parse(create_java_parse)
     })
 }
 

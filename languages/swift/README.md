@@ -13,6 +13,9 @@ sources and strict `SwiftSyntax` parser cases in the P0 corpus. Focused tests
 define CST ownership for syntax that requires contextual tokenization or
 lookahead. Newlines in trivia and nested comments are recognized as code-item
 boundaries following `SwiftSyntax`'s parsing model.
+Recovering identifiers use the grammar's broad scalar candidates. Strict mode
+validates selected identifier tokens with `unicode-ident` XID plus Swift's
+identifier, dollar-name, and escaped-name additions before LR consumption.
 
 Generated files are checked in. Regenerate them with:
 

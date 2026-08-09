@@ -448,6 +448,52 @@ pub struct SpecializerSpec {
     pub get: fn(&str, &Stack) -> Option<SpecializedToken>,
 }
 
+/// One strict-only validator for the spelling of a base token.
+///
+/// Validation runs after token precedence has selected a parser-visible token
+/// and before an LR action consumes it. Recovering parsers never call the
+/// validator.
+#[derive(Clone, Copy)]
+pub struct StrictTokenValidator {
+    term: u16,
+    validate: fn(&str) -> Result<(), StrictTokenValidationError>,
+}
+
+impl StrictTokenValidator {
+    /// Bind one base token term to a strict spelling validator.
+    #[must_use]
+    pub const fn new(
+        term: u16,
+        validate: fn(&str) -> Result<(), StrictTokenValidationError>,
+    ) -> Self {
+        Self { term, validate }
+    }
+}
+
+impl fmt::Debug for StrictTokenValidator {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("StrictTokenValidator")
+            .field("term", &self.term)
+            .finish_non_exhaustive()
+    }
+}
+
+/// A strict token spelling error at one UTF-8 byte offset in the token.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct StrictTokenValidationError {
+    offset: TextSize,
+    message: &'static str,
+}
+
+impl StrictTokenValidationError {
+    /// Construct a strict token validation error.
+    #[must_use]
+    pub const fn new(offset: TextSize, message: &'static str) -> Self {
+        Self { offset, message }
+    }
+}
+
 impl fmt::Debug for SpecializerSpec {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -599,6 +645,7 @@ pub(crate) struct ParserCore {
     pub(crate) token_ascii_index: Arc<TokenAsciiIndex>,
     pub(crate) local_token_ascii_indices: Arc<[Option<TokenAsciiIndex>]>,
     tokenizer_start_index: Arc<TokenizerStartIndex>,
+    strict_token_validators: &'static [StrictTokenValidator],
 }
 
 impl fmt::Debug for ParserCore {
@@ -677,6 +724,16 @@ impl ParserCore {
                 let result = (specializer.get)(value, stack)?;
                 self.dialect.allows(result.term).then_some(result)
             })
+    }
+
+    fn strict_token_validators(
+        &self,
+        term: u16,
+    ) -> impl Iterator<Item = StrictTokenValidator> + '_ {
+        self.strict_token_validators
+            .iter()
+            .copied()
+            .filter(move |validator| validator.term == term)
     }
 
     pub(crate) fn get_goto(&self, state: u16, term: u16, loose: bool) -> Option<u16> {
@@ -867,6 +924,7 @@ impl LRParser {
             token_ascii_index,
             local_token_ascii_indices,
             tokenizer_start_index,
+            strict_token_validators: &[],
         };
         Ok(Self {
             core: Arc::new(core),
@@ -923,6 +981,16 @@ impl LRParser {
     #[must_use]
     pub fn is_strict(&self) -> bool {
         self.core.top.strict
+    }
+
+    /// Return a parser with strict-only validators for base token spellings.
+    ///
+    /// Each validator runs only when its token actually contributes a parser
+    /// action. Validators are selected by the base term, even when a
+    /// specializer replaces it with a keyword or another contextual term.
+    #[must_use]
+    pub fn with_strict_token_validators(self, validators: &'static [StrictTokenValidator]) -> Self {
+        self.with_core(|core| core.strict_token_validators = validators)
     }
 
     /// Return a parser using one named `@top`.
@@ -1375,6 +1443,9 @@ impl TokenCache {
                     add_actions(stack, extended, token.end, &mut self.actions);
                 }
                 add_actions(stack, token.value, token.end, &mut self.actions);
+                if self.actions.len() > before && core.top.strict {
+                    validate_strict_token(core, self.tokens[index], stream)?;
+                }
                 if !flags.extend {
                     main = Some(MainToken {
                         start: token.start,
@@ -1438,6 +1509,36 @@ fn update_cached_token(
         mask,
         context,
     })
+}
+
+fn validate_strict_token(
+    core: &ParserCore,
+    token: CachedToken,
+    stream: &InputStream,
+) -> Result<(), ParseError> {
+    let mut validators = core.strict_token_validators(token.value).peekable();
+    if validators.peek().is_none() {
+        return Ok(());
+    }
+    let spelling = stream
+        .read_scalar_at_boundaries(token.start, token.end)
+        .ok_or_else(|| {
+            ParseError::new(
+                ParseErrorKind::Input,
+                Some(token.start),
+                "strict token boundaries do not select scalar input",
+            )
+        })?;
+    for validator in validators {
+        if let Err(error) = (validator.validate)(&spelling) {
+            return Err(ParseError::new(
+                ParseErrorKind::Syntax,
+                token.start.checked_add(error.offset),
+                error.message,
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn specialize_cached_token(
@@ -2175,6 +2276,19 @@ mod tests {
         (value == "x").then(|| SpecializedToken::new(4, Specialize::Replace))
     }
 
+    fn reject_scheduler_x(value: &str) -> Result<(), StrictTokenValidationError> {
+        if value == "x" {
+            return Err(StrictTokenValidationError::new(
+                TextSize::from(0),
+                "strict token rejected x",
+            ));
+        }
+        Ok(())
+    }
+
+    static SCHEDULER_STRICT_VALIDATORS: [StrictTokenValidator; 1] =
+        [StrictTokenValidator::new(2, reject_scheduler_x)];
+
     static STATE_SPECIALIZERS: [SpecializerSpec; 2] = [
         SpecializerSpec {
             term: 2,
@@ -2387,6 +2501,24 @@ mod tests {
         assert_eq!(replaced.value, 4);
         assert_eq!(retained.value, 4);
         assert_eq!(cached.value, 2);
+    }
+
+    #[test]
+    fn strict_token_validation_runs_only_for_strict_parsers() {
+        let parser = LRParser::from_language(&SCHEDULER_LANGUAGE)
+            .with_strict_token_validators(&SCHEDULER_STRICT_VALIDATORS);
+
+        parser
+            .parse("x")
+            .expect("the recovering parser skips strict token validation");
+        let error = parser
+            .with_strict(true)
+            .parse("x")
+            .expect_err("the strict parser validates the selected base token");
+
+        assert_eq!(error.kind(), ParseErrorKind::Syntax);
+        assert_eq!(error.position(), Some(TextSize::from(0)));
+        assert_eq!(error.message(), "strict token rejected x");
     }
 
     #[test]

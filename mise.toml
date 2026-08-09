@@ -81,30 +81,6 @@ run = "cargo run --locked --package rezel-codegen -- fixtures --check"
 description = "Regenerate checked-in rezel-generator test fixtures"
 run = "cargo run --locked --package rezel-codegen -- fixtures --update"
 
-[tasks."codegen:java-identifiers"]
-description = "Verify Java identifier tables"
-run = "java tools/references/javac/java/JdkIdentifierTables.java --check languages/java/src/unicode17.rs"
-
-[tasks."codegen:java-identifiers:update"]
-description = "Regenerate Java identifier tables"
-run = "java tools/references/javac/java/JdkIdentifierTables.java --write languages/java/src/unicode17.rs"
-
-[tasks."codegen:kotlin-identifiers"]
-description = "Verify Kotlin 2.4.10 identifier tables"
-run = 'kotlinc -classpath "$(mise where kotlin)/kotlinc/lib/kotlin-compiler.jar:$(mise where kotlin)/kotlinc/lib/annotations-13.0.jar" -script tools/references/kotlin/identifier_tables.main.kts -- --check languages/kotlin/src/identifier_2_4_10.rs'
-
-[tasks."codegen:kotlin-identifiers:update"]
-description = "Regenerate Kotlin 2.4.10 identifier tables"
-run = 'kotlinc -classpath "$(mise where kotlin)/kotlinc/lib/kotlin-compiler.jar:$(mise where kotlin)/kotlinc/lib/annotations-13.0.jar" -script tools/references/kotlin/identifier_tables.main.kts -- --write languages/kotlin/src/identifier_2_4_10.rs'
-
-[tasks."codegen:python-unicode"]
-description = "Verify Python Unicode 16 identifier tables"
-run = "python tools/references/cpython/unicode_tables.py --check languages/python/src/unicode16.rs"
-
-[tasks."codegen:python-unicode:update"]
-description = "Regenerate Python Unicode 16 identifier tables"
-run = "python tools/references/cpython/unicode_tables.py --write languages/python/src/unicode16.rs"
-
 [tasks."codegen:python-unicode-names"]
 description = "Verify Python Unicode 16 formal name aliases"
 run = "python tools/references/cpython/unicode_names.py --check languages/python/src/unicode16_names.rs"
@@ -303,9 +279,6 @@ depends = [
 	"codegen:rezel:rust",
 	"codegen:rezel:swift",
 	"codegen:rezel:fixtures",
-	"codegen:java-identifiers",
-	"codegen:kotlin-identifiers",
-	"codegen:python-unicode",
 	"codegen:python-unicode-names",
 	"codegen:python-typed",
 	"codegen:python-ast",

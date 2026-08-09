@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 #![doc = include_str!("../README.md")]
 
+mod identifier;
 mod mix;
 mod parse;
 mod prop;
@@ -9,6 +10,7 @@ mod typed;
 
 pub use text_size::{TextRange, TextSize};
 
+pub use identifier::first_invalid_identifier_offset;
 pub use mix::{MixedParseSpec, NestedParse, Overlay, OverlayMatch, parse_mixed};
 pub use parse::{
     CodePoint, Input, InputCharacter, InputChunk, LexicalInput, ParseError, ParseErrorKind,

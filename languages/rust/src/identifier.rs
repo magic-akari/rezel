@@ -1,5 +1,8 @@
-use rezel_common::{CodePoint, ParseError};
-use rezel_lr::{ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack, TokenizerFlags};
+use rezel_common::{CodePoint, ParseError, first_invalid_identifier_offset};
+use rezel_lr::{
+    ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack, StrictTokenValidationError,
+    StrictTokenValidator, TokenizerFlags,
+};
 use std::iter::Peekable;
 
 use crate::{input::is_whitespace, terms};
@@ -12,11 +15,10 @@ const DOUBLE_QUOTE: u32 = b'"' as u32;
 const LOWER_R: u32 = b'r' as u32;
 const SLASH: u32 = b'/' as u32;
 const STAR: u32 = b'*' as u32;
-const UNDERSCORE: u32 = b'_' as u32;
 const MACRO_RULES: &str = "macro_rules";
 
-/// Unicode version used by Rust 1.95 identifiers.
-pub(crate) const UNICODE_VERSION: &str = "17.0.0";
+/// Unicode version supplied by `unicode-ident`.
+pub(crate) const UNICODE_VERSION: (u8, u8, u8) = unicode_ident::UNICODE_VERSION;
 
 const IDENTIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
     .with_ascii(b'_')
@@ -44,6 +46,54 @@ pub(crate) static LIFETIME_TOKENIZER: ExternalTokenizer =
 pub(crate) static METAVARIABLE_TOKENIZER: ExternalTokenizer =
     ExternalTokenizer::new(scan_metavariable, FLAGS).with_start(METAVARIABLE_START);
 
+pub(crate) static STRICT_TOKEN_VALIDATORS: [StrictTokenValidator; 4] = [
+    StrictTokenValidator::new(terms::tokenIdentifier, validate_identifier),
+    StrictTokenValidator::new(terms::identifier, validate_identifier),
+    StrictTokenValidator::new(terms::quoteIdentifier, validate_lifetime),
+    StrictTokenValidator::new(terms::Metavariable, validate_metavariable),
+];
+
+fn validate_identifier(spelling: &str) -> Result<(), StrictTokenValidationError> {
+    let spelling = if let Some(raw) = spelling.strip_prefix("r#") {
+        if is_reserved_raw_name(raw) {
+            return Err(validation_error(0));
+        }
+        raw
+    } else {
+        spelling
+    };
+    validate_xid(spelling)
+}
+
+fn validate_lifetime(spelling: &str) -> Result<(), StrictTokenValidationError> {
+    let Some(spelling) = spelling.strip_prefix('\'') else {
+        return Err(validation_error(0));
+    };
+    validate_identifier(spelling)
+}
+
+fn validate_metavariable(spelling: &str) -> Result<(), StrictTokenValidationError> {
+    let Some(spelling) = spelling.strip_prefix('$') else {
+        return Err(validation_error(0));
+    };
+    validate_xid(spelling)
+}
+
+fn validate_xid(spelling: &str) -> Result<(), StrictTokenValidationError> {
+    match first_invalid_identifier_offset(
+        spelling,
+        |character| character == '_' || unicode_ident::is_xid_start(character),
+        unicode_ident::is_xid_continue,
+    ) {
+        Some(offset) => Err(validation_error(offset)),
+        None => Ok(()),
+    }
+}
+
+fn validation_error(offset: impl Into<rezel_common::TextSize>) -> StrictTokenValidationError {
+    StrictTokenValidationError::new(offset.into(), "invalid Rust identifier")
+}
+
 fn scan_macro_rules(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     if !scan_macro_rules_name(input) {
         return Ok(());
@@ -67,7 +117,8 @@ fn scan_macro_rules_name(input: &mut InputStream) -> bool {
         matched += 1;
         true
     });
-    matched == expected.len() && current(input).is_none_or(|value| !is_xid_continue(value))
+    matched == expected.len()
+        && current(input).is_none_or(|value| !is_identifier_candidate_continue(value))
 }
 
 fn scan_token_identifier(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
@@ -137,7 +188,7 @@ fn scan_untracked_identifier_body(input: &mut InputStream) -> bool {
     let Some(first) = current(input) else {
         return false;
     };
-    if first != UNDERSCORE && !is_xid_start(first) {
+    if !is_identifier_candidate_start(first) {
         return false;
     }
 
@@ -146,7 +197,7 @@ fn scan_untracked_identifier_body(input: &mut InputStream) -> bool {
 }
 
 fn scan_filtered_untracked_identifier_body(input: &mut InputStream, first: u32) -> bool {
-    if first >= 0x80 && !is_xid_start(first) {
+    if !is_identifier_candidate_start(first) {
         return false;
     }
 
@@ -162,7 +213,7 @@ fn scan_valid_untracked_identifier_body(input: &mut InputStream, first: u32) {
         advance_untracked_ascii_identifier(input);
     }
     while let Some(value) = current(input) {
-        if value < 0x80 || !is_xid_continue(value) {
+        if value < 0x80 || !is_identifier_candidate_continue(value) {
             break;
         }
         input.advance(1);
@@ -171,7 +222,7 @@ fn scan_valid_untracked_identifier_body(input: &mut InputStream, first: u32) {
 }
 
 fn advance_untracked_ascii_identifier(input: &mut InputStream) -> usize {
-    input.advance_ascii_while(|byte| is_xid_continue(u32::from(byte)))
+    input.advance_ascii_while(|byte| is_identifier_candidate_continue(u32::from(byte)))
 }
 
 fn scan_raw_identifier_body(input: &mut InputStream) -> Option<bool> {
@@ -269,7 +320,7 @@ where
         };
         first = raw_first;
     }
-    if first != UNDERSCORE && !is_xid_start(first) {
+    if !is_identifier_candidate_start(first) {
         return false;
     }
 
@@ -277,7 +328,11 @@ where
         return !consume_reserved_raw_name(first, tokens);
     }
 
-    while tokens.peek().copied().is_some_and(is_xid_continue) {
+    while tokens
+        .peek()
+        .copied()
+        .is_some_and(is_identifier_candidate_continue)
+    {
         tokens.next();
     }
     tokens
@@ -293,7 +348,11 @@ where
     let mut spelling = [0_u8; 5];
     let mut length = 0;
     let mut possible = push_reserved_raw_name_byte(&mut spelling, &mut length, first);
-    while tokens.peek().copied().is_some_and(is_xid_continue) {
+    while tokens
+        .peek()
+        .copied()
+        .is_some_and(is_identifier_candidate_continue)
+    {
         let value = tokens.next().expect("peeked identifier continuation");
         if possible {
             possible = push_reserved_raw_name_byte(&mut spelling, &mut length, value);
@@ -326,20 +385,12 @@ fn is_reserved_prefix_delimiter(value: u32) -> bool {
     matches!(value, HASH | QUOTE | DOUBLE_QUOTE)
 }
 
-fn is_xid_start(value: u32) -> bool {
-    if value < 0x80 {
-        let value = u8::try_from(value).expect("ASCII code points fit in u8");
-        return value.is_ascii_alphabetic();
-    }
-    char::from_u32(value).is_some_and(unicode_ident::is_xid_start)
+const fn is_identifier_candidate_start(value: u32) -> bool {
+    matches!(value, 0x41..=0x5a | 0x5f | 0x61..=0x7a | 0xa1..=0x0010_ffff) && !is_whitespace(value)
 }
 
-fn is_xid_continue(value: u32) -> bool {
-    if value < 0x80 {
-        let value = u8::try_from(value).expect("ASCII code points fit in u8");
-        return value.is_ascii_alphanumeric() || value == b'_';
-    }
-    char::from_u32(value).is_some_and(unicode_ident::is_xid_continue)
+const fn is_identifier_candidate_continue(value: u32) -> bool {
+    matches!(value, 0x30..=0x39) || is_identifier_candidate_start(value)
 }
 
 fn current(input: &InputStream) -> Option<u32> {
@@ -356,25 +407,12 @@ mod tests {
 
     #[test]
     fn identifier_profile_matches_rust_1_95() {
-        assert_eq!(UNICODE_VERSION, "17.0.0");
-        assert_eq!(unicode_ident::UNICODE_VERSION, (17, 0, 0));
-        assert!(is_xid_start(u32::from('東')));
-        assert!(is_xid_start(0x088f));
-        assert!(is_xid_continue(u32::from('9')));
-        assert!(!is_xid_start(u32::from('_')));
-        assert!(!is_xid_continue(u32::from('😀')));
-    }
-
-    #[test]
-    fn ascii_fast_path_matches_unicode_ident_across_the_byte_range() {
-        for value in 0..=u32::from(u8::MAX) {
-            let character = char::from_u32(value).expect("byte values are Unicode scalars");
-            assert_eq!(is_xid_start(value), unicode_ident::is_xid_start(character));
-            assert_eq!(
-                is_xid_continue(value),
-                unicode_ident::is_xid_continue(character)
-            );
-        }
+        assert_eq!(UNICODE_VERSION, unicode_ident::UNICODE_VERSION);
+        assert!(validate_identifier("東").is_ok());
+        assert!(validate_identifier("\u{088f}").is_ok());
+        assert!(validate_identifier("name9").is_ok());
+        assert!(validate_identifier("_").is_ok());
+        assert!(validate_identifier("name😀").is_err());
     }
 
     #[test]
@@ -398,6 +436,36 @@ mod tests {
                 reserved
             );
         }
+    }
+
+    #[test]
+    fn strict_validation_handles_wrapped_identifier_forms() {
+        for valid in ["name", "r#gen", "'λ2", "$value"] {
+            let result = if valid.starts_with('\'') {
+                validate_lifetime(valid)
+            } else if valid.starts_with('$') {
+                validate_metavariable(valid)
+            } else {
+                validate_identifier(valid)
+            };
+            assert!(result.is_ok(), "{valid:?}");
+        }
+        for invalid in ["r#self", "name😀"] {
+            assert!(validate_identifier(invalid).is_err(), "{invalid:?}");
+        }
+    }
+
+    #[test]
+    fn parser_applies_validation_only_in_strict_mode() {
+        let source = "fn main() { let name😀 = 0; }";
+        crate::parser()
+            .parse(source)
+            .expect("recovering Rust accepts the broad identifier candidate");
+        let error = crate::parser()
+            .with_strict(true)
+            .parse(source)
+            .expect_err("strict Rust validates the selected identifier token");
+        assert_eq!(error.message(), "invalid Rust identifier");
     }
 
     #[test]

@@ -3,9 +3,10 @@
 Python 3.14 parser, typed syntax, and owned AST for Rezel.
 
 The grammar is derived from a pinned Lezer grammar and updated to the Python
-3.14 language contract. Identifier data, strict acceptance, and the owned AST
-are calibrated against `CPython` 3.14.5; focused references and a standard-library
-runner verify those layers.
+3.14 language contract. Strict acceptance and the owned AST are calibrated
+against `CPython` 3.14.5; focused references and a standard-library runner
+verify those layers. Recovering identifiers use broad candidates, while strict
+parsing uses the XID profile supplied by `unicode-ident`.
 
 ## Parsing
 
@@ -28,10 +29,11 @@ assert_eq!(tree.to_string(), strict_tree.to_string());
 # }
 ```
 
-External tokenizers implement indentation, newline, string, and identifier
-behavior with an immutable indentation context. Parsing accepts UTF-8 Rust
-strings and reports raw UTF-8 byte offsets. It does not decode byte streams or
-execute source-encoding cookies.
+External tokenizers implement indentation, newline, string, and permissive
+identifier behavior with an immutable indentation context. Strict identifier
+validation runs on the selected base token before its LR action. Parsing
+accepts UTF-8 Rust strings and reports raw UTF-8 byte offsets. It does not
+decode byte streams or execute source-encoding cookies.
 
 ## Typed CST
 

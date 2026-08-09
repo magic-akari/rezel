@@ -14,6 +14,7 @@ pub use rezel_highlight::HighlightSpan;
 mod generated;
 pub mod ast;
 mod highlighting;
+mod identifier;
 mod syntax;
 mod tokens;
 #[rustfmt::skip]
@@ -42,5 +43,8 @@ pub fn highlight_spans(tree: &Tree, range: Option<TextRange>, put_span: impl FnM
 
 fn default_parser() -> &'static LRParser {
     static PARSER: OnceLock<LRParser> = OnceLock::new();
-    PARSER.get_or_init(|| LRParser::from_language(&generated::LANGUAGE))
+    PARSER.get_or_init(|| {
+        LRParser::from_language(&generated::LANGUAGE)
+            .with_strict_token_validators(&identifier::STRICT_TOKEN_VALIDATORS)
+    })
 }

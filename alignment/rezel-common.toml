@@ -27,6 +27,12 @@ invariant = "The crate root exposes the supported common syntax-tree API as one 
 representation = "Rust crate and module packaging is Rezel-owned; provenance for the re-exported API is recorded against the files that define it."
 
 [[scope]]
+rust_file = "identifier.rs"
+classification = "rezel-owned"
+invariant = "Language-owned identifier policies can report the first invalid Unicode scalar at its exact UTF-8 byte offset without sharing a language profile."
+representation = "A generic linear spelling walk accepts caller-supplied start and continuation predicates; language crates retain every Unicode and syntax decision."
+
+[[scope]]
 rust_file = "prop.rs"
 classification = "adapted"
 upstream_file = "src/tree.ts"

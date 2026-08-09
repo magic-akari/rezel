@@ -46,8 +46,6 @@ const STAR = 42;
 const LEFT_BRACKET = 91;
 const LINE_FEED = 10;
 const BYTE_ORDER_MARK = 0xfeff;
-const XID_START = /^\p{XID_Start}$/u;
-const XID_CONTINUE = /^\p{XID_Continue}$/u;
 const MACRO_RULES = "macro_rules";
 const RESERVED_RAW_NAMES = new Set(["_", "crate", "self", "Self", "super"]);
 
@@ -352,7 +350,7 @@ function nextLookaheadTokenIsIdentifier(lookahead: Lookahead): boolean {
 		advanceLookahead(lookahead);
 		first = advanceLookahead(lookahead);
 	}
-	if (first === null || (first !== UNDERSCORE && !isXidStart(first))) {
+	if (first === null || !isIdentifierCandidateStart(first)) {
 		return false;
 	}
 
@@ -361,7 +359,7 @@ function nextLookaheadTokenIsIdentifier(lookahead: Lookahead): boolean {
 		spelling += String.fromCodePoint(first);
 	}
 	let character = peekLookahead(lookahead);
-	while (character !== null && isXidContinue(character.value)) {
+	while (character !== null && isIdentifierCandidateContinue(character.value)) {
 		advanceLookahead(lookahead);
 		if (spelling !== null) {
 			spelling = character.value > 0x7f ? null : spelling + String.fromCodePoint(character.value);
@@ -400,7 +398,7 @@ function scanLifetime(input: InputStream, term: number): void {
 
 function scanIdentifierBody(input: InputStream, captureAscii: boolean): string | null | undefined {
 	let character = codePoint(input.peek(0), input.peek(1));
-	if (character === null || (character.value !== UNDERSCORE && !isXidStart(character.value))) {
+	if (character === null || !isIdentifierCandidateStart(character.value)) {
 		return undefined;
 	}
 
@@ -415,7 +413,7 @@ function scanIdentifierBody(input: InputStream, captureAscii: boolean): string |
 		}
 		input.advance(character.width);
 		character = codePoint(input.peek(0), input.peek(1));
-		if (character === null || !isXidContinue(character.value)) {
+		if (character === null || !isIdentifierCandidateContinue(character.value)) {
 			return spelling;
 		}
 	}
@@ -545,12 +543,18 @@ function codePoint(first: number, second: number): CodePoint | null {
 	};
 }
 
-function isXidStart(character: number): boolean {
-	return XID_START.test(String.fromCodePoint(character));
+function isIdentifierCandidateStart(character: number): boolean {
+	return (
+		((character >= 0x41 && character <= 0x5a) ||
+			character === UNDERSCORE ||
+			(character >= 0x61 && character <= 0x7a) ||
+			(character >= 0xa1 && character <= 0x10ffff)) &&
+		!isWhitespace(character)
+	);
 }
 
-function isXidContinue(character: number): boolean {
-	return XID_CONTINUE.test(String.fromCodePoint(character));
+function isIdentifierCandidateContinue(character: number): boolean {
+	return isNumber(character) || isIdentifierCandidateStart(character);
 }
 
 function isReservedPrefixDelimiter(character: number): boolean {

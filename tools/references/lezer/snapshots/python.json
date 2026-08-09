@@ -4,10 +4,6 @@
 		"grammar": {
 			"path": "languages/python/src/python.grammar",
 			"sha256": "49fd00bc296ffdbefc19367347ef03e4060852ca6fb5699d090a8dc678f1e120"
-		},
-		"unicode": {
-			"path": "languages/python/src/unicode16.rs",
-			"sha256": "af1ff780d38321531f22c574fc4388804fad4da6dc52b8a4ecf22aa669236294"
 		}
 	},
 	"coordinates": "raw-utf8-bytes",

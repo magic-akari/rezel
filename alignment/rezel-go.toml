@@ -41,6 +41,17 @@ invariant = "Go syntax nodes project the pinned language package's abstract synt
 representation = "A feature-gated Rust NodePropSource replaces the JavaScript styleTags object; parsing without the feature binds an inert property source."
 
 [[scope]]
+rust_file = "identifier.rs"
+classification = "standard-algorithm"
+invariant = "Recovering Go identifiers use a permissive scalar candidate range, while strict parsing applies the Unicode XID profile supplied by unicode-ident plus Go's underscore rule."
+representation = "The maintained grammar admits one simple non-ASCII range without Unicode lookup; a strict token hook validates only the selected base token before its LR action."
+evidence_files = [
+	"languages/go/tests/contract.rs",
+	"languages/go/tests/reference/go.rs",
+	"languages/go/tests/reference/lezer.rs",
+]
+
+[[scope]]
 rust_file = "lib.rs"
 classification = "rezel-owned"
 invariant = "The Go facade cheaply clones immutable generated language data and exposes typed syntax, owned AST lowering, and optional syntactic highlighting."

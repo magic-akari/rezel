@@ -24,6 +24,7 @@ highlight = ["dep:rezel-highlight"]
 rezel-common.workspace = true
 rezel-highlight = { workspace = true, optional = true }
 rezel-lr.workspace = true
+unicode-ident.workspace = true
 unicode-normalization.workspace = true
 unicode_names2.workspace = true
 zerocopy.workspace = true

@@ -364,6 +364,7 @@ pub const get: u16 = 474u16;
 pub const getterIfConfigDeclaration: u16 = 492u16;
 pub const guard: u16 = 534u16;
 pub const higherThan: u16 = 72u16;
+pub const identifier: u16 = 792u16;
 pub const _if: u16 = 253u16;
 pub const implicitMemberDeclReferenceExpression: u16 = 586u16;
 pub const import: u16 = 434u16;

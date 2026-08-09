@@ -28,6 +28,10 @@ assert_eq!(tree.to_string(), strict_tree.to_string());
 
 All source ranges are original UTF-8 byte offsets. Parser clones share the
 immutable generated language and native-endian tables.
+Recovering identifiers use a broad scalar candidate range; strict parsing
+validates the selected base token with the `unicode-ident` XID profile before
+its LR action. Validation remains keyed to the base identifier even when the
+parser-visible token is a specialized keyword.
 
 ## Typed CST
 

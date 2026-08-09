@@ -1441,7 +1441,7 @@ EnumModifier[@name=Modifier] {
 
   ShebangLine { "#!" ![\n\r]* }
 
-  identifier {
+  identifier[@export] {
     $[A-Z_a-z\u{a1}-\u{10ffff}] $[0-9A-Z_a-z\u{a1}-\u{10ffff}]* |
     "`" ![`\n\r]+ "`"
   }

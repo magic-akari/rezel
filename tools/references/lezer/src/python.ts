@@ -34,21 +34,18 @@ const repository = join(toolDirectory, "..", "..", "..");
 const casesPath = join(toolDirectory, "cases", "python.json");
 const snapshotPath = join(toolDirectory, "snapshots", "python.json");
 const grammarPath = join(repository, "languages", "python", "src", "python.grammar");
-const unicodePath = join(repository, "languages", "python", "src", "unicode16.rs");
 const grammar = readFileSync(grammarPath, "utf8");
-const unicode = readFileSync(unicodePath, "utf8");
 const cases = JSON.parse(readFileSync(casesPath, "utf8")) as CaseManifest;
 
 assert.equal(cases.schema, CASE_SCHEMA);
 const warnings: string[] = [];
-const parser = buildPythonParser({ grammar, grammarPath, identifierTables: unicode, warnings });
+const parser = buildPythonParser({ grammar, grammarPath, warnings });
 assert.deepEqual(warnings, []);
 
 const snapshot = {
 	schema: SNAPSHOT_SCHEMA,
 	reference: {
 		grammar: identity("languages/python/src/python.grammar", grammar),
-		unicode: identity("languages/python/src/unicode16.rs", unicode),
 	},
 	coordinates: "raw-utf8-bytes",
 	strict: cases.strict.map((testCase) => {

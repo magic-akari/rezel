@@ -72,7 +72,8 @@ language coverage.
 
 `KotlinFile` is the default entry point. The default parser recovers from syntax
 errors. Strict mode rejects parser errors and additionally validates broad DFA
-identifier tokens against the generated Kotlin 2.4.10 Unicode tables.
+identifier tokens against the `unicode-ident` XID profile before an LR action
+consumes them. Escaped identifiers retain their Kotlin-specific rules.
 
 ```rust
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -87,9 +88,10 @@ assert_eq!(tree.to_string(), strict_tree.to_string());
 ```
 
 All ranges are original UTF-8 byte offsets. Ordinary and escaped identifiers
-are emitted by the generated lexer. Strict validation narrows its deliberately
-broad non-ASCII class to the pinned K1 identifier profile without rescanning
-identifiers in the parser hot path.
+are emitted by the generated lexer. Recovering parsing keeps its deliberately
+broad non-ASCII class; strict parsing validates each selected base token before
+its LR action and does not traverse the completed CST. Validation remains keyed
+to the base identifier when specialization changes the parser-visible term.
 
 Nested block comments and ordinary line or multiline strings use generated
 local token groups. Multi-dollar strings use a separate external mode because

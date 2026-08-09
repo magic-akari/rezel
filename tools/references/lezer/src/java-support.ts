@@ -7,7 +7,6 @@ import { ExternalTokenizer } from "@lezer/lr";
 interface BuildJavaParserOptions {
 	grammar: string;
 	grammarPath: string;
-	identifierTables: string;
 	warnings: string[];
 }
 
@@ -21,11 +20,7 @@ interface CodePoint {
 	width: number;
 }
 
-type ScalarRange = readonly [number, number];
-
 export function buildJavaParser(options: BuildJavaParserOptions): ReturnType<typeof buildParser> {
-	const identifierStart = parseRanges(options.identifierTables, "JAVA_IDENTIFIER_START");
-	const identifierPart = parseRanges(options.identifierTables, "JAVA_IDENTIFIER_PART");
 	const emptyProperties: NodePropSource = () => null;
 
 	return buildParser(options.grammar, {
@@ -37,7 +32,7 @@ export function buildJavaParser(options: BuildJavaParserOptions): ReturnType<typ
 		externalTokenizer(name, terms) {
 			assert.equal(name, "TOKENIZER");
 			assert.equal(typeof terms.identifier, "number");
-			return javaIdentifiers(terms.identifier, identifierStart, identifierPart);
+			return javaIdentifiers(terms.identifier);
 		},
 		externalSpecializer(name, terms) {
 			assert.equal(name, "specialize_record");
@@ -120,20 +115,16 @@ export function translateJavaInput(source: string): TranslatedInput {
 	};
 }
 
-function javaIdentifiers(
-	term: number,
-	identifierStart: ScalarRange[],
-	identifierPart: ScalarRange[],
-): ExternalTokenizer {
+function javaIdentifiers(term: number): ExternalTokenizer {
 	return new ExternalTokenizer((input) => {
 		let character = codePoint(input.peek(0), input.peek(1));
-		if (character === null || !inRanges(identifierStart, character.value)) {
+		if (character === null || !isIdentifierCandidateStart(character.value)) {
 			return;
 		}
 		input.advance(character.width);
 		for (;;) {
 			character = codePoint(input.peek(0), input.peek(1));
-			if (character === null || !inRanges(identifierPart, character.value)) {
+			if (character === null || !isIdentifierCandidatePart(character.value)) {
 				break;
 			}
 			input.advance(character.width);
@@ -155,33 +146,27 @@ function codePoint(first: number, second: number): CodePoint | null {
 	};
 }
 
-function inRanges(ranges: ScalarRange[], value: number): boolean {
-	let low = 0;
-	let high = ranges.length;
-	while (low < high) {
-		const middle = (low + high) >> 1;
-		if (ranges[middle][1] < value) {
-			low = middle + 1;
-		} else {
-			high = middle;
-		}
-	}
-	return low < ranges.length && ranges[low][0] <= value;
+function isIdentifierCandidateStart(value: number): boolean {
+	return (
+		value === 0x24 ||
+		(value >= 0x41 && value <= 0x5a) ||
+		value === 0x5f ||
+		(value >= 0x61 && value <= 0x7a) ||
+		(value >= 0xa1 && value <= 0x10ffff)
+	);
 }
 
-function parseRanges(source: string, name: string): ScalarRange[] {
-	const declaration = new RegExp(`pub(?:\\(super\\))? (?:const|static) ${name}: &\\[\\(u32, u32\\)\\] = &\\[`);
-	const match = declaration.exec(source);
-	if (match === null) {
-		throw new Error(`missing ${name}`);
-	}
-	const start = match.index + match[0].length;
-	const end = source.indexOf("];", start);
-	assert.notEqual(end, -1, `unterminated ${name}`);
-	return [...source.slice(start, end).matchAll(/\(0x([0-9a-f]+), 0x([0-9a-f]+)\)/g)].map((range) => [
-		Number.parseInt(range[1], 16),
-		Number.parseInt(range[2], 16),
-	]);
+function isIdentifierCandidatePart(value: number): boolean {
+	return (
+		(value >= 0x00 && value <= 0x08) ||
+		(value >= 0x0e && value <= 0x1b) ||
+		value === 0x24 ||
+		(value >= 0x30 && value <= 0x39) ||
+		(value >= 0x41 && value <= 0x5a) ||
+		value === 0x5f ||
+		(value >= 0x61 && value <= 0x7a) ||
+		(value >= 0x7f && value <= 0x10ffff)
+	);
 }
 
 function unicodeEscapeAt(source: string, offset: number): { value: number; end: number } | null {

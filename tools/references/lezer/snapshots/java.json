@@ -19,10 +19,6 @@
 			"grammar": {
 				"path": "languages/java/src/java.grammar",
 				"sha256": "1c231ccafb6ac9816bc6e85051621c764842f9928e23d4294d420aea80a2792c"
-			},
-			"identifierTables": {
-				"path": "languages/java/src/unicode17.rs",
-				"sha256": "197c8d0cc79614cc2b96b81c988803715cb2aa6eab59e59be7fb683032617c07"
 			}
 		}
 	},

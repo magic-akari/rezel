@@ -43,7 +43,6 @@ struct ReferenceIdentity {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct ReferenceArtifacts {
     grammar: ReferenceArtifact,
-    identifier_tables: ReferenceArtifact,
 }
 
 #[derive(Debug, Deserialize)]
@@ -158,15 +157,7 @@ fn reference_data() -> (CaseManifest, Snapshot) {
         snapshot.reference.artifacts.grammar.path,
         "languages/java/src/java.grammar"
     );
-    assert_eq!(
-        snapshot.reference.artifacts.identifier_tables.path,
-        "languages/java/src/unicode17.rs"
-    );
     assert_eq!(snapshot.reference.artifacts.grammar.sha256.len(), 64);
-    assert_eq!(
-        snapshot.reference.artifacts.identifier_tables.sha256.len(),
-        64
-    );
     (cases, snapshot)
 }
 

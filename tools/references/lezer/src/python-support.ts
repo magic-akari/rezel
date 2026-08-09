@@ -7,7 +7,6 @@ import { ContextTracker, ExternalTokenizer, type InputStream, type Stack } from 
 interface BuildOptions {
 	grammar: string;
 	grammarPath: string;
-	identifierTables: string;
 	warnings: string[];
 }
 
@@ -17,8 +16,6 @@ interface PythonContext {
 	flags: number;
 	hash: number;
 }
-
-type ScalarRange = readonly [number, number];
 
 const LF = 10;
 const CR = 13;
@@ -39,8 +36,6 @@ const RAW = 16;
 const FORMAT = 32;
 
 export function buildPythonParser(options: BuildOptions): ReturnType<typeof buildParser> {
-	const xidStart = parseRanges(options.identifierTables, "XID_START");
-	const xidContinue = parseRanges(options.identifierTables, "XID_CONTINUE");
 	const emptyProperties: NodePropSource = () => null;
 
 	return buildParser(options.grammar, {
@@ -58,7 +53,7 @@ export function buildPythonParser(options: BuildOptions): ReturnType<typeof buil
 				case "STRINGS":
 					return strings(terms);
 				case "TOKENIZER":
-					return identifiers(requiredTerm(terms, "identifier"), xidStart, xidContinue);
+					return identifiers(requiredTerm(terms, "identifier"));
 				default:
 					throw new Error(`unknown Python tokenizer ${name}`);
 			}
@@ -233,15 +228,15 @@ function strings(terms: Record<string, number>): ExternalTokenizer {
 	);
 }
 
-function identifiers(term: number, starts: ScalarRange[], continues: ScalarRange[]): ExternalTokenizer {
+function identifiers(term: number): ExternalTokenizer {
 	return new ExternalTokenizer((input) => {
 		if (looksLikeStringPrefix(input)) return;
 		let character = codePoint(input.peek(0), input.peek(1));
-		if (character === null || !inRanges(starts, character.value)) return;
+		if (character === null || !isIdentifierCandidateStart(character.value)) return;
 		input.advance(character.width);
 		for (;;) {
 			character = codePoint(input.peek(0), input.peek(1));
-			if (character === null || !inRanges(continues, character.value)) break;
+			if (character === null || !isIdentifierCandidateContinue(character.value)) break;
 			input.advance(character.width);
 		}
 		input.acceptToken(term);
@@ -340,25 +335,17 @@ function codePoint(first: number, second: number): { value: number; width: numbe
 	return { value: 0x1_0000 + ((first - 0xd800) << 10) + second - 0xdc00, width: 2 };
 }
 
-function parseRanges(source: string, name: string): ScalarRange[] {
-	const declaration = new RegExp(`pub\\(crate\\) static ${name}: &\\[\\(u32, u32\\)\\] = &\\[`);
-	const match = declaration.exec(source);
-	if (match === null) throw new Error(`missing ${name}`);
-	const end = source.indexOf("];", match.index + match[0].length);
-	return [...source.slice(match.index + match[0].length, end).matchAll(/\(0x([0-9a-f]+), 0x([0-9a-f]+)\)/g)].map(
-		(range) => [Number.parseInt(range[1], 16), Number.parseInt(range[2], 16)],
+function isIdentifierCandidateStart(value: number): boolean {
+	return (
+		(value >= 65 && value <= 90) ||
+		value === 95 ||
+		(value >= 97 && value <= 122) ||
+		(value >= 0xa1 && value <= 0x10_ffff)
 	);
 }
 
-function inRanges(ranges: ScalarRange[], value: number): boolean {
-	let low = 0;
-	let high = ranges.length;
-	while (low < high) {
-		const middle = (low + high) >> 1;
-		if (ranges[middle][1] < value) low = middle + 1;
-		else high = middle;
-	}
-	return low < ranges.length && ranges[low][0] <= value;
+function isIdentifierCandidateContinue(value: number): boolean {
+	return (value >= 48 && value <= 57) || isIdentifierCandidateStart(value);
 }
 
 function isLineBreak(value: number): boolean {

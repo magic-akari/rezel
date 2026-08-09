@@ -27,8 +27,8 @@ pub mod terms;
 pub use rezel_common::TypedNode;
 pub use typed::*;
 
-/// Unicode version used for Rust identifiers and lifetimes.
-pub const UNICODE_VERSION: &str = identifier::UNICODE_VERSION;
+/// Unicode version supplied by `unicode-ident` for identifiers and lifetimes.
+pub const UNICODE_VERSION: (u8, u8, u8) = identifier::UNICODE_VERSION;
 
 /// Rust parser with source-prefix normalization and strict syntax validation.
 pub type RustParser = LRParser;
@@ -85,7 +85,9 @@ pub fn highlight_spans(tree: &Tree, range: Option<TextRange>, put_span: impl FnM
 fn default_parser() -> &'static LRParser {
     static PARSER: OnceLock<LRParser> = OnceLock::new();
     PARSER.get_or_init(|| {
-        LRParser::from_language(&generated::LANGUAGE).with_create_parse(create_rust_parse)
+        LRParser::from_language(&generated::LANGUAGE)
+            .with_strict_token_validators(&identifier::STRICT_TOKEN_VALIDATORS)
+            .with_create_parse(create_rust_parse)
     })
 }
 

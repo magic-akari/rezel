@@ -256,6 +256,7 @@ pub const fun: u16 = 134u16;
 pub const genericNullableCallableQuestion: u16 = 7u16;
 pub const get: u16 = 30u16;
 pub const horizontalWhitespace: u16 = 366u16;
+pub const identifier: u16 = 375u16;
 pub const _if: u16 = 101u16;
 pub const importKeyword: u16 = 1u16;
 pub const _in: u16 = 21u16;

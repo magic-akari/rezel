@@ -41,9 +41,10 @@ maintained language definition
 ```
 
 The details remain language-owned. Every package returns a configured
-`LRParser` directly. Packages that need input translation, preflight checks, or
-strict post-parse validation provide one language-owned parse function without
-narrowing the common parser surface.
+`LRParser` directly. Strict token validators run after a permissive tokenizer
+selects one base token and before its LR action; packages may still provide a
+language-owned parse function for input translation, preflight checks, or
+whole-tree syntactic predicates.
 
 ## Current packages
 
@@ -54,7 +55,7 @@ narrowing the common parser surface.
 | `rezel-lang-java`   | Java SE 26 syntax calibrated against Lezer and javac.                    | Unicode-escape lexical translation, typed CST, private syntax views, compiler-tree-aligned owned AST, and optional highlighting.         |
 | `rezel-lang-kotlin` | Kotlin 2.4.10 syntax calibrated against the formal grammar and compiler. | Contextual lexical adapters, complete visible-kind typed coverage, strict standard-library corpus validation, and optional highlighting. |
 | `rezel-lang-python` | Python 3.14 syntax calibrated against Lezer and CPython.                 | Indentation and string tokenizers, strict syntax validation, complete typed CST, CPython-aligned owned AST, and optional highlighting.   |
-| `rezel-lang-rust`   | Rust 1.95.0 Edition 2024 syntax calibrated against Lezer and rustc.      | Unicode 17 identifiers, strict lexical/syntax validation, partial typed CST, and optional highlighting.                                  |
+| `rezel-lang-rust`   | Rust 1.95.0 Edition 2024 syntax calibrated against Lezer and rustc.      | Permissive recovery identifiers, strict XID/syntax validation, partial typed CST, and optional highlighting.                             |
 
 Version details and package APIs belong in each language's README and generated
 Rust documentation.

@@ -28,6 +28,11 @@ assert_eq!(tree.to_string(), strict_tree.to_string());
 The language facade applies Java's eligible Unicode-escape translation before
 tokenization while preserving original UTF-8 byte ranges. A malformed eligible
 escape is an input error and cannot be hidden by syntax recovery.
+Recovering identifiers use a broad scalar candidate range. Strict parsing
+validates each selected identifier with `unicode-ident` XID plus Java's
+identifier additions before the token participates in an LR action. Those
+additions and Java's identifier-ignorable ranges are compact language-owned
+tables; the crate does not embed a second complete Unicode identifier database.
 
 ## Typed CST
 

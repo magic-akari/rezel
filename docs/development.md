@@ -113,12 +113,6 @@ required in each package.
 Some project data has a dedicated check/update pair:
 
 ```sh
-mise run codegen:java-identifiers
-mise run codegen:java-identifiers:update
-
-mise run codegen:python-unicode
-mise run codegen:python-unicode:update
-
 mise run codegen:python-unicode-names
 mise run codegen:python-unicode-names:update
 

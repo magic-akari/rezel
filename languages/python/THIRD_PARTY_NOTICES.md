@@ -32,8 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-Python language behavior and generated Unicode data are calibrated against
-CPython 3.14.5, distributed under the Python Software Foundation License.
+Python language behavior is calibrated against CPython 3.14.5, distributed
+under the Python Software Foundation License. Strict identifier validation
+uses `unicode-ident` under its MIT OR Apache-2.0 license.
 
 Identifier NFKC normalization uses `unicode-normalization` 0.1.24 and its
 Unicode 16.0.0 tables, distributed under the MIT OR Apache-2.0 license.

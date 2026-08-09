@@ -30,8 +30,8 @@ pub mod terms;
 pub use rezel_common::TypedNode;
 pub use typed::*;
 
-/// Unicode Character Database version used for Python identifiers.
-pub const UNICODE_VERSION: &str = identifier::UNICODE_VERSION;
+/// Unicode version supplied by `unicode-ident` for Python identifiers.
+pub const UNICODE_VERSION: (u8, u8, u8) = identifier::UNICODE_VERSION;
 
 /// Python parser with strict indentation and syntax validation.
 pub type PythonParser = LRParser;
@@ -86,7 +86,9 @@ pub fn highlight_spans(tree: &Tree, range: Option<TextRange>, put_span: impl FnM
 fn default_parser() -> &'static LRParser {
     static PARSER: OnceLock<LRParser> = OnceLock::new();
     PARSER.get_or_init(|| {
-        LRParser::from_language(&generated::LANGUAGE).with_create_parse(create_python_parse)
+        LRParser::from_language(&generated::LANGUAGE)
+            .with_strict_token_validators(&identifier::STRICT_TOKEN_VALIDATORS)
+            .with_create_parse(create_python_parse)
     })
 }
 

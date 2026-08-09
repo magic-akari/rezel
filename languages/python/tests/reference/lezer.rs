@@ -36,7 +36,6 @@ struct Snapshot {
 #[serde(deny_unknown_fields)]
 struct ReferenceIdentity {
     grammar: ReferenceArtifact,
-    unicode: ReferenceArtifact,
 }
 
 #[derive(Debug, Deserialize)]
@@ -158,12 +157,7 @@ fn reference_data() -> (CaseManifest, Snapshot) {
         snapshot.reference.grammar.path,
         "languages/python/src/python.grammar"
     );
-    assert_eq!(
-        snapshot.reference.unicode.path,
-        "languages/python/src/unicode16.rs"
-    );
     assert_eq!(snapshot.reference.grammar.sha256.len(), 64);
-    assert_eq!(snapshot.reference.unicode.sha256.len(), 64);
     (cases, snapshot)
 }
 

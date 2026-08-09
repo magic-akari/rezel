@@ -1,11 +1,11 @@
-use rezel_common::{CodePoint, ParseError};
-use rezel_lr::{ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack, TokenizerFlags};
+use rezel_common::{CodePoint, ParseError, first_invalid_identifier_offset};
+use rezel_lr::{
+    ExternalTokenizer, ExternalTokenizerStart, InputStream, Stack, StrictTokenValidationError,
+    StrictTokenValidator, TokenizerFlags,
+};
 use unicode_normalization::UnicodeNormalization;
 
-#[path = "unicode16.rs"]
-mod unicode16;
-
-pub(crate) const UNICODE_VERSION: &str = unicode16::UNICODE_VERSION;
+pub(crate) const UNICODE_VERSION: (u8, u8, u8) = unicode_ident::UNICODE_VERSION;
 
 pub(crate) fn canonical_name(spelling: &str) -> String {
     spelling.nfkc().collect()
@@ -27,6 +27,26 @@ pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
 )
 .with_start(IDENTIFIER_START);
 
+pub(crate) static STRICT_TOKEN_VALIDATORS: [StrictTokenValidator; 1] = [StrictTokenValidator::new(
+    crate::terms::identifier,
+    validate,
+)];
+
+fn validate(spelling: &str) -> Result<(), StrictTokenValidationError> {
+    let invalid = first_invalid_identifier_offset(
+        spelling,
+        |character| character == '_' || unicode_ident::is_xid_start(character),
+        unicode_ident::is_xid_continue,
+    );
+    match invalid {
+        Some(offset) => Err(StrictTokenValidationError::new(
+            offset,
+            "invalid Python identifier",
+        )),
+        None => Ok(()),
+    }
+}
+
 fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     if looks_like_string_prefix(input) {
         return Ok(());
@@ -34,22 +54,23 @@ fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     let Some(first) = input.next().map(CodePoint::as_u32) else {
         return Ok(());
     };
-    if !is_identifier_start(first) {
+    if !is_identifier_candidate_start(first) {
         return Ok(());
     }
     if first < 0x80 {
-        input.advance_ascii_while(|byte| is_identifier_continue(u32::from(byte)));
+        input.advance_ascii_while(|byte| is_identifier_candidate_continue(u32::from(byte)));
     } else {
         input.advance(1);
     }
     loop {
-        if input.advance_ascii_while(|byte| is_identifier_continue(u32::from(byte))) != 0 {
+        if input.advance_ascii_while(|byte| is_identifier_candidate_continue(u32::from(byte))) != 0
+        {
             continue;
         }
         let Some(character) = input.next().map(CodePoint::as_u32) else {
             break;
         };
-        if !is_identifier_continue(character) {
+        if !is_identifier_candidate_continue(character) {
             break;
         }
         input.advance(1);
@@ -84,27 +105,12 @@ fn ascii_lowercase(value: CodePoint) -> Option<u8> {
         .then(|| value.to_ascii_lowercase())
 }
 
-fn is_identifier_start(value: u32) -> bool {
-    if value < 0x80 {
-        let value = u8::try_from(value).expect("ASCII code points fit in u8");
-        return value.is_ascii_alphabetic() || value == b'_';
-    }
-    in_ranges(unicode16::XID_START, value)
+const fn is_identifier_candidate_start(value: u32) -> bool {
+    matches!(value, 0x41..=0x5a | 0x5f | 0x61..=0x7a | 0xa1..=0x0010_ffff)
 }
 
-fn is_identifier_continue(value: u32) -> bool {
-    if value < 0x80 {
-        let value = u8::try_from(value).expect("ASCII code points fit in u8");
-        return value.is_ascii_alphanumeric() || value == b'_';
-    }
-    in_ranges(unicode16::XID_CONTINUE, value)
-}
-
-fn in_ranges(ranges: &[(u32, u32)], value: u32) -> bool {
-    let index = ranges.partition_point(|&(_, end)| end < value);
-    ranges
-        .get(index)
-        .is_some_and(|&(start, end)| start <= value && value <= end)
+const fn is_identifier_candidate_continue(value: u32) -> bool {
+    matches!(value, 0x30..=0x39) || is_identifier_candidate_start(value)
 }
 
 #[cfg(test)]
@@ -112,28 +118,24 @@ mod tests {
     use super::*;
 
     #[test]
-    fn generated_tables_are_unicode_16() {
-        assert_eq!(unicode16::UNICODE_VERSION, "16.0.0");
-        assert_eq!(unicode_normalization::UNICODE_VERSION, (16, 0, 0));
-        assert!(is_identifier_start(u32::from('_')));
-        assert!(is_identifier_start(u32::from('λ')));
-        assert!(is_identifier_continue(u32::from('9')));
-        assert!(!is_identifier_start(u32::from('9')));
-        assert!(!is_identifier_continue(u32::from('😀')));
+    fn identifier_profile_tracks_unicode_ident() {
+        assert_eq!(UNICODE_VERSION, unicode_ident::UNICODE_VERSION);
+        assert!(validate("_name").is_ok());
+        assert!(validate("λ2").is_ok());
+        assert!(validate("name😀").is_err());
     }
 
     #[test]
-    fn ascii_fast_path_matches_generated_tables_across_the_byte_range() {
-        for value in 0..=u32::from(u8::MAX) {
-            assert_eq!(
-                is_identifier_start(value),
-                in_ranges(unicode16::XID_START, value)
-            );
-            assert_eq!(
-                is_identifier_continue(value),
-                in_ranges(unicode16::XID_CONTINUE, value)
-            );
-        }
+    fn parser_applies_validation_only_in_strict_mode() {
+        let source = "name😀 = 1\n";
+        crate::parser()
+            .parse(source)
+            .expect("recovering Python accepts the broad identifier candidate");
+        let error = crate::parser()
+            .with_strict(true)
+            .parse(source)
+            .expect_err("strict Python validates the selected identifier token");
+        assert_eq!(error.message(), "invalid Python identifier");
     }
 
     #[test]

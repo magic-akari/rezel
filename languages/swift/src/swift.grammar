@@ -2127,7 +2127,7 @@ codeItemSeparator { ";" | lineBreak }
 }
 
 @tokens {
-  identifier {
+  identifier[@export] {
     $[A-Za-z] identifierContinueCandidate* |
     "_" identifierContinueCandidate+ |
     identifierNonAsciiCandidate identifierContinueCandidate* |

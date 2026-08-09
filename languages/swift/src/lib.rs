@@ -7,8 +7,7 @@ use rezel_lr::LRParser;
 
 #[rustfmt::skip]
 mod generated;
-#[cfg(test)]
-mod syntax;
+mod identifier;
 mod tokens;
 #[rustfmt::skip]
 mod typed;
@@ -37,5 +36,8 @@ pub fn parser() -> SwiftParser {
 
 fn default_parser() -> &'static LRParser {
     static PARSER: OnceLock<LRParser> = OnceLock::new();
-    PARSER.get_or_init(|| LRParser::from_language(&generated::LANGUAGE))
+    PARSER.get_or_init(|| {
+        LRParser::from_language(&generated::LANGUAGE)
+            .with_strict_token_validators(&identifier::STRICT_TOKEN_VALIDATORS)
+    })
 }
