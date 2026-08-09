@@ -720,8 +720,34 @@ literalPattern {
 
 boolean { @specialize[@name=Boolean]<identifier, "true" | "false"> }
 
+// Keep the outer opener in the main token group so comments remain ordinary
+// skip syntax. After it shifts, only comment-internal tokens are active.
+@local tokens {
+  blockCommentStart { "/*" }
+
+  blockCommentContent { ![*/] blockCommentContent? | "*" blockCommentStar | "/" blockCommentSlash }
+  blockCommentStar { ![/*] blockCommentContent | "*" blockCommentStar }
+  blockCommentSlash { ![/*] blockCommentContent | "/" blockCommentSlash }
+
+  blockCommentEnd { ![*/] blockCommentEnd | "*" blockCommentEndStar | "/" blockCommentEndSlash }
+  blockCommentEndStar { "/" | ![/*] blockCommentEnd | "*" blockCommentEndStar }
+  blockCommentEndSlash { ![/*] blockCommentEnd | "/" blockCommentEndSlash }
+
+  @precedence { blockCommentEnd, blockCommentContent }
+}
+
+@local tokens {
+  Escape { "\\" (![xu] | "u" hex hex hex hex | "u{" hex+ "}" | "x" hex hex) }
+  stringContent { !["\\\n]* "\n" | !["\\\n]+ }
+  stringEnd { '"' }
+}
+
 @skip {} {
-  BlockComment[isolate] { "/*" (BlockComment | blockCommentContent)* blockCommentEnd }
+  BlockComment[isolate] { "/*" (NestedBlockComment | blockCommentContent)* blockCommentEnd }
+
+  NestedBlockComment[isolate,@name=BlockComment] {
+    blockCommentStart (NestedBlockComment | blockCommentContent)* blockCommentEnd
+  }
 
   String[isolate] { stringStart (Escape | stringContent)* stringEnd }
 }
@@ -784,7 +810,6 @@ plusSep<expr> { expr (!plusSep "+" expr)* }
   }
 
   hex { $[0-9a-fA-F] }
-  Escape { "\\" (![xu] | "u" hex hex hex hex | "u{" hex+ "}" | "x" hex hex) }
 
   Char { "b"? "'" (Escape | ![\\'])? "'" }
 
@@ -792,19 +817,7 @@ plusSep<expr> { expr (!plusSep "+" expr)* }
 
   @precedence { LineComment, "/" }
 
-  blockCommentContent { ![*/] blockCommentContent? | "*" blockCommentStar | "/" blockCommentSlash }
-  blockCommentStar { ![/*] blockCommentContent | "*" blockCommentStar }
-  blockCommentSlash { ![/*] blockCommentContent | "/" blockCommentSlash }
-
-  blockCommentEnd { ![*/] blockCommentEnd | "*" blockCommentEndStar | "/" blockCommentEndSlash }
-  blockCommentEndStar { "/" | ![/*] blockCommentEnd | "*" blockCommentEndStar }
-  blockCommentEndSlash { ![/*] blockCommentEnd | "/" blockCommentEndSlash }
-
-  @precedence { blockCommentEnd, blockCommentContent }
-
   stringStart { ("b" | "c")? '"' }
-  stringContent { !["\\\n]* "\n" | !["\\\n]+ }
-  stringEnd { '"' }
 
   "[" "]" "{" "}" "(" ")"
   ";" ":" "::" ","
