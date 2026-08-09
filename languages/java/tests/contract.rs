@@ -65,7 +65,10 @@ fn record_keyword_specialization_is_contextual() {
         .parse("record Point(int x) {} record Line(int y) {}")
         .expect("record declarations specialize the contextual keyword");
     parser
-        .parse("class Names { int record; int record() { int record = 1; return record; } }")
+        .parse(
+            "class Names { int record; int record() { int record = 1; return record; } \
+             int value() { return record(); } }",
+        )
         .expect("record remains an identifier outside record declarations");
 }
 
@@ -106,6 +109,37 @@ fn character_literals_follow_java_utf16_code_unit_width() {
             .expect_err("a supplementary character needs two UTF-16 code units");
         assert_eq!(error.kind(), ParseErrorKind::Syntax);
     }
+}
+
+#[test]
+fn text_blocks_preserve_escaped_delimiters_and_recover_at_eof() {
+    let parser = rezel_lang_java::parser();
+    let valid = r#"class Sample {
+    String value = """
+        before \""" after
+        """;
+}"#;
+    parser
+        .clone()
+        .with_strict(true)
+        .parse(valid)
+        .expect("an escaped quote must not start the text-block closing delimiter");
+
+    let unterminated = r#"class Sample { String value = """
+        content"#;
+    let error = parser
+        .clone()
+        .with_strict(true)
+        .parse(unterminated)
+        .expect_err("strict Java rejects an unterminated text block");
+    assert_eq!(error.kind(), ParseErrorKind::Syntax);
+
+    let recovered = parser
+        .parse(unterminated)
+        .expect("recovering Java retains an unterminated text block");
+    let tree = recovered.to_string();
+    assert!(tree.contains("TextBlock"));
+    assert!(tree.contains('⚠'));
 }
 
 #[test]

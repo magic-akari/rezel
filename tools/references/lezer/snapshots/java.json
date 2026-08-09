@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/java/src/java.grammar",
-				"sha256": "1c231ccafb6ac9816bc6e85051621c764842f9928e23d4294d420aea80a2792c"
+				"sha256": "5f08a34f67fc58f933c33ecd0159d38a49819d6fd2fb947e82165bcd6bf1cd52"
 			}
 		}
 	},

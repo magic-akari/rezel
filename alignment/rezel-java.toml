@@ -34,8 +34,8 @@ representation = "A feature-gated Rust NodePropSource replaces the JavaScript st
 [[scope]]
 rust_file = "identifier.rs"
 classification = "standard-algorithm"
-invariant = "Recovering Java identifiers use a permissive scalar candidate range; strict parsing combines unicode-ident XID with Java Character additions, cooked names remove identifier-ignorable code points, and record specializes only where the parser can shift it."
-representation = "The external scanner bulk-advances simple ASCII candidates and admits broad non-ASCII and ignorable ranges without Unicode lookup; a strict token hook applies unicode-ident XID plus compact Java 26 additions before the LR action, while the exact-spelling record specializer consults the current stack."
+invariant = "Recovering Java identifiers use a permissive scalar candidate range; strict parsing combines unicode-ident XID with Java Character additions, cooked names remove identifier-ignorable code points, and record adds a declaration interpretation only where the parser can shift it while retaining its identifier role."
+representation = "The external scanner bulk-advances simple ASCII candidates and admits broad non-ASCII and ignorable ranges without Unicode lookup; a strict token hook applies unicode-ident XID plus compact Java 26 additions before the LR action, while the exact-spelling record extender consults the current stack and preserves the base identifier path at declaration-call overlaps."
 evidence_files = [
 	"languages/java/tests/contract.rs",
 	"languages/java/tests/reference/javac.rs",
