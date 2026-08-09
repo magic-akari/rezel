@@ -2020,8 +2020,28 @@ codeItemSeparator { ";" | lineBreak }
 
 @skip { whitespace | LineComment | BlockComment }
 
+// Keep the outer opener in the main token group so comments remain ordinary
+// skip syntax. After it shifts, only comment-internal tokens are active.
+@local tokens {
+  blockCommentStart { "/*" }
+
+  blockCommentContent { ![*/] blockCommentContent? | "*" blockCommentStar | "/" blockCommentSlash }
+  blockCommentStar { ![/*] blockCommentContent | "*" blockCommentStar }
+  blockCommentSlash { ![/*] blockCommentContent | "/" blockCommentSlash }
+
+  blockCommentEnd { ![*/] blockCommentEnd | "*" blockCommentEndStar | "/" blockCommentEndSlash }
+  blockCommentEndStar { "/" | ![/*] blockCommentEnd | "*" blockCommentEndStar }
+  blockCommentEndSlash { ![/*] blockCommentEnd | "/" blockCommentEndSlash }
+
+  @precedence { blockCommentEnd, blockCommentContent }
+}
+
 @skip {} {
-  BlockComment[isolate] { "/*" (BlockComment | blockCommentContent)* blockCommentEnd }
+  BlockComment[isolate] { "/*" (NestedBlockComment | blockCommentContent)* blockCommentEnd }
+
+  NestedBlockComment[isolate,@name=BlockComment] {
+    blockCommentStart (NestedBlockComment | blockCommentContent)* blockCommentEnd
+  }
 }
 
 @external tokens METATYPE_TOKENS from "./tokens" {
@@ -2178,22 +2198,12 @@ codeItemSeparator { ";" | lineBreak }
     "0x" hexDigits "." hexDigits $[pP] $[+\-]? digits
   }
 
-  blockCommentContent { ![*/] blockCommentContent? | "*" blockCommentStar | "/" blockCommentSlash }
-  blockCommentStar { ![/*] blockCommentContent | "*" blockCommentStar }
-  blockCommentSlash { ![/*] blockCommentContent | "/" blockCommentSlash }
-
-  blockCommentEnd { ![*/] blockCommentEnd | "*" blockCommentEndStar | "/" blockCommentEndSlash }
-  blockCommentEndStar { "/" | ![/*] blockCommentEnd | "*" blockCommentEndStar }
-  blockCommentEndSlash { ![/*] blockCommentEnd | "/" blockCommentEndSlash }
-
   @conflict { tupleMemberInteger, FloatLiteral }
   @conflict { tupleMemberInteger, IntegerLiteral }
   @precedence { dollarIdentifier, identifier, "_" }
   @precedence { FloatLiteral, IntegerLiteral }
   @precedence { LineComment "/" }
   @precedence { Shebang "#" }
-  @precedence { blockCommentEnd, blockCommentContent }
-
   "#unavailable" "#available" "#elseif" "#endif" "#else" "#if"
   "->" "..." "::" "==" "!=" "<=" ">=" "&&" "||" "??"
   "(" ")" "{" "}" "[" "]" "@" "#" ":" "," "." ";" "="
