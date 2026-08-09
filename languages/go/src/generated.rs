@@ -4,9 +4,9 @@
 #[repr(C, align(64))]
 #[derive(zerocopy::FromBytes, zerocopy::Immutable)]
 struct GeneratedTables {
-    states: [u32; 3696usize],
-    state_data: [u16; 6445usize],
-    goto: [u16; 2590usize],
+    states: [u32; 3690usize],
+    state_data: [u16; 6533usize],
+    goto: [u16; 2554usize],
     token_states: [rezel_lr::TokenState; 69usize],
     token_accepts: [rezel_lr::TokenAccept; 52usize],
     token_edges: [rezel_lr::TokenEdge; 174usize],
@@ -75,7 +75,7 @@ fn specialize_0(
             Some(rezel_lr::SpecializedToken::new(149u16, rezel_lr::Specialize::Replace))
         }
         "false" => {
-            Some(rezel_lr::SpecializedToken::new(191u16, rezel_lr::Specialize::Extend))
+            Some(rezel_lr::SpecializedToken::new(190u16, rezel_lr::Specialize::Extend))
         }
         "for" => {
             Some(rezel_lr::SpecializedToken::new(131u16, rezel_lr::Specialize::Replace))
@@ -108,7 +108,7 @@ fn specialize_0(
             Some(rezel_lr::SpecializedToken::new(80u16, rezel_lr::Specialize::Extend))
         }
         "nil" => {
-            Some(rezel_lr::SpecializedToken::new(192u16, rezel_lr::Specialize::Extend))
+            Some(rezel_lr::SpecializedToken::new(191u16, rezel_lr::Specialize::Extend))
         }
         "package" => {
             Some(rezel_lr::SpecializedToken::new(5u16, rezel_lr::Specialize::Replace))
@@ -129,7 +129,7 @@ fn specialize_0(
             Some(rezel_lr::SpecializedToken::new(122u16, rezel_lr::Specialize::Replace))
         }
         "true" => {
-            Some(rezel_lr::SpecializedToken::new(191u16, rezel_lr::Specialize::Extend))
+            Some(rezel_lr::SpecializedToken::new(190u16, rezel_lr::Specialize::Extend))
         }
         "type" => {
             Some(rezel_lr::SpecializedToken::new(107u16, rezel_lr::Specialize::Replace))
@@ -2073,40 +2073,39 @@ static TERM_NAMES: &[(u16, &str)] = &[
     (183u16, "blockCommentNewline"),
     (184u16, "blockCommentEnd"),
     (185u16, "identifier"),
-    (186u16, "semi-1"),
-    (187u16, "semiSep<statement | FunctionDecl | MethodDecl>-1"),
-    (188u16, "statement-1"),
-    (189u16, "simpleStatement-1"),
-    (190u16, "expr-1"),
-    (191u16, "identifier/\"true\""),
-    (192u16, "identifier/\"nil\""),
-    (193u16, "literalType-1"),
-    (194u16, "type-1"),
-    (195u16, "\"*\""),
-    (196u16, "signature-1"),
-    (197u16, "commaSep<Parameter>-1"),
-    (198u16, "idList-1"),
-    (199u16, "typeElem-1"),
-    (200u16, "typeOrUnderlying-1"),
-    (201u16, "\"|\""),
-    (202u16, "typeName-1"),
-    (203u16, "commaSep1<type>-1"),
-    (204u16, "commaSep<Element>-1"),
-    (205u16, "semiSep<statement>-1"),
-    (206u16, "exprList-1"),
-    (207u16, "\"+\""),
-    (208u16, "\"-\""),
-    (209u16, "\"!\""),
-    (210u16, "\"^\""),
-    (211u16, "\"&\""),
-    (212u16, "\"/\""),
-    (213u16, "\"%\""),
-    (214u16, "\"<<\""),
-    (215u16, "\">>\""),
-    (216u16, "\"&^\""),
-    (217u16, "\"&&\""),
-    (218u16, "\"||\""),
-    (219u16, "commaSep1<TypeParam>-1"),
+    (186u16, "semiSep<statement | FunctionDecl | MethodDecl>-1"),
+    (187u16, "statement-1"),
+    (188u16, "simpleStatement-1"),
+    (189u16, "expr-1"),
+    (190u16, "identifier/\"true\""),
+    (191u16, "identifier/\"nil\""),
+    (192u16, "literalType-1"),
+    (193u16, "type-1"),
+    (194u16, "\"*\""),
+    (195u16, "signature-1"),
+    (196u16, "commaSep<Parameter>-1"),
+    (197u16, "idList-1"),
+    (198u16, "typeElem-1"),
+    (199u16, "typeOrUnderlying-1"),
+    (200u16, "\"|\""),
+    (201u16, "typeName-1"),
+    (202u16, "commaSep1<type>-1"),
+    (203u16, "commaSep<Element>-1"),
+    (204u16, "semiSep<statement>-1"),
+    (205u16, "exprList-1"),
+    (206u16, "\"+\""),
+    (207u16, "\"-\""),
+    (208u16, "\"!\""),
+    (209u16, "\"^\""),
+    (210u16, "\"&\""),
+    (211u16, "\"/\""),
+    (212u16, "\"%\""),
+    (213u16, "\"<<\""),
+    (214u16, "\">>\""),
+    (215u16, "\"&^\""),
+    (216u16, "\"&&\""),
+    (217u16, "\"||\""),
+    (218u16, "commaSep1<TypeParam>-1"),
 ];
 pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: &TABLES.states,
@@ -2115,9 +2114,9 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
-    max_term: 219u16,
+    max_term: 218u16,
     min_repeat_term: 154u16,
-    token_precedence: 6440usize,
+    token_precedence: 6528usize,
     node_set,
     context: Some(&crate::tokens::TRACK_TOKENS),
     dialects: DIALECTS,

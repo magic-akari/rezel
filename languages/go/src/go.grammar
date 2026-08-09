@@ -253,7 +253,7 @@ ArithOp<expr> { expr }
 BitOp<expr> { expr }
 DerefOp<expr> { expr }
 
-semi { ";" | insertedSemi }
+semi[@inline] { ";" | insertedSemi }
 
 star[@name="*"] { "*" }
 
