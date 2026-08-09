@@ -285,16 +285,6 @@ pub(crate) static CONTROL_FUNCTION_KEYWORDS: ExternalTokenizer = ExternalTokeniz
 )
 .with_start(CONTROL_FUNCTION_KEYWORD_START);
 
-pub(crate) static DIRECT_CONTROL_LAMBDA_GUARDS: ExternalTokenizer = ExternalTokenizer::new(
-    scan_direct_control_lambda,
-    TokenizerFlags {
-        contextual: false,
-        fallback: false,
-        extend: false,
-    },
-)
-.with_start(ExternalTokenizerStart::NONE.with_ascii(b'{'));
-
 fn scan_import_keyword(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     accept_exact_keyword(input, terms::importKeyword, b"import")
 }
@@ -313,35 +303,6 @@ fn scan_control_function_keyword(
     _stack: &Stack,
 ) -> Result<(), ParseError> {
     accept_exact_keyword(input, terms::controlFunctionKeyword, b"fun")
-}
-
-fn scan_direct_control_lambda(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
-    if direct_control_lambda_starts(input) {
-        input.accept_token(terms::directControlLambda)?;
-    }
-    Ok(())
-}
-
-fn direct_control_lambda_starts(input: &InputStream) -> bool {
-    let chunk = input.identity_lookahead_chunk();
-    if let Some(result) = classify_direct_control_lambda(chunk.iter().copied().map(u32::from)) {
-        return result;
-    }
-    classify_direct_control_lambda(input.lookahead().map(CodePoint::as_u32)).unwrap_or(false)
-}
-
-fn classify_direct_control_lambda(input: impl Iterator<Item = u32>) -> Option<bool> {
-    let mut input = input.peekable();
-    if input.next()? != OPEN_BRACE {
-        return Some(false);
-    }
-    if !skip_kotlin_trivia(&mut input)? {
-        return Some(false);
-    }
-    if input.next()? != MINUS {
-        return Some(false);
-    }
-    Some(input.next()? == GREATER_THAN)
 }
 
 fn skip_kotlin_trivia(input: &mut std::iter::Peekable<impl Iterator<Item = u32>>) -> Option<bool> {
@@ -1039,7 +1000,7 @@ fn is_keyword_boundary(next: u32) -> bool {
 mod tests {
     use super::{
         classify_adjacent_annotation_identifier, classify_adjacent_class_member,
-        classify_direct_control_lambda, classify_nullable_receiver_question, is_keyword_boundary,
+        classify_nullable_receiver_question, is_keyword_boundary,
     };
 
     #[test]
@@ -1088,35 +1049,6 @@ mod tests {
         for continuation in ['0', 'A', '_', 'a'] {
             assert!(!is_keyword_boundary(u32::from(continuation)));
         }
-    }
-
-    fn classify(source: &str) -> bool {
-        classify_direct_control_lambda(source.chars().map(u32::from)).unwrap_or(false)
-    }
-
-    #[test]
-    fn direct_control_lambda_guard_skips_only_leading_trivia() {
-        for source in [
-            "{ -> value",
-            "{ // line\n -> value",
-            "{ /* outer /* inner */ tail */\r\n -> value",
-        ] {
-            assert!(classify(source));
-        }
-        for source in ["{ value -> value", "{ / -> value", "{ /* unterminated"] {
-            assert!(!classify(source));
-        }
-    }
-
-    #[test]
-    fn direct_control_lambda_guard_inspects_trivia_linearly() {
-        let mut source = String::from("{");
-        source.push_str(&" /* trivia */".repeat(4096));
-        source.push_str(" -> value");
-        let mut inspected = 0usize;
-        let input = source.chars().map(u32::from).inspect(|_| inspected += 1);
-        assert_eq!(classify_direct_control_lambda(input), Some(true));
-        assert!(inspected <= source.chars().count());
     }
 
     #[test]

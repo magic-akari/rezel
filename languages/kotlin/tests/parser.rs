@@ -998,7 +998,7 @@ fn accepts_direct_arrows_in_zero_parameter_lambdas() {
 }
 
 #[test]
-fn direct_arrow_control_bodies_use_a_bounded_prefix_guard() {
+fn direct_arrow_control_bodies_preserve_lambda_ownership() {
     let source = r"fun host(condition: Boolean, values: List<Int>) {
     if (condition) { -> 1 } else { -> 0 }
     while (condition) { /* leading /* nested */ trivia */
@@ -1014,7 +1014,7 @@ fn direct_arrow_control_bodies_use_a_bounded_prefix_guard() {
     let tree = rezel_lang_kotlin::parser()
         .with_strict(true)
         .parse(source)
-        .expect("a direct arrow selects a lambda without branching ordinary block parsing");
+        .expect("a direct arrow selects the lambda interpretation of a control-body brace");
     let cst = tree.to_string();
     assert_eq!(cst.matches("LambdaLiteral").count(), 6, "{cst}");
     assert!(!cst.contains("directControlLambda"));

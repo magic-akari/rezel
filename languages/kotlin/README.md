@@ -106,10 +106,10 @@ one bounded GLR decision. Both readings survive only through the closing
 parenthesis, and the following token selects the owner; no source-scanning
 lookahead is involved.
 
-Parameterized control-body braces similarly retain only the block and lambda
-interpretations until an arrow decides ownership. Their parameter grammar is
-ordinary CFG; the existing short prefix guard remains limited to the
-zero-parameter `{ -> ... }` spelling.
+Control-body braces retain only the block and lambda interpretations until an
+arrow decides ownership. Both parameterized and zero-parameter forms use the
+ordinary CFG and share the existing `body` cut at the opening brace; no
+source-scanning lookahead is involved.
 
 The generated lexer retains longest-match ownership of ordinary identifiers
 and attached labels such as `loop@`. When one annotation immediately follows
