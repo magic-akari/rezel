@@ -50,11 +50,10 @@ languages/<language>/
   Cargo.toml
   README.md
   THIRD_PARTY_NOTICES.md
-  grammar/
-    <language>.grammar
-    <language>.bindings.toml
-    <language>.typed.toml
   src/
+    <language>.grammar
+    <language>.typed.toml
+    highlighting.rs
     lib.rs
     generated.rs
     generated.le.bin
@@ -84,9 +83,9 @@ contract.
 Checked-in parser artifacts are owned by the repository-level
 [`rezel-codegen`](../../tools/codegen/src/main.rs) workflow, not by a duplicate
 test inside each language crate. Extend its language scope so it reads the new
-grammar, bindings, and typed schema and declares the complete expected output
-set. The conventional scope uses `languages/<language>/grammar/` as input and
-`languages/<language>/src/` as output.
+grammar and typed schema and declares the complete expected output set. The
+conventional scope keeps both maintained inputs and generated outputs under
+`languages/<language>/src/`.
 
 Register the accepted language name in the tool's usage text and
 `Scope::parse`; the existing `Scope::Language` path then performs the common
@@ -130,15 +129,15 @@ This writes:
 | `typed.rs`         | Typed CST kinds, wrappers, unions, and direct-child accessors           |
 
 The standard language scope fixes this contract: it reads
-`<language>.grammar`, `<language>.bindings.toml`, and
-`<language>.typed.toml`; compiles with term names enabled; and always emits all
-five files under `src/` with the names shown above. These are not optional CLI
-choices in the repository workflow. Change the central scope explicitly if a
-future package needs a different artifact contract.
+`src/<language>.grammar` and `src/<language>.typed.toml`, compiles with term
+names enabled, and always emits all five files under `src/` with the names
+shown above. These are not optional CLI choices in the repository workflow.
+Change the central scope explicitly if a future package needs a different
+artifact contract.
 
 The Rust library API exposes the same separation. `compile_grammar` produces a
-checked grammar, `RustBindings::from_toml_str` reads the binding manifest,
-`emit_rust` returns parser source, terms, and both byte vectors, and
+checked grammar, `emit_rust` resolves relative external modules by convention
+and returns parser source, terms, and both byte vectors, and
 `emit_typed_syntax` validates and emits the typed schema.
 
 Generated files are committed so ordinary users do not need the generator.

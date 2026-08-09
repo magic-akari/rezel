@@ -97,7 +97,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
 }
 static TOKENIZERS: &[rezel_lr::Tokenizer] = &[
     rezel_lr::Tokenizer::Group(rezel_lr::TokenGroup::new(0u8)),
-    rezel_lr::Tokenizer::External(&crate::support::externals::EXT1),
+    rezel_lr::Tokenizer::External(&crate::external_tokens::ext1),
 ];
 static TOP_RULES: &[rezel_lr::TopRule] = &[
     rezel_lr::TopRule {

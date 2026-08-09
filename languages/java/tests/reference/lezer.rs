@@ -156,7 +156,7 @@ fn reference_data() -> (CaseManifest, Snapshot) {
     }
     assert_eq!(
         snapshot.reference.artifacts.grammar.path,
-        "languages/java/grammar/java.grammar"
+        "languages/java/src/java.grammar"
     );
     assert_eq!(
         snapshot.reference.artifacts.identifier_tables.path,

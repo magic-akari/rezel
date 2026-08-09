@@ -79,17 +79,6 @@ representation = "Sorted Rust vectors and stable indices replace JavaScript obje
 evidence_files = ["crates/rezel-generator/tests/cases.rs"]
 
 [[scope]]
-rust_file = "binding.rs"
-classification = "rezel-owned"
-invariant = "Every grammar-declared external resolves to exactly one statically linked Rust path with the same semantic role, source module, and exported name."
-representation = "A strict TOML manifest and typed binding keys validate the boundary between JavaScript grammar declarations and generated Rust symbols."
-evidence_files = [
-	"crates/rezel-generator/tests/cases.rs",
-	"languages/json/grammar/json.bindings.toml",
-	"tools/codegen/src/main.rs",
-]
-
-[[scope]]
 rust_file = "binary.rs"
 classification = "rezel-owned"
 invariant = "Generated parser tables retain the exact native numeric values, record boundaries, and alignment expected by the LR runtime on little- and big-endian targets."
@@ -148,7 +137,7 @@ evidence_files = ["crates/rezel-generator/tests/cases.rs"]
 rust_file = "emit.rs"
 classification = "rezel-owned"
 invariant = "A compiled grammar deterministically emits valid static parser data, thin Rust glue, node metadata, term identifiers, and direct external symbol references."
-representation = "quote and proc-macro2 generate the typed loader and executable Rust glue, syn validates it, prettyplease formats it, and binary table serialization is delegated to the generator-owned native-layout writer; when no dialect can suppress a result, same-base specializers are emitted as one source-ordered static callback chain."
+representation = "quote and proc-macro2 generate the typed loader and executable Rust glue, relative JavaScript module names resolve conventionally to same-named crate modules and symbols, syn validates the result, prettyplease formats it, and binary table serialization is delegated to the generator-owned native-layout writer; when no dialect can suppress a result, same-base specializers are emitted as one source-ordered static callback chain."
 evidence_files = [
 	"crates/rezel-generator/tests/cases.rs",
 	"tools/codegen/src/main.rs",

@@ -263,42 +263,27 @@ Property-source tests should compare tags and byte ranges for direct node
 selectors, path-sensitive selectors, delimiters, comments, and dialect-only
 nodes. Parser acceptance tests do not establish these mappings.
 
-## Express the checked Rust boundary
+## Express the conventional Rust boundary
 
-The binding manifest must preserve declaration kind, source, and export name
-exactly. A prospective port would contain entries shaped like these:
+Preserve each external's source and export name, then expose the same item from
+the corresponding Rust module. A prospective port would use declarations
+shaped like these:
 
-```toml
-[[binding]]
-kind = "context-tracker"
-source = "./tokens.js"
-name = "trackNewline"
-rust_path = "crate::tokens::TRACK_NEWLINE"
-
-[[binding]]
-kind = "external-tokenizer"
-source = "./tokens"
-name = "operatorToken"
-rust_path = "crate::tokens::OPERATORS"
-
-[[binding]]
-kind = "property-source"
-source = "./highlight"
-name = "jsHighlight"
-rust_path = "crate::javascript_highlighting"
+```lezer
+@context TRACK_NEWLINE from "./tokens.js"
+@external tokens OPERATORS from "./tokens" { operatorToken }
+@external propSource js_highlighting from "./highlighting"
 ```
 
-The differing `./tokens.js` and `./tokens` strings are significant. The
-upstream package's Rollup/module-resolver build maps them to the same source
-module; native ECMAScript module resolution does not generally add a missing
-extension. The Rezel manifest performs neither kind of resolution. It uses
-symbolic grammar keys and therefore requires exact text. Generation should
-reject a normalized or guessed source string.
+The Rust backend removes an optional `.js`, `.mjs`, or `.ts` suffix, so the
+first two declarations resolve to `crate::tokens::TRACK_NEWLINE` and
+`crate::tokens::OPERATORS`; the property source resolves to
+`crate::highlighting::js_highlighting`. JavaScript adapters export those same
+names from the source modules named by the grammar.
 
 The remaining tokenizer declarations use the same binding kind with their own
 names and Rust statics. The runtime flags belong to each Rust
-`ExternalTokenizer`; they are not encoded in the grammar declaration or binding
-manifest.
+`ExternalTokenizer`; they are not encoded in the grammar declaration.
 
 ## Retain the general lessons
 

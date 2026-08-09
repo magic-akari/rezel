@@ -3257,7 +3257,8 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 nodes.push(node);
             }
             std::sync::Arc::new(
-                rezel_common::NodeSet::new(nodes).extend(&[crate::rust_highlighting()]),
+                rezel_common::NodeSet::new(nodes)
+                    .extend(&[crate::highlighting::rust_highlighting()]),
             )
         })
 }

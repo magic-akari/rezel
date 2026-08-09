@@ -49,7 +49,7 @@ const toolDirectory = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repository = join(toolDirectory, "..", "..", "..");
 const casesPath = join(toolDirectory, "cases", "rust.json");
 const snapshotPath = join(toolDirectory, "snapshots", "rust.json");
-const grammarPath = join(repository, "languages", "rust", "grammar", "rust.grammar");
+const grammarPath = join(repository, "languages", "rust", "src", "rust.grammar");
 const cases = JSON.parse(readFileSync(casesPath, "utf8")) as CaseManifest;
 
 assert.equal(cases.schema, CASE_SCHEMA);
@@ -71,7 +71,7 @@ const snapshot = {
 	reference: {
 		packages: Object.fromEntries(REFERENCE_PACKAGES.map((name) => [name, packageIdentity(name)])),
 		artifacts: {
-			grammar: inputIdentity("languages/rust/grammar/rust.grammar", grammar),
+			grammar: inputIdentity("languages/rust/src/rust.grammar", grammar),
 		},
 	},
 	coordinates: "raw-utf8-bytes",

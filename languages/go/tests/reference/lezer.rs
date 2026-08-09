@@ -154,7 +154,7 @@ fn reference_data() -> (CaseManifest, Snapshot) {
     }
     assert_eq!(
         snapshot.reference.artifacts.grammar.path,
-        "languages/go/grammar/go.grammar"
+        "languages/go/src/go.grammar"
     );
     assert_eq!(snapshot.reference.artifacts.grammar.sha256.len(), 64);
     (cases, snapshot)

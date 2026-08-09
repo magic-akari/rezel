@@ -23,6 +23,9 @@ const SLASH = 47;
 const ASTERISK = 42;
 const CLOSE_PAREN = 41;
 const CLOSE_BRACE = 125;
+const OPEN_BRACKET = 91;
+const LESS_THAN = 60;
+const MINUS = 45;
 
 const TRACKED_TERM_NAMES = [
 	"IncDecOp",
@@ -51,14 +54,30 @@ export function buildGoParser(options: BuildGoParserOptions): ReturnType<typeof 
 			options.warnings.push(message);
 		},
 		externalTokenizer(name, terms) {
-			assert.equal(name, "semicolon");
-			const insertedSemi = requiredTerm(terms, "insertedSemi");
-			return new ExternalTokenizer(
-				(input, stack) => {
-					scanSemicolon(input, stack, insertedSemi);
-				},
-				{ contextual: true },
-			);
+			switch (name) {
+				case "SEMICOLON": {
+					const insertedSemi = requiredTerm(terms, "insertedSemi");
+					return new ExternalTokenizer(
+						(input, stack) => {
+							scanSemicolon(input, stack, insertedSemi);
+						},
+						{ contextual: true },
+					);
+				}
+				case "INDEX_TYPE": {
+					const indexTypeStart = requiredTerm(terms, "indexTypeStart");
+					return new ExternalTokenizer(
+						(input, stack) => {
+							if (stack.canShift(indexTypeStart) && startsIndexType(input)) {
+								input.acceptToken(indexTypeStart, 0);
+							}
+						},
+						{ extend: true },
+					);
+				}
+				default:
+					throw new Error(`unknown Go tokenizer ${name}`);
+			}
 		},
 		contextTracker(terms) {
 			const space = requiredTerm(terms, "space");
@@ -74,10 +93,58 @@ export function buildGoParser(options: BuildGoParserOptions): ReturnType<typeof 
 			});
 		},
 		externalPropSource(name) {
-			assert.equal(name, "goHighlighting");
+			assert.equal(name, "go_highlighting");
 			return emptyProperties;
 		},
 	});
+}
+
+function startsIndexType(input: InputStream): boolean {
+	const first = input.peek(0);
+	if (first === OPEN_BRACKET) return true;
+	if (first === LESS_THAN) {
+		if (input.peek(1) !== MINUS) return false;
+		const start = skipGoTrivia(input, 2);
+		return start >= 0 && nextWordIs(input, start, "chan");
+	}
+	for (const keyword of ["chan", "func", "interface", "map", "struct"]) {
+		if (nextWordIs(input, 0, keyword)) return true;
+	}
+	return false;
+}
+
+function nextWordIs(input: InputStream, start: number, expected: string): boolean {
+	for (let index = 0; index < expected.length; index += 1) {
+		if (input.peek(start + index) !== expected.charCodeAt(index)) return false;
+	}
+	const next = input.peek(start + expected.length);
+	const asciiAlphanumeric = (next >= 48 && next <= 57) || (next >= 65 && next <= 90) || (next >= 97 && next <= 122);
+	return next < 0 || (next < 128 && next !== 95 && !asciiAlphanumeric);
+}
+
+function skipGoTrivia(input: InputStream, initial: number): number {
+	let scan = initial;
+	for (;;) {
+		while ([SPACE, TAB, NEWLINE, CARRIAGE_RETURN].includes(input.peek(scan))) scan += 1;
+		if (input.peek(scan) !== SLASH) return scan;
+		const comment = input.peek(scan + 1);
+		if (comment === SLASH) {
+			scan += 2;
+			while (![NEWLINE, CARRIAGE_RETURN, -1].includes(input.peek(scan))) scan += 1;
+			continue;
+		}
+		if (comment !== ASTERISK) return scan;
+		scan += 2;
+		for (;;) {
+			const next = input.peek(scan);
+			if (next < 0) return -1;
+			if (next === ASTERISK && input.peek(scan + 1) === SLASH) {
+				scan += 2;
+				break;
+			}
+			scan += 1;
+		}
+	}
 }
 
 function scanSemicolon(input: InputStream, stack: Stack, insertedSemi: number): void {

@@ -174,31 +174,31 @@ export function buildRustParser(options: BuildRustParserOptions): ReturnType<typ
 		},
 		externalTokenizer(name, terms) {
 			switch (name) {
-				case "closureParam":
+				case "CLOSURE_PARAM":
 					return closureParam(requiredTerm(terms, "closureParamDelim"));
-				case "tpDelim":
+				case "TYPE_PARAMETER_DELIMITERS":
 					return typeParameterDelimiters(requiredTerm(terms, "tpOpen"), requiredTerm(terms, "tpClose"));
-				case "literalTokens":
+				case "LITERALS":
 					return literalTokens({
 						float: requiredTerm(terms, "Float"),
 						rawString: requiredTerm(terms, "RawString"),
 					});
-				case "rustMacroRules":
+				case "MACRO_RULES_TOKENIZER":
 					return rustMacroRules(requiredTerm(terms, "macroRulesKeyword"));
-				case "rustTokenIdentifiers":
+				case "TOKEN_IDENTIFIER_TOKENIZER":
 					return rustIdentifiers(requiredTerm(terms, "tokenIdentifier"));
-				case "rustIdentifiers":
+				case "IDENTIFIER_TOKENIZER":
 					return rustIdentifiers(requiredTerm(terms, "identifier"));
-				case "rustLifetimes":
+				case "LIFETIME_TOKENIZER":
 					return rustLifetimes(requiredTerm(terms, "quoteIdentifier"));
-				case "rustMetavariables":
+				case "METAVARIABLE_TOKENIZER":
 					return rustMetavariables(requiredTerm(terms, "Metavariable"));
 				default:
 					throw new Error(`unexpected Rust external tokenizer ${name}`);
 			}
 		},
 		externalPropSource(name) {
-			assert.equal(name, "rustHighlighting");
+			assert.equal(name, "rust_highlighting");
 			return emptyProperties;
 		},
 	});

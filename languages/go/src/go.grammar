@@ -267,11 +267,11 @@ star[@name="*"] { "*" }
   BlockComment[isolate] { "/*" (blockCommentContent | blockCommentNewline)* blockCommentEnd }
 }
 
-@external tokens semicolon from "./tokens" { insertedSemi }
+@external tokens SEMICOLON from "./tokens" { insertedSemi }
 
-@external tokens indexType from "./tokens" { indexTypeStart }
+@external tokens INDEX_TYPE from "./tokens" { indexTypeStart }
 
-@context trackTokens from "./tokens"
+@context TRACK_TOKENS from "./tokens"
 
 @tokens {
   space[@export] { $[ \t\n\r]+ }
@@ -309,6 +309,6 @@ star[@name="*"] { "*" }
   "[" "]"[@export=closeBracket]
 }
 
-@external propSource goHighlighting from "./highlight"
+@external propSource go_highlighting from "./highlighting"
 
 @detectDelim

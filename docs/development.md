@@ -64,7 +64,7 @@ these commands.
 
 ## Change the maintained input, then regenerate
 
-Grammars, binding manifests, typed schemas, and reference scripts are
+Grammars, typed schemas, handwritten adapters, and reference scripts are
 maintained inputs. Parser source, term constants, parser-table blobs, typed CST
 wrappers, Unicode tables, and generated AST definitions are derived artifacts.
 

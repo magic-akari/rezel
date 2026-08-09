@@ -28,71 +28,62 @@ module named by `from` at runtime. The complete path is:
 
 ```text
 grammar declaration
-  -> declaration kind plus exact source and symbol keys
-  -> <language>.bindings.toml
-  -> checked Rust path emitted into generated.rs
+  -> relative source module plus exact symbol name
+  -> conventional crate module path emitted into generated.rs
   -> statically linked Rust callback or property provider
   -> LR tokenization, specialization, context tracking, or NodeSet construction
 ```
 
-The grammar owns when an external can participate and which terms or
-properties it exposes. The binding manifest owns symbol resolution. The Rust
-adapter owns the algorithm and runtime flags. Generated code joins those pieces
-with direct static references in the language's tokenizer and specializer
-arrays, context slot, and node-set constructor.
+The grammar owns when an external can participate, which terms or properties
+it exposes, and the module and symbol used by both JavaScript and Rust. The
+Rust adapter owns the algorithm and runtime flags. Generated code joins those
+pieces with direct static references in the language's tokenizer and
+specializer arrays, context slot, and node-set constructor.
 
 There is no string lookup after generation. A change to a declaration's kind,
-`source`, or symbol name must be accompanied by a matching manifest change and
-regeneration. A change to a Rust path is confined to the manifest as long as
-the external contract remains the same.
+`source`, or symbol name must be accompanied by the same Rust module or item
+rename and regeneration.
 
-## Binding manifest
+## Conventional external imports
 
-External declarations use source and symbol names inherited from the grammar.
-`<language>.bindings.toml` resolves each declaration to a statically linked
-Rust path:
+External declarations use the same source and symbol names in the grammar,
+JavaScript adapter, and Rust adapter. A relative source maps into the crate
+module tree:
 
-```toml
-[[binding]]
-kind = "external-tokenizer"
-source = "./tokens"
-name = "indentation"
-rust_path = "crate::tokens::INDENTATION"
-
-[[binding]]
-kind = "context-tracker"
-source = "./tokens"
-name = "trackIndent"
-rust_path = "crate::tokens::TRACK_INDENT"
-
-[[binding]]
-kind = "property-source"
-source = "./highlight"
-name = "languageHighlighting"
-rust_path = "crate::language_highlighting"
+```lezer
+@external tokens INDENTATION from "./tokens" { indent, dedent }
+@context TRACK_INDENT from "./tokens.js"
+@external propSource language_highlighting from "./highlighting"
 ```
 
-Every supported grammar declaration maps as follows:
+These declarations resolve to `crate::tokens::INDENTATION`,
+`crate::tokens::TRACK_INDENT`, and
+`crate::highlighting::language_highlighting`. The optional JavaScript module
+suffix is removed. Each remaining source component and the external name must
+be a valid Rust identifier; parent traversal and package imports are rejected.
 
-| Grammar declaration    | Binding `kind`         | `rust_path` target                | Generated use                                  |
-| ---------------------- | ---------------------- | --------------------------------- | ---------------------------------------------- |
-| `@external tokens`     | `external-tokenizer`   | `static ExternalTokenizer`        | `Tokenizer::External(&...)`                    |
-| `@external specialize` | `external-specializer` | `fn(&str, &Stack) -> Option<u16>` | callback result replaces the scanned base term |
-| `@external extend`     | `external-specializer` | `fn(&str, &Stack) -> Option<u16>` | callback result accompanies the base term      |
-| `@context`             | `context-tracker`      | `static ContextTracker`           | `Language::context`                            |
-| `@external prop`       | `node-property`        | `fn() -> NodeProp<T>`             | deserialize a grammar value onto a node type   |
-| `@external propSource` | `property-source`      | `fn() -> NodePropSource`          | extend the generated `NodeSet`                 |
+Every supported grammar declaration expects the following Rust item:
 
-`@external specialize` and `@external extend` deliberately share one binding
-kind and callback shape. The grammar declaration tells generated code whether
+| Grammar declaration    | Same-named Rust item              | Generated use                                  |
+| ---------------------- | --------------------------------- | ---------------------------------------------- |
+| `@external tokens`     | `static ExternalTokenizer`        | `Tokenizer::External(&...)`                    |
+| `@external specialize` | `fn(&str, &Stack) -> Option<u16>` | callback result replaces the scanned base term |
+| `@external extend`     | `fn(&str, &Stack) -> Option<u16>` | callback result accompanies the base term      |
+| `@context`             | `static ContextTracker`           | `Language::context`                            |
+| `@external prop`       | `fn() -> NodeProp<T>`             | deserialize a grammar value onto a node type   |
+| `@external propSource` | `fn() -> NodePropSource`          | extend the generated `NodeSet`                 |
+
+`@external specialize` and `@external extend` deliberately share one callback
+shape. The grammar declaration tells generated code whether
 the returned term has replacement or extension semantics. This is unrelated
 to `TokenizerFlags::extend`, which controls tokenizer ordering rather than
 specialization.
 
-`source` and `name` must exactly match the grammar declaration. `rust_path`
-must parse as a Rust path. Generation rejects duplicate entries, missing
-bindings, unused bindings, unknown fields, and invalid paths. The manifest is
-therefore a checked interface, not a loose module-resolution hint.
+Use Rust's conventional case directly: functions use `snake_case`, while
+static tokenizers and context trackers use `SCREAMING_SNAKE_CASE`. Both are
+valid JavaScript exports and Lezer grammar identifiers, so no host-specific
+renaming layer is needed. Missing items are ordinary Rust compile errors;
+invalid module or symbol syntax fails during generation.
 
 For `@external tokens`, the declaration block is the complete set of terms the
 callback is allowed to accept:
@@ -391,9 +382,9 @@ recovering modes indistinguishable.
 
 ## Adapter completion criteria
 
-An adapter is ready when its grammar declaration and binding manifest agree,
-generated code contains the intended static reference, its state, flags,
-ordering, progress, and coordinate rules are explicit, focused tests exercise
-normal and boundary behavior, malformed input remains observable, and no
-language-specific branch was added to `rezel-common` or `rezel-lr` without a
-genuinely reusable abstraction.
+An adapter is ready when its grammar declaration and same-named Rust module
+agree, generated code contains the intended static reference, its state,
+flags, ordering, progress, and coordinate rules are explicit, focused tests
+exercise normal and boundary behavior, malformed input remains observable,
+and no language-specific branch was added to `rezel-common` or `rezel-lr`
+without a genuinely reusable abstraction.

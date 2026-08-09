@@ -28,7 +28,7 @@ When repeatedly checking or generating a grammar in this workspace, prefer
 the `generator-dev` aliases:
 
 ```console
-cargo rezel check languages/json/grammar/json.grammar
+cargo rezel check languages/json/src/json.grammar
 cargo rezel-codegen json --check
 cargo rezel-codegen json --update
 ```
@@ -48,25 +48,22 @@ crate manifest, so it cannot live in `crates/rezel-generator/Cargo.toml`.
 `generated.le.bin` and `generated.be.bin`. The Rust glue selects the
 native-endian representation at compile time.
 
-External grammar declarations are linked through a checked manifest:
+External grammar declarations resolve by module and symbol name:
 
-```toml
-[[binding]]
-kind = "external-tokenizer"
-source = "./tokens"
-name = "tokens"
-rust_path = "crate::TOKENS"
+```lezer
+@external tokens TOKENS from "./tokens" { Word }
 ```
 
-Pass it with `--bindings language.bindings.toml`. Missing, unused, duplicate,
-or invalid bindings are generation errors.
+The Rust backend emits `crate::tokens::TOKENS`. Relative `.js`, `.mjs`, and
+`.ts` suffixes are removed before resolving the crate module. Module and symbol
+names must therefore be valid Rust identifiers and match the language adapter
+exactly.
 
 Zero-copy typed CST wrappers are generated from an independently checked TOML
 schema:
 
 ```console
 rezel generate language.grammar --output generated.rs \
-  --bindings language.bindings.toml \
   --typed language.typed.toml --typed-output typed.rs
 ```
 
@@ -84,7 +81,7 @@ Generation performs these operations:
    states;
 4. resolve declared precedence, cuts, and explicit GLR ambiguity;
 5. compile code-point token automata and lexical precedence;
-6. validate Rust external bindings and typed-schema coverage;
+6. resolve conventional Rust external paths and validate typed-schema coverage;
 7. emit Rust glue, named terms, both endian table blobs, and typed wrappers.
 
 The grammar notation follows Lezer's core design. The
@@ -99,14 +96,14 @@ Rezel behavior.
 The same pipeline is available without spawning the CLI:
 
 ```rust
-use rezel_generator::{BuildOptions, RustBindings, compile_grammar, emit_rust};
+use rezel_generator::{BuildOptions, compile_grammar, emit_rust};
 
 let grammar = compile_grammar(
     r#"@top Document { word* } @tokens { word { @asciiLetter+ } }"#,
     Some("document.grammar"),
     BuildOptions::default(),
 )?;
-let generated = emit_rust(&grammar, &RustBindings::default())?;
+let generated = emit_rust(&grammar)?;
 
 assert!(generated.parser.contains("LANGUAGE"));
 assert!(!generated.little_endian_data.is_empty());

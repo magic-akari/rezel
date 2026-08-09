@@ -1010,11 +1010,11 @@ commaSepTrailing<expr> { (expr ("," expr?)*)? }
 
 @skip { LineComment | BlockComment | whitespace }
 
-@external specialize { identifier } javaRecordKeyword from "./identifier" {
+@external specialize { identifier } specialize_record from "./identifier" {
   record[@name=record]
 }
 
-@external tokens javaIdentifiers from "./identifier" {
+@external tokens TOKENIZER from "./identifier" {
   identifier
 }
 
@@ -1108,6 +1108,6 @@ commaSepTrailing<expr> { (expr ("," expr?)*)? }
   "{" "}" "(" ")" "[" "]" "." "," ";" ":" "?" "..." "->" "::" "@"
 }
 
-@external propSource javaHighlighting from "./highlight"
+@external propSource java_highlighting from "./highlighting"
 
 @detectDelim

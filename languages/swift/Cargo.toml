@@ -4,7 +4,6 @@ version.workspace = true
 categories = ["parser-implementations"]
 edition.workspace = true
 include = [
-	"/grammar/**",
 	"/src/**",
 	"/tests/**",
 	"/Cargo.toml",

@@ -33,6 +33,6 @@ PropertyName[isolate] { string }
 @skip { whitespace }
 list<item> { item ("," item)* }
 
-@external propSource jsonHighlighting from "./highlight"
+@external propSource json_highlighting from "./highlighting"
 
 @detectDelim

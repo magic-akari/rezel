@@ -17,8 +17,8 @@
 		},
 		"artifacts": {
 			"grammar": {
-				"path": "languages/go/grammar/go.grammar",
-				"sha256": "4164d72bf30dd249cdab58e95c518f38c2f1e0f4396335619d23a4a1f01661b5"
+				"path": "languages/go/src/go.grammar",
+				"sha256": "696311b328b6e4daec1d08a1b1948198f001ba150d1aacf49db9849c6c28b2ee"
 			}
 		}
 	},

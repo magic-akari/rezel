@@ -5,7 +5,6 @@ autotests = false
 categories = ["parser-implementations"]
 edition.workspace = true
 include = [
-	"/grammar/**",
 	"/examples/**",
 	"/src/**",
 	"/Cargo.toml",

@@ -2024,38 +2024,38 @@ codeItemSeparator { ";" | lineBreak }
   BlockComment[isolate] { "/*" (BlockComment | blockCommentContent)* blockCommentEnd }
 }
 
-@external tokens swiftMetatypeTokens from "./tokens" {
+@external tokens METATYPE_TOKENS from "./tokens" {
   TypeKeyword
   ProtocolKeyword
 }
 
-@external tokens swiftKeywordIdentifiers from "./tokens" {
+@external tokens KEYWORD_IDENTIFIERS from "./tokens" {
   keywordIdentifierToken[@name=Identifier]
 }
 
-@external tokens swiftGenericRequirementContinuation from "./tokens" {
+@external tokens GENERIC_REQUIREMENT_CONTINUATION from "./tokens" {
   genericRequirementContinuation
 }
 
-@external tokens swiftCodeItemLayout from "./tokens" {
+@external tokens CODE_ITEM_LAYOUT from "./tokens" {
   lineBreak
   declarationEffectLineLookahead
   enumCaseParameterLineLookahead
   postfixIfConfigLookahead
 }
 
-@external tokens swiftAccessorLookaheads from "./tokens" {
+@external tokens ACCESSOR_LOOKAHEADS from "./tokens" {
   initializedPropertyBlockLookahead
   accessorBlockLookahead
 }
 
-@external tokens swiftTypePathLookaheads from "./tokens" {
+@external tokens TYPE_PATH_LOOKAHEADS from "./tokens" {
   qualifiedDeclTypeLookahead
   keyPathDottedOptionalComponentLookahead
   keyPathGenericArgumentLookahead
 }
 
-@external tokens swiftAttributeTokens from "./tokens" {
+@external tokens ATTRIBUTE_TOKENS from "./tokens" {
   AttributeName
   AttributeNameWithArguments
   customAttributeNameWithArguments[@name=AttributeNameWithArguments]
@@ -2076,17 +2076,17 @@ codeItemSeparator { ";" | lineBreak }
   poundSourceLocation[@name="#sourceLocation"]
 }
 
-@external tokens swiftLiterals from "./tokens" {
+@external tokens LITERALS from "./tokens" {
   RegexLiteral
   StringLiteral[isolate]
 }
 
-@external tokens swiftGenericValueLookaheads from "./tokens" {
+@external tokens GENERIC_VALUE_LOOKAHEADS from "./tokens" {
   parenthesizedGenericValueLookahead
   inlineArrayTypeExpressionLookahead
 }
 
-@external tokens swiftSyntaxLookaheads from "./tokens" {
+@external tokens SYNTAX_LOOKAHEADS from "./tokens" {
   postfixMemberLookahead
   attributedTypeExpressionLookahead
   nonisolatedSpecifierArgumentLookahead
@@ -2099,7 +2099,7 @@ codeItemSeparator { ";" | lineBreak }
   usingDeclarationLookahead
 }
 
-@external tokens swiftOperators from "./tokens" {
+@external tokens OPERATORS from "./tokens" {
   prefixTilde
   prefixAmpersand
   binaryAmpersand
@@ -2118,11 +2118,11 @@ codeItemSeparator { ";" | lineBreak }
   infixQuestionMark
 }
 
-@external tokens swiftCatchPatternContext from "./tokens" {
+@external tokens CATCH_PATTERN_CONTEXT from "./tokens" {
   catchPatternLookahead
 }
 
-@external tokens swiftClosureSignatureContext from "./tokens" {
+@external tokens CLOSURE_SIGNATURE_CONTEXT from "./tokens" {
   closureSignatureLookahead
 }
 

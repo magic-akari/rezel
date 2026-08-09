@@ -11,12 +11,13 @@ language-independent Rust parser configuration and keeps language-specific
 tokenization, source translation, validation, and projections in language
 packages.
 
-A language grammar, Rust binding manifest, and typed schema are compiled into
-Rust glue, named terms, little- and big-endian parser-table blobs, and typed CST
-wrappers. At runtime, UTF-8 source is read as logical code points with original
-byte boundaries, tokenized, parsed by the LR/GLR engine, and represented as a
-compact CST. Language packages may additionally expose an owned AST and
-syntactic highlighting.
+A language grammar and typed schema are compiled into Rust glue, named terms,
+little- and big-endian parser-table blobs, and typed CST wrappers. Grammar
+external modules resolve directly to same-named Rust modules and items. At
+runtime, UTF-8 source is read as logical code points with original byte
+boundaries, tokenized, parsed by the LR/GLR engine, and represented as a compact
+CST. Language packages may additionally expose an owned AST and syntactic
+highlighting.
 
 The repository currently contains several language packages that exercise
 different integration patterns. They are the present implementation set, not

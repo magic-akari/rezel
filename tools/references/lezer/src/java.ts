@@ -48,7 +48,7 @@ const toolDirectory = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repository = join(toolDirectory, "..", "..", "..");
 const casesPath = join(toolDirectory, "cases", "java.json");
 const snapshotPath = join(toolDirectory, "snapshots", "java.json");
-const grammarPath = join(repository, "languages", "java", "grammar", "java.grammar");
+const grammarPath = join(repository, "languages", "java", "src", "java.grammar");
 const identifierTablesPath = join(repository, "languages", "java", "src", "unicode17.rs");
 const cases = JSON.parse(readFileSync(casesPath, "utf8")) as CaseManifest;
 
@@ -73,7 +73,7 @@ const snapshot = {
 	reference: {
 		packages: Object.fromEntries(REFERENCE_PACKAGES.map((name) => [name, packageIdentity(name)])),
 		artifacts: {
-			grammar: inputIdentity("languages/java/grammar/java.grammar", grammar),
+			grammar: inputIdentity("languages/java/src/java.grammar", grammar),
 			identifierTables: inputIdentity("languages/java/src/unicode17.rs", identifierTables),
 		},
 	},

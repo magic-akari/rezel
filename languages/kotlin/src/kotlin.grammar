@@ -1370,28 +1370,28 @@ EnumModifier[@name=Modifier] {
   ckw<"enum">
 }
 
-@external tokens importKeywords from "./tokens" {
+@external tokens IMPORT_KEYWORDS from "./tokens" {
   importKeyword[@name="import"]
 }
 
-@external tokens tryClauseKeywords from "./tokens" {
+@external tokens TRY_CLAUSE_KEYWORDS from "./tokens" {
   catchKeyword[@name="catch"],
   finallyKeyword[@name="finally"]
 }
 
-@external tokens controlFunctionKeywords from "./tokens" {
+@external tokens CONTROL_FUNCTION_KEYWORDS from "./tokens" {
   controlFunctionKeyword[@name="fun"]
 }
 
-@external tokens directControlLambdaGuards from "./tokens" {
+@external tokens DIRECT_CONTROL_LAMBDA_GUARDS from "./tokens" {
   directControlLambda
 }
 
-@external tokens sameLineJumpGuards from "./tokens" {
+@external tokens SAME_LINE_JUMP_GUARDS from "./tokens" {
   sameLineJump
 }
 
-@external tokens sameLineGuards from "./tokens" {
+@external tokens SAME_LINE_GUARDS from "./tokens" {
   sameLineCall,
   sameLineRange,
   sameLineNotNull,
@@ -1401,24 +1401,24 @@ EnumModifier[@name=Modifier] {
   nullableCallableQuestion[@name="?"]
 }
 
-@external tokens sameLineLambdaGuards from "./tokens" {
+@external tokens SAME_LINE_LAMBDA_GUARDS from "./tokens" {
   sameLineLambda
 }
 
-@external tokens nullableReceiverQuestions from "./tokens" {
+@external tokens NULLABLE_RECEIVER_QUESTIONS from "./tokens" {
   receiverQuestion[@name="?"]
 }
 
-@external tokens genericNullableCallableQuestions from "./tokens" {
+@external tokens GENERIC_NULLABLE_CALLABLE_QUESTIONS from "./tokens" {
   genericNullableCallableQuestion[@name="?"]
 }
 
-@external tokens multiDollarStringStarts from "./tokens" {
+@external tokens MULTI_DOLLAR_STRING_STARTS from "./tokens" {
   multiDollarLineStringStart,
   multiDollarMultiLineStringStart
 }
 
-@external tokens multiDollarStringSegments from "./tokens" {
+@external tokens MULTI_DOLLAR_STRING_SEGMENTS from "./tokens" {
   multiDollarLineStringEnd,
   multiDollarMultiLineStringEnd,
   multiDollarInterpolationExpressionStart,
@@ -1426,13 +1426,13 @@ EnumModifier[@name=Modifier] {
   multiDollarInterpolationIdentifierStart
 }
 
-@external tokens multiDollarStringContents from "./tokens" {
+@external tokens MULTI_DOLLAR_STRING_CONTENTS from "./tokens" {
   multiDollarStringContent
 }
 
-@context trackLineBreak from "./tokens"
+@context TRACK_LINE_BREAK from "./tokens"
 
-@external tokens adjacentClassMemberEnds from "./tokens" {
+@external tokens ADJACENT_CLASS_MEMBER_ENDS from "./tokens" {
   adjacentClassMemberEnd
 }
 
@@ -1489,23 +1489,23 @@ EnumModifier[@name=Modifier] {
   @precedence { labeledSuperStart, labeledIdentifier, identifier }
 }
 
-@external tokens adjacentAnnotationIdentifiers from "./tokens" {
+@external tokens ADJACENT_ANNOTATION_IDENTIFIERS from "./tokens" {
   adjacentAnnotationIdentifier
 }
 
-@external tokens sameLineFallbackGuards from "./tokens" {
+@external tokens SAME_LINE_FALLBACK_GUARDS from "./tokens" {
   sameLineOperator,
   sameLineIdentifier
 }
 
-@external tokens lineBreakPrefixes from "./tokens" {
+@external tokens LINE_BREAK_PREFIXES from "./tokens" {
   lineBreakPrefix
 }
 
-@external tokens statementEnds from "./tokens" {
+@external tokens STATEMENT_ENDS from "./tokens" {
   insertedStatementEnd
 }
 
-@external propSource kotlinHighlighting from "./highlight"
+@external propSource kotlin_highlighting from "./highlighting"
 
 @detectDelim

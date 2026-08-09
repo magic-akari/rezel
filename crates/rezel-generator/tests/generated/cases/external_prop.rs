@@ -58,7 +58,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                     "A",
                     rezel_common::NodeFlags::default(),
                 );
-                let property = crate::support::externals::tag();
+                let property = crate::script::tag();
                 let value = property
                     .deserialize("55")
                     .expect("generated grammar property must deserialize");

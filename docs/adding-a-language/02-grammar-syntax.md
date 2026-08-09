@@ -189,10 +189,10 @@ parse branches.
 
 Use an external specializer when classification needs Rust code rather than a
 finite declarative word set. It must be declared in the grammar and resolved by
-the binding manifest. Multiple generated or external specializers may share a
-base token. They run in declaration order and stop at the first result allowed
-by the active dialect; declining or dialect-disabled results continue to the
-next specializer.
+the same-named relative Rust module and function. Multiple generated or
+external specializers may share a base token. They run in declaration order
+and stop at the first result allowed by the active dialect; declining or
+dialect-disabled results continue to the next specializer.
 
 ## Precedence, associativity, and cuts
 
@@ -511,10 +511,10 @@ both are accepted by the current state.
 attach it to any node. A property source instead computes assignments over the
 generated node types. Neither form scans input or changes the accepted CFG.
 
-The source and symbol names are declarative keys rather than runtime
-module-loading instructions. The
-[binding manifest](04-language-adapters.md#binding-manifest) maps them to Rust
-paths and rejects missing or unused entries.
+The source and symbol names are compile-time module imports rather than runtime
+lookups. The Rust backend maps `./module` and `symbol` directly to
+`crate::module::symbol`; see
+[conventional external imports](04-language-adapters.md#conventional-external-imports).
 
 The trailing set on `@external tokens`, `@external specialize`, and
 `@external extend` is a closed contract: it enumerates every term that the Rust
@@ -555,10 +555,10 @@ Use the repository-local generator:
 
 ```sh
 cargo run --locked -p rezel-generator -- check \
-  languages/<language>/grammar/<language>.grammar
+  languages/<language>/src/<language>.grammar
 
 cargo run --locked -p rezel-generator -- terms \
-  languages/<language>/grammar/<language>.grammar
+  languages/<language>/src/<language>.grammar
 ```
 
 `check` compiles the grammar and reports table statistics, warnings, lexical

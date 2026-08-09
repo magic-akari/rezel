@@ -10,6 +10,18 @@ mod case_registry;
 
 mod support;
 
+mod external_tokens {
+    pub(crate) use crate::support::externals::EXT1 as ext1;
+}
+
+mod script {
+    pub(crate) use crate::support::externals::tag;
+}
+
+mod something {
+    pub(crate) use crate::support::externals::spec1;
+}
+
 use rezel_common::{Input, ParseErrorKind, ParseRequest, Parser, StringInput, TextRange};
 use rezel_generator::{BuildOptions, compile_grammar};
 use rezel_lr::{

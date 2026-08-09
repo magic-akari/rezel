@@ -47,7 +47,7 @@ const toolDirectory = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repository = join(toolDirectory, "..", "..", "..");
 const casesPath = join(toolDirectory, "cases", "go.json");
 const snapshotPath = join(toolDirectory, "snapshots", "go.json");
-const grammarPath = join(repository, "languages", "go", "grammar", "go.grammar");
+const grammarPath = join(repository, "languages", "go", "src", "go.grammar");
 const cases = JSON.parse(readFileSync(casesPath, "utf8")) as CaseManifest;
 
 assert.equal(cases.schema, CASE_SCHEMA);
@@ -69,7 +69,7 @@ const snapshot = {
 	reference: {
 		packages: Object.fromEntries(REFERENCE_PACKAGES.map((name) => [name, packageIdentity(name)])),
 		artifacts: {
-			grammar: inputIdentity("languages/go/grammar/go.grammar", grammar),
+			grammar: inputIdentity("languages/go/src/go.grammar", grammar),
 		},
 	},
 	coordinates: "raw-utf8-bytes",

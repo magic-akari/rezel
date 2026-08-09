@@ -3,7 +3,6 @@
 
 mod automaton;
 mod binary;
-mod binding;
 mod build;
 mod emit;
 mod error;
@@ -14,7 +13,6 @@ mod source;
 mod token;
 mod typed;
 
-pub use binding::{RustBindingKind, RustBindings};
 pub use build::{
     BuildOptions, CompiledGrammar, ContextMetadata, ExternalPropertyMetadata, NodeMetadata,
     ProductionMetadata, PropertySourceMetadata, SpecializedTokenMetadata, SpecializerMetadata,

@@ -2,15 +2,12 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::LitStr;
+use syn::{LitStr, Path};
 
 use crate::binary::BinaryTables;
 use crate::source::format_generated_rust;
 use crate::token::EncodedTokenTable;
-use crate::{
-    CompiledGrammar, GeneratorError, RustBindingKind, RustBindings, SpecializerMetadata,
-    TokenizerMetadata,
-};
+use crate::{CompiledGrammar, GeneratorError, SpecializerMetadata, TokenizerMetadata};
 
 /// Generated parser and term modules.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -32,12 +29,9 @@ pub struct GeneratedRust {
 ///
 /// # Errors
 ///
-/// Returns missing/invalid external bindings or invalid generated Rust.
-pub fn emit_rust(
-    grammar: &CompiledGrammar,
-    bindings: &RustBindings,
-) -> Result<GeneratedRust, GeneratorError> {
-    emit_rust_with_data_paths(grammar, bindings, "generated.le.bin", "generated.be.bin")
+/// Returns invalid external module paths or invalid generated Rust.
+pub fn emit_rust(grammar: &CompiledGrammar) -> Result<GeneratedRust, GeneratorError> {
+    emit_rust_with_data_paths(grammar, "generated.le.bin", "generated.be.bin")
 }
 
 /// Emit one static-table Rust parser with explicit data paths.
@@ -47,16 +41,14 @@ pub fn emit_rust(
 ///
 /// # Errors
 ///
-/// Returns missing/invalid external bindings or invalid generated Rust.
+/// Returns invalid external module paths or invalid generated Rust.
 pub fn emit_rust_with_data_paths(
     grammar: &CompiledGrammar,
-    bindings: &RustBindings,
     little_endian_path: &str,
     big_endian_path: &str,
 ) -> Result<GeneratedRust, GeneratorError> {
-    bindings.validate(grammar)?;
     let terms = emit_terms(grammar)?;
-    let emitted = emit_parser(grammar, bindings, little_endian_path, big_endian_path)?;
+    let emitted = emit_parser(grammar, little_endian_path, big_endian_path)?;
     Ok(GeneratedRust {
         parser: emitted.source,
         terms,
@@ -92,7 +84,6 @@ pub fn emit_terms(grammar: &CompiledGrammar) -> Result<String, GeneratorError> {
 
 fn emit_parser(
     grammar: &CompiledGrammar,
-    bindings: &RustBindings,
     little_endian_path: &str,
     big_endian_path: &str,
 ) -> Result<EmittedParser, GeneratorError> {
@@ -101,13 +92,13 @@ fn emit_parser(
     let mut glue = String::new();
     let mut tables = BinaryTables::default();
     let local_names = emit_parser_arrays(&mut glue, &mut tables, grammar);
-    let tokenizer_values = emit_tokenizers(grammar, bindings, &local_names)?;
+    let tokenizer_values = emit_tokenizers(grammar, &local_names)?;
     let dialects = emit_dialects(&mut tables, grammar);
     tables.push_dynamic_precedences("dynamic_precedences", &grammar.dynamic_precedences);
     let binary = tables.finish(little_endian_path, big_endian_path);
     source.push_str(&binary.declaration.to_string());
     source.push_str(&glue);
-    let structural = emit_language_definition(grammar, bindings, &tokenizer_values, &dialects)?;
+    let structural = emit_language_definition(grammar, &tokenizer_values, &dialects)?;
     source.push_str(&structural.to_string());
     let source = format_generated_rust(&source, "Generated parser is invalid Rust")?;
     Ok(EmittedParser {
@@ -165,7 +156,6 @@ fn emit_parser_arrays(
 
 fn emit_tokenizers(
     grammar: &CompiledGrammar,
-    bindings: &RustBindings,
     local_names: &BTreeMap<usize, LocalTableNames>,
 ) -> Result<Vec<TokenStream>, GeneratorError> {
     grammar
@@ -200,11 +190,7 @@ fn emit_tokenizers(
                         }
                     }
                     TokenizerMetadata::External { binding, source } => {
-                        let path = bindings.resolve(
-                            RustBindingKind::ExternalTokenizer,
-                            source,
-                            binding,
-                        )?;
+                        let path = external_rust_path(source, binding)?;
                         quote!(rezel_lr::Tokenizer::External(&#path))
                     }
                 })
@@ -238,7 +224,6 @@ fn emit_dialects(tables: &mut BinaryTables, grammar: &CompiledGrammar) -> Vec<To
 
 fn emit_language_definition(
     grammar: &CompiledGrammar,
-    bindings: &RustBindings,
     tokenizer_values: &[TokenStream],
     dialects: &[TokenStream],
 ) -> Result<TokenStream, GeneratorError> {
@@ -259,14 +244,10 @@ fn emit_language_definition(
         quote!((#term, #name))
     });
 
-    let (specializer_functions, specializer_values) = emit_specializers(grammar, bindings)?;
-    let node_set = emit_node_set(grammar, bindings)?;
+    let (specializer_functions, specializer_values) = emit_specializers(grammar)?;
+    let node_set = emit_node_set(grammar)?;
     let context = if let Some(context) = &grammar.context {
-        let path = bindings.resolve(
-            RustBindingKind::ContextTracker,
-            &context.source,
-            &context.binding,
-        )?;
+        let path = external_rust_path(&context.source, &context.binding)?;
         quote!(Some(&#path))
     } else {
         quote!(None)
@@ -316,7 +297,6 @@ fn emit_language_definition(
 
 fn emit_specializers(
     grammar: &CompiledGrammar,
-    bindings: &RustBindings,
 ) -> Result<(TokenStream, Vec<TokenStream>), GeneratorError> {
     let mut functions = TokenStream::new();
     let mut emitted = Vec::new();
@@ -351,8 +331,7 @@ fn emit_specializers(
                 source,
                 extend,
             } => {
-                let path =
-                    bindings.resolve(RustBindingKind::ExternalSpecializer, source, binding)?;
+                let path = external_rust_path(source, binding)?;
                 let kind = specialize_kind(*extend);
                 let function = Ident::new(&format!("specialize_{index}"), Span::call_site());
                 functions.extend(quote! {
@@ -437,21 +416,14 @@ fn specializer_spec(term: u16, function: &Ident) -> TokenStream {
     }
 }
 
-fn emit_node_set(
-    grammar: &CompiledGrammar,
-    bindings: &RustBindings,
-) -> Result<TokenStream, GeneratorError> {
+fn emit_node_set(grammar: &CompiledGrammar) -> Result<TokenStream, GeneratorError> {
     let external_properties = grammar
         .external_properties
         .iter()
         .map(|property| {
             Ok((
                 property.name.as_str(),
-                bindings.resolve(
-                    RustBindingKind::NodeProperty,
-                    &property.source,
-                    &property.binding,
-                )?,
+                external_rust_path(&property.source, &property.binding)?,
             ))
         })
         .collect::<Result<BTreeMap<_, _>, GeneratorError>>()?;
@@ -493,13 +465,7 @@ fn emit_node_set(
     let sources = grammar
         .property_sources
         .iter()
-        .map(|source| {
-            bindings.resolve(
-                RustBindingKind::PropertySource,
-                &source.source,
-                &source.binding,
-            )
-        })
+        .map(|source| external_rust_path(&source.source, &source.binding))
         .collect::<Result<Vec<_>, _>>()?;
     let finish = if sources.is_empty() {
         quote!(rezel_common::NodeSet::new(nodes))
@@ -556,6 +522,59 @@ fn specialize_kind(extend: bool) -> TokenStream {
 
 fn option_u16(value: Option<u16>) -> TokenStream {
     value.map_or_else(|| quote!(None), |value| quote!(Some(#value)))
+}
+
+fn external_rust_path(source: &str, name: &str) -> Result<Path, GeneratorError> {
+    let Some(relative) = source.strip_prefix("./") else {
+        return Err(GeneratorError::new(
+            format!("Rust external source {source:?} must start with \"./\""),
+            None,
+        ));
+    };
+    let module = [".js", ".mjs", ".ts"]
+        .into_iter()
+        .find_map(|suffix| relative.strip_suffix(suffix))
+        .unwrap_or(relative);
+    if module.is_empty() {
+        return Err(GeneratorError::new(
+            format!("Rust external source {source:?} has no module path"),
+            None,
+        ));
+    }
+
+    let mut rust_path = String::from("crate");
+    for component in module.split('/') {
+        if component.is_empty() || matches!(component, "." | "..") {
+            return Err(GeneratorError::new(
+                format!("Rust external source {source:?} has an invalid module component"),
+                None,
+            ));
+        }
+        syn::parse_str::<Ident>(component).map_err(|error| {
+            GeneratorError::new(
+                format!(
+                    "Rust external source {source:?} contains invalid module {component:?}: {error}"
+                ),
+                None,
+            )
+        })?;
+        rust_path.push_str("::");
+        rust_path.push_str(component);
+    }
+    syn::parse_str::<Ident>(name).map_err(|error| {
+        GeneratorError::new(
+            format!("Rust external name {name:?} is not an identifier: {error}"),
+            None,
+        )
+    })?;
+    rust_path.push_str("::");
+    rust_path.push_str(name);
+    syn::parse_str(&rust_path).map_err(|error| {
+        GeneratorError::new(
+            format!("Resolved Rust external path {rust_path:?} is invalid: {error}"),
+            None,
+        )
+    })
 }
 
 fn write_token_table(
@@ -676,6 +695,8 @@ fn is_rust_keyword(name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use quote::ToTokens;
+
     use super::*;
     use crate::{BuildOptions, compile_grammar};
 
@@ -702,19 +723,10 @@ kw<word> { @specialize[@name={word}]<Name, word> }
             BuildOptions::default(),
         )
         .unwrap();
-        let bindings = RustBindings::from_toml_str(
-            r#"
-[[binding]]
-kind = "external-specializer"
-source = "./tokens"
-name = "contextual"
-rust_path = "crate::contextual"
-"#,
-        )
-        .unwrap();
-
-        let source = emit_rust(&grammar, &bindings).unwrap().parser;
-        let external = source.find("crate::contextual(value, stack)").unwrap();
+        let source = emit_rust(&grammar).unwrap().parser;
+        let external = source
+            .find("crate::tokens::contextual(value, stack)")
+            .unwrap();
         let table = source.find("fn specialize_1(").unwrap();
         let first = source.find("specialize_0(value, stack)").unwrap();
         let second = source.find("specialize_1(value, stack)").unwrap();
@@ -723,5 +735,28 @@ rust_path = "crate::contextual"
         assert!(first < second);
         assert_eq!(source.matches("SpecializerSpec {").count(), 1);
         assert!(source.contains("get: specialize_combined_0"));
+    }
+
+    #[test]
+    fn external_paths_follow_relative_javascript_module_names() {
+        assert_eq!(
+            external_rust_path("./tokens.js", "scan_identifier")
+                .unwrap()
+                .to_token_stream()
+                .to_string(),
+            "crate :: tokens :: scan_identifier"
+        );
+        assert_eq!(
+            external_rust_path("./nested/highlight", "properties")
+                .unwrap()
+                .to_token_stream()
+                .to_string(),
+            "crate :: nested :: highlight :: properties"
+        );
+
+        for source in ["tokens", "../tokens", "./", "./bad-name"] {
+            assert!(external_rust_path(source, "external").is_err());
+        }
+        assert!(external_rust_path("./tokens", "not-valid").is_err());
     }
 }

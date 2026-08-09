@@ -51,13 +51,13 @@ export function buildPythonParser(options: BuildOptions): ReturnType<typeof buil
 		},
 		externalTokenizer(name, terms) {
 			switch (name) {
-				case "indentation":
+				case "INDENTATION":
 					return indentation(requiredTerm(terms, "indent"), requiredTerm(terms, "dedent"));
-				case "newlines":
+				case "NEWLINES":
 					return newlines(terms);
-				case "strings":
+				case "STRINGS":
 					return strings(terms);
-				case "pythonIdentifiers":
+				case "TOKENIZER":
 					return identifiers(requiredTerm(terms, "identifier"), xidStart, xidContinue);
 				default:
 					throw new Error(`unknown Python tokenizer ${name}`);
@@ -129,7 +129,7 @@ export function buildPythonParser(options: BuildOptions): ReturnType<typeof buil
 			});
 		},
 		externalPropSource(name) {
-			assert.equal(name, "pythonHighlighting");
+			assert.equal(name, "python_highlighting");
 			return emptyProperties;
 		},
 	});

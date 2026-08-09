@@ -35,7 +35,7 @@ fn specialize_0(
     value: &str,
     stack: &rezel_lr::Stack,
 ) -> Option<rezel_lr::SpecializedToken> {
-    crate::support::externals::spec1(value, stack)
+    crate::something::spec1(value, stack)
         .map(|term| {
             rezel_lr::SpecializedToken::new(term, rezel_lr::Specialize::Replace)
         })

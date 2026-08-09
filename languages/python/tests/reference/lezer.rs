@@ -156,7 +156,7 @@ fn reference_data() -> (CaseManifest, Snapshot) {
     assert_eq!(snapshot.coordinates, "raw-utf8-bytes");
     assert_eq!(
         snapshot.reference.grammar.path,
-        "languages/python/grammar/python.grammar"
+        "languages/python/src/python.grammar"
     );
     assert_eq!(
         snapshot.reference.unicode.path,

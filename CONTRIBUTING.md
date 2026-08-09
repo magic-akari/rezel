@@ -33,9 +33,8 @@ generation, snapshot updates, and the checks included in each gate.
    in `crates/`; grammar behavior, source translation, external tokenization,
    strict validation, typed syntax, AST lowering, and language references
    belong to a language package or its tools.
-2. Change the maintained input. Edit a grammar, binding manifest, typed schema,
-   generation script, or handwritten implementation rather than a derived
-   file.
+2. Change the maintained input. Edit a grammar, typed schema, generation
+   script, or handwritten implementation rather than a derived file.
 3. Regenerate every affected artifact. Parser generation includes Rust glue,
    named terms, little- and big-endian table blobs, and typed CST source.
 4. Run the smallest relevant tests and inspect generated or snapshot diffs.

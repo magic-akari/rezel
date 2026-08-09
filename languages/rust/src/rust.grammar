@@ -752,21 +752,21 @@ commaSep1<expr> { expr ("," expr?)* }
 
 plusSep<expr> { expr (!plusSep "+" expr)* }
 
-@external tokens closureParam from "./tokens" { closureParamDelim[@name="|"] }
+@external tokens CLOSURE_PARAM from "./tokens" { closureParamDelim[@name="|"] }
 
-@external tokens tpDelim from "./tokens" { tpOpen[@name="<"], tpClose[@name=">"] }
+@external tokens TYPE_PARAMETER_DELIMITERS from "./tokens" { tpOpen[@name="<"], tpClose[@name=">"] }
 
-@external tokens literalTokens from "./tokens" { RawString[isolate], Float }
+@external tokens LITERALS from "./tokens" { RawString[isolate], Float }
 
-@external tokens rustMacroRules from "./identifier" { macroRulesKeyword[@name="macro_rules"] }
+@external tokens MACRO_RULES_TOKENIZER from "./identifier" { macroRulesKeyword[@name="macro_rules"] }
 
-@external tokens rustTokenIdentifiers from "./identifier" { tokenIdentifier[@name=Identifier] }
+@external tokens TOKEN_IDENTIFIER_TOKENIZER from "./identifier" { tokenIdentifier[@name=Identifier] }
 
-@external tokens rustIdentifiers from "./identifier" { identifier }
+@external tokens IDENTIFIER_TOKENIZER from "./identifier" { identifier }
 
-@external tokens rustLifetimes from "./identifier" { quoteIdentifier }
+@external tokens LIFETIME_TOKENIZER from "./identifier" { quoteIdentifier }
 
-@external tokens rustMetavariables from "./identifier" { Metavariable }
+@external tokens METAVARIABLE_TOKENIZER from "./identifier" { Metavariable }
 
 @tokens {
   whitespace { $[\t-\r \u{0085}\u{200e}\u{200f}\u{2028}\u{2029}] }
@@ -812,6 +812,6 @@ plusSep<expr> { expr (!plusSep "+" expr)* }
   "&" "!"
 }
 
-@external propSource rustHighlighting from "./highlight"
+@external propSource rust_highlighting from "./highlighting"
 
 @detectDelim

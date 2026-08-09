@@ -27,8 +27,8 @@ It must not gain a branch that identifies or special-cases one language.
 
 ## Maintained inputs and generated artifacts
 
-Grammar files, binding manifests, typed schemas, generated-data source models,
-and handwritten language code are maintained inputs. Rust parser glue, named
+Grammar files, typed schemas, generated-data source models, and handwritten
+language code are maintained inputs. Rust parser glue, named
 terms, typed wrappers, Unicode tables, AST schemas, and parser-table blobs are
 derived when their corresponding generator owns them.
 

@@ -154,7 +154,7 @@ fn reference_data() -> (CaseManifest, Snapshot) {
     }
     assert_eq!(
         snapshot.reference.artifacts.grammar.path,
-        "languages/rust/grammar/rust.grammar"
+        "languages/rust/src/rust.grammar"
     );
     assert_eq!(snapshot.reference.artifacts.grammar.sha256.len(), 64);
     (cases, snapshot)

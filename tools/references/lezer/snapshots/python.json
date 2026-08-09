@@ -2,8 +2,8 @@
 	"schema": "rezel.lezer-python-reference-snapshot.v1",
 	"reference": {
 		"grammar": {
-			"path": "languages/python/grammar/python.grammar",
-			"sha256": "dd50a6e4d2df93f6080c74db19843afa6a109adc886437e2580c3c4612fe38b4"
+			"path": "languages/python/src/python.grammar",
+			"sha256": "49fd00bc296ffdbefc19367347ef03e4060852ca6fb5699d090a8dc678f1e120"
 		},
 		"unicode": {
 			"path": "languages/python/src/unicode16.rs",

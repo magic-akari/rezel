@@ -9,8 +9,7 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use rezel_generator::{
-    BuildOptions, CompiledGrammar, RustBindings, compile_grammar, emit_rust_with_data_paths,
-    emit_typed_syntax,
+    BuildOptions, CompiledGrammar, compile_grammar, emit_rust_with_data_paths, emit_typed_syntax,
 };
 
 const USAGE: &str = "Usage: rezel-codegen \
@@ -53,15 +52,9 @@ fn generate_language(
     outputs: &mut Outputs<'_>,
 ) -> Result<()> {
     let language_root = root.join("languages").join(language);
-    let grammar_path = language_root
-        .join("grammar")
-        .join(format!("{language}.grammar"));
-    let bindings_path = language_root
-        .join("grammar")
-        .join(format!("{language}.bindings.toml"));
-    let typed_path = language_root
-        .join("grammar")
-        .join(format!("{language}.typed.toml"));
+    let source_root = language_root.join("src");
+    let grammar_path = source_root.join(format!("{language}.grammar"));
+    let typed_path = source_root.join(format!("{language}.typed.toml"));
     let grammar_source = fs::read_to_string(&grammar_path)?;
     let source_name = relative_name(root, &grammar_path);
     let grammar = compile_grammar(
@@ -72,11 +65,7 @@ fn generate_language(
         },
     )?;
     reject_warnings(language, &grammar)?;
-    let bindings_source = fs::read_to_string(bindings_path)?;
-    let bindings = RustBindings::from_toml_str(&bindings_source)?;
-    let generated =
-        emit_rust_with_data_paths(&grammar, &bindings, "generated.le.bin", "generated.be.bin")?;
-    let source_root = language_root.join("src");
+    let generated = emit_rust_with_data_paths(&grammar, "generated.le.bin", "generated.be.bin")?;
     outputs.manage_scoped_source_directory(&source_root, regeneration_command);
     let parser = annotated(&generated.parser, regeneration_command)?;
     outputs.emit(&source_root.join("generated.rs"), &parser)?;
@@ -137,9 +126,7 @@ fn generate_upstream_cases(
         let stem = snake_case(name);
         let little_endian_name = format!("{stem}.le.bin");
         let big_endian_name = format!("{stem}.be.bin");
-        let bindings = case_bindings(&path)?;
-        let generated =
-            emit_rust_with_data_paths(&grammar, &bindings, &little_endian_name, &big_endian_name)?;
+        let generated = emit_rust_with_data_paths(&grammar, &little_endian_name, &big_endian_name)?;
         let parser = annotated(&generated.parser, regeneration_command)?;
         outputs.emit(&output_root.join(format!("{stem}.rs")), &parser)?;
         let terms = annotated(&generated.terms, regeneration_command)?;
@@ -189,12 +176,7 @@ fn generate_test_parse_fixtures(
         reject_warnings(name, &grammar)?;
         let little_endian_name = format!("{name}.le.bin");
         let big_endian_name = format!("{name}.be.bin");
-        let generated = emit_rust_with_data_paths(
-            &grammar,
-            &RustBindings::default(),
-            &little_endian_name,
-            &big_endian_name,
-        )?;
+        let generated = emit_rust_with_data_paths(&grammar, &little_endian_name, &big_endian_name)?;
         let parser = annotated(&generated.parser, regeneration_command)?;
         outputs.emit(&output_root.join(format!("{name}.rs")), &parser)?;
         outputs.emit_bytes(
@@ -290,18 +272,6 @@ fn snake_case(name: &str) -> String {
         }
     }
     output
-}
-
-fn case_bindings(case_path: &Path) -> Result<RustBindings> {
-    let bindings_path = case_path.with_extension("bindings.toml");
-    let manifest = match fs::read_to_string(&bindings_path) {
-        Ok(manifest) => manifest,
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            return Ok(RustBindings::default());
-        }
-        Err(error) => return Err(error.into()),
-    };
-    Ok(RustBindings::from_toml_str(&manifest)?)
 }
 
 fn case_registry_source(cases: &[(String, String)], regeneration_command: &str) -> Result<String> {

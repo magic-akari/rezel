@@ -23,7 +23,7 @@ flowchart TB
     encode(["Encode Rezel grammar"])
 
     grammar["Maintained grammar"]
-    bindings["Rust binding manifest"]
+    externals["Same-named external modules"]
     schema["Typed CST schema"]
     generate(["Compile, validate, and emit"])
     artifacts["Parser glue, terms, native-endian tables, typed CST"]
@@ -41,7 +41,7 @@ flowchart TB
     derive --> encode
     encode --> grammar
     grammar --> generate
-    bindings --> generate
+    externals --> generate
     schema --> generate
     generate --> artifacts
     artifacts --> adapters

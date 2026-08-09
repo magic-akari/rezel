@@ -35,12 +35,17 @@ export function buildJavaParser(options: BuildJavaParserOptions): ReturnType<typ
 			options.warnings.push(message);
 		},
 		externalTokenizer(name, terms) {
-			assert.equal(name, "javaIdentifiers");
+			assert.equal(name, "TOKENIZER");
 			assert.equal(typeof terms.identifier, "number");
 			return javaIdentifiers(terms.identifier, identifierStart, identifierPart);
 		},
+		externalSpecializer(name, terms) {
+			assert.equal(name, "specialize_record");
+			assert.equal(typeof terms.record, "number");
+			return (value, stack) => (value === "record" && stack.canShift(terms.record) ? terms.record : -1);
+		},
 		externalPropSource(name) {
-			assert.equal(name, "javaHighlighting");
+			assert.equal(name, "java_highlighting");
 			return emptyProperties;
 		},
 	});

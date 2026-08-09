@@ -346,20 +346,20 @@ FormatReplacement[isolate] { formatReplacement<replacementStart> }
 nestedFormatReplacement[isolate,@name=FormatReplacement,@export] { formatReplacement<"{"> }
 TemplateInterpolation[isolate] { formatReplacement<replacementStart> }
 
-@context trackIndent from "./tokens.js"
+@context TRACK_INDENT from "./tokens.js"
 
-@external tokens indentation from "./tokens" { indent, dedent }
+@external tokens INDENTATION from "./tokens" { indent, dedent }
 
-@external tokens newlines from "./tokens" { newline, blankLineStart, newlineBracketed, eof }
+@external tokens NEWLINES from "./tokens" { newline, blankLineStart, newlineBracketed, eof }
 
-@external tokens strings from "./tokens" {
+@external tokens STRINGS from "./tokens" {
   stringContent
   Escape
   replacementStart[@name="{"]
   stringEnd
 }
 
-@external tokens pythonIdentifiers from "./identifier" {
+@external tokens TOKENIZER from "./identifier" {
   identifier
 }
 
@@ -450,6 +450,6 @@ TemplateInterpolation[isolate] { formatReplacement<replacementStart> }
   "." "," ";" ":" "@" "*" "**"
 }
 
-@external propSource pythonHighlighting from "./highlight"
+@external propSource python_highlighting from "./highlighting"
 
 @detectDelim

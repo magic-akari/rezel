@@ -13,8 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 GENERATED = ROOT / "languages" / "python" / "src" / "generated.rs"
-SCHEMA = ROOT / "languages" / "python" / "grammar" / "python.typed.toml"
-MODEL = ROOT / "languages" / "python" / "grammar" / "python.typed.model.toml"
+SCHEMA = ROOT / "languages" / "python" / "src" / "python.typed.toml"
+MODEL = ROOT / "languages" / "python" / "src" / "python.typed.model.toml"
 REGENERATION_COMMAND = "mise run codegen:python-typed:update"
 NODE = re.compile(
     r'NodeType::new\(\s*\d+u16,\s*"((?:[^"\\]|\\.)*)",',

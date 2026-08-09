@@ -29,7 +29,7 @@ Start with grammar diagnostics:
 
 ```sh
 cargo run --locked -p rezel-generator -- check \
-  languages/<language>/grammar/<language>.grammar
+  languages/<language>/src/<language>.grammar
 ```
 
 Every remaining precedence marker, cut, ambiguity site, external declaration,
