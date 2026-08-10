@@ -663,7 +663,7 @@ Statements {
   (emptyIfStatement ";" | statement statementEnd | ";")* statement?
 }
 
-statementEnd {
+statementEnd[@inline] {
   ";" |
   insertedStatementEnd
 }
