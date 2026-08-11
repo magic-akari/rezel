@@ -921,7 +921,7 @@ primitiveType {
   @specialize[@name=PrimitiveType]<identifier, "byte" | "short" | "int" | "long" | "char" | "float" | "double" | "boolean">
 }
 
-referenceSimpleType {
+referenceSimpleType[@inline] {
   TypeName |
   ScopedTypeName |
   GenericType
