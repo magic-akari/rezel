@@ -278,7 +278,7 @@ BinaryExpression {
 
 ArgList { "(" commaSep<argument>? ")" }
 
-argument {
+argument[@inline] {
   test compFor? |
   VariableName AssignOp{"=" | ":="} test compFor? |
   "**" test |
