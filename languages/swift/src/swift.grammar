@@ -2016,7 +2016,7 @@ commaSep<item> { (item ("," item)* ","?)? }
 
 commaSep1<item> { item ("," item)* ","? }
 
-codeItemSeparator { ";" | lineBreak }
+codeItemSeparator[@inline] { ";" | lineBreak }
 
 @skip { whitespace | LineComment | BlockComment }
 
