@@ -169,8 +169,8 @@ newArguments[@name=Arguments] {
 
 LiteralValue { "{" commaSep<Element { (Key { expr | LiteralValue } ":")? (expr | LiteralValue) }> "}" }
 
-exprList { expr ~ids ("," expr? ~ids)* }
-idList { DefName ~ids ("," DefName ~ids)* }
+exprList[@inline] { expr ~ids ("," expr? ~ids)* }
+idList[@inline] { DefName ~ids ("," DefName ~ids)* }
 
 statement[@isGroup=Statement] {
   simpleStatement |
