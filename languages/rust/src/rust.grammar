@@ -218,7 +218,7 @@ reservedKeyword {
   kw<"yield">
 }
 
-separatorToken {
+separatorToken[@inline] {
   String |
   RawString |
   Char |
