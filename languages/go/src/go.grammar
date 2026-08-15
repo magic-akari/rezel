@@ -78,7 +78,7 @@ FieldDecl {
   (FieldName ("," FieldName)* type | star? (typeName | ParameterizedType)) String?
 }
 
-signature { Parameters ~paren (Parameters | type)? }
+signature[@inline] { Parameters ~paren (Parameters | type)? }
 
 Parameters { "(" commaSep<Parameter> ~paren ")" }
 
