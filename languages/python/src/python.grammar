@@ -178,7 +178,7 @@ finallyClause { kw<"finally"> Body }
 
 Body { ":" (simpleStatement | newline indent statement+ (dedent | eof)) }
 
-lambdaParam { VariableName (AssignOp{"="} test)? | "*" VariableName? | "**" VariableName | "/" }
+lambdaParam[@inline] { VariableName (AssignOp{"="} test)? | "*" VariableName? | "**" VariableName | "/" }
 
 lambdaParams[@name="ParamList"] { (lambdaParam ("," lambdaParam)*)? }
 
