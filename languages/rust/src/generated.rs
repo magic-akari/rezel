@@ -4,9 +4,9 @@
 #[repr(C, align(64))]
 #[derive(zerocopy::FromBytes, zerocopy::Immutable)]
 struct GeneratedTables {
-    states: [u32; 8748usize],
-    state_data: [u16; 20263usize],
-    goto: [u16; 6288usize],
+    states: [u32; 8742usize],
+    state_data: [u16; 20137usize],
+    goto: [u16; 6295usize],
     token_states: [rezel_lr::TokenState; 75usize],
     token_accepts: [rezel_lr::TokenAccept; 52usize],
     token_edges: [rezel_lr::TokenEdge; 156usize],
@@ -1408,7 +1408,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     114u16,
                     "abstract",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1416,7 +1416,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     115u16,
                     "become",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1424,7 +1424,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     116u16,
                     "box",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1432,7 +1432,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     117u16,
                     "do",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1440,7 +1440,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     118u16,
                     "final",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1448,7 +1448,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     119u16,
                     "gen",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1464,7 +1464,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     121u16,
                     "override",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1472,7 +1472,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     122u16,
                     "priv",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1480,7 +1480,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     123u16,
                     "typeof",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1488,7 +1488,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     124u16,
                     "unsized",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1496,7 +1496,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     125u16,
                     "virtual",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -1504,7 +1504,7 @@ fn node_set() -> &'static std::sync::Arc<rezel_common::NodeSet> {
                 let mut node = rezel_common::NodeType::new(
                     126u16,
                     "yield",
-                    rezel_common::NodeFlags::default(),
+                    rezel_common::NodeFlags::SKIPPED,
                 );
                 nodes.push(node);
             }
@@ -3687,99 +3687,112 @@ static TERM_NAMES: &[(u16, &str)] = &[
     (332u16, "declarationStatement-1"),
     (333u16, "expression-1"),
     (334u16, "blockExpression-1"),
-    (335u16, "cond-1"),
-    (336u16, "pattern-1"),
-    (337u16, "literalPattern-1"),
-    (338u16, "literal-1"),
-    (339u16, "stringStart"),
-    (340u16, "stringContent"),
-    (341u16, "stringEnd"),
-    (342u16, "\"'\""),
-    (343u16, "\"-\""),
-    (344u16, "patternPath-1"),
-    (345u16, "pathSegment-1"),
-    (346u16, "pathIdent<ScopeIdentifier>-1"),
-    (347u16, "commaSep<pattern>-1"),
-    (348u16, "commaSep1<pattern>-1"),
-    (349u16, "commaSep<FieldPattern | \"..\">-1"),
-    (350u16, "commaSep1<FieldPattern | \"..\">-1"),
-    (351u16, "\"@\""),
-    (352u16, "\"&&\""),
-    (353u16, "\"..=\""),
-    (354u16, "\"|\""),
-    (355u16, "macroInvocation-1"),
-    (356u16, "delimitedTokenTree-1"),
-    (357u16, "tokenTree-1"),
-    (358u16, "\"$\""),
-    (359u16, "\"/\""),
-    (360u16, "\"%\""),
-    (361u16, "\"<<\""),
-    (362u16, "\">>\""),
-    (363u16, "\"^\""),
-    (364u16, "\"||\""),
-    (365u16, "\".\""),
-    (366u16, "\"<-\""),
-    (367u16, "\"~\""),
-    (368u16, "\"+\""),
-    (369u16, "\"*\""),
-    (370u16, "\"?\""),
-    (371u16, "reservedKeyword-1"),
-    (372u16, "nonBlockExpression-1"),
-    (373u16, "commaSep<Attribute* expression>-1"),
-    (374u16, "commaSep1<Attribute* expression>-1"),
-    (375u16, "commaSep<Parameter>-1"),
-    (376u16, "commaSep1<Parameter>-1"),
-    (377u16, "commaSep<fieldInitializer>-1"),
-    (378u16, "commaSep1<fieldInitializer>-1"),
-    (379u16, "fieldInitializer-1"),
-    (380u16, "externModifier-1"),
-    (381u16, "foreignDeclaration-1"),
-    (382u16, "commaSep<Attribute* ForeignParameter | ForeignVariadicParameter>-1"),
-    (383u16, "commaSep1<Attribute* ForeignParameter | ForeignVariadicParameter>-1"),
-    (384u16, "commaSep<LifetimeClause | TypeBoundClause>-1"),
-    (385u16, "commaSep1<LifetimeClause | TypeBoundClause>-1"),
-    (386u16, "plusSep<Lifetime>-1"),
-    (387u16, "commaSep<Attribute* FieldDeclaration>-1"),
-    (388u16, "commaSep1<Attribute* FieldDeclaration>-1"),
-    (389u16, "commaSep<Attribute* Vis? type>-1"),
-    (390u16, "commaSep1<Attribute* Vis? type>-1"),
-    (391u16, "commaSep<Attribute* EnumVariant>-1"),
-    (392u16, "commaSep1<Attribute* EnumVariant>-1"),
-    (393u16, "functionFrontMatter-1"),
-    (394u16, "functionQualifiers-1"),
-    (395u16, "functionQualifiersAfterDefault-1"),
-    (396u16, "functionQualifiersAfterConst-1"),
-    (397u16, "functionQualifiersAfterAsync-1"),
-    (398u16, "functionItemRest-1"),
+    (335u16, "kw<\"try\">-1"),
+    (336u16, "cond-1"),
+    (337u16, "pattern-1"),
+    (338u16, "literalPattern-1"),
+    (339u16, "literal-1"),
+    (340u16, "stringStart"),
+    (341u16, "stringContent"),
+    (342u16, "stringEnd"),
+    (343u16, "\"'\""),
+    (344u16, "\"-\""),
+    (345u16, "patternPath-1"),
+    (346u16, "pathSegment-1"),
+    (347u16, "pathIdent<ScopeIdentifier>-1"),
+    (348u16, "commaSep<pattern>-1"),
+    (349u16, "commaSep1<pattern>-1"),
+    (350u16, "commaSep<FieldPattern | \"..\">-1"),
+    (351u16, "commaSep1<FieldPattern | \"..\">-1"),
+    (352u16, "\"@\""),
+    (353u16, "\"&&\""),
+    (354u16, "\"..=\""),
+    (355u16, "\"|\""),
+    (356u16, "macroInvocation-1"),
+    (357u16, "delimitedTokenTree-1"),
+    (358u16, "tokenTree-1"),
+    (359u16, "\"$\""),
+    (360u16, "\"/\""),
+    (361u16, "\"%\""),
+    (362u16, "\"<<\""),
+    (363u16, "\">>\""),
+    (364u16, "\"^\""),
+    (365u16, "\"||\""),
+    (366u16, "\".\""),
+    (367u16, "\"<-\""),
+    (368u16, "\"~\""),
+    (369u16, "\"+\""),
+    (370u16, "\"*\""),
+    (371u16, "\"?\""),
+    (372u16, "kw<\"abstract\">-1"),
+    (373u16, "kw<\"become\">-1"),
+    (374u16, "kw<\"box\">-1"),
+    (375u16, "kw<\"do\">-1"),
+    (376u16, "kw<\"final\">-1"),
+    (377u16, "kw<\"gen\">-1"),
+    (378u16, "kw<\"macro\">-1"),
+    (379u16, "kw<\"override\">-1"),
+    (380u16, "kw<\"priv\">-1"),
+    (381u16, "kw<\"typeof\">-1"),
+    (382u16, "kw<\"unsized\">-1"),
+    (383u16, "kw<\"virtual\">-1"),
+    (384u16, "kw<\"yield\">-1"),
+    (385u16, "nonBlockExpression-1"),
+    (386u16, "commaSep<Attribute* expression>-1"),
+    (387u16, "commaSep1<Attribute* expression>-1"),
+    (388u16, "commaSep<Parameter>-1"),
+    (389u16, "commaSep1<Parameter>-1"),
+    (390u16, "commaSep<fieldInitializer>-1"),
+    (391u16, "commaSep1<fieldInitializer>-1"),
+    (392u16, "fieldInitializer-1"),
+    (393u16, "externModifier-1"),
+    (394u16, "foreignDeclaration-1"),
+    (395u16, "commaSep<Attribute* ForeignParameter | ForeignVariadicParameter>-1"),
+    (396u16, "commaSep1<Attribute* ForeignParameter | ForeignVariadicParameter>-1"),
+    (397u16, "commaSep<LifetimeClause | TypeBoundClause>-1"),
+    (398u16, "commaSep1<LifetimeClause | TypeBoundClause>-1"),
+    (399u16, "plusSep<Lifetime>-1"),
+    (400u16, "commaSep<Attribute* FieldDeclaration>-1"),
+    (401u16, "commaSep1<Attribute* FieldDeclaration>-1"),
+    (402u16, "commaSep<Attribute* Vis? type>-1"),
+    (403u16, "commaSep1<Attribute* Vis? type>-1"),
+    (404u16, "commaSep<Attribute* EnumVariant>-1"),
+    (405u16, "commaSep1<Attribute* EnumVariant>-1"),
+    (406u16, "functionFrontMatter-1"),
+    (407u16, "functionQualifiers-1"),
+    (408u16, "functionQualifiersAfterDefault-1"),
+    (409u16, "functionQualifiersAfterConst-1"),
+    (410u16, "functionQualifiersAfterAsync-1"),
+    (411u16, "functionItemRest-1"),
     (
-        399u16,
+        412u16,
         "commaSep<Attribute* Parameter | SelfParameter | VariadicParameter | kw<\"_\">>-1",
     ),
     (
-        400u16,
+        413u16,
         "commaSep1<Attribute* Parameter | SelfParameter | VariadicParameter | kw<\"_\">>-1",
     ),
-    (401u16, "traitHeader-1"),
-    (402u16, "useClause-1"),
-    (403u16, "pathIdent<BoundIdentifier>-1"),
-    (404u16, "simplePath-1"),
-    (405u16, "commaSep<useClause>-1"),
-    (406u16, "commaSep1<useClause>-1"),
-    (407u16, "commaSep<Lifetime>-1"),
-    (408u16, "commaSep1<Lifetime>-1"),
-    (409u16, "commaSep<type>-1"),
-    (410u16, "commaSep1<type>-1"),
+    (414u16, "traitHeader-1"),
+    (415u16, "useClause-1"),
+    (416u16, "pathIdent<BoundIdentifier>-1"),
+    (417u16, "simplePath-1"),
+    (418u16, "commaSep<useClause>-1"),
+    (419u16, "commaSep1<useClause>-1"),
+    (420u16, "commaSep<Lifetime>-1"),
+    (421u16, "commaSep1<Lifetime>-1"),
+    (422u16, "commaSep<type>-1"),
+    (423u16, "commaSep1<type>-1"),
     (
-        411u16,
+        424u16,
         "commaSep<Attribute* BareFunctionParameter | BareFunctionVariadicParameter>-1",
     ),
     (
-        412u16,
+        425u16,
         "commaSep1<Attribute* BareFunctionParameter | BareFunctionVariadicParameter>-1",
     ),
-    (413u16, "commaSep<Lifetime | Identifier>-1"),
-    (414u16, "commaSep1<Lifetime | Identifier>-1"),
-    (415u16, "genericPathPrefix-1"),
+    (426u16, "commaSep<Lifetime | Identifier>-1"),
+    (427u16, "commaSep1<Lifetime | Identifier>-1"),
+    (428u16, "genericPathPrefix-1"),
 ];
 pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     states: &TABLES.states,
@@ -3788,9 +3801,9 @@ pub static LANGUAGE: rezel_lr::Language = rezel_lr::Language {
     token_table: &TOKEN_TABLE,
     tokenizers: TOKENIZERS,
     top_rules: TOP_RULES,
-    max_term: 415u16,
+    max_term: 428u16,
     min_repeat_term: 279u16,
-    token_precedence: 20260usize,
+    token_precedence: 20134usize,
     node_set,
     context: None,
     dialects: DIALECTS,

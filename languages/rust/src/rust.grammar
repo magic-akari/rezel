@@ -201,7 +201,7 @@ tokenTree {
   separatorToken
 }
 
-reservedKeyword {
+reservedKeyword[@inline] {
   kw<"abstract"> |
   kw<"become"> |
   kw<"box"> |
