@@ -359,8 +359,10 @@ fn build_term_filter(entries: &[(u16, Action)]) -> u32 {
 }
 
 const fn term_filter_bit(term: u16) -> u32 {
-    let folded = term ^ (term >> 5) ^ (term >> 10);
-    1_u32 << (folded & 31)
+    // Term ids are assigned sequentially. Keeping only the low bits makes
+    // collision relationships stable when an unrelated grammar term is added
+    // or removed before an entire group of terminals.
+    1_u32 << (term & 31)
 }
 
 fn build_skip_filter(
@@ -502,6 +504,17 @@ fn reject_cycles(rows: &[ActionRow]) -> Result<(), &'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn term_filter_collisions_survive_uniform_renumbering() {
+        for left in 0..128_u16 {
+            for right in 0..128_u16 {
+                let original = term_filter_bit(left) == term_filter_bit(right);
+                let shifted = term_filter_bit(left + 1) == term_filter_bit(right + 1);
+                assert_eq!(original, shifted);
+            }
+        }
+    }
 
     const END: u16 = SequenceCode::End.raw();
     const NEXT: u16 = SequenceCode::Next.raw();
@@ -827,15 +840,15 @@ mod tests {
             assert_eq!(fallback.map(Action::raw), Some(200));
         }
 
-        assert_eq!(term_filter_bit(3), term_filter_bit(34));
+        assert_eq!(term_filter_bit(3), term_filter_bit(35));
         let mut actions = Vec::new();
-        let fallback = index.visit(0, StateField::Actions, 34, |action| {
+        let fallback = index.visit(0, StateField::Actions, 35, |action| {
             actions.push(action.raw());
         });
         assert!(actions.is_empty());
         assert_eq!(fallback.map(Action::raw), Some(200));
 
-        let fallback = index.visit(0, StateField::Skip, 34, |action| {
+        let fallback = index.visit(0, StateField::Skip, 35, |action| {
             actions.push(action.raw());
         });
         assert!(actions.is_empty());
@@ -852,8 +865,8 @@ mod tests {
 
         assert!(usize::from(row.length) <= LINEAR_SEARCH_LIMIT);
         assert!(row.may_contain(3));
-        assert_eq!(term_filter_bit(3), term_filter_bit(34));
-        assert!(row.may_contain(34));
+        assert_eq!(term_filter_bit(3), term_filter_bit(35));
+        assert!(row.may_contain(35));
         assert!(!row.may_contain(5));
 
         let mut actions = Vec::new();
@@ -862,7 +875,7 @@ mod tests {
         assert_eq!(fallback.map(Action::raw), Some(200));
 
         actions.clear();
-        let fallback = index.visit_row(action_row, 34, |action| actions.push(action.raw()));
+        let fallback = index.visit_row(action_row, 35, |action| actions.push(action.raw()));
         assert!(actions.is_empty());
         assert_eq!(fallback.map(Action::raw), Some(200));
 
