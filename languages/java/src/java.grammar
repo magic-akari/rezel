@@ -889,7 +889,7 @@ VariableDeclarator {
   variableDeclaratorId ("=" variableInitializer)?
 }
 
-variableDeclaratorId {
+variableDeclaratorId[@inline] {
   Definition Dimension*
 }
 
