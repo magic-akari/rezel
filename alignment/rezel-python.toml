@@ -81,7 +81,7 @@ classification = "adapted"
 upstream_file = "src/tokens.js"
 upstream_symbols = ["newlines", "indentation", "trackIndent", "strings"]
 invariant = "Python newlines, structural indentation contexts, and string modes preserve maintained Lezer CST recovery behavior while excluding Python 2-only print syntax."
-representation = "Typed Rust external tokenizers and immutable context values replace JavaScript tokenizers; newline scanning rejects code points outside its possible starting alphabet before backward lookup, exhaustive shift and reduction term sets let the runtime bypass identity context callbacks, and the reduction transition's input-free callback and the shift transition's indent-only input declaration skip Lezer's unconditional stream resets."
+representation = "Typed Rust external tokenizers and immutable context values replace JavaScript tokenizers; the external-tokenizer start index rejects code points outside the newline token alphabet before dispatch and backward lookup, exhaustive shift and reduction term sets let the runtime bypass identity context callbacks, and the reduction transition's input-free callback and the shift transition's indent-only input declaration skip Lezer's unconditional stream resets."
 evidence_files = [
 	"languages/python/tests/contract.rs",
 	"languages/python/tests/reference/cpython.rs",
