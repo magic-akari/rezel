@@ -623,7 +623,16 @@ impl InputStream {
     pub fn peek(&self, offset: isize) -> Option<CodePoint> {
         match offset.cmp(&0) {
             std::cmp::Ordering::Equal => self.next(),
-            std::cmp::Ordering::Greater => self.lookahead().nth(offset.unsigned_abs()),
+            std::cmp::Ordering::Greater => {
+                let offset = offset.unsigned_abs();
+                let chunk = self.identity_lookahead_chunk();
+                if let Some(prefix) = chunk.get(..=offset)
+                    && prefix.is_ascii()
+                {
+                    return Some(CodePoint::from(prefix[offset]));
+                }
+                self.lookahead().nth(offset)
+            }
             std::cmp::Ordering::Less => self
                 .lookbehind()
                 .nth(offset.unsigned_abs().saturating_sub(1)),
@@ -2075,6 +2084,33 @@ mod tests {
             input.lookahead().collect::<Vec<_>>(),
             vec![CodePoint::from('😀'), CodePoint::from(b'b')]
         );
+    }
+
+    #[test]
+    fn peek_preserves_ascii_unicode_translation_and_selected_ranges() {
+        let input = stream("ab😀c", Arc::from([TextRange::new(0.into(), 7.into())]));
+        assert_eq!(input.peek(1), Some(CodePoint::from(b'b')));
+        assert_eq!(input.peek(2), Some(CodePoint::from('😀')));
+        assert_eq!(input.peek(3), Some(CodePoint::from(b'c')));
+
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 1.into()),
+            TextRange::new(6.into(), 8.into()),
+        ]);
+        let selected = stream("a😀Xbc", ranges);
+        assert_eq!(selected.peek(1), Some(CodePoint::from(b'b')));
+        assert_eq!(selected.peek(2), Some(CodePoint::from(b'c')));
+
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("abXc").unwrap());
+        let lexical: Arc<dyn LexicalInput> = Arc::new(BoundaryTranslationInput {
+            inner: Utf8Input::new(raw),
+        });
+        let translated = InputStream::new(lexical, Arc::from([TextRange::new(0.into(), 4.into())]));
+        assert_eq!(
+            translated.peek(2),
+            Some(CodePoint::new(0xd800).expect("surrogate is a code point"))
+        );
+        assert_eq!(translated.peek(3), Some(CodePoint::from(b'c')));
     }
 
     #[test]
