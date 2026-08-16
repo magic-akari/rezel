@@ -540,7 +540,7 @@ fn scan_switch_case_diagnostic_lookahead(
 fn scan_code_item_separator(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
     let boundary = layout::classify_code_item_boundary(
         input,
-        |input| peek(input, -1) == Some(COMMA),
+        |input| lookahead::previous(input) == Some(COMMA),
         |role| match role {
             layout::ShiftRole::DeclarationEffect => {
                 stack.can_shift(terms::declarationEffectLineLookahead)

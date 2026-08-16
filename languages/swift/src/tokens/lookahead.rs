@@ -29,6 +29,10 @@ pub(super) fn peek(input: &InputStream, offset: isize) -> Option<u32> {
     input.peek(offset).map(CodePoint::as_u32)
 }
 
+pub(super) fn previous(input: &InputStream) -> Option<u32> {
+    input.previous().map(CodePoint::as_u32)
+}
+
 pub(super) fn starts_comment(first: u32, second: Option<u32>) -> bool {
     first == SLASH && matches!(second, Some(SLASH | STAR))
 }

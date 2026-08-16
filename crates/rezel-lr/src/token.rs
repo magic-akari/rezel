@@ -491,14 +491,16 @@ struct FastWindow {
 }
 
 impl FastWindow {
-    fn new(chunk: &InputChunk, raw_limit: TextSize) -> Option<Self> {
-        let raw_start = chunk.raw_start();
+    fn new(chunk: &InputChunk, raw_from: TextSize, raw_limit: TextSize) -> Option<Self> {
+        let chunk_raw_start = chunk.raw_start();
+        let raw_start = chunk_raw_start.max(raw_from);
         let raw_end = chunk.raw_end().min(raw_limit);
         if raw_start >= raw_end {
             return None;
         }
         let source_range = chunk.source_range();
-        let source_start = usize::from(source_range.start());
+        let source_offset = usize::from(raw_start - chunk_raw_start);
+        let source_start = usize::from(source_range.start()).checked_add(source_offset)?;
         let source_length = usize::from(raw_end - raw_start);
         let source_end = source_start.checked_add(source_length)?;
         let source = chunk.shared_source();
@@ -626,6 +628,28 @@ impl InputStream {
                 .lookbehind()
                 .nth(offset.unsigned_abs().saturating_sub(1)),
         }
+    }
+
+    /// Return the code point immediately before the current position.
+    ///
+    /// This is equivalent to `self.peek(-1)`, with an adjacent ASCII fast path
+    /// over the active identity-mapped input window.
+    #[must_use]
+    #[inline]
+    pub fn previous(&self) -> Option<CodePoint> {
+        let range = self.ranges.get(self.cursor.range_index)?;
+        if self.cursor.byte > range.start()
+            && let Some(window) = self.window.as_ref()
+            && self.cursor.byte > window.raw_start
+            && self.cursor.byte <= window.raw_end
+            && let Some(source_position) = window.source_position(self.cursor.byte)
+            && let Some(previous_position) = source_position.checked_sub(1)
+            && let Some(previous) = window.source.as_bytes().get(previous_position).copied()
+            && previous.is_ascii()
+        {
+            return Some(CodePoint::from(previous));
+        }
+        self.lookbehind().next()
     }
 
     /// Iterate forward from the current position in Unicode code points.
@@ -777,7 +801,7 @@ impl InputStream {
         self.window = self
             .chunk
             .as_ref()
-            .and_then(|chunk| FastWindow::new(chunk, range.end()))
+            .and_then(|chunk| FastWindow::new(chunk, position, range.end()))
             .filter(|window| window.contains(position));
         self.window_source_position = self
             .window
@@ -1539,6 +1563,17 @@ mod tests {
             self.inner.character(from)
         }
 
+        fn character_before(&self, before: TextSize) -> Option<(TextSize, InputCharacter)> {
+            if before == TextSize::from(3) {
+                let surrogate = CodePoint::new(0xd800).expect("surrogate is a code point");
+                return Some((
+                    TextSize::from(2),
+                    InputCharacter::new(surrogate, TextSize::from(3)),
+                ));
+            }
+            self.inner.character_before(before)
+        }
+
         fn scalar_text(&self, range: TextRange) -> Option<Cow<'_, str>> {
             if range.start() <= TextSize::from(2) && TextSize::from(2) < range.end() {
                 return None;
@@ -2119,6 +2154,37 @@ mod tests {
         assert_eq!(stream.lookbehind().count(), WIDTH);
         assert!(character_before_reads.load(Ordering::Relaxed) <= WIDTH + 1);
         assert_eq!(character_reads.load(Ordering::Relaxed), 0);
+    }
+
+    #[test]
+    fn previous_preserves_ascii_unicode_and_selected_range_boundaries() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 5.into()),
+            TextRange::new(6.into(), 7.into()),
+        ]);
+        let mut stream = stream("a😀Xb", ranges);
+
+        assert_eq!(stream.previous(), None);
+        stream.advance(1);
+        assert_eq!(stream.previous(), Some(CodePoint::from(b'a')));
+        stream.advance(1);
+        assert_eq!(stream.previous(), Some(CodePoint::from('😀')));
+        stream.advance(1);
+        assert_eq!(stream.previous(), Some(CodePoint::from(b'b')));
+
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("abXc").unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(BoundaryTranslationInput {
+            inner: Utf8Input::new(raw),
+        });
+        let ranges = Arc::from([TextRange::new(0.into(), 4.into())]);
+        let mut translated = InputStream::new(input, ranges);
+        translated.advance(2);
+        assert_eq!(translated.previous(), Some(CodePoint::from(b'b')));
+        translated.advance(1);
+        assert_eq!(
+            translated.previous(),
+            Some(CodePoint::new(0xd800).expect("surrogate is a code point"))
+        );
     }
 
     #[test]

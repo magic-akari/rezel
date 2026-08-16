@@ -151,7 +151,7 @@ fn scan_newlines(input: &mut InputStream, stack: &Stack) -> Result<(), ParseErro
         }
         return Ok(());
     }
-    let previous = peek_value(input, -1);
+    let previous = input.previous().map(CodePoint::as_u32);
     if previous.is_none_or(is_line_break) && stack.can_shift(terms::blankLineStart) {
         let line_start = input.mark();
         while matches!(next_value(input), Some(SPACE | TAB)) {
@@ -172,7 +172,7 @@ fn scan_indentation(input: &mut InputStream, stack: &Stack) -> Result<(), ParseE
     if context.flags != 0 {
         return Ok(());
     }
-    let previous = peek_value(input, -1);
+    let previous = input.previous().map(CodePoint::as_u32);
     if previous.is_some_and(|character| !is_line_break(character)) {
         return Ok(());
     }

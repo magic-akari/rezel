@@ -10,7 +10,7 @@ use rezel_lr::{InputStream, Stack};
 use super::lexical::{
     LookaheadIdentifier, is_operator_continue, is_operator_start, scan_lookahead_identifier,
 };
-use super::lookahead::{current, peek, skip_trivia, starts_comment};
+use super::lookahead::{current, peek, previous, skip_trivia, starts_comment};
 use crate::terms;
 
 use super::{
@@ -282,7 +282,7 @@ fn question_mark_continues_operator(input: &InputStream) -> bool {
 }
 
 fn is_left_bound(input: &InputStream) -> bool {
-    match peek(input, -1) {
+    match previous(input) {
         None
         | Some(
             0x00A0 | 0x0009 | 0x000A | 0x000D | 0x0020 | LEFT_PAREN | LEFT_BRACKET | LEFT_BRACE
