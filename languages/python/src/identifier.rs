@@ -82,20 +82,27 @@ fn looks_like_string_prefix(input: &InputStream) -> bool {
     let Some(first) = input.peek(0).and_then(ascii_lowercase) else {
         return false;
     };
+    if !matches!(first, b'b' | b'f' | b'r' | b't' | b'u') {
+        return false;
+    }
     let second = input.peek(1);
     if matches!(second.map(CodePoint::as_u32), Some(0x27 | 0x22)) {
-        return matches!(first, b'b' | b'f' | b'r' | b't' | b'u');
+        return true;
     }
     let Some(second_prefix) = second.and_then(ascii_lowercase) else {
         return false;
     };
+    let valid_pair = matches!(
+        (first, second_prefix),
+        (b'b' | b'f' | b't', b'r') | (b'r', b'b' | b'f' | b't')
+    );
+    if !valid_pair {
+        return false;
+    }
     if !matches!(input.peek(2).map(CodePoint::as_u32), Some(0x27 | 0x22)) {
         return false;
     }
-    matches!(
-        (first, second_prefix),
-        (b'b' | b'f' | b't', b'r') | (b'r', b'b' | b'f' | b't')
-    )
+    true
 }
 
 fn ascii_lowercase(value: CodePoint) -> Option<u8> {
