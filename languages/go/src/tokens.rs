@@ -222,18 +222,11 @@ fn start_context() -> ContextValue {
 // Context transitions are fallible at the shared runtime boundary even though
 // this particular transition is total.
 #[allow(clippy::unnecessary_wraps)]
-fn shift_context(context: &ContextValue, term: u16) -> Result<Option<ContextValue>, ParseError> {
-    let previous = context.downcast_ref::<bool>().copied().unwrap_or(false);
-    let next = if term == terms::space {
-        previous
-    } else {
-        is_semicolon_predecessor(term)
-    };
-    if next == previous {
-        Ok(None)
-    } else {
-        Ok(Some(boolean_context(next)))
+fn shift_context(_context: &ContextValue, term: u16) -> Result<Option<ContextValue>, ParseError> {
+    if term == terms::space {
+        return Ok(None);
     }
+    Ok(Some(boolean_context(is_semicolon_predecessor(term))))
 }
 
 fn boolean_context(value: bool) -> ContextValue {
