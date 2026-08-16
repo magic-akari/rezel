@@ -1052,6 +1052,16 @@ impl InputStream {
     }
 
     pub(crate) fn next_position(&self) -> Option<TextSize> {
+        if self.next_code_point.is_some_and(CodePoint::is_ascii) {
+            let range = self.ranges.get(self.cursor.range_index)?;
+            let byte = self.cursor.byte + TextSize::from(1);
+            if byte < range.end() {
+                return Some(byte);
+            }
+            return next_range_cursor(&self.ranges, self.cursor.range_index)
+                .or_else(|| Some(end_cursor(&self.ranges)))
+                .map(|cursor| cursor.byte);
+        }
         advance_cursor(&*self.input, &self.ranges, self.cursor).map(|cursor| cursor.byte)
     }
 
@@ -1881,6 +1891,34 @@ mod tests {
         assert_eq!(empty.next(), None);
         assert_eq!(empty.clip_position(0.into()), TextSize::from(2));
         assert_eq!(empty.clip_position(3.into()), TextSize::from(2));
+    }
+
+    #[test]
+    fn next_position_reuses_ascii_and_preserves_selected_range_boundaries() {
+        let character_reads = Arc::new(AtomicUsize::new(0));
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("ab").unwrap());
+        let lexical: Arc<dyn LexicalInput> = Arc::new(CountingLexicalInput {
+            inner: Utf8Input::new(raw),
+            character_reads: Arc::clone(&character_reads),
+            character_before_reads: Arc::new(AtomicUsize::new(0)),
+        });
+        let input = InputStream::new(lexical, Arc::from([TextRange::new(0.into(), 2.into())]));
+
+        assert_eq!(character_reads.load(Ordering::Relaxed), 1);
+        assert_eq!(input.next_position(), Some(TextSize::from(1)));
+        assert_eq!(character_reads.load(Ordering::Relaxed), 1);
+
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 1.into()),
+            TextRange::new(6.into(), 7.into()),
+        ]);
+        let mut selected = stream("a😀Xb", ranges);
+        assert_eq!(selected.next_position(), Some(TextSize::from(6)));
+        selected.advance(1);
+        assert_eq!(selected.next_position(), Some(TextSize::from(7)));
+
+        let unicode = stream("a😀", Arc::from([TextRange::new(1.into(), 5.into())]));
+        assert_eq!(unicode.next_position(), Some(TextSize::from(5)));
     }
 
     #[test]
