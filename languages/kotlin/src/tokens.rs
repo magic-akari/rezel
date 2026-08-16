@@ -88,6 +88,19 @@ const SAME_LINE_FALLBACK_START: ExternalTokenizerStart = IDENTIFIER_ROLE_START
     .with_ascii(b'>')
     .with_ascii(b'[');
 
+const SAME_LINE_JUMP_START: ExternalTokenizerStart = IDENTIFIER_ROLE_START
+    .with_ascii(b'!')
+    .with_ascii(b'"')
+    .with_ascii(b'\'')
+    .with_ascii(b'(')
+    .with_ascii(b'+')
+    .with_ascii(b'-')
+    .with_ascii(b'.')
+    .with_ascii_range(b'0'..=b'9')
+    .with_ascii(b':')
+    .with_ascii(b'[')
+    .with_ascii(b'{');
+
 const DECLARATION_MODIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
     .with_ascii(b'a')
     .with_ascii(b'c')
@@ -148,7 +161,8 @@ pub(crate) static SAME_LINE_JUMP_GUARDS: ExternalTokenizer = ExternalTokenizer::
         fallback: false,
         extend: false,
     },
-);
+)
+.with_start(SAME_LINE_JUMP_START);
 
 pub(crate) static SAME_LINE_LAMBDA_GUARDS: ExternalTokenizer = ExternalTokenizer::new(
     scan_same_line_lambda,
