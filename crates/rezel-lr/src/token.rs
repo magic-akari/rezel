@@ -539,6 +539,37 @@ pub struct InputMark {
     position: TextSize,
 }
 
+/// Result of advancing through one identity-mapped ASCII run.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct AsciiAdvance {
+    count: usize,
+    stopped_on_mismatch: bool,
+}
+
+impl AsciiAdvance {
+    const fn new(count: usize, stopped_on_mismatch: bool) -> Self {
+        Self {
+            count,
+            stopped_on_mismatch,
+        }
+    }
+
+    /// Number of ASCII bytes consumed from the current input window.
+    #[must_use]
+    pub const fn count(self) -> usize {
+        self.count
+    }
+
+    /// Whether the next byte was ASCII and rejected by the predicate.
+    ///
+    /// A false result may instead mean end of input, a non-ASCII code point,
+    /// a translation boundary, or a selected-range boundary.
+    #[must_use]
+    pub const fn stopped_on_mismatch(self) -> bool {
+        self.stopped_on_mismatch
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct AcceptedToken {
     pub(crate) value: u16,
@@ -838,22 +869,35 @@ impl InputStream {
     /// Translation boundaries, selected-range boundaries, and non-ASCII
     /// input stop the run before `predicate` is called for later bytes.
     pub fn advance_ascii_while(&mut self, mut predicate: impl FnMut(u8) -> bool) -> usize {
+        self.advance_ascii_while_with_stop(&mut predicate).count()
+    }
+
+    /// Advance over one ASCII run and report whether its predicate rejected
+    /// the next byte.
+    ///
+    /// Unlike inspecting the next code point after [`Self::advance_ascii_while`],
+    /// this distinguishes a predicate mismatch from a translation or
+    /// selected-range boundary without scanning the boundary again.
+    pub fn advance_ascii_while_with_stop(
+        &mut self,
+        mut predicate: impl FnMut(u8) -> bool,
+    ) -> AsciiAdvance {
         let has_window = self
             .window
             .as_ref()
             .is_some_and(|window| self.window_source_position < window.source_end);
         if !has_window {
             let Some(range) = self.ranges.get(self.cursor.range_index).copied() else {
-                return 0;
+                return AsciiAdvance::new(0, false);
             };
             if self.cursor.byte >= range.end() {
-                return 0;
+                return AsciiAdvance::new(0, false);
             }
             self.load_identity_chunk(range, self.cursor.byte);
         }
         let (count, next_byte, window_end) = {
             let Some(window) = self.window.as_ref() else {
-                return 0;
+                return AsciiAdvance::new(0, false);
             };
             debug_assert_eq!(
                 window.source_position(self.cursor.byte),
@@ -864,7 +908,7 @@ impl InputStream {
                 .as_bytes()
                 .get(self.window_source_position..window.source_end)
             else {
-                return 0;
+                return AsciiAdvance::new(0, false);
             };
             let count = bytes
                 .iter()
@@ -874,11 +918,12 @@ impl InputStream {
             let next_byte = bytes.get(count).copied();
             (count, next_byte, window.raw_end)
         };
+        let stopped_on_mismatch = next_byte.is_some_and(|byte| byte.is_ascii());
         if count == 0 {
-            return 0;
+            return AsciiAdvance::new(0, stopped_on_mismatch);
         }
         let Ok(width) = TextSize::try_from(count) else {
-            return 0;
+            return AsciiAdvance::new(0, false);
         };
         self.cursor.byte += width;
         self.window_source_position += count;
@@ -888,14 +933,14 @@ impl InputStream {
             && next.is_ascii()
         {
             self.next_code_point = Some(CodePoint::from(next));
-            return count;
+            return AsciiAdvance::new(count, true);
         }
 
         if self.cursor.byte == window_end {
             self.move_past_selected_range_end();
         }
         self.refresh_next();
-        count
+        AsciiAdvance::new(count, false)
     }
 
     /// Capture the current validated input boundary.
@@ -2269,10 +2314,9 @@ mod tests {
         let ranges = Arc::from([TextRange::new(0.into(), 8.into())]);
         let mut stream = InputStream::new(input, ranges);
 
-        assert_eq!(
-            stream.advance_ascii_while(|byte| byte.is_ascii_alphabetic()),
-            3
-        );
+        let advance = stream.advance_ascii_while_with_stop(|byte| byte.is_ascii_alphabetic());
+        assert_eq!(advance.count(), 3);
+        assert!(!advance.stopped_on_mismatch());
         assert_eq!(stream.position(), TextSize::from(3));
         assert_eq!(stream.next(), Some(CodePoint::from('é')));
         stream.advance(1);
@@ -2290,16 +2334,24 @@ mod tests {
             TextRange::new(3.into(), 5.into()),
         ]);
         let mut stream = InputStream::new(input, ranges);
-        assert_eq!(
-            stream.advance_ascii_while(|byte| byte.is_ascii_alphabetic()),
-            2
-        );
+        let advance = stream.advance_ascii_while_with_stop(|byte| byte.is_ascii_alphabetic());
+        assert_eq!(advance.count(), 2);
+        assert!(!advance.stopped_on_mismatch());
         assert_eq!(stream.position(), TextSize::from(3));
         assert_eq!(
             stream.advance_ascii_while(|byte| byte.is_ascii_alphabetic()),
             2
         );
         assert_eq!(stream.position(), TextSize::from(5));
+
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("abc+def").unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(Utf8Input::new(raw));
+        let ranges = Arc::from([TextRange::new(0.into(), 7.into())]);
+        let mut stream = InputStream::new(input, ranges);
+        let advance = stream.advance_ascii_while_with_stop(|byte| byte.is_ascii_alphabetic());
+        assert_eq!(advance.count(), 3);
+        assert!(advance.stopped_on_mismatch());
+        assert_eq!(stream.next(), Some(CodePoint::from(b'+')));
     }
 
     #[test]

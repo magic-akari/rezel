@@ -20,9 +20,9 @@ pub use parse::{
 };
 pub use stack::Stack;
 pub use token::{
-    ExternalTokenizer, ExternalTokenizerStart, InputMark, InputStream, LocalTokenGroup,
-    TokenAccept, TokenEdge, TokenEof, TokenGroup, TokenState, TokenTable, Tokenizer,
-    TokenizerFlags,
+    AsciiAdvance, ExternalTokenizer, ExternalTokenizerStart, InputMark, InputStream,
+    LocalTokenGroup, TokenAccept, TokenEdge, TokenEof, TokenGroup, TokenState, TokenTable,
+    Tokenizer, TokenizerFlags,
 };
 
 /// Implementation details referenced by generated parser glue.

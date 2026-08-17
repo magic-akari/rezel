@@ -191,24 +191,42 @@ fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     if !is_identifier_candidate_start(first) {
         return Ok(());
     }
-    if first < 0x80 {
-        input.advance_ascii_while(|byte| is_identifier_candidate_part(u32::from(byte)));
+    let (advanced_ascii, mut stopped_at_ascii_boundary) = if first < 0x80 {
+        advance_ascii_identifier(input)
     } else {
+        (0, false)
+    };
+    if advanced_ascii == 0 {
         input.advance(1);
+        (_, stopped_at_ascii_boundary) = advance_ascii_identifier(input);
     }
     loop {
-        if input.advance_ascii_while(|byte| is_identifier_candidate_part(u32::from(byte))) != 0 {
-            continue;
+        if stopped_at_ascii_boundary {
+            break;
         }
         let Some(character) = input.next().map(CodePoint::as_u32) else {
             break;
         };
+        if character < 0x80 {
+            let (advanced_ascii, stopped) = advance_ascii_identifier(input);
+            stopped_at_ascii_boundary = stopped;
+            if advanced_ascii != 0 || stopped {
+                continue;
+            }
+        }
         if !is_identifier_candidate_part(character) {
             break;
         }
         input.advance(1);
+        (_, stopped_at_ascii_boundary) = advance_ascii_identifier(input);
     }
     input.accept_token(crate::terms::identifier)
+}
+
+fn advance_ascii_identifier(input: &mut InputStream) -> (usize, bool) {
+    let result =
+        input.advance_ascii_while_with_stop(|byte| is_identifier_candidate_part(u32::from(byte)));
+    (result.count(), result.stopped_on_mismatch())
 }
 
 const fn is_identifier_candidate_start(value: u32) -> bool {

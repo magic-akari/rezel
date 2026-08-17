@@ -1,4 +1,6 @@
-use rezel_common::{ParseErrorKind, TextSize};
+use std::sync::Arc;
+
+use rezel_common::{Input, ParseErrorKind, ParseRequest, Parser, StringInput, TextRange, TextSize};
 
 #[test]
 fn default_parser_recovers_and_strict_parser_rejects() {
@@ -49,6 +51,33 @@ fn mixed_ascii_and_unicode_identifiers_parse_as_single_names() {
         .with_strict(true)
         .parse(source)
         .unwrap_or_else(|error| panic!("rejected mixed identifier boundaries: {error}"));
+}
+
+#[test]
+fn identifiers_continue_across_selected_ranges() {
+    let source = "na---me = 1\n";
+    let input: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+    let request = ParseRequest::ranges(
+        input,
+        vec![
+            TextRange::new(0.into(), 2.into()),
+            TextRange::new(5.into(), source.len().try_into().unwrap()),
+        ],
+    )
+    .expect("the selected ranges use valid UTF-8 boundaries");
+    let mut parse = rezel_lang_python::parser()
+        .with_strict(true)
+        .create_parse(request)
+        .expect("the selected-range Python parse starts");
+    loop {
+        if parse
+            .advance()
+            .expect("the selected identifier parses")
+            .is_some()
+        {
+            break;
+        }
+    }
 }
 
 #[test]

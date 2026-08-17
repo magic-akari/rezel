@@ -161,3 +161,30 @@ fn selected_ranges_reject_java_translation_interiors() {
         );
     }
 }
+
+#[test]
+fn identifiers_continue_across_selected_ranges() {
+    let source = "class Ho---st {}";
+    let input: Arc<dyn Input> = Arc::new(StringInput::try_new(source).unwrap());
+    let request = ParseRequest::ranges(
+        input,
+        vec![
+            TextRange::new(0.into(), 8.into()),
+            TextRange::new(11.into(), source.len().try_into().unwrap()),
+        ],
+    )
+    .expect("the selected ranges use valid UTF-8 boundaries");
+    let mut parse = rezel_lang_java::parser()
+        .with_strict(true)
+        .create_parse(request)
+        .expect("the selected-range Java parse starts");
+    loop {
+        if parse
+            .advance()
+            .expect("the selected identifier parses")
+            .is_some()
+        {
+            break;
+        }
+    }
+}
