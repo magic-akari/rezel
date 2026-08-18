@@ -155,7 +155,14 @@ fn scan_newlines(input: &mut InputStream, stack: &Stack) -> Result<(), ParseErro
     if previous.is_none_or(is_line_break) && stack.can_shift(terms::blankLineStart) {
         let line_start = input.mark();
         while matches!(next_value(input), Some(SPACE | TAB)) {
-            input.advance(1);
+            let advance =
+                input.advance_ascii_while_with_stop(|byte| matches!(u32::from(byte), SPACE | TAB));
+            if advance.stopped_on_mismatch() {
+                break;
+            }
+            if advance.count() == 0 {
+                input.advance(1);
+            }
         }
         if next_value(input).is_none_or(|next| is_line_break(next) || next == HASH) {
             input.accept_token_to(terms::blankLineStart, line_start)?;
