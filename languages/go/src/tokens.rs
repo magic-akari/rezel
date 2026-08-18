@@ -175,7 +175,34 @@ fn skip_go_trivia(input: &mut std::iter::Peekable<impl Iterator<Item = u32>>) ->
 }
 
 fn scan_semicolon_lookahead(input: &InputStream, context: bool) -> bool {
+    let chunk = input.identity_lookahead_chunk();
+    let remaining = u32::from(input.end() - input.position());
+    if u32::try_from(chunk.len()) == Ok(remaining) {
+        let mut encountered_non_ascii = false;
+        let should_insert = {
+            let ascii = chunk.iter().copied().map_while(|byte| {
+                if byte.is_ascii() {
+                    Some(u32::from(byte))
+                } else {
+                    encountered_non_ascii = true;
+                    None
+                }
+            });
+            scan_semicolon_lookahead_from(&mut ascii.peekable(), context)
+        };
+        if !encountered_non_ascii {
+            return should_insert;
+        }
+    }
+
     let mut lookahead = input.lookahead().map(CodePoint::as_u32).peekable();
+    scan_semicolon_lookahead_from(&mut lookahead, context)
+}
+
+fn scan_semicolon_lookahead_from(
+    lookahead: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
+    context: bool,
+) -> bool {
     loop {
         while matches!(lookahead.peek().copied(), Some(SPACE | TAB)) {
             lookahead.next();
@@ -191,7 +218,7 @@ fn scan_semicolon_lookahead(input: &InputStream, context: bool) -> bool {
         }
         if next == SLASH && lookahead.peek() == Some(&ASTERISK) {
             lookahead.next();
-            if scan_block_comment(&mut lookahead) {
+            if scan_block_comment(lookahead) {
                 return context;
             }
             continue;
@@ -255,4 +282,24 @@ fn is_semicolon_predecessor(term: u16) -> bool {
 
 fn hash_context(context: &ContextValue) -> u64 {
     u64::from(context.downcast_ref::<bool>().copied().unwrap_or(false))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::scan_semicolon_lookahead_from;
+
+    fn should_insert(source: &str, context: bool) -> bool {
+        let mut input = source.chars().map(u32::from).peekable();
+        scan_semicolon_lookahead_from(&mut input, context)
+    }
+
+    #[test]
+    fn semicolon_lookahead_preserves_comment_and_delimiter_boundaries() {
+        assert!(should_insert("  \nnext", true));
+        assert!(!should_insert("  \nnext", false));
+        assert!(should_insert(" // comment", true));
+        assert!(should_insert(" /* same line */ )", false));
+        assert!(!should_insert(" /* same line */ next", true));
+        assert!(should_insert(" /* line\nbreak */ next", true));
+    }
 }

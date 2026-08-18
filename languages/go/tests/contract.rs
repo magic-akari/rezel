@@ -93,6 +93,16 @@ var _ = generic[struct{ X int }]
 }
 
 #[test]
+fn semicolon_lookahead_falls_back_for_unicode_comment_content() {
+    let source = "package p\nvar value = 1 /* café\n */\nvar next = value\n";
+    let tree = rezel_lang_go::parser()
+        .with_strict(true)
+        .parse(source)
+        .expect("Unicode comment content preserves the preceding semicolon boundary");
+    assert!(!tree.to_string().contains('⚠'));
+}
+
+#[test]
 fn qualified_types_follow_the_spec_package_shape() {
     let source = "package p\nvar value pkg.Type\nvar _ = pkg.Type{}\n";
     let tree = rezel_lang_go::parser()
