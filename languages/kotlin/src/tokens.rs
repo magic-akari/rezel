@@ -887,6 +887,12 @@ fn shift_context(context: &ContextValue, term: u16) -> Result<Option<ContextValu
     if preserves_line_break(term) {
         return Ok(None);
     }
+    if context.same_identity(&BOOLEAN_CONTEXTS[0]) {
+        return Ok((term == terms::lineBreakTrivia).then(|| BOOLEAN_CONTEXTS[1].clone()));
+    }
+    if context.same_identity(&BOOLEAN_CONTEXTS[1]) {
+        return Ok((term != terms::lineBreakTrivia).then(|| BOOLEAN_CONTEXTS[0].clone()));
+    }
     let Some(previous) = context.downcast_ref::<KotlinContext>() else {
         return Ok(None);
     };
@@ -1013,9 +1019,75 @@ fn is_keyword_boundary(next: u32) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        classify_adjacent_annotation_identifier, classify_adjacent_class_member,
-        classify_nullable_receiver_question, is_keyword_boundary,
+        BOOLEAN_CONTEXTS, KotlinContext, classify_adjacent_annotation_identifier,
+        classify_adjacent_class_member, classify_nullable_receiver_question, is_keyword_boundary,
+        kotlin_context, push_string_frame, shift_context, start_context,
     };
+    use crate::terms;
+
+    #[test]
+    fn line_break_context_reuses_boolean_states_outside_strings() {
+        let without_break = start_context();
+        assert!(without_break.same_identity(&BOOLEAN_CONTEXTS[0]));
+        assert!(
+            shift_context(&without_break, terms::horizontalWhitespace)
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            shift_context(&without_break, terms::Identifier)
+                .unwrap()
+                .is_none()
+        );
+
+        let with_break = shift_context(&without_break, terms::lineBreakTrivia)
+            .unwrap()
+            .expect("a line break changes the context");
+        assert!(with_break.same_identity(&BOOLEAN_CONTEXTS[1]));
+        assert!(
+            shift_context(&with_break, terms::lineBreakTrivia)
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            shift_context(&with_break, terms::horizontalWhitespace)
+                .unwrap()
+                .is_none()
+        );
+
+        let cleared = shift_context(&with_break, terms::Identifier)
+            .unwrap()
+            .expect("a non-trivia token clears the line break");
+        assert!(cleared.same_identity(&BOOLEAN_CONTEXTS[0]));
+    }
+
+    #[test]
+    fn line_break_context_preserves_string_frames_on_the_fallback_path() {
+        let string = push_string_frame(None, 2, false);
+        let context = kotlin_context(KotlinContext {
+            has_line_break: false,
+            string: Some(string.clone()),
+        });
+
+        let with_break = shift_context(&context, terms::lineBreakTrivia)
+            .unwrap()
+            .expect("a line break changes the string context");
+        let with_break = with_break
+            .downcast_ref::<KotlinContext>()
+            .expect("the string context keeps its concrete type");
+        assert!(with_break.has_line_break);
+        assert!(
+            with_break
+                .string
+                .as_ref()
+                .is_some_and(|frame| std::sync::Arc::ptr_eq(frame, &string))
+        );
+
+        let closed = shift_context(&context, terms::multiDollarLineStringEnd)
+            .unwrap()
+            .expect("closing the outer string pops its frame");
+        assert!(closed.same_identity(&BOOLEAN_CONTEXTS[0]));
+    }
 
     #[test]
     fn adjacent_class_members_require_a_modifier_and_declaration_introducer() {

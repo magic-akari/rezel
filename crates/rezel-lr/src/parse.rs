@@ -138,7 +138,9 @@ impl ContextValue {
         self.0.downcast_ref()
     }
 
-    pub(crate) fn same_identity(&self, other: &Self) -> bool {
+    /// Whether both handles refer to the same context value.
+    #[must_use]
+    pub fn same_identity(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.0, &other.0)
     }
 }
