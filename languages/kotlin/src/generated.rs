@@ -64,10 +64,8 @@ static LOCAL_TOKEN_21_TABLE: rezel_lr::TokenTable = rezel_lr::TokenTable::new(
     &TABLES.local_token_21_edges,
     &TABLES.local_token_21_eof,
 );
-fn specialize_0(
-    value: &str,
-    _stack: &rezel_lr::Stack,
-) -> Option<rezel_lr::SpecializedToken> {
+#[inline(always)]
+fn specialize_0_prefix_97(value: &str) -> Option<rezel_lr::SpecializedToken> {
     match value {
         "abstract" => {
             Some(rezel_lr::SpecializedToken::new(115u16, rezel_lr::Specialize::Extend))
@@ -84,12 +82,24 @@ fn specialize_0(
         "as" => {
             Some(rezel_lr::SpecializedToken::new(280u16, rezel_lr::Specialize::Replace))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_98(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "break" => {
             Some(rezel_lr::SpecializedToken::new(244u16, rezel_lr::Specialize::Replace))
         }
         "by" => {
             Some(rezel_lr::SpecializedToken::new(150u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_99(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "class" => {
             Some(rezel_lr::SpecializedToken::new(132u16, rezel_lr::Specialize::Replace))
         }
@@ -111,6 +121,12 @@ fn specialize_0(
         "crossinline" => {
             Some(rezel_lr::SpecializedToken::new(57u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_100(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "data" => {
             Some(rezel_lr::SpecializedToken::new(117u16, rezel_lr::Specialize::Extend))
         }
@@ -123,6 +139,12 @@ fn specialize_0(
         "dynamic" => {
             Some(rezel_lr::SpecializedToken::new(48u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_101(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "else" => {
             Some(rezel_lr::SpecializedToken::new(223u16, rezel_lr::Specialize::Replace))
         }
@@ -135,6 +157,12 @@ fn specialize_0(
         "external" => {
             Some(rezel_lr::SpecializedToken::new(125u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_102(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "false" => {
             Some(rezel_lr::SpecializedToken::new(63u16, rezel_lr::Specialize::Replace))
         }
@@ -153,9 +181,21 @@ fn specialize_0(
         "fun" => {
             Some(rezel_lr::SpecializedToken::new(134u16, rezel_lr::Specialize::Replace))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_103(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "get" => {
             Some(rezel_lr::SpecializedToken::new(30u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_105(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "if" => {
             Some(rezel_lr::SpecializedToken::new(101u16, rezel_lr::Specialize::Replace))
         }
@@ -183,15 +223,33 @@ fn specialize_0(
         "is" => {
             Some(rezel_lr::SpecializedToken::new(258u16, rezel_lr::Specialize::Replace))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_108(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "lateinit" => {
             Some(rezel_lr::SpecializedToken::new(127u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_110(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "noinline" => {
             Some(rezel_lr::SpecializedToken::new(56u16, rezel_lr::Specialize::Extend))
         }
         "null" => {
             Some(rezel_lr::SpecializedToken::new(65u16, rezel_lr::Specialize::Replace))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_111(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "object" => {
             Some(rezel_lr::SpecializedToken::new(158u16, rezel_lr::Specialize::Replace))
         }
@@ -207,6 +265,12 @@ fn specialize_0(
         "override" => {
             Some(rezel_lr::SpecializedToken::new(126u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_112(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "package" => {
             Some(rezel_lr::SpecializedToken::new(292u16, rezel_lr::Specialize::Replace))
         }
@@ -225,6 +289,12 @@ fn specialize_0(
         "public" => {
             Some(rezel_lr::SpecializedToken::new(109u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_114(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "receiver" => {
             Some(rezel_lr::SpecializedToken::new(32u16, rezel_lr::Specialize::Extend))
         }
@@ -234,6 +304,12 @@ fn specialize_0(
         "return" => {
             Some(rezel_lr::SpecializedToken::new(239u16, rezel_lr::Specialize::Replace))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_115(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "sealed" => {
             Some(rezel_lr::SpecializedToken::new(116u16, rezel_lr::Specialize::Extend))
         }
@@ -249,6 +325,12 @@ fn specialize_0(
         "suspend" => {
             Some(rezel_lr::SpecializedToken::new(37u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_116(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "tailrec" => {
             Some(rezel_lr::SpecializedToken::new(122u16, rezel_lr::Specialize::Extend))
         }
@@ -267,6 +349,12 @@ fn specialize_0(
         "typealias" => {
             Some(rezel_lr::SpecializedToken::new(191u16, rezel_lr::Specialize::Replace))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_118(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "val" => {
             Some(rezel_lr::SpecializedToken::new(141u16, rezel_lr::Specialize::Replace))
         }
@@ -279,6 +367,12 @@ fn specialize_0(
         "vararg" => {
             Some(rezel_lr::SpecializedToken::new(55u16, rezel_lr::Specialize::Extend))
         }
+        _ => None,
+    }
+}
+#[inline(always)]
+fn specialize_0_prefix_119(value: &str) -> Option<rezel_lr::SpecializedToken> {
+    match value {
         "when" => {
             Some(rezel_lr::SpecializedToken::new(250u16, rezel_lr::Specialize::Replace))
         }
@@ -288,6 +382,31 @@ fn specialize_0(
         "while" => {
             Some(rezel_lr::SpecializedToken::new(211u16, rezel_lr::Specialize::Replace))
         }
+        _ => None,
+    }
+}
+fn specialize_0(
+    value: &str,
+    _stack: &rezel_lr::Stack,
+) -> Option<rezel_lr::SpecializedToken> {
+    match value.as_bytes().first().copied() {
+        Some(97u8) => specialize_0_prefix_97(value),
+        Some(98u8) => specialize_0_prefix_98(value),
+        Some(99u8) => specialize_0_prefix_99(value),
+        Some(100u8) => specialize_0_prefix_100(value),
+        Some(101u8) => specialize_0_prefix_101(value),
+        Some(102u8) => specialize_0_prefix_102(value),
+        Some(103u8) => specialize_0_prefix_103(value),
+        Some(105u8) => specialize_0_prefix_105(value),
+        Some(108u8) => specialize_0_prefix_108(value),
+        Some(110u8) => specialize_0_prefix_110(value),
+        Some(111u8) => specialize_0_prefix_111(value),
+        Some(112u8) => specialize_0_prefix_112(value),
+        Some(114u8) => specialize_0_prefix_114(value),
+        Some(115u8) => specialize_0_prefix_115(value),
+        Some(116u8) => specialize_0_prefix_116(value),
+        Some(118u8) => specialize_0_prefix_118(value),
+        Some(119u8) => specialize_0_prefix_119(value),
         _ => None,
     }
 }

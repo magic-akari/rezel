@@ -7,7 +7,12 @@ use syn::{LitStr, Path};
 use crate::binary::BinaryTables;
 use crate::source::format_generated_rust;
 use crate::token::EncodedTokenTable;
-use crate::{CompiledGrammar, GeneratorError, SpecializerMetadata, TokenizerMetadata};
+use crate::{
+    CompiledGrammar, GeneratorError, SpecializedTokenMetadata, SpecializerMetadata,
+    TokenizerMetadata,
+};
+
+const PREFIX_DISPATCH_MIN_SPECIALIZERS: usize = 16;
 
 /// Generated parser and term modules.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -304,23 +309,14 @@ fn emit_specializers(
         match specializer {
             SpecializerMetadata::Table { term, entries } => {
                 let function = Ident::new(&format!("specialize_{index}"), Span::call_site());
-                let arms = entries.iter().map(|(value, result)| {
-                    let value = LitStr::new(value, Span::call_site());
-                    let term = result.term;
-                    let kind = specialize_kind(result.extend);
-                    quote!(
-                        #value => Some(rezel_lr::SpecializedToken::new(#term, #kind)),
-                    )
-                });
+                let (helpers, body) = emit_specializer_table(&function, entries);
                 functions.extend(quote! {
+                    #helpers
                     fn #function(
                         value: &str,
                         _stack: &rezel_lr::Stack,
                     ) -> Option<rezel_lr::SpecializedToken> {
-                        match value {
-                            #(#arms)*
-                            _ => None,
-                        }
+                        #body
                     }
                 });
                 emitted.push((*term, function));
@@ -357,6 +353,68 @@ fn emit_specializers(
             .collect()
     };
     Ok((functions, values))
+}
+
+fn emit_specializer_table(
+    function: &Ident,
+    entries: &BTreeMap<String, SpecializedTokenMetadata>,
+) -> (TokenStream, TokenStream) {
+    let entries = entries
+        .iter()
+        .map(|(value, result)| (value.as_str(), *result))
+        .collect::<Vec<_>>();
+    if entries.len() < PREFIX_DISPATCH_MIN_SPECIALIZERS {
+        return (TokenStream::new(), emit_specializer_match(&entries));
+    }
+
+    let mut groups = BTreeMap::<Option<u8>, Vec<_>>::new();
+    for (value, result) in entries {
+        groups
+            .entry(value.as_bytes().first().copied())
+            .or_default()
+            .push((value, result));
+    }
+    let mut helpers = TokenStream::new();
+    let branches = groups.into_iter().map(|(prefix, entries)| {
+        let suffix = prefix.map_or_else(|| "empty".to_owned(), |prefix| prefix.to_string());
+        let helper = Ident::new(&format!("{function}_prefix_{suffix}"), Span::call_site());
+        let body = emit_specializer_match(&entries);
+        helpers.extend(quote! {
+            #[inline(always)]
+            fn #helper(value: &str) -> Option<rezel_lr::SpecializedToken> {
+                #body
+            }
+        });
+        if let Some(prefix) = prefix {
+            quote!(Some(#prefix) => #helper(value),)
+        } else {
+            quote!(None => #helper(value),)
+        }
+    });
+    let body = quote! {
+        match value.as_bytes().first().copied() {
+            #(#branches)*
+            _ => None,
+        }
+    };
+    (helpers, body)
+}
+
+fn emit_specializer_match(entries: &[(&str, SpecializedTokenMetadata)]) -> TokenStream {
+    let arms = entries.iter().map(|(value, result)| {
+        let value = LitStr::new(value, Span::call_site());
+        let term = result.term;
+        let kind = specialize_kind(result.extend);
+        quote!(
+            #value => Some(rezel_lr::SpecializedToken::new(#term, #kind)),
+        )
+    });
+    quote! {
+        match value {
+            #(#arms)*
+            _ => None,
+        }
+    }
 }
 
 fn combine_specializers(
@@ -735,6 +793,49 @@ kw<word> { @specialize[@name={word}]<Name, word> }
         assert!(first < second);
         assert_eq!(source.matches("SpecializerSpec {").count(), 1);
         assert!(source.contains("get: specialize_combined_0"));
+    }
+
+    #[test]
+    fn large_specializer_tables_dispatch_by_prefix_and_match_complete_values() {
+        let values = [
+            "", "alpha", "atom", "beta", "break", "case", "class", "delta", "else", "false",
+            "gamma", "if", "return", "true", "while", "yield",
+        ];
+        let entries = values
+            .into_iter()
+            .enumerate()
+            .map(|(index, value)| {
+                (
+                    value.to_owned(),
+                    SpecializedTokenMetadata {
+                        term: u16::try_from(index).unwrap(),
+                        extend: false,
+                    },
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        let function = Ident::new("specialize_test", Span::call_site());
+        let (helpers, body) = emit_specializer_table(&function, &entries);
+        let source = quote! {
+            #helpers
+            fn specialize_test(value: &str) -> Option<rezel_lr::SpecializedToken> {
+                #body
+            }
+        };
+        let source = format_generated_rust(&source.to_string(), "specializer test is invalid")
+            .expect("the generated specializer is valid Rust");
+
+        assert!(source.contains("fn specialize_test_prefix_empty"));
+        assert!(source.contains("fn specialize_test_prefix_97"));
+        assert!(source.contains("Some(97u8) => specialize_test_prefix_97(value)"));
+        assert!(source.contains("\"alpha\" =>"));
+        assert!(source.contains("\"atom\" =>"));
+
+        let mut small = entries;
+        small.pop_last();
+        let (helpers, body) = emit_specializer_table(&function, &small);
+        assert!(helpers.is_empty());
+        assert!(!body.to_string().contains("as_bytes"));
     }
 
     #[test]
