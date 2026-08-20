@@ -1210,6 +1210,16 @@ impl InputStream {
         if !self.sync_window_position() {
             self.load_identity_chunk(range, self.cursor.byte);
         }
+        if let Some(byte) = self
+            .window
+            .as_ref()
+            .and_then(|window| window.source.as_bytes().get(self.window_source_position))
+            .copied()
+            .filter(u8::is_ascii)
+        {
+            self.next_code_point = Some(CodePoint::from(byte));
+            return;
+        }
         if let Some(byte) = self.chunk_ascii(range, self.cursor.byte) {
             self.next_code_point = Some(CodePoint::from(byte));
             return;
@@ -2105,6 +2115,38 @@ mod tests {
         input.reset(0.into());
 
         assert_eq!(input.next(), Some(CodePoint::from('😀')));
+    }
+
+    #[test]
+    fn resets_reuse_identity_windows_and_preserve_translation_boundaries() {
+        let ranges = Arc::from([
+            TextRange::new(0.into(), 2.into()),
+            TextRange::new(3.into(), 5.into()),
+        ]);
+        let mut selected = stream("abXcd", ranges);
+        selected.advance(3);
+        selected.reset(1.into());
+        assert_eq!(selected.next(), Some(CodePoint::from(b'b')));
+        selected.reset(2.into());
+        assert_eq!(selected.position(), TextSize::from(3));
+        assert_eq!(selected.next(), Some(CodePoint::from(b'c')));
+
+        let raw: Arc<dyn Input> = Arc::new(StringInput::try_new("abXc").unwrap());
+        let input: Arc<dyn LexicalInput> = Arc::new(BoundaryTranslationInput {
+            inner: Utf8Input::new(raw),
+        });
+        let ranges = Arc::from([TextRange::new(0.into(), 4.into())]);
+        let mut translated = InputStream::new(input, ranges);
+        translated.advance(3);
+        translated.reset(1.into());
+        assert_eq!(translated.next(), Some(CodePoint::from(b'b')));
+        translated.reset(2.into());
+        assert_eq!(
+            translated.next(),
+            Some(CodePoint::new(0xd800).expect("surrogate is a code point"))
+        );
+        translated.reset(3.into());
+        assert_eq!(translated.next(), Some(CodePoint::from(b'c')));
     }
 
     #[test]
