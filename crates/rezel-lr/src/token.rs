@@ -697,6 +697,14 @@ impl InputStream {
     /// External tokenizers that inspect a run of input should prefer this to
     /// repeatedly calling [`Self::peek`] with increasing offsets.
     pub fn lookahead(&self) -> impl Iterator<Item = CodePoint> + '_ {
+        let fast_bytes = self
+            .window
+            .as_ref()
+            .and_then(|window| {
+                let start = window.source_position(self.cursor.byte)?;
+                window.source.as_bytes().get(start..window.source_end)
+            })
+            .unwrap_or_default();
         InputLookahead {
             input: &*self.input,
             ranges: &self.ranges,
@@ -704,6 +712,8 @@ impl InputStream {
             initial_chunk: self.chunk.as_ref(),
             loaded_chunk: None,
             fast_window: self.window.as_ref(),
+            fast_bytes,
+            fast_byte_position: 0,
         }
     }
 
@@ -1237,6 +1247,8 @@ struct InputLookahead<'a> {
     initial_chunk: Option<&'a InputChunk>,
     loaded_chunk: Option<InputChunk>,
     fast_window: Option<&'a FastWindow>,
+    fast_bytes: &'a [u8],
+    fast_byte_position: usize,
 }
 
 impl InputLookahead<'_> {
@@ -1290,6 +1302,26 @@ impl Iterator for InputLookahead<'_> {
         loop {
             let cursor = self.cursor?;
             let range = *self.ranges.get(cursor.range_index)?;
+            // The iterator's cursor is private, so consecutive identity-mapped
+            // ASCII bytes can defer one cursor update until the run ends.
+            if let Some(next) = self.fast_bytes.get(self.fast_byte_position).copied()
+                && next.is_ascii()
+            {
+                self.fast_byte_position += 1;
+                return Some(CodePoint::from(next));
+            }
+            if self.fast_byte_position != 0 {
+                let consumed = TextSize::try_from(self.fast_byte_position)
+                    .expect("an input window fits in TextSize");
+                self.cursor = Some(StreamCursor {
+                    byte: cursor.byte + consumed,
+                    ..cursor
+                });
+                self.fast_bytes = &[];
+                self.fast_byte_position = 0;
+                continue;
+            }
+            self.fast_bytes = &[];
             if cursor.byte < range.start() || cursor.byte >= range.end() {
                 self.cursor = next_range_cursor(self.ranges, cursor.range_index);
                 continue;
