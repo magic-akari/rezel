@@ -9,7 +9,8 @@ use rezel_common::CodePoint;
 use rezel_lr::InputStream;
 
 use super::lexical::{
-    is_identifier_start, is_operator_start, scan_lookahead_identifier_after_first,
+    is_identifier_continue, is_identifier_start, is_operator_start,
+    scan_lookahead_identifier_after_first,
 };
 
 use super::lookahead::{
@@ -156,20 +157,82 @@ fn classify_identifier_boundary(
     input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
     can_shift: &mut impl FnMut(ShiftRole) -> bool,
 ) -> CodeItemBoundary {
-    let Some(identifier) = scan_lookahead_identifier_after_first(first, input) else {
-        return CodeItemBoundary::LineBreak;
-    };
-    match identifier.ascii_spelling() {
-        Some(b"as") if can_shift(ShiftRole::AsKeyword) => CodeItemBoundary::None,
-        Some(b"is") if can_shift(ShiftRole::IsKeyword) => CodeItemBoundary::None,
-        Some(b"where" | b"else" | b"catch") => CodeItemBoundary::None,
-        Some(b"async" | b"throws" | b"reasync" | b"rethrows")
-            if can_shift(ShiftRole::DeclarationEffect) =>
-        {
+    match boundary_identifier(first, input) {
+        Some(BoundaryIdentifier::As) if can_shift(ShiftRole::AsKeyword) => CodeItemBoundary::None,
+        Some(BoundaryIdentifier::Is) if can_shift(ShiftRole::IsKeyword) => CodeItemBoundary::None,
+        Some(BoundaryIdentifier::Continuation) => CodeItemBoundary::None,
+        Some(BoundaryIdentifier::DeclarationEffect) if can_shift(ShiftRole::DeclarationEffect) => {
             CodeItemBoundary::DeclarationEffect
         }
         _ => CodeItemBoundary::LineBreak,
     }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum BoundaryIdentifier {
+    As,
+    Is,
+    Continuation,
+    DeclarationEffect,
+}
+
+fn boundary_identifier(
+    first: u32,
+    input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
+) -> Option<BoundaryIdentifier> {
+    match u8::try_from(first).ok()? {
+        b'a' => {
+            if input.next() != Some(u32::from(b's')) {
+                return None;
+            }
+            if identifier_ends_here(input) {
+                return Some(BoundaryIdentifier::As);
+            }
+            matches_identifier_suffix(input, b"ync")
+                .then_some(BoundaryIdentifier::DeclarationEffect)
+        }
+        b'c' => {
+            matches_identifier_suffix(input, b"atch").then_some(BoundaryIdentifier::Continuation)
+        }
+        b'e' => {
+            matches_identifier_suffix(input, b"lse").then_some(BoundaryIdentifier::Continuation)
+        }
+        b'i' => matches_identifier_suffix(input, b"s").then_some(BoundaryIdentifier::Is),
+        b'r' => {
+            if input.next() != Some(u32::from(b'e')) {
+                return None;
+            }
+            let suffix = match input.next()? {
+                next if next == u32::from(b'a') => b"sync".as_slice(),
+                next if next == u32::from(b't') => b"hrows".as_slice(),
+                _ => return None,
+            };
+            matches_identifier_suffix(input, suffix)
+                .then_some(BoundaryIdentifier::DeclarationEffect)
+        }
+        b't' => matches_identifier_suffix(input, b"hrows")
+            .then_some(BoundaryIdentifier::DeclarationEffect),
+        b'w' => {
+            matches_identifier_suffix(input, b"here").then_some(BoundaryIdentifier::Continuation)
+        }
+        _ => None,
+    }
+}
+
+fn matches_identifier_suffix(
+    input: &mut std::iter::Peekable<impl Iterator<Item = u32>>,
+    expected: &[u8],
+) -> bool {
+    for expected in expected.iter().copied() {
+        if input.next() != Some(u32::from(expected)) {
+            return false;
+        }
+    }
+    identifier_ends_here(input)
+}
+
+fn identifier_ends_here(input: &mut std::iter::Peekable<impl Iterator<Item = u32>>) -> bool {
+    !input.peek().copied().is_some_and(is_identifier_continue)
 }
 
 // SwiftSyntax only classifies `#if` as a postfix-expression suffix when the
@@ -211,13 +274,46 @@ fn starts_postfix_if_config_clause_entry(
 
 #[cfg(test)]
 mod tests {
-    use super::{scan_trivia_boundary, starts_postfix_if_config_after_pound};
+    use super::{
+        BoundaryIdentifier, boundary_identifier, scan_trivia_boundary,
+        starts_postfix_if_config_after_pound,
+    };
     use crate::tokens::lookahead::TriviaBoundary;
 
     fn starts_postfix_if_config(source_after_pound: &str) -> bool {
         starts_postfix_if_config_after_pound(
             &mut source_after_pound.chars().map(u32::from).peekable(),
         )
+    }
+
+    fn classify_boundary_identifier(source: &str) -> Option<BoundaryIdentifier> {
+        let mut input = source.chars().map(u32::from).peekable();
+        let first = input.next()?;
+        boundary_identifier(first, &mut input)
+    }
+
+    #[test]
+    fn boundary_identifiers_match_exact_swift_words() {
+        for (source, expected) in [
+            ("as", BoundaryIdentifier::As),
+            ("is", BoundaryIdentifier::Is),
+            ("where", BoundaryIdentifier::Continuation),
+            ("else", BoundaryIdentifier::Continuation),
+            ("catch", BoundaryIdentifier::Continuation),
+            ("async", BoundaryIdentifier::DeclarationEffect),
+            ("throws", BoundaryIdentifier::DeclarationEffect),
+            ("reasync", BoundaryIdentifier::DeclarationEffect),
+            ("rethrows", BoundaryIdentifier::DeclarationEffect),
+        ] {
+            assert_eq!(
+                classify_boundary_identifier(source),
+                Some(expected),
+                "{source}"
+            );
+        }
+        for source in ["apple", "as$", "asyncValue", "whereé", "throw"] {
+            assert_eq!(classify_boundary_identifier(source), None, "{source}");
+        }
     }
 
     #[test]
