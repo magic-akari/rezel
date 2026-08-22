@@ -878,8 +878,8 @@ impl InputStream {
     ///
     /// Translation boundaries, selected-range boundaries, and non-ASCII
     /// input stop the run before `predicate` is called for later bytes.
-    pub fn advance_ascii_while(&mut self, mut predicate: impl FnMut(u8) -> bool) -> usize {
-        self.advance_ascii_while_with_stop(&mut predicate).count()
+    pub fn advance_ascii_while(&mut self, predicate: impl FnMut(u8) -> bool) -> usize {
+        self.advance_ascii_while_impl::<false>(predicate).count()
     }
 
     /// Advance over one ASCII run and report whether its predicate rejected
@@ -889,6 +889,13 @@ impl InputStream {
     /// this distinguishes a predicate mismatch from a translation or
     /// selected-range boundary without scanning the boundary again.
     pub fn advance_ascii_while_with_stop(
+        &mut self,
+        predicate: impl FnMut(u8) -> bool,
+    ) -> AsciiAdvance {
+        self.advance_ascii_while_impl::<true>(predicate)
+    }
+
+    fn advance_ascii_while_impl<const REPORT_STOP: bool>(
         &mut self,
         mut predicate: impl FnMut(u8) -> bool,
     ) -> AsciiAdvance {
@@ -920,15 +927,28 @@ impl InputStream {
             else {
                 return AsciiAdvance::new(0, false);
             };
-            let count = bytes
-                .iter()
-                .copied()
-                .take_while(|byte| byte.is_ascii() && predicate(*byte))
-                .count();
+            // Keep the count-only hot path as an indexed loop while the
+            // reporting monomorphization retains its rejected-byte scan.
+            let count = if REPORT_STOP {
+                bytes
+                    .iter()
+                    .copied()
+                    .take_while(|byte| byte.is_ascii() && predicate(*byte))
+                    .count()
+            } else {
+                let mut count = 0_usize;
+                while let Some(byte) = bytes.get(count).copied() {
+                    if !byte.is_ascii() || !predicate(byte) {
+                        break;
+                    }
+                    count += 1;
+                }
+                count
+            };
             let next_byte = bytes.get(count).copied();
             (count, next_byte, window.raw_end)
         };
-        let stopped_on_mismatch = next_byte.is_some_and(|byte| byte.is_ascii());
+        let stopped_on_mismatch = REPORT_STOP && next_byte.is_some_and(|byte| byte.is_ascii());
         if count == 0 {
             return AsciiAdvance::new(0, stopped_on_mismatch);
         }
