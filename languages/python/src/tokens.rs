@@ -185,7 +185,17 @@ fn scan_indentation(input: &mut InputStream, stack: &Stack) -> Result<(), ParseE
     }
     let mut columns = IndentColumns::default();
     let indent_start = input.mark();
-    while let Some(character) = next_value(input) {
+    loop {
+        let advance = input.advance_ascii_while_with_stop(|byte| columns.advance(u32::from(byte)));
+        if advance.stopped_on_mismatch() {
+            break;
+        }
+        if advance.count() != 0 {
+            continue;
+        }
+        let Some(character) = next_value(input) else {
+            break;
+        };
         if !columns.advance(character) {
             break;
         }
