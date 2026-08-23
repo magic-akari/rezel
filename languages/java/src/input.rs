@@ -374,11 +374,23 @@ fn scan_unicode_escapes(input: &dyn Input) -> ScanResult {
         if chunk.is_empty() {
             break;
         }
-        for (offset, byte) in chunk.as_bytes().iter().copied().enumerate() {
+        let mut cursor = 0_usize;
+        while cursor < chunk.len() {
+            let remaining = &chunk[cursor..];
+            let Some(relative) = remaining.find('\\') else {
+                previous_was_escape = false;
+                trailing_backslashes = 0;
+                break;
+            };
+            if relative != 0 {
+                previous_was_escape = false;
+                trailing_backslashes = 0;
+            }
+            let offset = cursor + relative;
             let offset = TextSize::try_from(offset).expect("input chunk fits in text coordinates");
             let character_start = position + offset;
             let eligible = previous_was_escape || trailing_backslashes.is_multiple_of(2);
-            if byte == b'\\' && eligible {
+            if eligible {
                 match unicode_escape_at(input, character_start) {
                     EscapeScan::Valid { value, end } => {
                         escapes.push(UnicodeEscape {
@@ -402,11 +414,8 @@ fn scan_unicode_escapes(input: &dyn Input) -> ScanResult {
             }
 
             previous_was_escape = false;
-            trailing_backslashes = if byte == b'\\' {
-                trailing_backslashes.saturating_add(1)
-            } else {
-                0
-            };
+            trailing_backslashes = trailing_backslashes.saturating_add(1);
+            cursor = usize::from(offset) + 1;
         }
         position += TextSize::try_from(chunk.len()).expect("input chunk fits in text coordinates");
     }
@@ -559,17 +568,23 @@ mod tests {
 
     #[test]
     fn scans_unicode_escapes_across_input_chunks() {
-        let raw: Arc<str> = Arc::from(r"cl\u0061ss");
-        let input = JavaInput::new(Arc::new(ChunkedInput {
-            source: Arc::clone(&raw),
-            chunk_length: 2,
-        }));
-        assert_eq!(
-            input
-                .read_logical(TextRange::new(0.into(), raw.len().try_into().unwrap()))
-                .as_ref(),
-            "class"
-        );
+        for (raw, expected) in [
+            (r"cl\u0061ss", "class"),
+            (r"\\u0061", r"\\u0061"),
+            (r"\x\u0061", r"\xa"),
+        ] {
+            let raw: Arc<str> = Arc::from(raw);
+            let input = JavaInput::new(Arc::new(ChunkedInput {
+                source: Arc::clone(&raw),
+                chunk_length: 1,
+            }));
+            assert_eq!(
+                input
+                    .read_logical(TextRange::new(0.into(), raw.len().try_into().unwrap()))
+                    .as_ref(),
+                expected
+            );
+        }
     }
 
     #[test]
