@@ -229,6 +229,13 @@ fn scan_strings(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError
     let format = flags & FORMAT != 0;
     let start = input.position();
     loop {
+        let advance = input.advance_ascii_while_with_stop(|byte| {
+            let value = u32::from(byte);
+            value != quote && value != LF && value != BACKSLASH && (!format || value != OPEN_BRACE)
+        });
+        if advance.count() != 0 && !advance.stopped_on_mismatch() {
+            continue;
+        }
         match next_value(input) {
             None => break,
             Some(OPEN_BRACE) if format => {
