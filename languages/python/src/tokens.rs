@@ -129,9 +129,10 @@ pub(crate) static STRINGS: ExternalTokenizer = ExternalTokenizer::new(
 );
 
 pub(crate) static TRACK_INDENT: ContextTracker =
-    ContextTracker::new(start_context, Some(shift_context), None, hash_context)
+    ContextTracker::new(start_context, None, None, hash_context)
+        .with_context_only_shift(shift_context)
+        .with_input_shift_for_terms(shift_indent_context, &[terms::indent])
         .with_shift_terms(SHIFT_CONTEXT_TERMS)
-        .with_shift_input_terms(&[terms::indent])
         .with_reduce_without_input(reduce_context)
         .with_reduce_terms(REDUCE_CONTEXT_TERMS);
 
@@ -364,41 +365,47 @@ fn start_context() -> ContextValue {
 }
 
 #[allow(clippy::unnecessary_wraps)] // ContextTracker callbacks share a fallible signature.
-fn shift_context(
-    value: &ContextValue,
-    term: u16,
-    stack: &Stack,
-    input: &mut InputStream,
-) -> Result<ContextValue, ParseError> {
+fn shift_context(value: &ContextValue, term: u16) -> Result<Option<ContextValue>, ParseError> {
     let current = value
         .downcast_ref::<PythonContext>()
         .expect("Python parser context");
-    if term == terms::indent {
-        let whitespace = input
-            .read_scalar(input.position(), stack.position())
-            .ok_or_else(|| {
-                ParseError::new(
-                    ParseErrorKind::Input,
-                    Some(input.position()),
-                    "Python indentation contains a non-scalar code point",
-                )
-            })?;
-        let indentation = count_indent(&whitespace);
-        return Ok(child_context(value, indentation.visual(), 0));
-    }
     if term == terms::dedent {
-        return Ok(current.parent.clone().unwrap_or_else(start_context));
+        return Ok(Some(current.parent.clone().unwrap_or_else(start_context)));
     }
     if matches!(
         term,
         terms::ParenL | terms::BracketL | terms::BraceL | terms::replacementStart
     ) {
-        return Ok(child_context(value, 0, BRACKETED));
+        return Ok(Some(child_context(value, 0, BRACKETED)));
     }
     if let Some(flags) = string_flags(term) {
-        return Ok(child_context(value, 0, flags | (current.flags & BRACKETED)));
+        return Ok(Some(child_context(
+            value,
+            0,
+            flags | (current.flags & BRACKETED),
+        )));
     }
-    Ok(value.clone())
+    Ok(None)
+}
+
+#[allow(clippy::unnecessary_wraps)] // ContextTracker callbacks share a fallible signature.
+fn shift_indent_context(
+    value: &ContextValue,
+    _term: u16,
+    stack: &Stack,
+    input: &mut InputStream,
+) -> Result<ContextValue, ParseError> {
+    let whitespace = input
+        .read_scalar(input.position(), stack.position())
+        .ok_or_else(|| {
+            ParseError::new(
+                ParseErrorKind::Input,
+                Some(input.position()),
+                "Python indentation contains a non-scalar code point",
+            )
+        })?;
+    let indentation = count_indent(&whitespace);
+    Ok(child_context(value, indentation.visual(), 0))
 }
 
 #[allow(clippy::unnecessary_wraps)] // ContextTracker callbacks share a fallible signature.
