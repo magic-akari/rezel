@@ -67,7 +67,7 @@ pub(crate) static TRACK_TOKENS: ContextTracker =
         .with_context_only_shift(shift_context);
 
 fn scan_semicolon(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
-    let context = stack.context::<bool>().copied().unwrap_or(false);
+    let context = stack.context_same_identity(&BOOLEAN_CONTEXTS[1]);
     let next = input.next().map(CodePoint::as_u32);
     let should_look_ahead = matches!(next, Some(SPACE | TAB | SLASH));
     let should_insert = if should_look_ahead {

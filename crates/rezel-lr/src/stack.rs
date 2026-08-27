@@ -229,6 +229,14 @@ impl Stack {
         self.context.as_ref()?.value.downcast_ref()
     }
 
+    /// Whether the current tracker context is the given immutable value.
+    #[must_use]
+    pub fn context_same_identity(&self, value: &ContextValue) -> bool {
+        self.context
+            .as_ref()
+            .is_some_and(|context| context.value.same_identity(value))
+    }
+
     /// Check whether a term can shift after zero or more reductions.
     #[must_use]
     pub fn can_shift(&self, term: u16) -> bool {
