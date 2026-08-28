@@ -953,6 +953,12 @@ fn preserves_line_break(term: u16) -> bool {
 }
 
 fn has_line_break(stack: &Stack) -> bool {
+    if stack.context_same_identity(&BOOLEAN_CONTEXTS[0]) {
+        return false;
+    }
+    if stack.context_same_identity(&BOOLEAN_CONTEXTS[1]) {
+        return true;
+    }
     stack
         .context::<KotlinContext>()
         .is_some_and(|context| context.has_line_break)
@@ -997,6 +1003,12 @@ fn static_context(value: bool) -> ContextValue {
 }
 
 fn hash_context(context: &ContextValue) -> u64 {
+    if context.same_identity(&BOOLEAN_CONTEXTS[0]) {
+        return 0;
+    }
+    if context.same_identity(&BOOLEAN_CONTEXTS[1]) {
+        return 1;
+    }
     let Some(context) = context.downcast_ref::<KotlinContext>() else {
         return 0;
     };
