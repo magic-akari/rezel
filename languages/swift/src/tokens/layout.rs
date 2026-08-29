@@ -59,7 +59,7 @@ pub(super) fn has_line_break(input: &InputStream) -> bool {
 
 pub(super) fn classify_code_item_boundary(
     input: &InputStream,
-    mut stop_after_line_break: impl FnMut(&InputStream) -> bool,
+    stop_after_line_break: bool,
     mut can_shift: impl FnMut(ShiftRole) -> bool,
 ) -> CodeItemBoundary {
     let chunk = input.identity_lookahead_chunk();
@@ -79,7 +79,7 @@ pub(super) fn classify_code_item_boundary(
             });
             classify_code_item_boundary_from(
                 &mut ascii.peekable(),
-                &mut || stop_after_line_break(input),
+                &mut || stop_after_line_break,
                 &mut can_shift,
             )
         };
@@ -91,7 +91,7 @@ pub(super) fn classify_code_item_boundary(
     let mut lookahead = input.lookahead().map(CodePoint::as_u32).peekable();
     classify_code_item_boundary_from(
         &mut lookahead,
-        &mut || stop_after_line_break(input),
+        &mut || stop_after_line_break,
         &mut can_shift,
     )
 }

@@ -538,10 +538,9 @@ fn scan_switch_case_diagnostic_lookahead(
 }
 
 fn scan_code_item_separator(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
-    let boundary = layout::classify_code_item_boundary(
-        input,
-        |input| lookahead::previous(input) == Some(COMMA),
-        |role| match role {
+    let stop_after_line_break = lookahead::previous(input) == Some(COMMA);
+    let boundary =
+        layout::classify_code_item_boundary(input, stop_after_line_break, |role| match role {
             layout::ShiftRole::DeclarationEffect => {
                 stack.can_shift(terms::declarationEffectLineLookahead)
             }
@@ -553,8 +552,7 @@ fn scan_code_item_separator(input: &mut InputStream, stack: &Stack) -> Result<()
             layout::ShiftRole::BinaryOperator => stack.can_shift(terms::binaryCustomOperator),
             layout::ShiftRole::AsKeyword => stack.can_shift(terms::_as),
             layout::ShiftRole::IsKeyword => stack.can_shift(terms::is),
-        },
-    );
+        });
     match boundary {
         layout::CodeItemBoundary::DeclarationEffect => {
             input.accept_token(terms::declarationEffectLineLookahead)?;
