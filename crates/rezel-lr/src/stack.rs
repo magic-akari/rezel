@@ -856,16 +856,17 @@ impl Stack {
                 .context
                 .as_ref()
                 .expect("a context-only shift requires an active context");
-            let Some(value) = context.tracker.context_only_shift(&context.value, term)? else {
+            let Some((value, hash)) = context.tracker.context_only_shift(&context.value, term)?
+            else {
                 return Ok(());
             };
             if context.value.same_identity(&value) {
                 return Ok(());
             }
-            (context.tracker, value)
+            debug_assert_eq!(hash, context.tracker.hash(&value));
+            (context.tracker, value, hash)
         };
-        let hash = update.0.hash(&update.1);
-        self.context_hash = hash;
+        self.context_hash = update.2;
         self.context = Some(StackContext {
             tracker: update.0,
             value: update.1,

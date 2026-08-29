@@ -883,15 +883,18 @@ fn start_context() -> ContextValue {
 }
 
 #[allow(clippy::unnecessary_wraps)] // ContextTracker callbacks share a fallible signature.
-fn shift_context(context: &ContextValue, term: u16) -> Result<Option<ContextValue>, ParseError> {
+fn shift_context(
+    context: &ContextValue,
+    term: u16,
+) -> Result<Option<(ContextValue, u64)>, ParseError> {
     if preserves_line_break(term) {
         return Ok(None);
     }
     if context.same_identity(&BOOLEAN_CONTEXTS[0]) {
-        return Ok((term == terms::lineBreakTrivia).then(|| BOOLEAN_CONTEXTS[1].clone()));
+        return Ok((term == terms::lineBreakTrivia).then(|| (BOOLEAN_CONTEXTS[1].clone(), 1)));
     }
     if context.same_identity(&BOOLEAN_CONTEXTS[1]) {
-        return Ok((term != terms::lineBreakTrivia).then(|| BOOLEAN_CONTEXTS[0].clone()));
+        return Ok((term != terms::lineBreakTrivia).then(|| (BOOLEAN_CONTEXTS[0].clone(), 0)));
     }
     let Some(previous) = context.downcast_ref::<KotlinContext>() else {
         return Ok(None);
@@ -905,7 +908,7 @@ fn shift_context(context: &ContextValue, term: u16) -> Result<Option<ContextValu
             .string
             .as_ref()
             .and_then(|frame| frame.parent.clone());
-        return Ok(Some(kotlin_context(KotlinContext {
+        return Ok(Some(kotlin_context_update(KotlinContext {
             has_line_break,
             string,
         })));
@@ -913,7 +916,7 @@ fn shift_context(context: &ContextValue, term: u16) -> Result<Option<ContextValu
     if has_line_break == previous.has_line_break {
         return Ok(None);
     }
-    Ok(Some(kotlin_context(KotlinContext {
+    Ok(Some(kotlin_context_update(KotlinContext {
         has_line_break,
         string: previous.string.clone(),
     })))
@@ -998,6 +1001,11 @@ fn kotlin_context(value: KotlinContext) -> ContextValue {
     ContextValue::new(value)
 }
 
+fn kotlin_context_update(value: KotlinContext) -> (ContextValue, u64) {
+    let hash = kotlin_context_hash(&value);
+    (kotlin_context(value), hash)
+}
+
 fn static_context(value: bool) -> ContextValue {
     BOOLEAN_CONTEXTS[usize::from(value)].clone()
 }
@@ -1012,6 +1020,10 @@ fn hash_context(context: &ContextValue) -> u64 {
     let Some(context) = context.downcast_ref::<KotlinContext>() else {
         return 0;
     };
+    kotlin_context_hash(context)
+}
+
+fn kotlin_context_hash(context: &KotlinContext) -> u64 {
     context
         .string
         .as_ref()
@@ -1032,8 +1044,8 @@ fn is_keyword_boundary(next: u32) -> bool {
 mod tests {
     use super::{
         BOOLEAN_CONTEXTS, KotlinContext, classify_adjacent_annotation_identifier,
-        classify_adjacent_class_member, classify_nullable_receiver_question, is_keyword_boundary,
-        kotlin_context, push_string_frame, shift_context, start_context,
+        classify_adjacent_class_member, classify_nullable_receiver_question, hash_context,
+        is_keyword_boundary, kotlin_context, push_string_frame, shift_context, start_context,
     };
     use crate::terms;
 
@@ -1052,9 +1064,10 @@ mod tests {
                 .is_none()
         );
 
-        let with_break = shift_context(&without_break, terms::lineBreakTrivia)
+        let (with_break, with_break_hash) = shift_context(&without_break, terms::lineBreakTrivia)
             .unwrap()
             .expect("a line break changes the context");
+        assert_eq!(with_break_hash, 1);
         assert!(with_break.same_identity(&BOOLEAN_CONTEXTS[1]));
         assert!(
             shift_context(&with_break, terms::lineBreakTrivia)
@@ -1067,9 +1080,10 @@ mod tests {
                 .is_none()
         );
 
-        let cleared = shift_context(&with_break, terms::Identifier)
+        let (cleared, cleared_hash) = shift_context(&with_break, terms::Identifier)
             .unwrap()
             .expect("a non-trivia token clears the line break");
+        assert_eq!(cleared_hash, 0);
         assert!(cleared.same_identity(&BOOLEAN_CONTEXTS[0]));
     }
 
@@ -1081,9 +1095,10 @@ mod tests {
             string: Some(string.clone()),
         });
 
-        let with_break = shift_context(&context, terms::lineBreakTrivia)
+        let (with_break, with_break_hash) = shift_context(&context, terms::lineBreakTrivia)
             .unwrap()
             .expect("a line break changes the string context");
+        assert_eq!(with_break_hash, hash_context(&with_break));
         let with_break = with_break
             .downcast_ref::<KotlinContext>()
             .expect("the string context keeps its concrete type");
@@ -1095,9 +1110,10 @@ mod tests {
                 .is_some_and(|frame| std::sync::Arc::ptr_eq(frame, &string))
         );
 
-        let closed = shift_context(&context, terms::multiDollarLineStringEnd)
+        let (closed, closed_hash) = shift_context(&context, terms::multiDollarLineStringEnd)
             .unwrap()
             .expect("closing the outer string pops its frame");
+        assert_eq!(closed_hash, 0);
         assert!(closed.same_identity(&BOOLEAN_CONTEXTS[0]));
     }
 

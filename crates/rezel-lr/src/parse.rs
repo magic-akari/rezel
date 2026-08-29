@@ -156,7 +156,7 @@ type ContextTransition =
 type ContextTransitionWithoutInput =
     fn(&ContextValue, u16, &Stack) -> Result<ContextValue, ParseError>;
 type ContextOnlyShiftTransition =
-    fn(&ContextValue, u16) -> Result<Option<ContextValue>, ParseError>;
+    fn(&ContextValue, u16) -> Result<Option<(ContextValue, u64)>, ParseError>;
 
 #[derive(Clone, Copy)]
 enum ContextTransitionKind {
@@ -228,9 +228,12 @@ impl ContextTracker {
 
     /// Replace the shift transition with one that observes only its context.
     ///
-    /// Returning `None` preserves the current context identity. This avoids
-    /// cloning the type-erased value or the surrounding stack context when a
-    /// transition neither reads parser state nor changes its value.
+    /// Returning `None` preserves the current context identity. An update
+    /// includes the value's context hash, which must match this tracker's hash
+    /// callback, so constructing a known value does not require a second
+    /// callback dispatch. This avoids cloning the type-erased value or the
+    /// surrounding stack context when a transition neither reads parser state
+    /// nor changes its value.
     #[must_use]
     pub const fn with_context_only_shift(mut self, shift: ContextOnlyShiftTransition) -> Self {
         self.shift = Some(ShiftContextTransitionKind::ContextOnly(shift));
@@ -329,7 +332,7 @@ impl ContextTracker {
         &self,
         context: &ContextValue,
         term: u16,
-    ) -> Result<Option<ContextValue>, ParseError> {
+    ) -> Result<Option<(ContextValue, u64)>, ParseError> {
         let Some(ShiftContextTransitionKind::ContextOnly(shift)) = self.shift else {
             return Ok(None);
         };
@@ -359,7 +362,7 @@ impl ContextTracker {
             }
             Some(ShiftContextTransitionKind::WithoutInput(shift)) => shift(context, term, stack),
             Some(ShiftContextTransitionKind::ContextOnly(shift)) => {
-                Ok(shift(context, term)?.unwrap_or_else(|| context.clone()))
+                Ok(shift(context, term)?.map_or_else(|| context.clone(), |(value, _hash)| value))
             }
             None => Ok(context.clone()),
         }
@@ -2351,7 +2354,7 @@ mod tests {
     fn shift_context_only(
         context: &ContextValue,
         term: u16,
-    ) -> Result<Option<ContextValue>, ParseError> {
+    ) -> Result<Option<(ContextValue, u64)>, ParseError> {
         if term != 7 {
             return Ok(None);
         }
@@ -2359,7 +2362,7 @@ mod tests {
         if previous {
             Ok(None)
         } else {
-            Ok(Some(ContextValue::new(true)))
+            Ok(Some((ContextValue::new(true), 1)))
         }
     }
 
@@ -2447,10 +2450,11 @@ mod tests {
         assert!(!tracker.shift_uses_input(7));
         assert!(tracker.context_only_shift(&initial, 3).unwrap().is_none());
 
-        let changed = tracker
+        let (changed, hash) = tracker
             .context_only_shift(&initial, 7)
             .unwrap()
             .expect("term 7 changes the context");
+        assert_eq!(hash, 1);
         assert_eq!(changed.downcast_ref::<bool>(), Some(&true));
         assert!(tracker.context_only_shift(&changed, 7).unwrap().is_none());
     }
