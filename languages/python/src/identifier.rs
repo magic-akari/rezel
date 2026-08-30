@@ -16,6 +16,17 @@ const IDENTIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
     .with_ascii_range(b'A'..=b'Z')
     .with_ascii_range(b'a'..=b'z')
     .with_non_ascii();
+static ASCII_IDENTIFIER_CONTINUE: [bool; 128] = {
+    let mut table = [false; 128];
+    let mut index = 0;
+    let mut code_point = 0_u32;
+    while index < table.len() {
+        table[index] = is_identifier_candidate_continue(code_point);
+        index += 1;
+        code_point += 1;
+    }
+    table
+};
 
 pub(crate) static TOKENIZER: ExternalTokenizer = ExternalTokenizer::new(
     scan,
@@ -90,8 +101,8 @@ fn scan(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
 }
 
 fn advance_ascii_identifier(input: &mut InputStream) -> (usize, bool) {
-    let result = input
-        .advance_ascii_while_with_stop(|byte| is_identifier_candidate_continue(u32::from(byte)));
+    let result =
+        input.advance_ascii_while_with_stop(|byte| ASCII_IDENTIFIER_CONTINUE[usize::from(byte)]);
     (result.count(), result.stopped_on_mismatch())
 }
 
