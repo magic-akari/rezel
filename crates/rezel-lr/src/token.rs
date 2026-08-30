@@ -793,6 +793,7 @@ impl InputStream {
         }
     }
 
+    #[inline]
     fn advance_known_ascii_in_window(&mut self, next: u8) -> bool {
         let source_position = self.window_source_position;
         let next_byte = {
