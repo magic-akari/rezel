@@ -25,6 +25,17 @@ const IDENTIFIER_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
     .with_ascii_range(b'A'..=b'Z')
     .with_ascii_range(b'a'..=b'z')
     .with_non_ascii();
+static ASCII_IDENTIFIER_CONTINUE: [bool; 128] = {
+    let mut table = [false; 128];
+    let mut index = 0;
+    let mut code_point = 0_u32;
+    while index < table.len() {
+        table[index] = is_identifier_candidate_continue(code_point);
+        index += 1;
+        code_point += 1;
+    }
+    table
+};
 const MACRO_RULES_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE.with_ascii(b'm');
 const LIFETIME_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE.with_ascii(b'\'');
 const METAVARIABLE_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE.with_ascii(b'$');
@@ -222,7 +233,7 @@ fn scan_valid_untracked_identifier_body(input: &mut InputStream, first: u32) {
 }
 
 fn advance_untracked_ascii_identifier(input: &mut InputStream) -> usize {
-    input.advance_ascii_while(|byte| is_identifier_candidate_continue(u32::from(byte)))
+    input.advance_ascii_while(|byte| ASCII_IDENTIFIER_CONTINUE[usize::from(byte)])
 }
 
 fn scan_raw_identifier_body(input: &mut InputStream) -> Option<bool> {
