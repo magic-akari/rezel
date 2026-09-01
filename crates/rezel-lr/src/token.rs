@@ -1321,8 +1321,6 @@ impl Iterator for InputLookahead<'_> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            let cursor = self.cursor?;
-            let range = *self.ranges.get(cursor.range_index)?;
             // The iterator's cursor is private, so consecutive identity-mapped
             // ASCII bytes can defer one cursor update until the run ends.
             if let Some(next) = self.fast_bytes.get(self.fast_byte_position).copied()
@@ -1331,6 +1329,8 @@ impl Iterator for InputLookahead<'_> {
                 self.fast_byte_position += 1;
                 return Some(CodePoint::from(next));
             }
+            let cursor = self.cursor?;
+            let range = *self.ranges.get(cursor.range_index)?;
             if self.fast_byte_position != 0 {
                 let consumed = TextSize::try_from(self.fast_byte_position)
                     .expect("an input window fits in TextSize");
