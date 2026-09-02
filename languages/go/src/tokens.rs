@@ -22,6 +22,46 @@ const MINUS: u32 = 45;
 
 static BOOLEAN_CONTEXTS: LazyLock<[ContextValue; 2]> =
     LazyLock::new(|| [ContextValue::new(false), ContextValue::new(true)]);
+const SEMICOLON_PREDECESSOR_TERMS: [u16; 14] = [
+    terms::IncDecOp,
+    terms::identifier,
+    terms::Rune,
+    terms::String,
+    terms::Number,
+    terms::predeclaredBool,
+    terms::predeclaredNil,
+    terms::_break,
+    terms::_continue,
+    terms::_return,
+    terms::fallthrough,
+    terms::closeParen,
+    terms::closeBracket,
+    terms::closeBrace,
+];
+const SEMICOLON_PREDECESSOR_TABLE_LEN: usize = term_table_len(&SEMICOLON_PREDECESSOR_TERMS);
+static SEMICOLON_PREDECESSORS: [bool; SEMICOLON_PREDECESSOR_TABLE_LEN] = {
+    let mut predecessors = [false; SEMICOLON_PREDECESSOR_TABLE_LEN];
+    let mut index = 0;
+    while index < SEMICOLON_PREDECESSOR_TERMS.len() {
+        let term = SEMICOLON_PREDECESSOR_TERMS[index];
+        predecessors[term as usize] = true;
+        index += 1;
+    }
+    predecessors
+};
+
+const fn term_table_len(terms: &[u16]) -> usize {
+    let mut maximum = 0_u16;
+    let mut index = 0;
+    while index < terms.len() {
+        let term = terms[index];
+        if term > maximum {
+            maximum = term;
+        }
+        index += 1;
+    }
+    maximum as usize + 1
+}
 
 const SEMICOLON_START: ExternalTokenizerStart = ExternalTokenizerStart::NONE
     .with_ascii(b'\n')
@@ -269,23 +309,10 @@ fn boolean_context(value: bool) -> ContextValue {
 }
 
 fn is_semicolon_predecessor(term: u16) -> bool {
-    matches!(
-        term,
-        terms::IncDecOp
-            | terms::identifier
-            | terms::Rune
-            | terms::String
-            | terms::Number
-            | terms::predeclaredBool
-            | terms::predeclaredNil
-            | terms::_break
-            | terms::_continue
-            | terms::_return
-            | terms::fallthrough
-            | terms::closeParen
-            | terms::closeBracket
-            | terms::closeBrace
-    )
+    SEMICOLON_PREDECESSORS
+        .get(usize::from(term))
+        .copied()
+        .unwrap_or(false)
 }
 
 fn hash_context(context: &ContextValue) -> u64 {
