@@ -369,10 +369,10 @@ fn shift_context(
     value: &ContextValue,
     term: u16,
 ) -> Result<Option<(ContextValue, u64)>, ParseError> {
-    let current = value
-        .downcast_ref::<PythonContext>()
-        .expect("Python parser context");
     if term == terms::dedent {
+        let current = value
+            .downcast_ref::<PythonContext>()
+            .expect("Python parser context");
         let parent = current.parent.clone().unwrap_or_else(start_context);
         let hash = python_context_hash(&parent);
         return Ok(Some((parent, hash)));
@@ -381,11 +381,18 @@ fn shift_context(
         term,
         terms::ParenL | terms::BracketL | terms::BraceL | terms::replacementStart
     ) {
-        return Ok(Some(child_context_update(value, 0, BRACKETED)));
+        let current = value
+            .downcast_ref::<PythonContext>()
+            .expect("Python parser context");
+        return Ok(Some(child_context_update(value, current, 0, BRACKETED)));
     }
     if let Some(flags) = string_flags(term) {
+        let current = value
+            .downcast_ref::<PythonContext>()
+            .expect("Python parser context");
         return Ok(Some(child_context_update(
             value,
+            current,
             0,
             flags | (current.flags & BRACKETED),
         )));
@@ -435,25 +442,30 @@ fn reduce_context(
 }
 
 fn child_context(parent: &ContextValue, indent: usize, flags: u8) -> ContextValue {
-    let parent_hash = parent
+    let current = parent
         .downcast_ref::<PythonContext>()
-        .map_or(0, |context| context.hash);
-    let hash = parent_hash
+        .expect("Python parser context");
+    child_context_update(parent, current, indent, flags).0
+}
+
+fn child_context_update(
+    parent: &ContextValue,
+    current: &PythonContext,
+    indent: usize,
+    flags: u8,
+) -> (ContextValue, u64) {
+    let hash = current
+        .hash
         .wrapping_mul(257)
         .wrapping_add(indent as u64)
         .wrapping_mul(67)
         .wrapping_add(u64::from(flags));
-    ContextValue::new(PythonContext {
+    let value = ContextValue::new(PythonContext {
         parent: Some(parent.clone()),
         indent,
         flags,
         hash,
-    })
-}
-
-fn child_context_update(parent: &ContextValue, indent: usize, flags: u8) -> (ContextValue, u64) {
-    let value = child_context(parent, indent, flags);
-    let hash = python_context_hash(&value);
+    });
     (value, hash)
 }
 
