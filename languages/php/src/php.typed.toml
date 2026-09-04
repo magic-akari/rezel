@@ -1,0 +1,93 @@
+language = "PhpLanguage"
+kind = "PhpKind"
+language_path = "crate::generated::LANGUAGE"
+coverage = "partial"
+
+[kind_names]
+"⚠" = "Error"
+"include_once" = "IncludeOnce"
+"require_once" = "RequireOnce"
+
+[[node]]
+name = "PhpTemplate"
+kind = "Template"
+
+[[node]]
+name = "PhpProgram"
+kind = "Program"
+
+[[node]]
+name = "PhpText"
+kind = "Text"
+
+[[node]]
+name = "PhpTextInterpolation"
+kind = "TextInterpolation"
+
+[[node]]
+name = "PhpName"
+kind = "Name"
+
+[[node]]
+name = "PhpVariableName"
+kind = "VariableName"
+
+[[node]]
+name = "PhpFunctionDefinition"
+kind = "FunctionDefinition"
+
+[[node]]
+name = "PhpClassDeclaration"
+kind = "ClassDeclaration"
+
+[[node]]
+name = "PhpInterfaceDeclaration"
+kind = "InterfaceDeclaration"
+
+[[node]]
+name = "PhpTraitDeclaration"
+kind = "TraitDeclaration"
+
+[[node]]
+name = "PhpEnumDeclaration"
+kind = "EnumDeclaration"
+
+[[node]]
+name = "PhpPropertyDeclaration"
+kind = "PropertyDeclaration"
+
+[[node]]
+name = "PhpPropertyHook"
+kind = "PropertyHook"
+
+[[node]]
+name = "PhpMethodDeclaration"
+kind = "MethodDeclaration"
+
+[[node]]
+name = "PhpExpressionStatement"
+kind = "ExpressionStatement"
+
+[[node]]
+name = "PhpBinaryExpression"
+kind = "BinaryExpression"
+
+[[node]]
+name = "PhpCallExpression"
+kind = "CallExpression"
+
+[[node]]
+name = "PhpMemberExpression"
+kind = "MemberExpression"
+
+[[node]]
+name = "PhpString"
+kind = "String"
+
+[[node]]
+name = "PhpInteger"
+kind = "Integer"
+
+[[node]]
+name = "PhpFloat"
+kind = "Float"

@@ -326,6 +326,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rezel-lang-php"
+version = "0.0.0"
+dependencies = [
+ "rezel-common",
+ "rezel-highlight",
+ "rezel-lr",
+ "serde",
+ "serde_json",
+ "zerocopy",
+]
+
+[[package]]
 name = "rezel-lang-python"
 version = "0.0.0"
 dependencies = [
@@ -369,6 +381,17 @@ version = "0.0.0"
 dependencies = [
  "rezel-common",
  "zerocopy",
+]
+
+[[package]]
+name = "rezel-php-src-reference"
+version = "0.0.0"
+dependencies = [
+ "rezel-lang-php",
+ "rezel-lr",
+ "serde",
+ "serde_json",
+ "sha2",
 ]
 
 [[package]]

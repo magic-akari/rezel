@@ -1,0 +1,18 @@
+[package]
+name = "rezel-php-src-reference"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+description = "Pinned PHP 8.5 Zend parser corpus verifier for Rezel"
+
+[dependencies]
+rezel-lang-php = { path = "../../../languages/php" }
+rezel-lr.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+
+[lints]
+workspace = true

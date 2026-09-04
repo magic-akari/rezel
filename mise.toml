@@ -4,6 +4,7 @@ go = "1.26.3"
 java = "26.0.1"
 kotlin = "2.4.10"
 node = "26.1.0"
+php = "8.5.9"
 python = "3.14.5"
 swift = "6.3.3"
 
@@ -48,6 +49,14 @@ run = "cargo run --locked --package rezel-codegen -- kotlin --check"
 [tasks."codegen:rezel:kotlin:update"]
 description = "Regenerate checked-in Kotlin parser sources"
 run = "cargo run --locked --package rezel-codegen -- kotlin --update"
+
+[tasks."codegen:rezel:php"]
+description = "Verify checked-in PHP parser sources"
+run = "cargo run --locked --package rezel-codegen -- php --check"
+
+[tasks."codegen:rezel:php:update"]
+description = "Regenerate checked-in PHP parser sources"
+run = "cargo run --locked --package rezel-codegen -- php --update"
 
 [tasks."codegen:rezel:python"]
 description = "Verify checked-in Python parser sources"
@@ -179,6 +188,18 @@ depends = ["reference:swift:p0:prepare"]
 env = { CARGO_TARGET_DIR = "target/swift-p0" }
 run = "cargo run --locked --manifest-path tools/references/swift/p0/Cargo.toml --features parser"
 
+[tasks."reference:php-src:prepare"]
+description = "Fetch and classify the pinned PHP 8.5 Zend parser corpus"
+run = [
+	"python tools/references/php-src/prepare.py",
+	"php tools/references/php-src/oracle.php target/reference-sources/php-src/php-src-dd6e76cce27aaa0ed9f7520648ed1081dfb6af36 target/reference-sources/php-src/oracle-8.5.9.json",
+]
+
+[tasks."reference:php-src"]
+description = "Verify the pinned PHP 8.5 Zend parser corpus"
+depends = ["reference:php-src:prepare"]
+run = "cargo run --locked --package rezel-php-src-reference"
+
 [tasks."reference:cpython"]
 description = "Verify CPython 3.14 parse and AST snapshots"
 run = "python tools/references/cpython/reference.py --check"
@@ -275,6 +296,7 @@ depends = [
 	"codegen:rezel:java",
 	"codegen:rezel:go",
 	"codegen:rezel:kotlin",
+	"codegen:rezel:php",
 	"codegen:rezel:python",
 	"codegen:rezel:rust",
 	"codegen:rezel:swift",
@@ -295,6 +317,7 @@ depends = [
 	"reference:rustc",
 	"reference:cpython",
 	"reference:lezer",
+	"reference:php-src",
 	"reference:distribution",
 	"reference:stdlib",
 ]

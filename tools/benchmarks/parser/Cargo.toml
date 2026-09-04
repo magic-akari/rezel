@@ -12,6 +12,7 @@ rezel-lang-go = { path = "../../../languages/go" }
 rezel-lang-java = { path = "../../../languages/java" }
 rezel-lang-json = { path = "../../../languages/json" }
 rezel-lang-kotlin = { path = "../../../languages/kotlin" }
+rezel-lang-php = { path = "../../../languages/php" }
 rezel-lang-python = { path = "../../../languages/python" }
 rezel-lang-rust = { path = "../../../languages/rust" }
 rezel-lang-swift = { path = "../../../languages/swift" }
@@ -25,6 +26,7 @@ tree-sitter-go = "=0.25.0"
 tree-sitter-java = "=0.23.5"
 tree-sitter-json = "=0.24.8"
 tree-sitter-kotlin = { package = "tree-sitter-kotlin-ng", version = "=1.1.0" }
+tree-sitter-php = "=0.24.2"
 tree-sitter-python = "=0.25.0"
 tree-sitter-rust = "=0.24.2"
 tree-sitter-swift = "=0.7.3"

@@ -26,6 +26,11 @@ url = "https://github.com/Kotlin/kotlinx.coroutines"
 commit = "3eadf938b1506351bffd7c015445d08faf1c4315"
 
 [[repository]]
+id = "wordpress-develop"
+url = "https://github.com/WordPress/wordpress-develop.git"
+commit = "daaca56d3d6a9a42a0c87f6eda766c33a77c1d05"
+
+[[repository]]
 id = "swift-nio"
 url = "https://github.com/apple/swift-nio"
 commit = "48119dbbd23e3eabba48952ac7f75ebeeb87c217"
@@ -216,6 +221,29 @@ repository = "swift-nio"
 	"Sources/NIOCore/Interfaces.swift",
 	"Sources/NIOCore/SingleStepByteToMessageDecoder.swift",
 	"Sources/NIOPosix/SelectorUring.swift",
+]
+
+[datasets.php]
+repository = "wordpress-develop"
+
+"10kb" = [
+	"src/wp-admin/admin-header.php",
+]
+
+"50kb" = [
+	"src/wp-admin/themes.php",
+]
+
+"100kb" = [
+	"src/wp-admin/includes/template.php",
+]
+
+"500kb" = [
+	"src/wp-admin/includes/file.php",
+	"src/wp-admin/includes/update-core.php",
+	"src/wp-includes/comment-template.php",
+	"src/wp-includes/option.php",
+	"src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php",
 ]
 
 [datasets.json]

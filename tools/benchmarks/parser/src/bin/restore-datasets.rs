@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 use std::{
+    env,
     error::Error,
     ffi::OsStr,
     fs,
@@ -14,8 +15,9 @@ use rezel_parser_benchmark::{
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let languages = selected_languages()?;
     let manifest = Manifest::load()?;
-    let paths_by_repository = manifest.paths_by_repository();
+    let paths_by_repository = manifest.paths_by_repository_for(languages.iter().copied())?;
     fs::create_dir_all(active_git_cache_root())?;
     fs::create_dir_all(active_sources_root())?;
 
@@ -49,18 +51,37 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     println!("restored {restored} dataset files");
-    validate_datasets();
+    validate_datasets(&languages);
     Ok(())
 }
 
-fn validate_datasets() {
-    for language in Language::ALL {
+fn selected_languages() -> Result<Vec<Language>, Box<dyn Error>> {
+    let mut arguments = env::args().skip(1);
+    let Some(flag) = arguments.next() else {
+        return Ok(Language::ALL.to_vec());
+    };
+    if flag != "--language" {
+        return Err(format!("unknown argument {flag:?}; expected --language NAME").into());
+    }
+    let name = arguments
+        .next()
+        .ok_or("--language requires a language name")?;
+    if arguments.next().is_some() {
+        return Err("unexpected arguments after --language NAME".into());
+    }
+    let language =
+        Language::from_name(&name).ok_or_else(|| format!("unknown benchmark language {name:?}"))?;
+    Ok(vec![language])
+}
+
+fn validate_datasets(languages: &[Language]) {
+    for &language in languages {
         for tier in Tier::ALL {
             drop(rezel::setup(language, tier));
             drop(tree_sitter::setup(language, tier));
         }
     }
-    println!("validated every dataset with Rezel and Tree-sitter");
+    println!("validated selected datasets with Rezel and Tree-sitter");
 }
 
 fn ensure_bare_repository(cache: &Path) -> Result<(), Box<dyn Error>> {

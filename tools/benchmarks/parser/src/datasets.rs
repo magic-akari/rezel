@@ -20,17 +20,19 @@ pub enum Language {
     Java,
     Json,
     Kotlin,
+    Php,
     Python,
     Rust,
     Swift,
 }
 
 impl Language {
-    pub const ALL: [Self; 7] = [
+    pub const ALL: [Self; 8] = [
         Self::Go,
         Self::Java,
         Self::Json,
         Self::Kotlin,
+        Self::Php,
         Self::Python,
         Self::Rust,
         Self::Swift,
@@ -43,6 +45,7 @@ impl Language {
             Self::Java => "java",
             Self::Json => "json",
             Self::Kotlin => "kotlin",
+            Self::Php => "php",
             Self::Python => "python",
             Self::Rust => "rust",
             Self::Swift => "swift",
@@ -198,10 +201,26 @@ impl Manifest {
     }
 
     /// Groups the fixed upstream paths by repository id.
-    #[must_use]
-    pub fn paths_by_repository(&self) -> BTreeMap<String, Vec<String>> {
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the validated manifest loses a known language.
+    pub fn paths_by_repository(&self) -> Result<BTreeMap<String, Vec<String>>, DatasetError> {
+        self.paths_by_repository_for(Language::ALL)
+    }
+
+    /// Groups paths for selected languages by repository id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the validated manifest loses a selected language.
+    pub fn paths_by_repository_for(
+        &self,
+        languages: impl IntoIterator<Item = Language>,
+    ) -> Result<BTreeMap<String, Vec<String>>, DatasetError> {
         let mut paths = BTreeMap::<String, Vec<String>>::new();
-        for group in self.datasets.values() {
+        for language in languages {
+            let group = self.group(language)?;
             let repository_paths = paths.entry(group.repository.clone()).or_default();
             for tier_paths in group.tiers.values() {
                 repository_paths.extend(tier_paths.iter().cloned());
@@ -211,7 +230,7 @@ impl Manifest {
             repository_paths.sort();
             repository_paths.dedup();
         }
-        paths
+        Ok(paths)
     }
 
     fn validate(&self) -> Result<(), DatasetError> {

@@ -1,3 +1,5 @@
 crates/rezel-generator/tests/upstream/cases/** -whitespace
 languages/go/tests/upstream/** -whitespace
 languages/json/tests/conformance/json-test-suite/** -whitespace
+languages/php/tests/fixtures/php-src-8.5.9/** -whitespace
+languages/php/tests/upstream/** -whitespace

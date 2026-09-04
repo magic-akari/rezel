@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/lezer-parser/php",
+  "commit": "af2a40d0f39ed8e4f1a835a4c1d74e39d70dbc26",
+  "source": "src/highlight.js",
+  "blob_oid": "24804cf493f89546b76cae3eb7d36b37f86ca74f",
+  "symbols": [
+    "phpHighlighting"
+  ]
+}

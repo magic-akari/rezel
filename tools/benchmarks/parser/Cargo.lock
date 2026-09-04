@@ -424,6 +424,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rezel-lang-php"
+version = "0.0.0"
+dependencies = [
+ "rezel-common",
+ "rezel-lr",
+ "zerocopy",
+]
+
+[[package]]
 name = "rezel-lang-python"
 version = "0.0.0"
 dependencies = [
@@ -472,6 +481,7 @@ dependencies = [
  "rezel-lang-java",
  "rezel-lang-json",
  "rezel-lang-kotlin",
+ "rezel-lang-php",
  "rezel-lang-python",
  "rezel-lang-rust",
  "rezel-lang-swift",
@@ -485,6 +495,7 @@ dependencies = [
  "tree-sitter-java",
  "tree-sitter-json",
  "tree-sitter-kotlin-ng",
+ "tree-sitter-php",
  "tree-sitter-python",
  "tree-sitter-rust",
  "tree-sitter-swift",
@@ -748,6 +759,16 @@ name = "tree-sitter-language"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "009994f150cc0cd50ff54917d5bc8bffe8cad10ca10d81c34da2ec421ae61782"
+
+[[package]]
+name = "tree-sitter-php"
+version = "0.24.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d8c17c3ab69052c5eeaa7ff5cd972dd1bc25d1b97ee779fec391ad3b5df5592"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
 
 [[package]]
 name = "tree-sitter-python"

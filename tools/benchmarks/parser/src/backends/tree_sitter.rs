@@ -54,6 +54,7 @@ fn parser(language: Language) -> tree_sitter::Parser {
         Language::Java => tree_sitter_java::LANGUAGE.into(),
         Language::Json => tree_sitter_json::LANGUAGE.into(),
         Language::Kotlin => tree_sitter_kotlin::LANGUAGE.into(),
+        Language::Php => tree_sitter_php::LANGUAGE_PHP.into(),
         Language::Python => tree_sitter_python::LANGUAGE.into(),
         Language::Rust => tree_sitter_rust::LANGUAGE.into(),
         Language::Swift => tree_sitter_swift::LANGUAGE.into(),

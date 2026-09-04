@@ -10,7 +10,7 @@ function = "parse_rezel"
 filter = "*::parse_rezel::*"
 kind = "library"
 scope = "parse"
-languages = ["go", "java", "json", "kotlin", "python", "rust", "swift"]
+languages = ["go", "java", "json", "kotlin", "php", "python", "rust", "swift"]
 
 [[backend]]
 id = "tree-sitter"
@@ -20,4 +20,4 @@ function = "parse_tree_sitter"
 filter = "*::parse_tree_sitter::*"
 kind = "library"
 scope = "parse"
-languages = ["go", "java", "json", "kotlin", "python", "rust", "swift"]
+languages = ["go", "java", "json", "kotlin", "php", "python", "rust", "swift"]

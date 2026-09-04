@@ -3234,7 +3234,15 @@ impl Builder {
                 let id = u8::try_from(groups.len())
                     .ok()
                     .and_then(|offset| start_id.checked_add(offset))
-                    .ok_or_else(|| GeneratorError::new("Too many token groups", None))?;
+                    .ok_or_else(|| {
+                        GeneratorError::new(
+                            format!(
+                                "Too many token groups ({} existing groups after start id {start_id})",
+                                groups.len()
+                            ),
+                            None,
+                        )
+                    })?;
                 groups.push(TokenGroup {
                     terms,
                     group_id: id,

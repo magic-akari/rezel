@@ -54,6 +54,7 @@ whole-tree syntactic predicates.
 | `rezel-lang-go`     | Go 1.26 syntax calibrated against Lezer and the Go parser/public AST.    | Contextual semicolon handling, typed CST, private syntax views, owned AST, and optional highlighting.                                    |
 | `rezel-lang-java`   | Java SE 26 syntax calibrated against Lezer and javac.                    | Unicode-escape lexical translation, typed CST, private syntax views, compiler-tree-aligned owned AST, and optional highlighting.         |
 | `rezel-lang-kotlin` | Kotlin 2.4.10 syntax calibrated against the formal grammar and compiler. | Contextual lexical adapters, complete visible-kind typed coverage, strict standard-library corpus validation, and optional highlighting. |
+| `rezel-lang-php`    | PHP 8.5 syntax calibrated against Lezer and the PHP 8.5.9 Zend parser.   | Mixed-template and tagless-program entry points, partial typed CST, PHP 8.5 lexical adapters, and optional highlighting.                 |
 | `rezel-lang-python` | Python 3.14 syntax calibrated against Lezer and CPython.                 | Indentation and string tokenizers, strict syntax validation, complete typed CST, CPython-aligned owned AST, and optional highlighting.   |
 | `rezel-lang-rust`   | Rust 1.95.0 Edition 2024 syntax calibrated against Lezer and rustc.      | Permissive recovery identifiers, strict XID/syntax validation, partial typed CST, and optional highlighting.                             |
 

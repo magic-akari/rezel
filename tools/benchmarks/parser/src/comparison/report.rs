@@ -480,7 +480,7 @@ mod tests {
 
         let report = render_report(&results, &manifest, &environment).expect("render report");
 
-        assert!(report.contains("| Rezel HEAD vs Rezel base | 2,800 | 2,800 | — |"));
+        assert!(report.contains("| Rezel HEAD vs Rezel base | 3,200 | 3,200 | — |"));
         assert!(report.contains("| Rezel vs Tree-sitter at HEAD | 400 | 800 | ↓ 50.00% |"));
         assert!(report.contains("| go | ↓ 50.00% | ↓ 50.00% | ↓ 50.00% | ↓ 50.00% |"));
         assert!(report.contains("<summary>Run details</summary>"));

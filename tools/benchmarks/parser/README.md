@@ -4,11 +4,24 @@ This crate compares Rezel with the official Tree-sitter runtime on pinned,
 real-world source datasets. The benchmark parses every listed file separately
 and reuses one parser instance for the complete dataset.
 
+PHP uses the package's default `Template` entry point with pinned WordPress 7.1
+sources, preserving opening tags and any interleaved non-PHP text. Every Rezel
+dataset is accepted once by a strict parser during setup; the measured region
+then uses the ordinary recovering parser, matching the public default without
+letting recovery hide an invalid benchmark input.
+
 Restore the ignored source files and run the Gungraun benchmark with:
 
 ```sh
 mise run benchmark:datasets
 mise run benchmark:gungraun
+```
+
+During corpus work, one language can be restored and validated independently:
+
+```sh
+cargo run --locked --manifest-path tools/benchmarks/parser/Cargo.toml \
+  --bin restore-datasets -- --language php
 ```
 
 Run the complete comparison with:
