@@ -18,69 +18,17 @@ postinstall = [
 description = "Verify source-alignment traceability"
 run = "cargo alignment verify"
 
-[tasks."codegen:rezel:json"]
-description = "Verify checked-in JSON parser sources"
-run = "cargo run --locked --package rezel-codegen -- json --check"
+[tasks."codegen:rezel"]
+description = "Verify checked-in parser sources for every discovered language"
+run = "cargo run --locked --package rezel-codegen -- all --check"
 
-[tasks."codegen:rezel:json:update"]
-description = "Regenerate checked-in JSON parser sources"
-run = "cargo run --locked --package rezel-codegen -- json --update"
+[tasks."codegen:rezel:update"]
+description = "Regenerate checked-in parser sources for every discovered language"
+run = "cargo run --locked --package rezel-codegen -- all --update"
 
-[tasks."codegen:rezel:java"]
-description = "Verify checked-in Java parser sources"
-run = "cargo run --locked --package rezel-codegen -- java --check"
-
-[tasks."codegen:rezel:java:update"]
-description = "Regenerate checked-in Java parser sources"
-run = "cargo run --locked --package rezel-codegen -- java --update"
-
-[tasks."codegen:rezel:go"]
-description = "Verify checked-in Go parser sources"
-run = "cargo run --locked --package rezel-codegen -- go --check"
-
-[tasks."codegen:rezel:go:update"]
-description = "Regenerate checked-in Go parser sources"
-run = "cargo run --locked --package rezel-codegen -- go --update"
-
-[tasks."codegen:rezel:kotlin"]
-description = "Verify checked-in Kotlin parser sources"
-run = "cargo run --locked --package rezel-codegen -- kotlin --check"
-
-[tasks."codegen:rezel:kotlin:update"]
-description = "Regenerate checked-in Kotlin parser sources"
-run = "cargo run --locked --package rezel-codegen -- kotlin --update"
-
-[tasks."codegen:rezel:php"]
-description = "Verify checked-in PHP parser sources"
-run = "cargo run --locked --package rezel-codegen -- php --check"
-
-[tasks."codegen:rezel:php:update"]
-description = "Regenerate checked-in PHP parser sources"
-run = "cargo run --locked --package rezel-codegen -- php --update"
-
-[tasks."codegen:rezel:python"]
-description = "Verify checked-in Python parser sources"
-run = "cargo run --locked --package rezel-codegen -- python --check"
-
-[tasks."codegen:rezel:python:update"]
-description = "Regenerate checked-in Python parser sources"
-run = "cargo run --locked --package rezel-codegen -- python --update"
-
-[tasks."codegen:rezel:rust"]
-description = "Verify checked-in Rust parser sources"
-run = "cargo run --locked --package rezel-codegen -- rust --check"
-
-[tasks."codegen:rezel:rust:update"]
-description = "Regenerate checked-in Rust parser sources"
-run = "cargo run --locked --package rezel-codegen -- rust --update"
-
-[tasks."codegen:rezel:swift"]
-description = "Verify checked-in Swift parser sources"
-run = "cargo run --locked --package rezel-codegen -- swift --check"
-
-[tasks."codegen:rezel:swift:update"]
-description = "Regenerate checked-in Swift parser sources"
-run = "cargo run --locked --package rezel-codegen -- swift --update"
+[tasks."codegen:rezel:scope"]
+description = "Check or update one discovered parser scope"
+run = "cargo run --locked --package rezel-codegen --"
 
 [tasks."codegen:rezel:fixtures"]
 description = "Verify checked-in rezel-generator test fixtures"
@@ -126,15 +74,22 @@ run = [
 	"cargo fmt --all --check",
 ]
 
-[tasks.lint]
-description = "Run repository lints"
+[tasks."lint:tooling"]
+description = "Run Go and TypeScript tooling lints"
 env = { GOTOOLCHAIN = "local", GOWORK = "off" }
 run = [
 	"go -C tools/references/go test .",
 	"npm --prefix tools/source-alignment run check",
 	"npm --prefix tools/references/lezer run typecheck",
-	"cargo lint-all",
 ]
+
+[tasks."lint:rust"]
+description = "Run Rust workspace lints"
+run = "cargo lint-all"
+
+[tasks.lint]
+description = "Run repository lints"
+depends = ["lint:tooling", "lint:rust"]
 
 [tasks."reference:go"]
 description = "Verify Go parse acceptance and public AST snapshots"
@@ -210,12 +165,12 @@ run = "python tools/references/cpython/reference.py --update"
 
 [tasks."reference:stdlib"]
 description = "Verify Rezel against standard-library sources"
-depends = [
-	"reference:stdlib:go",
-	"reference:stdlib:java",
-	"reference:stdlib:kotlin",
-	"reference:stdlib:python",
-	"reference:stdlib:rust",
+run = [
+	"mise run reference:stdlib:go",
+	"mise run reference:stdlib:java",
+	"mise run reference:stdlib:kotlin",
+	"mise run reference:stdlib:python",
+	"mise run reference:stdlib:rust",
 ]
 
 [tasks."reference:stdlib:go"]
@@ -284,40 +239,45 @@ run = [
 description = "Run extended test coverage"
 run = "cargo test-json-full"
 
-[tasks.verify]
-description = "Run the repository verification suite"
+[tasks."verify:cargo"]
+description = "Run verification tasks that share the Cargo target directory"
+hide = true
+run = [
+	"mise run format:check",
+	"mise run test",
+	"mise run lint:rust",
+	"mise run docs",
+	"mise run alignment",
+	"mise run codegen:rezel",
+	"mise run codegen:rezel:fixtures",
+]
+
+[tasks."verify:tooling"]
+description = "Run verification tasks that do not use the Cargo target directory"
+hide = true
 depends = [
-	"format:check",
-	"test",
-	"lint",
-	"docs",
-	"alignment",
-	"codegen:rezel:json",
-	"codegen:rezel:java",
-	"codegen:rezel:go",
-	"codegen:rezel:kotlin",
-	"codegen:rezel:php",
-	"codegen:rezel:python",
-	"codegen:rezel:rust",
-	"codegen:rezel:swift",
-	"codegen:rezel:fixtures",
+	"lint:tooling",
 	"codegen:python-unicode-names",
 	"codegen:python-typed",
 	"codegen:python-ast",
 ]
 
+[tasks.verify]
+description = "Run the repository verification suite"
+depends = ["verify:cargo", "verify:tooling"]
+
 [tasks."verify:full"]
 description = "Run the full repository verification suite"
-depends = [
-	"verify",
-	"test:full",
-	"reference:go",
-	"reference:javac",
-	"reference:kotlin",
-	"reference:rustc",
-	"reference:cpython",
-	"reference:lezer",
-	"reference:php-src",
-	"reference:distribution",
-	"reference:stdlib",
+run = [
+	"mise run verify",
+	"mise run test:full",
+	"mise run reference:go",
+	"mise run reference:javac",
+	"mise run reference:kotlin",
+	"mise run reference:rustc",
+	"mise run reference:cpython",
+	"mise run reference:lezer",
+	"mise run reference:php-src",
+	"mise run reference:distribution",
+	"mise run reference:stdlib",
 ]

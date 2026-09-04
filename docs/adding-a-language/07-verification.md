@@ -38,14 +38,14 @@ and warning should have an explanation and a minimal test.
 Generate all artifacts, inspect the source and binary changes, and run:
 
 ```sh
-mise run codegen:rezel:<language>
+mise run codegen:rezel:scope <language> --check
 ```
 
-The registered repository-level `rezel-codegen` scope must compare
+The discovered repository-level `rezel-codegen` scope must compare
 `generated.rs`, `terms.rs`, `generated.le.bin`, `generated.be.bin`, and
-`typed.rs`. The standard language scope currently requires all five. Its check
-task must be a dependency of `mise run verify`; do not duplicate the comparison
-in a package-local `generated` test.
+`typed.rs`. The standard language scope currently requires all five. The
+all-language check is already part of `mise run verify`; do not duplicate the
+comparison in a package-local `generated` test.
 
 ## Test the public parser contract
 
@@ -130,16 +130,16 @@ so parser acceptance and projection equality remain distinguishable.
 
 ## Integrate with the workspace
 
-Before relying on the aggregate gate, register the language scope in
-`rezel-codegen`, add its `codegen:rezel:<language>` and
-`codegen:rezel:<language>:update` tasks to `mise.toml`, and make the check task
-a dependency of `tasks.verify`. The update task writes generated files; only
+Before relying on the aggregate gate, confirm that the package follows the
+discovery contract: it lives directly under `languages/` and contains its
+manifest, same-named grammar, and same-named typed schema. The all-language
+check then includes it automatically. Update mode writes generated files; only
 the non-writing check belongs in the gate.
 
 Run focused checks while iterating:
 
 ```sh
-mise run codegen:rezel:<language>
+mise run codegen:rezel:scope <language> --check
 cargo test --locked -p rezel-lang-<language>
 cargo clippy --locked -p rezel-lang-<language> --all-targets --all-features -- -D warnings
 cargo doc --locked -p rezel-lang-<language> --all-features --no-deps

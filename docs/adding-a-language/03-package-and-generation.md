@@ -7,14 +7,18 @@ configuration and native-endian parser tables into the program.
 
 ## Register the package
 
-Add `languages/<language>` to the workspace members in the root
-[`Cargo.toml`](../../Cargo.toml). A parser package normally starts with:
+Create `languages/<language>`. The root [`Cargo.toml`](../../Cargo.toml) includes
+`languages/*`, so a package in that directory becomes a workspace member
+without another registry entry. A parser package normally starts with:
 
 ```toml
 [package]
 name = "rezel-lang-<language>"
 version.workspace = true
+authors.workspace = true
 edition.workspace = true
+rust-version.workspace = true
+homepage.workspace = true
 license.workspace = true
 repository.workspace = true
 
@@ -82,40 +86,34 @@ contract.
 
 Checked-in parser artifacts are owned by the repository-level
 [`rezel-codegen`](../../tools/codegen/src/main.rs) workflow, not by a duplicate
-test inside each language crate. Extend its language scope so it reads the new
-grammar and typed schema and declares the complete expected output set. The
-conventional scope keeps both maintained inputs and generated outputs under
-`languages/<language>/src/`.
+test inside each language crate. The tool discovers every directory under
+`languages/` and requires `Cargo.toml`, `src/<language>.grammar`, and
+`src/<language>.typed.toml`. A missing maintained input fails discovery instead
+of silently omitting the package from the repository gate.
 
-Register the accepted language name in the tool's usage text and
-`Scope::parse`; the existing `Scope::Language` path then performs the common
-five-artifact generation. If a package needs additional generated files,
-extend that scope in `rezel-codegen` so check and update mode continue to share
-one declaration of expected output.
+The conventional scope keeps its maintained inputs and generated outputs under
+`languages/<language>/src/` and performs the common five-artifact generation
+without a language-name registry. If a package needs additional generated
+files, extend `rezel-codegen` so check and update mode continue to share one
+declaration of expected output.
 
-Add matching check and update tasks to [`mise.toml`](../../mise.toml):
+No per-language `mise.toml` entry is required. The generic scope task keeps the
+narrow check and update commands available, while the all-language task is the
+one used by `mise run verify`:
 
-```toml
-[tasks."codegen:rezel:<language>"]
-description = "Verify checked-in <language> parser sources"
-run = "cargo run --locked --package rezel-codegen -- <language> --check"
-
-[tasks."codegen:rezel:<language>:update"]
-description = "Regenerate checked-in <language> parser sources"
-run = "cargo run --locked --package rezel-codegen -- <language> --update"
+```sh
+mise run codegen:rezel:scope <language> --check
+mise run codegen:rezel:scope <language> --update
+mise run codegen:rezel
 ```
-
-Add only the check task to the dependency list for `tasks.verify`. This makes
-the normal repository gate cover the new language without modifying that
-language's test target. Update tasks remain explicit because they write the
-reviewed artifacts.
 
 ## Generate all parser artifacts
 
-After registering the scope, generate its artifacts through the update task:
+After creating a package that satisfies the discovery contract, generate its
+artifacts through the update task:
 
 ```sh
-mise run codegen:rezel:<language>:update
+mise run codegen:rezel:scope <language> --update
 ```
 
 This writes:
@@ -165,8 +163,10 @@ pub mod terms;
 pub use rezel_common::TypedNode;
 pub use typed::*;
 
+pub type ExampleParser = LRParser;
+
 #[must_use]
-pub fn parser() -> LRParser {
+pub fn parser() -> ExampleParser {
     static PARSER: OnceLock<LRParser> = OnceLock::new();
     PARSER
         .get_or_init(|| LRParser::from_language(&generated::LANGUAGE))
@@ -194,7 +194,7 @@ an intentional low-level API.
 Run the paired check task after generation and before handoff:
 
 ```sh
-mise run codegen:rezel:<language>
+mise run codegen:rezel:scope <language> --check
 ```
 
 In check mode, `rezel-codegen` compiles the checked-in grammar, validates the
@@ -213,8 +213,8 @@ binary output requires an explicit reviewed deletion.
 Do not add a package-local `generated` test or a language-crate development
 dependency on `rezel-generator`. That would duplicate the central comparison
 and allow the package test and repository gate to drift apart. Add or change an
-output by teaching `rezel-codegen` about it, expose its check/update tasks in
-`mise`, and keep the check task in `mise run verify`.
+output by teaching `rezel-codegen` about it; automatic discovery keeps the
+all-language check in `mise run verify`.
 
 This centralized check proves reproducible emission. Parser contract and
 reference tests remain responsible for behavioral correctness.

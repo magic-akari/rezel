@@ -62,6 +62,13 @@ The task definitions in [`mise.toml`](../mise.toml) and Cargo aliases in
 [`.cargo/config.toml`](../.cargo/config.toml) are the executable definitions of
 these commands.
 
+The normal gate has two execution lanes. Cargo-backed checks run sequentially
+through the hidden `verify:cargo` task so they reuse one target directory
+without waiting on competing artifact locks. Go, TypeScript, and Python checks
+run through `verify:tooling` alongside that Cargo lane. Keep new checks in the
+lane matching the resources they use. The full gate sequences its broad
+reference and corpus tasks to keep their CPU and memory demand predictable.
+
 ## Change the maintained input, then regenerate
 
 Grammars, typed schemas, handwritten adapters, and reference scripts are
@@ -97,18 +104,19 @@ from the same input, inspect the complete diff, and run the matching repository
 code-generation check:
 
 ```sh
-mise run codegen:rezel:<language>:update
-mise run codegen:rezel:<language>
+mise run codegen:rezel:scope <language> --update
+mise run codegen:rezel:scope <language> --check
 ```
 
 Both tasks call the centralized `rezel-codegen` tool. Update mode writes the
 expected artifacts; check mode reconstructs them and compares them with the
 committed files. The two parser-table blobs are part of that comparison: the
 runtime selects the native-endian blob at compile time, so both representations
-must remain current. `mise run verify` checks the full parser-artifact set when
-every language's check task is explicitly present in its dependency list; it
-does not discover new scopes automatically. No separate comparison test is
-required in each package.
+must remain current. `mise run codegen:rezel` discovers every package under
+`languages/` and checks the full parser-artifact set. `mise run verify` invokes
+that all-language task, so a conventional new package cannot be omitted by a
+stale dependency list. No separate comparison test is required in each
+package.
 
 Some project data has a dedicated check/update pair:
 

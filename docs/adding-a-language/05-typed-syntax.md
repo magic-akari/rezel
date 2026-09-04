@@ -168,8 +168,8 @@ The language's central code-generation scope validates the typed schema and
 emits `typed.rs` in the same operation as the other parser artifacts:
 
 ```sh
-mise run codegen:rezel:<language>:update
-mise run codegen:rezel:<language>
+mise run codegen:rezel:scope <language> --update
+mise run codegen:rezel:scope <language> --check
 ```
 
 The update task writes the complete expected set; the check task reconstructs

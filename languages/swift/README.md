@@ -20,7 +20,7 @@ identifier, dollar-name, and escaped-name additions before LR consumption.
 Generated files are checked in. Regenerate them with:
 
 ```text
-mise run codegen:rezel:swift:update
+mise run codegen:rezel:scope swift --update
 ```
 
 The development oracle for the default language is Apple Swift 6.3.3.

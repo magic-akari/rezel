@@ -12,8 +12,7 @@ use rezel_generator::{
     BuildOptions, CompiledGrammar, compile_grammar, emit_rust_with_data_paths, emit_typed_syntax,
 };
 
-const USAGE: &str = "Usage: rezel-codegen \
-     (json | java | go | kotlin | php | python | rust | swift | fixtures) (--check | --update)";
+const USAGE: &str = "Usage: rezel-codegen (all | <language> | fixtures) (--check | --update)";
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
@@ -29,12 +28,17 @@ fn run(arguments: &[String]) -> Result<()> {
     let [scope, mode] = arguments else {
         return Err(USAGE.into());
     };
-    let scope = Scope::parse(scope).ok_or(USAGE)?;
     let mode = Mode::parse(mode).ok_or(USAGE)?;
-    let regeneration_command = scope.regeneration_command();
     let root = workspace_root()?;
+    let scope = Scope::parse(&root, scope)?;
+    let regeneration_command = scope.regeneration_command();
     let mut outputs = Outputs::new(&root, mode, &regeneration_command);
-    match scope {
+    match &scope {
+        Scope::AllLanguages(languages) => {
+            for generated in generate_all_languages(&root, languages, mode)? {
+                outputs.merge(generated)?;
+            }
+        }
         Scope::Language(language) => {
             generate_language(&root, language, &regeneration_command, &mut outputs)?;
         }
@@ -43,6 +47,47 @@ fn run(arguments: &[String]) -> Result<()> {
         }
     }
     outputs.finish()
+}
+
+fn generate_all_languages<'a>(
+    root: &'a Path,
+    languages: &[String],
+    mode: Mode,
+) -> Result<Vec<Outputs<'a>>> {
+    let available = std::thread::available_parallelism().map_or(1, std::num::NonZero::get);
+    let worker_count = available.min(languages.len()).min(4);
+    let next = std::sync::atomic::AtomicUsize::new(0);
+    let generated = std::thread::scope(|scope| {
+        let mut workers = Vec::with_capacity(worker_count);
+        for _ in 0..worker_count {
+            workers.push(scope.spawn(|| {
+                let mut generated = Vec::new();
+                loop {
+                    let index = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    let Some(language) = languages.get(index) else {
+                        break;
+                    };
+                    let command = Scope::language_regeneration_command(language);
+                    let mut outputs = Outputs::new(root, mode, &command);
+                    generate_language(root, language, &command, &mut outputs)
+                        .map_err(|error| format!("failed to generate {language}: {error}"))?;
+                    generated.push(outputs);
+                }
+                Ok::<_, String>(generated)
+            }));
+        }
+
+        let mut generated = Vec::with_capacity(languages.len());
+        for worker in workers {
+            let batch = worker
+                .join()
+                .map_err(|_| "language generation worker panicked".to_owned())??;
+            generated.extend(batch);
+        }
+        Ok::<_, String>(generated)
+    })
+    .map_err(|error| -> Box<dyn Error> { error.into() })?;
+    Ok(generated)
 }
 
 fn generate_language(
@@ -94,6 +139,48 @@ fn workspace_root() -> Result<PathBuf> {
         .and_then(Path::parent)
         .ok_or("codegen tool must live under the workspace tools directory")?;
     Ok(root.to_path_buf())
+}
+
+fn discover_languages(root: &Path) -> Result<Vec<String>> {
+    let languages_directory = root.join("languages");
+    let mut languages = Vec::new();
+    for entry in fs::read_dir(&languages_directory)? {
+        let entry = entry?;
+        if !entry.file_type()?.is_dir() {
+            continue;
+        }
+        let name = entry.file_name().into_string().map_err(|name| {
+            format!(
+                "language directory name is not UTF-8: {}",
+                Path::new(&name).display()
+            )
+        })?;
+        let package_root = entry.path();
+        let required = [
+            package_root.join("Cargo.toml"),
+            package_root.join("src").join(format!("{name}.grammar")),
+            package_root.join("src").join(format!("{name}.typed.toml")),
+        ];
+        for path in required {
+            if !path.is_file() {
+                return Err(format!(
+                    "language package {name:?} is missing {}",
+                    relative_name(root, &path)
+                )
+                .into());
+            }
+        }
+        languages.push(name);
+    }
+    languages.sort();
+    if languages.is_empty() {
+        return Err(format!(
+            "no language packages were discovered under {}",
+            languages_directory.display()
+        )
+        .into());
+    }
+    Ok(languages)
 }
 
 fn generate_fixtures(
@@ -313,37 +400,42 @@ generated_cases! {
     Ok(codegen_source(&body, regeneration_command))
 }
 
-#[derive(Clone, Copy)]
 enum Scope {
-    Language(&'static str),
+    AllLanguages(Vec<String>),
+    Language(String),
     Fixtures,
 }
 
 impl Scope {
-    fn parse(value: &str) -> Option<Self> {
+    fn parse(root: &Path, value: &str) -> Result<Self> {
         match value {
-            "json" => Some(Self::Language("json")),
-            "java" => Some(Self::Language("java")),
-            "go" => Some(Self::Language("go")),
-            "kotlin" => Some(Self::Language("kotlin")),
-            "php" => Some(Self::Language("php")),
-            "python" => Some(Self::Language("python")),
-            "rust" => Some(Self::Language("rust")),
-            "swift" => Some(Self::Language("swift")),
-            "fixtures" => Some(Self::Fixtures),
-            _ => None,
+            "all" => Ok(Self::AllLanguages(discover_languages(root)?)),
+            "fixtures" => Ok(Self::Fixtures),
+            language => {
+                let languages = discover_languages(root)?;
+                if languages.iter().any(|candidate| candidate == language) {
+                    Ok(Self::Language(language.to_owned()))
+                } else {
+                    Err(format!(
+                        "unknown code-generation scope {language:?}; discovered languages: {}",
+                        languages.join(", ")
+                    )
+                    .into())
+                }
+            }
         }
     }
 
-    fn name(self) -> &'static str {
+    fn regeneration_command(&self) -> String {
         match self {
-            Self::Language(language) => language,
-            Self::Fixtures => "fixtures",
+            Self::AllLanguages(_) => "mise run codegen:rezel:update".to_owned(),
+            Self::Language(language) => Self::language_regeneration_command(language),
+            Self::Fixtures => "mise run codegen:rezel:fixtures:update".to_owned(),
         }
     }
 
-    fn regeneration_command(self) -> String {
-        format!("mise run codegen:rezel:{}:update", self.name())
+    fn language_regeneration_command(language: &str) -> String {
+        format!("mise run codegen:rezel:scope {language} --update")
     }
 }
 
@@ -366,22 +458,44 @@ impl Mode {
 struct Outputs<'a> {
     root: &'a Path,
     mode: Mode,
-    regeneration_command: &'a str,
+    regeneration_command: String,
     expected: BTreeMap<PathBuf, Vec<u8>>,
     managed_directories: BTreeSet<PathBuf>,
     scoped_source_directories: BTreeMap<PathBuf, String>,
 }
 
 impl<'a> Outputs<'a> {
-    fn new(root: &'a Path, mode: Mode, regeneration_command: &'a str) -> Self {
+    fn new(root: &'a Path, mode: Mode, regeneration_command: &str) -> Self {
         Self {
             root,
             mode,
-            regeneration_command,
+            regeneration_command: regeneration_command.to_owned(),
             expected: BTreeMap::new(),
             managed_directories: BTreeSet::new(),
             scoped_source_directories: BTreeMap::new(),
         }
+    }
+
+    fn merge(&mut self, other: Self) -> Result<()> {
+        debug_assert_eq!(self.root, other.root);
+        for (path, expected) in other.expected {
+            self.emit_bytes(&path, &expected)?;
+        }
+        self.managed_directories.extend(other.managed_directories);
+        for (path, command) in other.scoped_source_directories {
+            if let Some(previous) = self
+                .scoped_source_directories
+                .insert(path.clone(), command.clone())
+                && previous != command
+            {
+                return Err(format!(
+                    "conflicting regeneration commands for {}: {previous:?} and {command:?}",
+                    path.display()
+                )
+                .into());
+            }
+        }
+        Ok(())
     }
 
     fn manage_generated_directory(&mut self, path: &Path) {
@@ -643,6 +757,39 @@ mod tests {
         }
     }
 
+    fn add_language_package(root: &Path, language: &str) {
+        let language_root = root.join("languages").join(language);
+        let source_root = language_root.join("src");
+        fs::create_dir_all(&source_root).unwrap();
+        fs::write(language_root.join("Cargo.toml"), "[package]\n").unwrap();
+        fs::write(source_root.join(format!("{language}.grammar")), "grammar").unwrap();
+        fs::write(source_root.join(format!("{language}.typed.toml")), "typed").unwrap();
+    }
+
+    #[test]
+    fn discovers_language_packages_in_stable_order() {
+        let temporary = TemporaryDirectory::new();
+        add_language_package(&temporary.0, "swift");
+        add_language_package(&temporary.0, "go");
+
+        assert_eq!(discover_languages(&temporary.0).unwrap(), ["go", "swift"]);
+        assert!(matches!(
+            Scope::parse(&temporary.0, "go").unwrap(),
+            Scope::Language(language) if language == "go"
+        ));
+        assert!(Scope::parse(&temporary.0, "python").is_err());
+    }
+
+    #[test]
+    fn rejects_incomplete_language_packages() {
+        let temporary = TemporaryDirectory::new();
+        add_language_package(&temporary.0, "go");
+        fs::remove_file(temporary.0.join("languages/go/src/go.typed.toml")).unwrap();
+
+        let error = discover_languages(&temporary.0).unwrap_err().to_string();
+        assert!(error.contains("languages/go/src/go.typed.toml"));
+    }
+
     #[test]
     fn adds_the_repository_command_after_the_generator_marker() {
         let source = "// @generated by rezel-generator. Do not edit manually.\nfn generated() {}\n";
@@ -705,7 +852,7 @@ mod tests {
         let temporary = TemporaryDirectory::new();
         let source_root = temporary.0.join("src");
         fs::create_dir(&source_root).unwrap();
-        let command = "mise run codegen:rezel:json:update";
+        let command = "mise run codegen:rezel:scope json --update";
         let owned = source_root.join("obsolete.rs");
         let foreign = source_root.join("foreign.rs");
         let handwritten = source_root.join("handwritten.rs");
