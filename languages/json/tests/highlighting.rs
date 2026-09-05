@@ -8,7 +8,7 @@ fn json_highlighting_uses_the_official_abstract_tags() {
         .parse(source)
         .unwrap();
     let mut spans = Vec::new();
-    rezel_highlight::highlight_spans(&tree, None, |span| {
+    rezel_lang_json::highlight_spans(&tree, None, |span| {
         let range = span.range;
         let text = &source[usize::from(range.start())..usize::from(range.end())];
         let tags = span

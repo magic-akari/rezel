@@ -1,11 +1,14 @@
 [package]
 name = "rezel-common"
 version.workspace = true
+authors.workspace = true
 categories = ["parsing", "data-structures"]
 edition.workspace = true
+homepage.workspace = true
 keywords = ["parser", "syntax-tree", "cst"]
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 description = "Syntax trees and parser interfaces for Rezel"
 
 [dependencies]

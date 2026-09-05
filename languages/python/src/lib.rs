@@ -1,5 +1,3 @@
-//! Python parser, typed concrete syntax, and owned syntax AST.
-
 #![forbid(unsafe_code)]
 #![doc = include_str!("../README.md")]
 

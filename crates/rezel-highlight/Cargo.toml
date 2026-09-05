@@ -1,11 +1,14 @@
 [package]
 name = "rezel-highlight"
 version.workspace = true
+authors.workspace = true
 categories = ["development-tools", "text-editors"]
 edition.workspace = true
+homepage.workspace = true
 keywords = ["syntax-highlighting", "syntax-tree", "highlighting"]
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 description = "Syntactic highlighting for Rezel syntax trees"
 
 [dependencies]

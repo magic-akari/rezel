@@ -12,11 +12,11 @@ Install [mise](https://mise.jdx.dev/) and then install the pinned tools:
 mise install
 ```
 
-The workspace pins dprint, Go, Java, Kotlin, Node.js, and Python in
+The workspace pins dprint, Go, Java, Kotlin, Node.js, PHP, Python, and Swift in
 [`mise.toml`](../mise.toml). The post-install hook also installs the Node.js
 dependencies used by the Lezer reference runner and the traceability checker.
-Rust is managed outside mise; use a toolchain capable of building the
-workspace lockfile.
+Rust 1.95.0 is both the pinned development toolchain and the declared minimum
+version for published workspace crates.
 
 ## Work from the narrowest feedback loop
 

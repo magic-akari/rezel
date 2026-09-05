@@ -39,6 +39,6 @@ syntax and ranges.
 
 ## Highlighting
 
-The optional `highlight` Cargo feature attaches JSON syntactic tags for use
-with `rezel-highlight`. It classifies strings, numbers, property names,
-literals, separators, and delimiters without semantic analysis.
+The optional `highlight` Cargo feature exposes `highlight_spans`. It classifies
+strings, numbers, property names, literals, separators, and delimiters without
+semantic analysis.

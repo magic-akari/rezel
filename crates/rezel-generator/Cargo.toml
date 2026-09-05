@@ -1,11 +1,14 @@
 [package]
 name = "rezel-generator"
 version.workspace = true
+authors.workspace = true
 categories = ["parsing", "development-tools::build-utils"]
 edition.workspace = true
+homepage.workspace = true
 keywords = ["parser-generator", "grammar", "lr", "glr"]
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 description = "Grammar compiler and Rust code generator for Rezel parsers"
 
 [dependencies]

@@ -26,9 +26,12 @@ pub mod terms;
 pub use rezel_common::TypedNode;
 pub use typed::*;
 
+/// Go concrete-syntax parser.
+pub type GoParser = LRParser;
+
 /// Return a cheap clone of the default recovering Go parser.
 #[must_use]
-pub fn parser() -> LRParser {
+pub fn parser() -> GoParser {
     default_parser().clone()
 }
 

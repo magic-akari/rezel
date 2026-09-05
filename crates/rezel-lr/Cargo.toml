@@ -1,11 +1,14 @@
 [package]
 name = "rezel-lr"
 version.workspace = true
+authors.workspace = true
 categories = ["parsing"]
 edition.workspace = true
+homepage.workspace = true
 keywords = ["parser", "lr", "glr", "error-recovery"]
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 description = "LR runtime for Rezel-generated parsers"
 
 [dependencies]

@@ -1,8 +1,10 @@
 [package]
 name = "rezel-lang-python"
 version.workspace = true
+authors.workspace = true
 categories = ["parser-implementations"]
 edition.workspace = true
+homepage.workspace = true
 include = [
 	"/src/**",
 	"/Cargo.toml",
@@ -14,6 +16,7 @@ include = [
 keywords = ["python", "parser", "syntax-tree", "cst"]
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 description = "Python 3.14 parser, typed syntax, and owned AST for Rezel"
 
 [features]

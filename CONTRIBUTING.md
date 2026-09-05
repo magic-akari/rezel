@@ -7,7 +7,7 @@ Rezel is under active development. Changes should preserve the boundaries in
 
 ## Set up the workspace
 
-The repository pins dprint, Go, Java, Node.js, and Python in
+The repository pins dprint, Go, Java, Kotlin, Node.js, PHP, Python, and Swift in
 [`mise.toml`](mise.toml), and Rust in
 [`rust-toolchain.toml`](rust-toolchain.toml):
 
@@ -15,6 +15,9 @@ The repository pins dprint, Go, Java, Node.js, and Python in
 mise install
 mise run verify
 ```
+
+Published workspace crates declare Rust 1.95.0 as their minimum supported
+version, matching the pinned development toolchain.
 
 `mise install` also installs the Node.js dependencies used by reference and
 traceability tools. `mise run verify` is the normal handoff gate. Run the

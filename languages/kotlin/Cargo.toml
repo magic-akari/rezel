@@ -1,11 +1,11 @@
 [package]
 name = "rezel-lang-kotlin"
 version.workspace = true
-autotests = false
+authors.workspace = true
 categories = ["parser-implementations"]
 edition.workspace = true
+homepage.workspace = true
 include = [
-	"/examples/**",
 	"/src/**",
 	"/Cargo.toml",
 	"/README.md",
@@ -16,23 +16,8 @@ include = [
 keywords = ["kotlin", "parser", "syntax-tree", "cst"]
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 description = "Kotlin 2.4 parser and typed syntax for Rezel"
-
-[[test]]
-name = "parser"
-path = "tests/parser.rs"
-
-[[test]]
-name = "parser_positive"
-path = "tests/parser_positive.rs"
-
-[[test]]
-name = "reference"
-path = "tests/reference.rs"
-
-[[test]]
-name = "typed_foundation"
-path = "tests/typed_foundation.rs"
 
 [features]
 default = []

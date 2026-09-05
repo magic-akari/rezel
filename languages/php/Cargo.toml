@@ -1,8 +1,10 @@
 [package]
 name = "rezel-lang-php"
 version.workspace = true
+authors.workspace = true
 categories = ["parser-implementations"]
 edition.workspace = true
+homepage.workspace = true
 include = [
 	"/src/**",
 	"/Cargo.toml",
@@ -14,6 +16,7 @@ include = [
 keywords = ["php", "parser", "syntax-tree", "cst"]
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 description = "PHP 8.5 parser and typed concrete syntax for Rezel"
 
 [features]
