@@ -2146,6 +2146,8 @@ codeItemSeparator[@inline] { ";" | lineBreak }
   closureSignatureLookahead
 }
 
+@external propSource swift_highlighting from "./highlighting"
+
 @tokens {
   identifier[@export] {
     $[A-Za-z] identifierContinueCandidate* |

@@ -57,6 +57,7 @@ whole-tree syntactic predicates.
 | `rezel-lang-php`    | PHP 8.5 syntax calibrated against Lezer and the PHP 8.5.9 Zend parser.   | Mixed-template and tagless-program entry points, partial typed CST, PHP 8.5 lexical adapters, and optional highlighting.                 |
 | `rezel-lang-python` | Python 3.14 syntax calibrated against Lezer and CPython.                 | Indentation and string tokenizers, strict syntax validation, complete typed CST, CPython-aligned owned AST, and optional highlighting.   |
 | `rezel-lang-rust`   | Rust 1.95.0 Edition 2024 syntax calibrated against Lezer and rustc.      | Permissive recovery identifiers, strict XID/syntax validation, partial typed CST, and optional highlighting.                             |
+| `rezel-lang-swift`  | Swift 6.3 syntax calibrated against SwiftSyntax and the Swift frontend.  | Contextual lexical adapters, partial typed CST, strict SwiftSyntax corpus validation, and optional highlighting.                         |
 
 Version details and package APIs belong in each language's README and generated
 Rust documentation.

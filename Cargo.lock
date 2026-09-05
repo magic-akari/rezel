@@ -370,6 +370,7 @@ name = "rezel-lang-swift"
 version = "0.0.0"
 dependencies = [
  "rezel-common",
+ "rezel-highlight",
  "rezel-lr",
  "unicode-ident",
  "zerocopy",

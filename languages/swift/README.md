@@ -28,3 +28,10 @@ The development oracle for the default language is Apple Swift 6.3.3.
 boundary with the official frontend. `SwiftSyntax` is the authority for its
 feature-enabled CST forms. `mise run reference:swift:p0:prepare` materializes
 the pinned Swift and `SwiftSyntax` corpora used by the broad P0 gate.
+
+## Highlighting
+
+The optional `highlight` Cargo feature exposes `highlight_spans`. It projects
+the Swift CST into abstract syntactic tags for declarations, references, types,
+attributes, literals, comments, keywords, operators, and delimiters without
+semantic analysis.
