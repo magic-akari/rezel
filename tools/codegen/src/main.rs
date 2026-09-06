@@ -784,10 +784,14 @@ mod tests {
     fn rejects_incomplete_language_packages() {
         let temporary = TemporaryDirectory::new();
         add_language_package(&temporary.0, "go");
-        fs::remove_file(temporary.0.join("languages/go/src/go.typed.toml")).unwrap();
+        let missing = Path::new("languages")
+            .join("go")
+            .join("src")
+            .join("go.typed.toml");
+        fs::remove_file(temporary.0.join(&missing)).unwrap();
 
         let error = discover_languages(&temporary.0).unwrap_err().to_string();
-        assert!(error.contains("languages/go/src/go.typed.toml"));
+        assert!(error.contains(&missing.display().to_string()));
     }
 
     #[test]
@@ -816,9 +820,10 @@ mod tests {
 
         let mut check = Outputs::new(&temporary.0, Mode::Check, command);
         check.manage_generated_directory(&generated);
-        let error = check.finish().unwrap_err();
-        assert!(error.to_string().contains("generated/orphan.rs"));
-        assert!(error.to_string().contains(command));
+        let error = check.finish().unwrap_err().to_string();
+        let expected = Path::new("generated").join("orphan.rs");
+        assert!(error.contains(&expected.display().to_string()));
+        assert!(error.contains(command));
         assert!(orphan.exists());
 
         let mut update = Outputs::new(&temporary.0, Mode::Update, command);
@@ -875,9 +880,12 @@ mod tests {
         let mut check = Outputs::new(&temporary.0, Mode::Check, command);
         check.manage_scoped_source_directory(&source_root, command);
         let error = check.finish().unwrap_err().to_string();
-        assert!(error.contains("src/obsolete.rs"));
-        assert!(!error.contains("src/foreign.rs"));
-        assert!(!error.contains("src/handwritten.rs"));
+        let expected = Path::new("src").join("obsolete.rs");
+        let excluded_foreign = Path::new("src").join("foreign.rs");
+        let excluded_handwritten = Path::new("src").join("handwritten.rs");
+        assert!(error.contains(&expected.display().to_string()));
+        assert!(!error.contains(&excluded_foreign.display().to_string()));
+        assert!(!error.contains(&excluded_handwritten.display().to_string()));
 
         let mut update = Outputs::new(&temporary.0, Mode::Update, command);
         update.manage_scoped_source_directory(&source_root, command);
