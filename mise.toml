@@ -228,6 +228,14 @@ run = "cargo bench --locked --manifest-path tools/benchmarks/parser/Cargo.toml -
 description = "Compare parser instructions across implementations and commits"
 run = "cargo run --locked --manifest-path tools/benchmarks/parser/Cargo.toml --bin compare-revisions --"
 
+[tasks."check:default-features"]
+description = "Check each public crate independently with default features"
+run = """
+for manifest in crates/*/Cargo.toml languages/*/Cargo.toml; do
+    cargo check --locked --manifest-path "$manifest" --lib --bins
+done
+"""
+
 [tasks.test]
 description = "Run Rust tests"
 run = [
@@ -244,6 +252,7 @@ description = "Run verification tasks that share the Cargo target directory"
 hide = true
 run = [
 	"mise run format:check",
+	"mise run check:default-features",
 	"mise run test",
 	"mise run lint:rust",
 	"mise run docs",

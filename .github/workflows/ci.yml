@@ -1,0 +1,125 @@
+name: CI
+
+on:
+    pull_request:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+    CARGO_TERM_COLOR: always
+    RUST_BACKTRACE: "1"
+    # Install dependencies explicitly; local post-install hooks assume all tools exist.
+    MISE_NO_HOOKS: "true"
+
+jobs:
+    format:
+        name: Format
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        env:
+            MISE_ENABLE_TOOLS: dprint
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+              with:
+                  version: 2026.9.1
+            - run: mise run format:check
+
+    rust:
+        name: Rust
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        env:
+            MISE_ENABLE_TOOLS: ""
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+              with:
+                  version: 2026.9.1
+                  install: false
+                  cache: false
+            - run: rustup show active-toolchain
+            - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+              with:
+                  save-if: ${{ github.ref == 'refs/heads/main' }}
+            - run: mise run check:default-features
+            - run: mise run test
+            - run: mise run lint:rust
+            - run: mise run docs
+
+    generated:
+        name: Generated artifacts
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        env:
+            MISE_ENABLE_TOOLS: python
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+              with:
+                  version: 2026.9.1
+                  install_args: python
+            - run: rustup show active-toolchain
+            - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+              with:
+                  save-if: ${{ github.ref == 'refs/heads/main' }}
+            - run: mise run codegen:rezel
+            - run: mise run codegen:rezel:fixtures
+            - run: mise run codegen:python-unicode-names
+            - run: mise run codegen:python-typed
+            - run: mise run codegen:python-ast
+            - run: mise run alignment
+
+    tooling:
+        name: Tooling
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        env:
+            MISE_ENABLE_TOOLS: node,go
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+              with:
+                  version: 2026.9.1
+                  install_args: node go
+            - run: npm ci --prefix tools/source-alignment
+            - run: npm ci --prefix tools/references/lezer
+            - run: mise run lint:tooling
+
+    platforms:
+        name: Test (${{ matrix.os }})
+        if: github.event_name != 'pull_request'
+        runs-on: ${{ matrix.os }}
+        timeout-minutes: 30
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [macos-15, windows-2025]
+        steps:
+            # Preserve fixture bytes and source offsets on Windows.
+            - run: git config --global core.autocrlf false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - run: rustup show active-toolchain
+            - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+              with:
+                  save-if: ${{ github.ref == 'refs/heads/main' }}
+            - run: cargo test-all
+            - run: cargo test-doc

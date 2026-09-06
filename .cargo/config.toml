@@ -1,5 +1,5 @@
 [alias]
-alignment = "run --package rezel-source-alignment --"
+alignment = "run --locked --package rezel-source-alignment --"
 doc-all = "doc --locked --workspace --all-features --no-deps"
 lint-all = "clippy --locked --workspace --all-targets --all-features -- -D warnings"
 rezel = "run --profile generator-dev --locked --package rezel-generator --"

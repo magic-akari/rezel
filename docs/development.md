@@ -34,9 +34,9 @@ Before handing off a change, run the repository gate:
 mise run verify
 ```
 
-The normal gate checks formatting, Rust tests and doctests, API documentation,
-Rust/Go/TypeScript lints, traceability manifests, and committed code-generated
-artifacts. Changes that affect language conformance, parser references, or
+The normal gate checks formatting, public crates with default features, Rust
+tests and doctests, API documentation, Rust/Go/TypeScript lints, traceability
+manifests, and committed code-generated artifacts. Changes that affect language conformance, parser references, or
 broad source coverage should also run:
 
 ```sh
@@ -68,6 +68,23 @@ without waiting on competing artifact locks. Go, TypeScript, and Python checks
 run through `verify:tooling` alongside that Cargo lane. Keep new checks in the
 lane matching the resources they use. The full gate sequences its broad
 reference and corpus tasks to keep their CPU and memory demand predictable.
+
+## Continuous integration
+
+[GitHub Actions](../.github/workflows/ci.yml) runs formatting, Rust checks,
+generated-artifact checks, and tooling lints on pull requests and pushes to
+`main`. Together these jobs cover `mise run verify`. Each public crate is also
+checked independently with default features through
+`mise run check:default-features`, avoiding workspace-wide feature unification.
+
+Pushes to `main` and manual runs additionally test on macOS and Windows. Rust
+uses `rust-toolchain.toml`; other tools use the versions in `mise.toml`. CI
+limits mise tools per job and disables post-install hooks, installing npm
+dependencies explicitly in the tooling job.
+
+Official-parser comparisons, extended corpora, benchmarks, and publishing are
+not part of this workflow. Run the relevant reference tasks for language
+changes and `mise run verify:full` before release.
 
 ## Change the maintained input, then regenerate
 
