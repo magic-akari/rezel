@@ -3,7 +3,7 @@
 	"reference": {
 		"grammar": {
 			"path": "languages/python/src/python.grammar",
-			"sha256": "49fd00bc296ffdbefc19367347ef03e4060852ca6fb5699d090a8dc678f1e120"
+			"sha256": "c9aa267d11032ded0c086a37456982a4318f8817a1d9486dea8e23b9a9274079"
 		}
 	},
 	"coordinates": "raw-utf8-bytes",
