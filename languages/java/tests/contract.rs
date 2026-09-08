@@ -112,6 +112,42 @@ fn character_literals_follow_java_utf16_code_unit_width() {
 }
 
 #[test]
+fn ordinary_strings_reject_line_continuations() {
+    let parser = rezel_lang_java::parser().with_strict(true);
+    for continuation in ["\\\n", "\\\r", "\\\r\n", r"\u005c\u000a", r"\u005c\u000d"] {
+        let source = format!("class Sample {{ String value = \"before{continuation}after\"; }}");
+        let error = parser
+            .parse(&source)
+            .expect_err("ordinary strings cannot continue across lines");
+        assert_eq!(error.kind(), ParseErrorKind::Syntax);
+    }
+    parser
+        .parse(r#"class Sample { String value = "before\nafter\r\n"; }"#)
+        .expect("escaped newline characters remain valid");
+    parser
+        .parse(r#"class Sample { String value = "before\\u000aafter"; }"#)
+        .expect("an ineligible Unicode escape does not introduce a newline");
+    parser
+        .parse("class Sample { String value = \"\"\"\n before\\\n after\n\"\"\"; }")
+        .expect("text blocks still allow line continuation");
+}
+
+#[test]
+fn octal_literals_use_a_leading_zero_without_a_letter_prefix() {
+    let parser = rezel_lang_java::parser().with_strict(true);
+    for literal in ["0o123", "0O123", "0o123L", "0O123l"] {
+        let source = format!("class Sample {{ long value = {literal}; }}");
+        let error = parser
+            .parse(&source)
+            .expect_err("Java has no 0o or 0O octal prefix");
+        assert_eq!(error.kind(), ParseErrorKind::Syntax);
+    }
+    parser
+        .parse("class Sample { long octal = 0123L; int hex = 0x123; int binary = 0b101; }")
+        .expect("Java integer literal prefixes remain valid");
+}
+
+#[test]
 fn text_blocks_preserve_escaped_delimiters_and_recover_at_eof() {
     let parser = rezel_lang_java::parser();
     let valid = r#"class Sample {

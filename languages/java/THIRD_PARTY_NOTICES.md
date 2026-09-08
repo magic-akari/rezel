@@ -2,10 +2,10 @@
 
 ## @lezer/java
 
-The production grammar is derived from `@lezer/java` 1.1.3.
+The production grammar is derived from `@lezer/java` 1.1.4.
 
-Source: <https://github.com/lezer-parser/java>
-Commit: `63e9e5f056651ca149e936782d0f81afd9bcdfa9`
+Source: <https://code.haverbeke.berlin/lezer/java>
+Commit: `f8302ee35f5c4c7a1a3b63e70c802d977871e9bc`
 
 ```text
 MIT License

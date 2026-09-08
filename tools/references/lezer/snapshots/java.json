@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/java/src/java.grammar",
-				"sha256": "5f08a34f67fc58f933c33ecd0159d38a49819d6fd2fb947e82165bcd6bf1cd52"
+				"sha256": "1b1adf154a1648cbbfae9e06e4fef191a93ee2833a2ff615bf38f7b02c6cbcd2"
 			}
 		}
 	},
@@ -5905,6 +5905,285 @@
 					}
 				]
 			}
+		},
+		{
+			"id": "literal-escape-and-prefix-controls",
+			"tree": {
+				"name": "Program",
+				"from": 0,
+				"to": 150,
+				"children": [
+					{
+						"name": "CompilationUnit",
+						"from": 0,
+						"to": 150,
+						"children": [
+							{
+								"name": "UnnamedCompilationUnit",
+								"from": 0,
+								"to": 150,
+								"children": [
+									{
+										"name": "UnitBeforeFirstMethod",
+										"from": 0,
+										"to": 150,
+										"children": [
+											{
+												"name": "TopLevelDeclaration",
+												"from": 0,
+												"to": 150,
+												"children": [
+													{
+														"name": "ClassDeclaration",
+														"from": 0,
+														"to": 150,
+														"children": [
+															{
+																"name": "ClassDeclarationCore",
+																"from": 0,
+																"to": 150,
+																"children": [
+																	{
+																		"name": "class",
+																		"from": 0,
+																		"to": 5
+																	},
+																	{
+																		"name": "Definition",
+																		"from": 6,
+																		"to": 14
+																	},
+																	{
+																		"name": "ClassBody",
+																		"from": 15,
+																		"to": 150,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 15,
+																				"to": 16
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 17,
+																				"to": 34,
+																				"children": [
+																					{
+																						"name": "PrimitiveType",
+																						"from": 17,
+																						"to": 20
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 21,
+																						"to": 33,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 21,
+																								"to": 26
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 27,
+																								"to": 28
+																							},
+																							{
+																								"name": "IntegerLiteral",
+																								"from": 29,
+																								"to": 33
+																							}
+																						]
+																					},
+																					{
+																						"name": ";",
+																						"from": 33,
+																						"to": 34
+																					}
+																				]
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 35,
+																				"to": 53,
+																				"children": [
+																					{
+																						"name": "PrimitiveType",
+																						"from": 35,
+																						"to": 39
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 40,
+																						"to": 52,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 40,
+																								"to": 43
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 44,
+																								"to": 45
+																							},
+																							{
+																								"name": "IntegerLiteral",
+																								"from": 46,
+																								"to": 52
+																							}
+																						]
+																					},
+																					{
+																						"name": ";",
+																						"from": 52,
+																						"to": 53
+																					}
+																				]
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 54,
+																				"to": 73,
+																				"children": [
+																					{
+																						"name": "PrimitiveType",
+																						"from": 54,
+																						"to": 57
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 58,
+																						"to": 72,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 58,
+																								"to": 64
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 65,
+																								"to": 66
+																							},
+																							{
+																								"name": "IntegerLiteral",
+																								"from": 67,
+																								"to": 72
+																							}
+																						]
+																					},
+																					{
+																						"name": ";",
+																						"from": 72,
+																						"to": 73
+																					}
+																				]
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 74,
+																				"to": 108,
+																				"children": [
+																					{
+																						"name": "TypeName",
+																						"from": 74,
+																						"to": 80
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 81,
+																						"to": 107,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 81,
+																								"to": 88
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 89,
+																								"to": 90
+																							},
+																							{
+																								"name": "StringLiteral",
+																								"from": 91,
+																								"to": 107
+																							}
+																						]
+																					},
+																					{
+																						"name": ";",
+																						"from": 107,
+																						"to": 108
+																					}
+																				]
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 109,
+																				"to": 148,
+																				"children": [
+																					{
+																						"name": "TypeName",
+																						"from": 109,
+																						"to": 115
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 116,
+																						"to": 147,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 116,
+																								"to": 121
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 122,
+																								"to": 123
+																							},
+																							{
+																								"name": "TextBlock",
+																								"from": 124,
+																								"to": 147
+																							}
+																						]
+																					},
+																					{
+																						"name": ";",
+																						"from": 147,
+																						"to": 148
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 149,
+																				"to": 150
+																			}
+																		]
+																	}
+																]
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "UnitBeforeFirstMethod",
+												"from": 150,
+												"to": 150
+											}
+										]
+									}
+								]
+							}
+						]
+					}
+				]
+			}
 		}
 	],
 	"recovering": [
@@ -6564,6 +6843,614 @@
 												"name": "UnitBeforeFirstMethod",
 												"from": 41,
 												"to": 41
+											}
+										]
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "string-line-continuation-lf",
+			"tree": {
+				"name": "Program",
+				"from": 0,
+				"to": 48,
+				"children": [
+					{
+						"name": "CompilationUnit",
+						"from": 0,
+						"to": 48,
+						"children": [
+							{
+								"name": "UnnamedCompilationUnit",
+								"from": 0,
+								"to": 48,
+								"children": [
+									{
+										"name": "UnitBeforeFirstMethod",
+										"from": 0,
+										"to": 48,
+										"children": [
+											{
+												"name": "TopLevelDeclaration",
+												"from": 0,
+												"to": 48,
+												"children": [
+													{
+														"name": "ClassDeclaration",
+														"from": 0,
+														"to": 48,
+														"children": [
+															{
+																"name": "ClassDeclarationCore",
+																"from": 0,
+																"to": 48,
+																"children": [
+																	{
+																		"name": "class",
+																		"from": 0,
+																		"to": 5
+																	},
+																	{
+																		"name": "Definition",
+																		"from": 6,
+																		"to": 12
+																	},
+																	{
+																		"name": "ClassBody",
+																		"from": 13,
+																		"to": 48,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 13,
+																				"to": 14
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 15,
+																				"to": 39,
+																				"children": [
+																					{
+																						"name": "TypeName",
+																						"from": 15,
+																						"to": 21
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 22,
+																						"to": 39,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 22,
+																								"to": 27
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 28,
+																								"to": 29
+																							},
+																							{
+																								"name": "⚠",
+																								"from": 30,
+																								"to": 31
+																							},
+																							{
+																								"name": "MethodReference",
+																								"from": 31,
+																								"to": 39,
+																								"children": [
+																									{
+																										"name": "TypeName",
+																										"from": 31,
+																										"to": 38,
+																										"children": [
+																											{
+																												"name": "⚠",
+																												"from": 37,
+																												"to": 38
+																											}
+																										]
+																									},
+																									{
+																										"name": "⚠",
+																										"from": 39,
+																										"to": 39
+																									}
+																								]
+																							}
+																						]
+																					},
+																					{
+																						"name": "⚠",
+																						"from": 39,
+																						"to": 39
+																					}
+																				]
+																			},
+																			{
+																				"name": "MethodDeclaration",
+																				"from": 39,
+																				"to": 46,
+																				"children": [
+																					{
+																						"name": "TypeName",
+																						"from": 39,
+																						"to": 45,
+																						"children": [
+																							{
+																								"name": "⚠",
+																								"from": 44,
+																								"to": 45
+																							}
+																						]
+																					},
+																					{
+																						"name": "⚠",
+																						"from": 45,
+																						"to": 45
+																					},
+																					{
+																						"name": ";",
+																						"from": 45,
+																						"to": 46
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 47,
+																				"to": 48
+																			}
+																		]
+																	}
+																]
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "UnitBeforeFirstMethod",
+												"from": 48,
+												"to": 48
+											}
+										]
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "string-line-continuation-cr",
+			"tree": {
+				"name": "Program",
+				"from": 0,
+				"to": 48,
+				"children": [
+					{
+						"name": "CompilationUnit",
+						"from": 0,
+						"to": 48,
+						"children": [
+							{
+								"name": "UnnamedCompilationUnit",
+								"from": 0,
+								"to": 48,
+								"children": [
+									{
+										"name": "UnitBeforeFirstMethod",
+										"from": 0,
+										"to": 48,
+										"children": [
+											{
+												"name": "TopLevelDeclaration",
+												"from": 0,
+												"to": 48,
+												"children": [
+													{
+														"name": "ClassDeclaration",
+														"from": 0,
+														"to": 48,
+														"children": [
+															{
+																"name": "ClassDeclarationCore",
+																"from": 0,
+																"to": 48,
+																"children": [
+																	{
+																		"name": "class",
+																		"from": 0,
+																		"to": 5
+																	},
+																	{
+																		"name": "Definition",
+																		"from": 6,
+																		"to": 12
+																	},
+																	{
+																		"name": "ClassBody",
+																		"from": 13,
+																		"to": 48,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 13,
+																				"to": 14
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 15,
+																				"to": 39,
+																				"children": [
+																					{
+																						"name": "TypeName",
+																						"from": 15,
+																						"to": 21
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 22,
+																						"to": 39,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 22,
+																								"to": 27
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 28,
+																								"to": 29
+																							},
+																							{
+																								"name": "⚠",
+																								"from": 30,
+																								"to": 31
+																							},
+																							{
+																								"name": "MethodReference",
+																								"from": 31,
+																								"to": 39,
+																								"children": [
+																									{
+																										"name": "TypeName",
+																										"from": 31,
+																										"to": 38,
+																										"children": [
+																											{
+																												"name": "⚠",
+																												"from": 37,
+																												"to": 38
+																											}
+																										]
+																									},
+																									{
+																										"name": "⚠",
+																										"from": 39,
+																										"to": 39
+																									}
+																								]
+																							}
+																						]
+																					},
+																					{
+																						"name": "⚠",
+																						"from": 39,
+																						"to": 39
+																					}
+																				]
+																			},
+																			{
+																				"name": "MethodDeclaration",
+																				"from": 39,
+																				"to": 46,
+																				"children": [
+																					{
+																						"name": "TypeName",
+																						"from": 39,
+																						"to": 45,
+																						"children": [
+																							{
+																								"name": "⚠",
+																								"from": 44,
+																								"to": 45
+																							}
+																						]
+																					},
+																					{
+																						"name": "⚠",
+																						"from": 45,
+																						"to": 45
+																					},
+																					{
+																						"name": ";",
+																						"from": 45,
+																						"to": 46
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 47,
+																				"to": 48
+																			}
+																		]
+																	}
+																]
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "UnitBeforeFirstMethod",
+												"from": 48,
+												"to": 48
+											}
+										]
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "invalid-octal-prefix-lowercase",
+			"tree": {
+				"name": "Program",
+				"from": 0,
+				"to": 35,
+				"children": [
+					{
+						"name": "CompilationUnit",
+						"from": 0,
+						"to": 35,
+						"children": [
+							{
+								"name": "UnnamedCompilationUnit",
+								"from": 0,
+								"to": 35,
+								"children": [
+									{
+										"name": "UnitBeforeFirstMethod",
+										"from": 0,
+										"to": 35,
+										"children": [
+											{
+												"name": "TopLevelDeclaration",
+												"from": 0,
+												"to": 35,
+												"children": [
+													{
+														"name": "ClassDeclaration",
+														"from": 0,
+														"to": 35,
+														"children": [
+															{
+																"name": "ClassDeclarationCore",
+																"from": 0,
+																"to": 35,
+																"children": [
+																	{
+																		"name": "class",
+																		"from": 0,
+																		"to": 5
+																	},
+																	{
+																		"name": "Definition",
+																		"from": 6,
+																		"to": 12
+																	},
+																	{
+																		"name": "ClassBody",
+																		"from": 13,
+																		"to": 35,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 13,
+																				"to": 14
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 15,
+																				"to": 33,
+																				"children": [
+																					{
+																						"name": "PrimitiveType",
+																						"from": 15,
+																						"to": 18
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 19,
+																						"to": 32,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 19,
+																								"to": 24
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 25,
+																								"to": 26
+																							},
+																							{
+																								"name": "IntegerLiteral",
+																								"from": 27,
+																								"to": 28
+																							},
+																							{
+																								"name": "⚠",
+																								"from": 28,
+																								"to": 32
+																							}
+																						]
+																					},
+																					{
+																						"name": ";",
+																						"from": 32,
+																						"to": 33
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 34,
+																				"to": 35
+																			}
+																		]
+																	}
+																]
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "UnitBeforeFirstMethod",
+												"from": 35,
+												"to": 35
+											}
+										]
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"id": "invalid-octal-prefix-uppercase",
+			"tree": {
+				"name": "Program",
+				"from": 0,
+				"to": 37,
+				"children": [
+					{
+						"name": "CompilationUnit",
+						"from": 0,
+						"to": 37,
+						"children": [
+							{
+								"name": "UnnamedCompilationUnit",
+								"from": 0,
+								"to": 37,
+								"children": [
+									{
+										"name": "UnitBeforeFirstMethod",
+										"from": 0,
+										"to": 37,
+										"children": [
+											{
+												"name": "TopLevelDeclaration",
+												"from": 0,
+												"to": 37,
+												"children": [
+													{
+														"name": "ClassDeclaration",
+														"from": 0,
+														"to": 37,
+														"children": [
+															{
+																"name": "ClassDeclarationCore",
+																"from": 0,
+																"to": 37,
+																"children": [
+																	{
+																		"name": "class",
+																		"from": 0,
+																		"to": 5
+																	},
+																	{
+																		"name": "Definition",
+																		"from": 6,
+																		"to": 12
+																	},
+																	{
+																		"name": "ClassBody",
+																		"from": 13,
+																		"to": 37,
+																		"children": [
+																			{
+																				"name": "{",
+																				"from": 13,
+																				"to": 14
+																			},
+																			{
+																				"name": "FieldDeclaration",
+																				"from": 15,
+																				"to": 35,
+																				"children": [
+																					{
+																						"name": "PrimitiveType",
+																						"from": 15,
+																						"to": 19
+																					},
+																					{
+																						"name": "VariableDeclarator",
+																						"from": 20,
+																						"to": 34,
+																						"children": [
+																							{
+																								"name": "Definition",
+																								"from": 20,
+																								"to": 25
+																							},
+																							{
+																								"name": "AssignOp",
+																								"from": 26,
+																								"to": 27
+																							},
+																							{
+																								"name": "IntegerLiteral",
+																								"from": 28,
+																								"to": 29
+																							},
+																							{
+																								"name": "⚠",
+																								"from": 29,
+																								"to": 34
+																							}
+																						]
+																					},
+																					{
+																						"name": ";",
+																						"from": 34,
+																						"to": 35
+																					}
+																				]
+																			},
+																			{
+																				"name": "}",
+																				"from": 36,
+																				"to": 37
+																			}
+																		]
+																	}
+																]
+															}
+														]
+													}
+												]
+											},
+											{
+												"name": "UnitBeforeFirstMethod",
+												"from": 37,
+												"to": 37
 											}
 										]
 									}

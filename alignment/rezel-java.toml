@@ -5,8 +5,8 @@ name = "rezel-java"
 source_root = "languages/java/src"
 
 [upstream]
-repository = "https://github.com/lezer-parser/java"
-commit = "63e9e5f056651ca149e936782d0f81afd9bcdfa9"
+repository = "https://code.haverbeke.berlin/lezer/java"
+commit = "f8302ee35f5c4c7a1a3b63e70c802d977871e9bc"
 
 [[snapshot]]
 source = "src/highlight.js"

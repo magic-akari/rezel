@@ -45,6 +45,10 @@
 		{
 			"id": "isolated-surrogate-escape",
 			"source": "class Surrogate { String value = \"\\uD800\"; }"
+		},
+		{
+			"id": "literal-escape-and-prefix-controls",
+			"source": "class Literals { int octal = 0123; long hex = 0x123L; int binary = 0b101; String escaped = \"line\\nnext\\r\\n\"; String block = \"\"\"\n before\\\n after\n\"\"\"; }"
 		}
 	],
 	"recovering": [
@@ -63,6 +67,22 @@
 		{
 			"id": "invalid-statement-expression",
 			"source": "class Broken { void method() { 1 + 2; } }"
+		},
+		{
+			"id": "string-line-continuation-lf",
+			"source": "class Broken { String value = \"before\\\nafter\"; }"
+		},
+		{
+			"id": "string-line-continuation-cr",
+			"source": "class Broken { String value = \"before\\\rafter\"; }"
+		},
+		{
+			"id": "invalid-octal-prefix-lowercase",
+			"source": "class Broken { int value = 0o123; }"
+		},
+		{
+			"id": "invalid-octal-prefix-uppercase",
+			"source": "class Broken { long value = 0O123L; }"
 		}
 	]
 }
