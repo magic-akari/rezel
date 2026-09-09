@@ -229,7 +229,7 @@ separatorToken[@inline] {
   Metavariable ~macroBinding |
   ArithOp { "-" | "/" | "%" } |
   BitOp { "<<" | ">>" | "&" | "|" | "^" } |
-  LogicOp { "||" | "&&" } |
+  LogicOp { "||" | andand } |
   UpdateOp | CompareOp |
   "." | "," | ";" | ":" | "=" | "->" | "=>" | ".." | "..=" | "..." | "::" |
   "<-" | "#" | "!" | "@" | "~"
@@ -413,7 +413,7 @@ Vis {
 type[@isGroup=Type] {
   AbstractType { kw<"impl"> (traitBound | ConstTraitBound) } |
   InferredType { kw<"_"> } |
-  ReferenceType { ("&" | "&&") Lifetime? kw<"mut">? type } |
+  ReferenceType { "&" Lifetime? kw<"mut">? type } |
   PointerType { "*" (kw<"const"> | kw<"mut">) type } |
   TypePath |
   GenericType |
@@ -481,7 +481,7 @@ expression[@isGroup=Expression] { blockExpression | nonBlockExpression }
 nonBlockExpression {
   UnaryExpression { (ArithOp { "-" } | DerefOp { "*" } | LogicOp { "!" }) !unary expression } |
   ReferenceExpression {
-    ("&" | "&&") (kw<"mut"> | wkw<"raw"> (kw<"const"> | kw<"mut">))? expression
+    "&" (kw<"mut"> | wkw<"raw"> (kw<"const"> | kw<"mut">))? expression
   } |
   TryExpression { expression !try "?" } |
   BinaryExpression |
@@ -621,7 +621,7 @@ BinaryExpression {
   expression !or OrOp expression
 }
 
-AndOp[@name=LogicOp] { "&&" }
+AndOp[@name=LogicOp] { andand }
 
 OrOp[@name=LogicOp] { "||" }
 
@@ -649,9 +649,9 @@ cond {
 }
 
 LetChain {
-  LetCondition (!letChain "&&" letChainOperand)* |
-  expression !letChain "&&" LetCondition
-  (!letChain "&&" letChainOperand)*
+  LetCondition (!letChain andand letChainOperand)* |
+  expression !letChain andand LetCondition
+  (!letChain andand letChainOperand)*
 }
 
 letChainOperand[@inline] { LetCondition | expression !letChain }
@@ -688,7 +688,7 @@ pattern[@isGroup=Pattern] {
   RefPattern { kw<"ref"> !unary pattern } |
   SlicePattern { "[" commaSep<pattern> "]" } |
   CapturedPattern { BoundIdentifier "@" pattern } |
-  ReferencePattern { ("&" | "&&") !unary (!mut kw<"mut">)? pattern } |
+  ReferencePattern { "&" !unary (!mut kw<"mut">)? pattern } |
   ".." |
   MutPattern { kw<"mut"> !unary pattern } |
   RangePattern {
@@ -781,6 +781,8 @@ plusSep<expr> { expr (!plusSep "+" expr)* }
 @external tokens CLOSURE_PARAM from "./tokens" { closureParamDelim[@name="|"] }
 
 @external tokens TYPE_PARAMETER_DELIMITERS from "./tokens" { tpOpen[@name="<"], tpClose[@name=">"] }
+
+@external tokens LOGIC_AND from "./tokens" { andand }
 
 @external tokens LITERALS from "./tokens" { RawString[isolate], Float }
 

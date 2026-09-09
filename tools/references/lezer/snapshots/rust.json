@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/rust/src/rust.grammar",
-				"sha256": "9febc9b8582489bf20dc6047f5cd7400d8e9f1a3bc022834745f1a4306fac697"
+				"sha256": "93a582f8e890051d6806fcb775ce1f6c62f7557175b23ec66d4a5758c282d6ee"
 			}
 		}
 	},
@@ -6672,29 +6672,46 @@
 												"to": 524,
 												"children": [
 													{
-														"name": "raw",
-														"from": 508,
-														"to": 511
+														"name": "&",
+														"from": 506,
+														"to": 507
 													},
 													{
-														"name": "const",
-														"from": 512,
-														"to": 517
-													},
-													{
-														"name": "UnaryExpression",
-														"from": 518,
+														"name": "ReferenceExpression",
+														"from": 507,
 														"to": 524,
 														"children": [
 															{
-																"name": "DerefOp",
-																"from": 518,
-																"to": 519
+																"name": "&",
+																"from": 507,
+																"to": 508
 															},
 															{
-																"name": "Identifier",
-																"from": 519,
-																"to": 524
+																"name": "raw",
+																"from": 508,
+																"to": 511
+															},
+															{
+																"name": "const",
+																"from": 512,
+																"to": 517
+															},
+															{
+																"name": "UnaryExpression",
+																"from": 518,
+																"to": 524,
+																"children": [
+																	{
+																		"name": "DerefOp",
+																		"from": 518,
+																		"to": 519
+																	},
+																	{
+																		"name": "Identifier",
+																		"from": 519,
+																		"to": 524
+																	}
+																]
 															}
 														]
 													}

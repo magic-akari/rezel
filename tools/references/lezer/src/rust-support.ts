@@ -37,6 +37,7 @@ const SINGLE_QUOTE = 39;
 const DOLLAR = 36;
 const UNDERSCORE = 95;
 const PIPE = 124;
+const AND = 38;
 const LESS_THAN = 60;
 const GREATER_THAN = 62;
 const EQUAL = 61;
@@ -176,6 +177,8 @@ export function buildRustParser(options: BuildRustParserOptions): ReturnType<typ
 					return closureParam(requiredTerm(terms, "closureParamDelim"));
 				case "TYPE_PARAMETER_DELIMITERS":
 					return typeParameterDelimiters(requiredTerm(terms, "tpOpen"), requiredTerm(terms, "tpClose"));
+				case "LOGIC_AND":
+					return logicAnd(requiredTerm(terms, "andand"));
 				case "LITERALS":
 					return literalTokens({
 						float: requiredTerm(terms, "Float"),
@@ -587,4 +590,15 @@ function requiredTerm(terms: Record<string, number>, name: string): number {
 		throw new Error(`the maintained Rust grammar did not export ${name}`);
 	}
 	return term;
+}
+
+function logicAnd(term: number): ExternalTokenizer {
+	return new ExternalTokenizer(
+		(input, stack) => {
+			if (input.next === AND && input.peek(1) === AND && stack.canShift(term)) {
+				input.acceptToken(term, 2);
+			}
+		},
+		{ contextual: true },
+	);
 }

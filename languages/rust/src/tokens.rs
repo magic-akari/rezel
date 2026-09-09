@@ -23,6 +23,7 @@ const QUOTE: u32 = b'"' as u32;
 const PIPE: u32 = b'|' as u32;
 const LESS_THAN: u32 = b'<' as u32;
 const GREATER_THAN: u32 = b'>' as u32;
+const AND: u32 = b'&' as u32;
 const EQUAL: u32 = b'=' as u32;
 
 const FLAGS: TokenizerFlags = TokenizerFlags {
@@ -50,6 +51,27 @@ pub(crate) static CLOSURE_PARAM: ExternalTokenizer =
 pub(crate) static TYPE_PARAMETER_DELIMITERS: ExternalTokenizer =
     ExternalTokenizer::new(scan_type_parameter_delimiters, FLAGS)
         .with_start(TYPE_PARAMETER_DELIMITER_START);
+
+pub(crate) static LOGIC_AND: ExternalTokenizer = ExternalTokenizer::new(
+    scan_logic_and,
+    TokenizerFlags {
+        contextual: true,
+        ..FLAGS
+    },
+)
+.with_start(ExternalTokenizerStart::NONE.with_ascii(b'&'));
+
+fn scan_logic_and(input: &mut InputStream, stack: &Stack) -> Result<(), ParseError> {
+    // In reference contexts, leave each ampersand to the ordinary tokenizer.
+    if current(input) == Some(AND)
+        && input.peek(1) == Some(CodePoint::from(b'&'))
+        && stack.can_shift(terms::andand)
+    {
+        input.advance(2);
+        input.accept_token(terms::andand)?;
+    }
+    Ok(())
+}
 
 fn scan_literals(input: &mut InputStream, _stack: &Stack) -> Result<(), ParseError> {
     match current(input) {
