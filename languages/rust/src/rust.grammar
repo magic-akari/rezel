@@ -45,15 +45,8 @@
 statement[@isGroup=Statement] {
   declarationStatement |
   AttributeItem |
-  AttributeStatement {
-    Attribute+ ExpressionStatement {
-      blockExpression !statement |
-      nonBlockExpression ";"
-    }
-  } |
   ExpressionStatement {
-    blockExpression !statement |
-    nonBlockExpression ";"
+    Attribute* (blockExpression !statement | nonBlockExpression ";")
   }
 }
 

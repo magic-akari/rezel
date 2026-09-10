@@ -223,7 +223,6 @@ pub enum RustKind {
     ScopedUseList,
     UseWildcard,
     ExternCrateDeclaration,
-    AttributeStatement,
     ExpressionStatement,
     RemovedTraitBound,
     ConstTraitBound,
@@ -342,8 +341,8 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             135u16 => RustKind::ArithOp,
             142u16 => RustKind::ArithOp,
             143u16 => RustKind::ArithOp,
-            254u16 => RustKind::ArithOp,
-            258u16 => RustKind::ArithOp,
+            252u16 => RustKind::ArithOp,
+            256u16 => RustKind::ArithOp,
             78u16 => RustKind::MetaPattern,
             79u16 => RustKind::SelfPattern,
             81u16 => RustKind::ScopeIdentifier,
@@ -434,19 +433,19 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             170u16 => RustKind::TupleExpression,
             171u16 => RustKind::MacroInvocation,
             189u16 => RustKind::MacroInvocation,
-            272u16 => RustKind::MacroInvocation,
+            270u16 => RustKind::MacroInvocation,
             172u16 => RustKind::UnitExpression,
             173u16 => RustKind::ClosureExpression,
             174u16 => RustKind::ParamList,
             204u16 => RustKind::ParamList,
             229u16 => RustKind::ParamList,
-            261u16 => RustKind::ParamList,
-            262u16 => RustKind::ParamList,
+            259u16 => RustKind::ParamList,
+            260u16 => RustKind::ParamList,
             175u16 => RustKind::Parameter,
             176u16 => RustKind::Parameter,
             205u16 => RustKind::Parameter,
             230u16 => RustKind::Parameter,
-            263u16 => RustKind::Parameter,
+            261u16 => RustKind::Parameter,
             177u16 => RustKind::ParenthesizedExpression,
             178u16 => RustKind::StructExpression,
             179u16 => RustKind::FieldInitializerList,
@@ -476,7 +475,7 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             206u16 => RustKind::VariadicParameter,
             232u16 => RustKind::VariadicParameter,
             233u16 => RustKind::VariadicParameter,
-            264u16 => RustKind::VariadicParameter,
+            262u16 => RustKind::VariadicParameter,
             207u16 => RustKind::WhereClause,
             208u16 => RustKind::Where,
             209u16 => RustKind::LifetimeClause,
@@ -513,28 +512,26 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             246u16 => RustKind::ScopedUseList,
             247u16 => RustKind::UseWildcard,
             248u16 => RustKind::ExternCrateDeclaration,
-            250u16 => RustKind::AttributeStatement,
+            250u16 => RustKind::ExpressionStatement,
             251u16 => RustKind::ExpressionStatement,
-            252u16 => RustKind::ExpressionStatement,
-            253u16 => RustKind::ExpressionStatement,
-            255u16 => RustKind::RemovedTraitBound,
-            256u16 => RustKind::ConstTraitBound,
-            257u16 => RustKind::NegativeConstArgument,
-            259u16 => RustKind::FunctionType,
-            260u16 => RustKind::ForLifetimes,
-            265u16 => RustKind::ParenthesizedTraitBound,
-            266u16 => RustKind::InferredType,
-            267u16 => RustKind::ReferenceType,
-            268u16 => RustKind::PointerType,
-            269u16 => RustKind::TupleType,
-            270u16 => RustKind::UnitType,
-            271u16 => RustKind::ArrayType,
-            273u16 => RustKind::EmptyType,
-            274u16 => RustKind::DynamicType,
-            275u16 => RustKind::Dyn,
-            276u16 => RustKind::BoundedType,
-            277u16 => RustKind::UseBound,
-            278u16 => RustKind::UnsafeAttribute,
+            253u16 => RustKind::RemovedTraitBound,
+            254u16 => RustKind::ConstTraitBound,
+            255u16 => RustKind::NegativeConstArgument,
+            257u16 => RustKind::FunctionType,
+            258u16 => RustKind::ForLifetimes,
+            263u16 => RustKind::ParenthesizedTraitBound,
+            264u16 => RustKind::InferredType,
+            265u16 => RustKind::ReferenceType,
+            266u16 => RustKind::PointerType,
+            267u16 => RustKind::TupleType,
+            268u16 => RustKind::UnitType,
+            269u16 => RustKind::ArrayType,
+            271u16 => RustKind::EmptyType,
+            272u16 => RustKind::DynamicType,
+            273u16 => RustKind::Dyn,
+            274u16 => RustKind::BoundedType,
+            275u16 => RustKind::UseBound,
+            276u16 => RustKind::UnsafeAttribute,
             _ => return None,
         };
         Some(kind)
@@ -5444,45 +5441,6 @@ impl RustAttributeItem {
     }
 }
 #[derive(Clone, Debug)]
-pub struct RustAttributeStatement {
-    syntax: rezel_common::SyntaxNode,
-}
-impl rezel_common::TypedNode for RustAttributeStatement {
-    type Language = RustLanguage;
-    fn downcast_from(
-        node: rezel_common::SyntaxNode,
-    ) -> Result<Self, rezel_common::SyntaxNode> {
-        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
-        if kind == Some(RustKind::AttributeStatement) {
-            Ok(Self { syntax: node })
-        } else {
-            Err(node)
-        }
-    }
-    fn syntax(&self) -> &rezel_common::SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> rezel_common::SyntaxNode {
-        self.syntax
-    }
-}
-impl RustAttributeStatement {
-    #[must_use]
-    pub fn attributes(&self) -> rezel_common::TypedChildren<RustAttribute> {
-        rezel_common::TypedChildren::new(self.syntax.children())
-    }
-    #[must_use]
-    pub fn expression_statement(&self) -> Option<RustExpressionStatement> {
-        self.syntax
-            .children()
-            .filter_map(|node| {
-                <RustExpressionStatement as rezel_common::TypedNode>::downcast_from(node)
-                    .ok()
-            })
-            .nth(0)
-    }
-}
-#[derive(Clone, Debug)]
 pub struct RustEmptyStatement {
     syntax: rezel_common::SyntaxNode,
 }
@@ -5541,6 +5499,10 @@ impl rezel_common::TypedNode for RustExpressionStatement {
     }
 }
 impl RustExpressionStatement {
+    #[must_use]
+    pub fn attributes(&self) -> rezel_common::TypedChildren<RustAttribute> {
+        rezel_common::TypedChildren::new(self.syntax.children())
+    }
     #[must_use]
     pub fn expression(&self) -> Option<RustExpression> {
         self.syntax
@@ -10290,7 +10252,6 @@ impl rezel_common::TypedNode for RustDeclaration {
 pub enum RustStatement {
     Declaration(RustDeclarationStatement),
     AttributedItem(RustAttributeItem),
-    AttributedExpression(RustAttributeStatement),
     Expression(RustExpressionStatement),
 }
 impl rezel_common::TypedNode for RustStatement {
@@ -10332,13 +10293,6 @@ impl rezel_common::TypedNode for RustStatement {
                     .expect("kind was checked before generated downcast");
                 Ok(Self::AttributedItem(typed))
             }
-            Some(RustKind::AttributeStatement) => {
-                let typed = <RustAttributeStatement as rezel_common::TypedNode>::downcast_from(
-                        node,
-                    )
-                    .expect("kind was checked before generated downcast");
-                Ok(Self::AttributedExpression(typed))
-            }
             Some(RustKind::ExpressionStatement) => {
                 let typed = <RustExpressionStatement as rezel_common::TypedNode>::downcast_from(
                         node,
@@ -10353,7 +10307,6 @@ impl rezel_common::TypedNode for RustStatement {
         match self {
             Self::Declaration(node) => rezel_common::TypedNode::syntax(node),
             Self::AttributedItem(node) => rezel_common::TypedNode::syntax(node),
-            Self::AttributedExpression(node) => rezel_common::TypedNode::syntax(node),
             Self::Expression(node) => rezel_common::TypedNode::syntax(node),
         }
     }
@@ -10361,9 +10314,6 @@ impl rezel_common::TypedNode for RustStatement {
         match self {
             Self::Declaration(node) => rezel_common::TypedNode::into_syntax(node),
             Self::AttributedItem(node) => rezel_common::TypedNode::into_syntax(node),
-            Self::AttributedExpression(node) => {
-                rezel_common::TypedNode::into_syntax(node)
-            }
             Self::Expression(node) => rezel_common::TypedNode::into_syntax(node),
         }
     }

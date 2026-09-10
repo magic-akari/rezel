@@ -1850,22 +1850,6 @@ cardinality = "one"
 selector = { union = "RustDeclarationStatement" }
 
 [[node]]
-name = "RustAttributeStatement"
-kind = "AttributeStatement"
-
-[[node.field]]
-name = "attributes"
-type = "RustAttribute"
-cardinality = "many"
-selector = { node = "Attribute" }
-
-[[node.field]]
-name = "expression_statement"
-type = "RustExpressionStatement"
-cardinality = "one"
-selector = { node = "ExpressionStatement" }
-
-[[node]]
 name = "RustEmptyStatement"
 kind = "EmptyStatement"
 
@@ -1877,6 +1861,12 @@ selector = { token = ";" }
 [[node]]
 name = "RustExpressionStatement"
 kind = "ExpressionStatement"
+
+[[node.field]]
+name = "attributes"
+type = "RustAttribute"
+cardinality = "many"
+selector = { node = "Attribute" }
 
 [[node.field]]
 name = "expression"
@@ -2955,7 +2945,6 @@ name = "RustStatement"
 variants = [
 	{ name = "Declaration", type = "RustDeclarationStatement" },
 	{ name = "AttributedItem", type = "RustAttributeItem" },
-	{ name = "AttributedExpression", type = "RustAttributeStatement" },
 	{ name = "Expression", type = "RustExpressionStatement" },
 ]
 
