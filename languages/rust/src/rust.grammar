@@ -478,10 +478,10 @@ nonBlockExpression {
   } |
   TryExpression { expression !try "?" } |
   BinaryExpression |
-  UnderscoreAssignmentExpression[@name=AssignmentExpression] {
-    kw<"_"> !assign "=" expression
+  AssignmentExpression {
+    kw<"_"> !assign "=" expression |
+    expression !assign ("=" | UpdateOp) expression
   } |
-  AssignmentExpression { expression !assign ("=" | UpdateOp) expression } |
   TypeCastExpression { expression !cast kw<"as"> type } |
   ReturnExpression { kw<"return"> (!return expression)? } |
   RangeExpression { expression? !range (".." | "..." | "..=") expression? } |
