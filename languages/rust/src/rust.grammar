@@ -347,16 +347,11 @@ TypeParamList {
 }
 
 ConstParameter {
-  kw<"const"> BoundIdentifier ":" type ("=" constArgument)?
+  kw<"const"> BoundIdentifier ":" type ("=" constParameterDefault)?
 }
 
-constArgument {
-  Block |
-  kw<"const"> Block |
-  InferredConst |
-  literal |
-  ArithOp { "-" } (Integer | Float) |
-  pathIdent<Identifier> ~path
+constParameterDefault {
+  Block | Identifier | ArithOp { "-" }? literal
 }
 
 InferredConst { kw<"_"> }
