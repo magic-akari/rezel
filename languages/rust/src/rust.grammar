@@ -123,8 +123,7 @@ declarationStatement {
     Vis? kw<"extern"> kw<"crate">
     (
       BoundIdentifier |
-      (Identifier | kw<"self">) kw<"as"> (BoundIdentifier | kw<"_">) |
-      kw<"self">
+      (Identifier | kw<"self">) kw<"as"> (BoundIdentifier | kw<"_">)
     ) ";"
   } |
   StaticItem {
