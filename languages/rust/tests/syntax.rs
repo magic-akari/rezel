@@ -169,6 +169,9 @@ where
 }
 
 fn abstracted(value: impl [const] First + [const] Second) {}
+fn parenthesized<T: ([const] First) + (~const Second)>() {}
+fn parenthesized_abstract(value: impl ([const] First) + ([const] Second)) {}
+trait Alias = (First) + (Second);
 
 unsafe impl<T> const First for &T
 where

@@ -1,11 +1,12 @@
 #![forbid(unsafe_code)]
 
 use rezel_lang_rust::{
-    RustAssignmentOperand, RustBinaryOperator, RustCondition, RustDeclaration,
-    RustDeclarationStatement, RustDelimitedTokenTree, RustExpression, RustFieldList,
-    RustFunctionItem, RustFunctionName, RustFunctionParameter, RustGenericArgument, RustLiteral,
-    RustPath, RustPathComponent, RustPattern, RustPrefixOperator, RustSourceFile, RustStatement,
-    RustTokenTreeElement, RustType, RustTypeParameter, RustUseTree, TypedNode,
+    RustAssignmentOperand, RustBinaryOperator, RustBoundedTypeElement, RustCondition,
+    RustDeclaration, RustDeclarationStatement, RustDelimitedTokenTree, RustExpression,
+    RustFieldList, RustFunctionItem, RustFunctionName, RustFunctionParameter, RustGenericArgument,
+    RustLiteral, RustPath, RustPathComponent, RustPattern, RustPrefixOperator, RustSourceFile,
+    RustStatement, RustTokenTreeElement, RustTraitBound, RustType, RustTypeBound,
+    RustTypeParameter, RustUseTree, TypedNode,
 };
 
 fn syntax_text<'source>(node: &rezel_common::SyntaxNode, source: &'source str) -> &'source str {
@@ -29,6 +30,21 @@ fn parse_function(source: &str) -> RustFunctionItem {
             Some(function)
         })
         .expect("expected a function declaration")
+}
+
+fn parse_alias_type(source: &str, strict: bool) -> RustType {
+    let tree = rezel_lang_rust::parser()
+        .with_strict(strict)
+        .parse(source)
+        .unwrap();
+    let file = RustSourceFile::downcast_from(tree.top_node()).unwrap();
+    let Some(RustStatement::Declaration(RustDeclarationStatement::Item(RustDeclaration::Type(
+        alias,
+    )))) = file.statements().next()
+    else {
+        panic!("expected a type alias");
+    };
+    alias.ty().unwrap()
 }
 
 #[test]
@@ -221,6 +237,62 @@ pub macro identity($value:expr) { $value }
     assert_eq!(declaration.name().unwrap().text(source), Some("identity"));
     assert!(declaration.arguments().is_some());
     assert_eq!(declaration.body().unwrap().text(source), Some("{ $value }"));
+}
+
+#[test]
+fn parenthesized_bounds_preserve_trait_and_modifier_roles() {
+    let source = "fn f<T: (Copy) + (?Sized)>() {}";
+    let function = parse_function(source);
+    let Some(RustTypeParameter::Constrained(parameter)) =
+        function.type_parameters().unwrap().parameters().next()
+    else {
+        panic!("expected a constrained parameter")
+    };
+    let bounds = parameter.bounds().unwrap();
+    let mut bounds = bounds.bounds();
+    let Some(RustTypeBound::Trait(RustTraitBound::Parenthesized(first))) = bounds.next() else {
+        panic!("expected a parenthesized trait bound")
+    };
+    let Some(RustTraitBound::Path(path)) = first.bound() else {
+        panic!("expected the Copy path")
+    };
+    assert_eq!(path.text(source), Some("Copy"));
+    let Some(RustTypeBound::Trait(RustTraitBound::Parenthesized(second))) = bounds.next() else {
+        panic!("expected a parenthesized relaxed bound")
+    };
+    let Some(RustTraitBound::Removed(removed)) = second.bound() else {
+        panic!("expected the question-mark modifier")
+    };
+    let Some(RustTraitBound::Path(path)) = removed.bound() else {
+        panic!("expected the Sized path")
+    };
+    assert_eq!(path.text(source), Some("Sized"));
+    assert!(bounds.next().is_none());
+}
+
+#[test]
+fn bounded_types_expose_parenthesized_following_bounds() {
+    for prefix in ["dyn", "impl"] {
+        let source = format!("type F = {prefix} (Send) + (Sync);");
+        let RustType::Bounded(bounded) = parse_alias_type(&source, true) else {
+            panic!("expected a bounded type")
+        };
+        let mut elements = bounded.elements();
+        let bound = match elements.next().unwrap() {
+            RustBoundedTypeElement::Type(RustType::Dynamic(ty)) => ty.bound(),
+            RustBoundedTypeElement::Type(RustType::Abstract(ty)) => ty.bound(),
+            _ => panic!("expected the initial dyn or impl type"),
+        };
+        let Some(RustTraitBound::Parenthesized(first)) = bound else {
+            panic!("expected the first parenthesized trait bound")
+        };
+        assert_eq!(first.bound().unwrap().text(&source), Some("Send"));
+        let Some(RustBoundedTypeElement::Parenthesized(second)) = elements.next() else {
+            panic!("expected the following parenthesized trait bound")
+        };
+        assert_eq!(second.bound().unwrap().text(&source), Some("Sync"));
+        assert!(elements.next().is_none());
+    }
 }
 
 #[test]

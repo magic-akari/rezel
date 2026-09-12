@@ -21,6 +21,11 @@
 			"source": "#![allow(dead_code)]\n\nunsafe extern \"C\" {\n    pub safe fn safe_foreign(value: i32) -> i32;\n    pub unsafe fn unsafe_foreign(value: *const u8) -> usize;\n    pub fn implicit_unsafe();\n    pub unsafe fn variadic(format: *const u8, args: ...);\n\n    pub safe static READ_ONLY: i32;\n    pub unsafe static EXPLICIT_UNSAFE: i32;\n    pub static mut MUTABLE: i32;\n}\n\nfn raw_borrows(value: &mut i32) -> (*const i32, *mut i32) {\n    let shared = &raw const *value;\n    let mutable = &raw mut *value;\n    let _nested = &&raw const *value;\n    (shared, mutable)\n}\n\nfn precise<'a, 'b, T, const N: usize>(\n    value: &'a T,\n    bytes: [u8; N],\n) -> impl Sized + use<'a, T, N,> {\n    (value, bytes)\n}\n\nfn capture_none() -> impl Sized + use<> {\n    ()\n}\n\nfn weak_keywords() {\n    let raw = 1;\n    let safe = 2;\n    let _ = (&raw, &safe);\n}\n"
 		},
 		{
+			"id": "ParenthesizedBounds",
+			"sourceName": "ParenthesizedBounds.rs",
+			"source": "#![allow(dead_code)]\n\nfn generic<T: (?Sized) + (Send)>() {}\n\nfn predicate<T>()\nwhere\n    T: (?Sized) + (Send),\n{\n}\n\ntrait Associated: (Send) {\n    type Value: (?Sized) + (Send);\n}\n\nfn higher_ranked<T: (for<'a> Fn(&'a u8))>() {}\n\nfn higher_ranked_subject<T>()\nwhere\n    for<'a> &'a T: IntoIterator,\n{\n}\n\ntype Object = dyn (Send) + (Sync);\ntype Callback = dyn Send + (for<'a> Fn(&'a u8));\nfn associated_constraint<T: Iterator<Item: (Copy)>>() {}\n\nfn opaque() -> impl (Copy) + (Send) {\n    0u8\n}\n"
+		},
+		{
 			"id": "SourceInput",
 			"sourceName": "SourceInput.rs",
 			"source": "﻿#!/usr/bin/env rustx\n#![allow(dead_code)]\n\npub fn source_input() {}\n"

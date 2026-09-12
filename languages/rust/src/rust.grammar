@@ -105,7 +105,7 @@ declarationStatement {
     Vis? traitHeader TypeIdentifier TypeParamList?
     (
       TraitBounds? WhereClause? DeclarationList |
-      "=" plusSep<type | Lifetime | HigherRankedTraitBound | RemovedTraitBound | ConstTraitBound>
+      "=" plusSep<traitBound | Lifetime>
       WhereClause? ";"
     )
   } |
@@ -305,7 +305,7 @@ LifetimeClause { Lifetime ":" plusSep<Lifetime> }
 TypeBoundClause { (HigherRankedTraitBound | type) TraitBounds }
 
 TraitBounds {
-  ":" plusSep<type | Lifetime | HigherRankedTraitBound | RemovedTraitBound | ConstTraitBound>
+  ":" plusSep<traitBound | Lifetime>
 }
 
 HigherRankedTraitBound {
@@ -325,6 +325,8 @@ traitBound {
   GenericType |
   FunctionType |
   HigherRankedTraitBound |
+  RemovedTraitBound |
+  ConstTraitBound |
   ParenthesizedTraitBound
 }
 
@@ -398,7 +400,7 @@ Vis {
 }
 
 type[@isGroup=Type] {
-  AbstractType { kw<"impl"> (traitBound | ConstTraitBound) } |
+  AbstractType { kw<"impl"> traitBound } |
   InferredType { kw<"_"> } |
   ReferenceType { "&" Lifetime? kw<"mut">? type } |
   PointerType { "*" (kw<"const"> | kw<"mut">) type } |
@@ -410,10 +412,10 @@ type[@isGroup=Type] {
   FunctionType |
   MacroInvocation { TypePath !macro "!" delimitedTokenTree } |
   EmptyType { "!" } |
-  DynamicType { kw<"dyn"> (traitBound | ConstTraitBound) } |
+  DynamicType { kw<"dyn"> traitBound } |
   BoundedType {
     Lifetime !bound "+" type |
-    type !bound "+" (type | Lifetime | UseBound | ConstTraitBound | RemovedTraitBound)
+    type !bound "+" (traitBound | Lifetime | UseBound)
   }
 }
 

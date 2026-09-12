@@ -572,9 +572,9 @@ kind = "RemovedTraitBound"
 
 [[node.field]]
 name = "bound"
-type = "RustTraitBoundCore"
+type = "RustTraitBound"
 cardinality = "one"
-selector = { union = "RustTraitBoundCore" }
+selector = { union = "RustTraitBound" }
 
 [[node]]
 name = "RustConstTraitBound"
@@ -582,9 +582,9 @@ kind = "ConstTraitBound"
 
 [[node.field]]
 name = "bound"
-type = "RustTraitBoundCore"
+type = "RustTraitBound"
 cardinality = "one"
-selector = { union = "RustTraitBoundCore" }
+selector = { union = "RustTraitBound" }
 
 [[node]]
 name = "RustParenthesizedTraitBound"
@@ -592,9 +592,9 @@ kind = "ParenthesizedTraitBound"
 
 [[node.field]]
 name = "bound"
-type = "RustTraitBoundCore"
+type = "RustTraitBound"
 cardinality = "one"
-selector = { union = "RustTraitBoundCore" }
+selector = { union = "RustTraitBound" }
 
 [[node]]
 name = "RustForLifetimes"
@@ -646,9 +646,9 @@ kind = "AbstractType"
 
 [[node.field]]
 name = "bound"
-type = "RustApplicableTraitBound"
+type = "RustTraitBound"
 cardinality = "one"
-selector = { union = "RustApplicableTraitBound" }
+selector = { union = "RustTraitBound" }
 
 [[node]]
 name = "RustFunctionType"
@@ -770,9 +770,9 @@ kind = "DynamicType"
 
 [[node.field]]
 name = "bound"
-type = "RustApplicableTraitBound"
+type = "RustTraitBound"
 cardinality = "one"
-selector = { union = "RustApplicableTraitBound" }
+selector = { union = "RustTraitBound" }
 
 [[node]]
 name = "RustBoundedType"
@@ -2567,13 +2567,22 @@ variants = [
 ]
 
 [[union]]
+name = "RustTraitBound"
+variants = [
+    { name = "Path", type = "RustTypePath" },
+    { name = "Generic", type = "RustGenericType" },
+    { name = "Function", type = "RustFunctionType" },
+    { name = "HigherRanked", type = "RustHigherRankedTraitBound" },
+    { name = "Removed", type = "RustRemovedTraitBound" },
+    { name = "Const", type = "RustConstTraitBound" },
+    { name = "Parenthesized", type = "RustParenthesizedTraitBound" },
+]
+
+[[union]]
 name = "RustTypeBound"
 variants = [
-	{ name = "Type", type = "RustType" },
-	{ name = "Lifetime", type = "RustLifetime" },
-	{ name = "HigherRanked", type = "RustHigherRankedTraitBound" },
-	{ name = "Removed", type = "RustRemovedTraitBound" },
-	{ name = "Const", type = "RustConstTraitBound" },
+    { name = "Trait", type = "RustTraitBound" },
+    { name = "Lifetime", type = "RustLifetime" },
 ]
 
 [[union]]
@@ -2616,28 +2625,15 @@ variants = [
 ]
 
 [[union]]
-name = "RustTraitBoundCore"
-variants = [
-	{ name = "Type", type = "RustType" },
-	{ name = "HigherRanked", type = "RustHigherRankedTraitBound" },
-	{ name = "Parenthesized", type = "RustParenthesizedTraitBound" },
-]
-
-[[union]]
 name = "RustBoundedTypeElement"
 variants = [
 	{ name = "Type", type = "RustType" },
 	{ name = "Lifetime", type = "RustLifetime" },
+	{ name = "HigherRanked", type = "RustHigherRankedTraitBound" },
+	{ name = "Parenthesized", type = "RustParenthesizedTraitBound" },
 	{ name = "Use", type = "RustUseBound" },
 	{ name = "Const", type = "RustConstTraitBound" },
 	{ name = "Removed", type = "RustRemovedTraitBound" },
-]
-
-[[union]]
-name = "RustApplicableTraitBound"
-variants = [
-	{ name = "Trait", type = "RustTraitBoundCore" },
-	{ name = "Const", type = "RustConstTraitBound" },
 ]
 
 [[union]]
