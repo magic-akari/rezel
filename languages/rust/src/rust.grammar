@@ -680,7 +680,7 @@ pattern[@isGroup=Pattern] {
   MutPattern { kw<"mut"> !unary pattern } |
   RangePattern {
     (literalPattern | path) (".." | "..." | "..=") (literalPattern | path) |
-    (".." | "..." | "..=") (literalPattern | path)
+    (".." | "..=") (literalPattern | path)
   } |
   OrPattern { pattern !or "|" pattern } |
   MacroPattern { macroInvocation } |
