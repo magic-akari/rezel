@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/rust/src/rust.grammar",
-				"sha256": "42fc014d97393c08e43e6c114103c3db3ea95e8a62f1e4f60345fb8da3e2b524"
+				"sha256": "10a7b42bd1f7c99c355580b2bce6f55e401a30082d2042a2e845da66a2a6aee3"
 			}
 		}
 	},
@@ -6139,7 +6139,7 @@
 														"to": 227
 													},
 													{
-														"name": "VariadicParameter",
+														"name": "Parameter",
 														"from": 228,
 														"to": 237,
 														"children": [

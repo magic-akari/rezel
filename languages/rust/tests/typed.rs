@@ -124,6 +124,44 @@ struct Marker;
 }
 
 #[test]
+fn named_variadics_share_function_and_pointer_parameter_accessors() {
+    for name in ["args", "_"] {
+        let source = format!(
+            "unsafe extern \"C\" fn f(callback: unsafe extern \"C\" fn(i32, {name}: ...), {name}: ...) {{}}"
+        );
+        let function = parse_function(&source);
+        let parameters = function.parameters().unwrap();
+        let Some(RustFunctionParameter::Parameter(callback)) = parameters.parameters().next()
+        else {
+            panic!("expected a callback parameter");
+        };
+        assert!(callback.ellipsis_token().is_none());
+        let Some(RustType::Function(pointer)) = callback.ty() else {
+            panic!("expected a function pointer");
+        };
+        for list in [parameters, pointer.parameters().unwrap()] {
+            let Some(RustFunctionParameter::Parameter(variadic)) = list.parameters().nth(1) else {
+                panic!("expected a named variadic parameter");
+            };
+            assert_eq!(variadic.pattern().unwrap().text(&source), Some(name));
+            assert!(variadic.ty().is_none());
+            assert_eq!(
+                syntax_text(&variadic.ellipsis_token().unwrap(), &source),
+                "..."
+            );
+        }
+    }
+
+    let function = parse_function("unsafe extern \"C\" fn f(x: i32, ...) {}");
+    let Some(RustFunctionParameter::Variadic(variadic)) =
+        function.parameters().unwrap().parameters().nth(1)
+    else {
+        panic!("expected an unnamed variadic parameter");
+    };
+    assert!(variadic.ellipsis_token().is_some());
+}
+
+#[test]
 fn typed_downcasts_reject_the_wrong_kind() {
     let source = "fn main() {}\n";
     let tree = rezel_lang_rust::parser()

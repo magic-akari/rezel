@@ -2004,6 +2004,11 @@ name = "RustParameter"
 kind = "Parameter"
 
 [[node.field]]
+name = "ellipsis_token"
+cardinality = "optional"
+selector = { token = "..." }
+
+[[node.field]]
 name = "pattern"
 type = "RustPattern"
 cardinality = "optional"
@@ -2030,10 +2035,9 @@ name = "RustVariadicParameter"
 kind = "VariadicParameter"
 
 [[node.field]]
-name = "name"
-type = "RustBoundIdentifier"
-cardinality = "optional"
-selector = { node = "BoundIdentifier" }
+name = "ellipsis_token"
+cardinality = "one"
+selector = { token = "..." }
 
 [[node]]
 name = "RustStaticItem"

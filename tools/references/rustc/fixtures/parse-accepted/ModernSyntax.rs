@@ -5,6 +5,7 @@ unsafe extern "C" {
     pub unsafe fn unsafe_foreign(value: *const u8) -> usize;
     pub fn implicit_unsafe();
     pub unsafe fn variadic(format: *const u8, args: ...);
+    pub unsafe fn variadic_ignored(format: *const u8, _: ...);
 
     pub safe static READ_ONLY: i32;
     pub unsafe static EXPLICIT_UNSAFE: i32;

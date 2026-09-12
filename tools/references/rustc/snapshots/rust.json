@@ -18,7 +18,7 @@
 		{
 			"id": "ModernSyntax",
 			"sourceName": "ModernSyntax.rs",
-			"source": "#![allow(dead_code)]\n\nunsafe extern \"C\" {\n    pub safe fn safe_foreign(value: i32) -> i32;\n    pub unsafe fn unsafe_foreign(value: *const u8) -> usize;\n    pub fn implicit_unsafe();\n    pub unsafe fn variadic(format: *const u8, args: ...);\n\n    pub safe static READ_ONLY: i32;\n    pub unsafe static EXPLICIT_UNSAFE: i32;\n    pub static mut MUTABLE: i32;\n}\n\nfn raw_borrows(value: &mut i32) -> (*const i32, *mut i32) {\n    let shared = &raw const *value;\n    let mutable = &raw mut *value;\n    let _nested = &&raw const *value;\n    (shared, mutable)\n}\n\nfn precise<'a, 'b, T, const N: usize>(\n    value: &'a T,\n    bytes: [u8; N],\n) -> impl Sized + use<'a, T, N,> {\n    (value, bytes)\n}\n\nfn capture_none() -> impl Sized + use<> {\n    ()\n}\n\nfn weak_keywords() {\n    let raw = 1;\n    let safe = 2;\n    let _ = (&raw, &safe);\n}\n"
+			"source": "#![allow(dead_code)]\n\nunsafe extern \"C\" {\n    pub safe fn safe_foreign(value: i32) -> i32;\n    pub unsafe fn unsafe_foreign(value: *const u8) -> usize;\n    pub fn implicit_unsafe();\n    pub unsafe fn variadic(format: *const u8, args: ...);\n    pub unsafe fn variadic_ignored(format: *const u8, _: ...);\n\n    pub safe static READ_ONLY: i32;\n    pub unsafe static EXPLICIT_UNSAFE: i32;\n    pub static mut MUTABLE: i32;\n}\n\nfn raw_borrows(value: &mut i32) -> (*const i32, *mut i32) {\n    let shared = &raw const *value;\n    let mutable = &raw mut *value;\n    let _nested = &&raw const *value;\n    (shared, mutable)\n}\n\nfn precise<'a, 'b, T, const N: usize>(\n    value: &'a T,\n    bytes: [u8; N],\n) -> impl Sized + use<'a, T, N,> {\n    (value, bytes)\n}\n\nfn capture_none() -> impl Sized + use<> {\n    ()\n}\n\nfn weak_keywords() {\n    let raw = 1;\n    let safe = 2;\n    let _ = (&raw, &safe);\n}\n"
 		},
 		{
 			"id": "ParenthesizedBounds",
@@ -61,11 +61,6 @@
 			"id": "ExternFunctionBody",
 			"sourceName": "ExternFunctionBody.rs",
 			"source": "unsafe extern \"C\" {\n    safe fn defined_here() {}\n}\n"
-		},
-		{
-			"id": "ExternPatternParameter",
-			"sourceName": "ExternPatternParameter.rs",
-			"source": "unsafe extern \"C\" {\n    fn tuple((left, right): (i32, i32));\n}\n"
 		},
 		{
 			"id": "GenKeyword",

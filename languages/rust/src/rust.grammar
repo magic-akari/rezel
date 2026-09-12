@@ -256,7 +256,7 @@ foreignDeclaration {
   MacroInvocationSemi |
   FunctionItem {
     Vis? (wkw<"safe"> | kw<"unsafe">)? kw<"fn">
-    BoundIdentifier TypeParamList? ForeignParamList ("->" type)?
+    BoundIdentifier TypeParamList? ParamList ("->" type)?
     WhereClause? ";"
   } |
   StaticItem {
@@ -266,18 +266,6 @@ foreignDeclaration {
   ForeignTypeItem {
     Vis? kw<"type"> TypeIdentifier ";"
   }
-}
-
-ForeignParamList[@name=ParamList] {
-  "(" commaSep<Attribute* (ForeignParameter | ForeignVariadicParameter)> ")"
-}
-
-ForeignParameter[@name=Parameter] {
-  (BoundIdentifier | kw<"_">) ":" type
-}
-
-ForeignVariadicParameter[@name=VariadicParameter] {
-  (BoundIdentifier ":")? "..."
 }
 
 EnumVariant {
@@ -379,15 +367,17 @@ UseList {
 }
 
 ParamList {
-  "(" commaSep<Attribute* (Parameter | SelfParameter | VariadicParameter { "..." } | kw<"_">)> ")"
+  "(" commaSep<Attribute* (Parameter | SelfParameter | VariadicParameter | kw<"_">)> ")"
 }
+
+VariadicParameter { "..." }
 
 SelfParameter {
   "&"? Lifetime? (!mut kw<"mut">)? !selfParam kw<"self">
 }
 
 Parameter {
-  (!mut kw<"mut">)? pattern ":" type
+  (!mut kw<"mut">)? pattern ":" (type | "...")
 }
 
 externModifier {
@@ -437,16 +427,12 @@ FunctionTraitParamList[@name=ParamList] {
 }
 
 BareFunctionParamList[@name=ParamList] {
-  "(" commaSep<Attribute* (BareFunctionParameter | BareFunctionVariadicParameter)> ")"
+  "(" commaSep<Attribute* (BareFunctionParameter | VariadicParameter)> ")"
 }
 
 BareFunctionParameter[@name=Parameter] {
-  (BoundIdentifier | kw<"_">) ":" type |
-  type
-}
-
-BareFunctionVariadicParameter[@name=VariadicParameter] {
-  ((BoundIdentifier | kw<"_">) ":")? "..."
+  ((BoundIdentifier | kw<"_">) ":")? type |
+  (BoundIdentifier | kw<"_">) ":" "..."
 }
 
 GenericType {
