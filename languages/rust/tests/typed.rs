@@ -4,9 +4,9 @@ use rezel_lang_rust::{
     RustAssignmentOperand, RustBinaryOperator, RustBoundedTypeElement, RustCondition,
     RustDeclaration, RustDeclarationListItem, RustDeclarationStatement, RustDelimitedTokenTree,
     RustExpression, RustFieldList, RustFunctionItem, RustFunctionName, RustFunctionParameter,
-    RustGenericArgument, RustLiteral, RustPath, RustPathComponent, RustPattern, RustPrefixOperator,
-    RustSourceFile, RustStatement, RustTokenTreeElement, RustTraitBound, RustType, RustTypeBound,
-    RustTypeParameter, RustUseTree, TypedNode,
+    RustFunctionType, RustGenericArgument, RustLiteral, RustPath, RustPathComponent, RustPattern,
+    RustPrefixOperator, RustSourceFile, RustStatement, RustTokenTreeElement, RustTraitBound,
+    RustType, RustTypeBound, RustTypeParameter, RustUseTree, TypedNode,
 };
 
 fn syntax_text<'source>(node: &rezel_common::SyntaxNode, source: &'source str) -> &'source str {
@@ -45,6 +45,19 @@ fn parse_alias_type(source: &str, strict: bool) -> RustType {
         panic!("expected a type alias");
     };
     alias.ty().unwrap()
+}
+
+fn parse_function_type(source: &str, strict: bool) -> RustFunctionType {
+    match parse_alias_type(source, strict) {
+        RustType::Function(function) => function,
+        RustType::Dynamic(dynamic) => {
+            let Some(RustTraitBound::Function(function)) = dynamic.bound() else {
+                panic!("expected a function trait");
+            };
+            function
+        }
+        _ => panic!("expected a function pointer or trait object"),
+    }
 }
 
 #[test]
@@ -333,6 +346,32 @@ pub macro identity($value:expr) { $value }
     assert_eq!(declaration.name().unwrap().text(source), Some("identity"));
     assert!(declaration.arguments().is_some());
     assert_eq!(declaration.body().unwrap().text(source), Some("{ $value }"));
+}
+
+#[test]
+fn function_trait_parameters_are_navigable_as_parameters() {
+    for (signature, expected) in [
+        ("Fn()", vec![]),
+        ("FnMut(u8, u16) -> bool", vec!["u8", "u16"]),
+        ("FnOnce((u8, u16))", vec!["(u8, u16)"]),
+    ] {
+        let source = format!("type F = dyn {signature};");
+        let function = parse_function_type(&source, true);
+        let actual = function
+            .parameters()
+            .unwrap()
+            .parameters()
+            .map(|parameter| {
+                let RustFunctionParameter::Parameter(parameter) = parameter else {
+                    panic!("expected a type-only parameter");
+                };
+                assert!(parameter.pattern().is_none());
+                assert!(parameter.ellipsis_token().is_none());
+                parameter.ty().unwrap().text(&source).unwrap().to_owned()
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(actual, expected, "{signature}");
+    }
 }
 
 #[test]

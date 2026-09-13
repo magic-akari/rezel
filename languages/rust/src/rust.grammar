@@ -425,7 +425,7 @@ FunctionType {
 }
 
 FunctionTraitParamList[@name=ParamList] {
-  "(" commaSep<type> ")"
+  "(" commaSep<Parameter { type }> ")"
 }
 
 BareFunctionParamList[@name=ParamList] {
