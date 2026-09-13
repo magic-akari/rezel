@@ -241,7 +241,6 @@ pub enum RustKind {
     Dyn,
     BoundedType,
     UseBound,
-    UnsafeAttribute,
 }
 #[derive(Clone, Copy, Debug)]
 pub enum RustLanguage {}
@@ -526,7 +525,6 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             268u16 => RustKind::Dyn,
             269u16 => RustKind::BoundedType,
             270u16 => RustKind::UseBound,
-            271u16 => RustKind::UnsafeAttribute,
             _ => return None,
         };
         Some(kind)
@@ -779,47 +777,12 @@ impl RustMetaItem {
             .nth(0)
     }
     #[must_use]
-    pub fn unsafe_attribute(&self) -> Option<RustUnsafeAttribute> {
+    pub fn unsafe_token(&self) -> Option<rezel_common::SyntaxNode> {
         self.syntax
             .children()
-            .filter_map(|node| {
-                <RustUnsafeAttribute as rezel_common::TypedNode>::downcast_from(node)
-                    .ok()
-            })
-            .nth(0)
-    }
-}
-#[derive(Clone, Debug)]
-pub struct RustUnsafeAttribute {
-    syntax: rezel_common::SyntaxNode,
-}
-impl rezel_common::TypedNode for RustUnsafeAttribute {
-    type Language = RustLanguage;
-    fn downcast_from(
-        node: rezel_common::SyntaxNode,
-    ) -> Result<Self, rezel_common::SyntaxNode> {
-        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
-        if kind == Some(RustKind::UnsafeAttribute) {
-            Ok(Self { syntax: node })
-        } else {
-            Err(node)
-        }
-    }
-    fn syntax(&self) -> &rezel_common::SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> rezel_common::SyntaxNode {
-        self.syntax
-    }
-}
-impl RustUnsafeAttribute {
-    #[must_use]
-    pub fn arguments(&self) -> Option<RustParenthesizedTokens> {
-        self.syntax
-            .children()
-            .filter_map(|node| {
-                <RustParenthesizedTokens as rezel_common::TypedNode>::downcast_from(node)
-                    .ok()
+            .filter(|node| {
+                <RustLanguage as rezel_common::SyntaxLanguage>::kind(node)
+                    == Some(RustKind::Unsafe)
             })
             .nth(0)
     }

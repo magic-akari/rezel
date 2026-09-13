@@ -241,7 +241,7 @@ InnerAttribute {
 
 MetaItem {
   path ("=" expression | delimitedTokenTree)? |
-  UnsafeAttribute { kw<"unsafe"> ParenthesizedTokens }
+  kw<"unsafe"> ParenthesizedTokens
 }
 
 DeclarationList {

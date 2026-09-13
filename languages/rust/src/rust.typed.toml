@@ -199,20 +199,9 @@ cardinality = "optional"
 selector = { union = "RustDelimitedTokenTree" }
 
 [[node.field]]
-name = "unsafe_attribute"
-type = "RustUnsafeAttribute"
+name = "unsafe_token"
 cardinality = "optional"
-selector = { node = "UnsafeAttribute" }
-
-[[node]]
-name = "RustUnsafeAttribute"
-kind = "UnsafeAttribute"
-
-[[node.field]]
-name = "arguments"
-type = "RustParenthesizedTokens"
-cardinality = "one"
-selector = { node = "ParenthesizedTokens" }
+selector = { token = "unsafe" }
 
 [[node]]
 name = "RustIdentifier"

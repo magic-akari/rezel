@@ -201,6 +201,25 @@ fn named_variadics_share_function_and_pointer_parameter_accessors() {
 }
 
 #[test]
+fn unsafe_attribute_meta_exposes_its_token_and_arguments() {
+    let source = "#[unsafe(no_mangle)] pub extern \"C\" fn exported() {}";
+    let tree = rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let file = RustSourceFile::downcast_from(tree.top_node()).unwrap();
+    let Some(RustStatement::AttributedItem(item)) = file.statements().next() else {
+        panic!("expected an attributed item");
+    };
+    let meta = item.attributes().next().unwrap().meta().unwrap();
+    assert!(meta.unsafe_token().is_some());
+    assert!(matches!(
+        meta.tokens(),
+        Some(RustDelimitedTokenTree::Parenthesized(_))
+    ));
+}
+
+#[test]
 fn typed_downcasts_reject_the_wrong_kind() {
     let source = "fn main() {}\n";
     let tree = rezel_lang_rust::parser()

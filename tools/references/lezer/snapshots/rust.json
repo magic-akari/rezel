@@ -18,7 +18,7 @@
 		"artifacts": {
 			"grammar": {
 				"path": "languages/rust/src/rust.grammar",
-				"sha256": "4d4f96bbaf9225c0d403da8a8f0375be2e2299f6193f66ab3f97ad0b26fc8819"
+				"sha256": "0d39f3d720bc40db6a202bab38b4a19d0e3190516248caa53b7ddf8768447507"
 			}
 		}
 	},
