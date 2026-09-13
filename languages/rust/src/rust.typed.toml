@@ -650,22 +650,12 @@ cardinality = "optional"
 selector = { node = "ForLifetimes" }
 
 [[node.field]]
-name = "path"
-type = "RustTypePath"
-cardinality = "optional"
-selector = { node = "TypePath" }
-
-[[node.field]]
 name = "parameters"
 type = "RustParameterList"
 cardinality = "one"
 selector = { node = "ParamList" }
 
-[[node.field]]
-name = "types"
-type = "RustType"
-cardinality = "many"
-selector = { union = "RustType" }
+# Positional fields trait_path and return_type are implemented in typed_ext.rs.
 
 [[node]]
 name = "RustInferredType"

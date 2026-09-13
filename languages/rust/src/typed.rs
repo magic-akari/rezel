@@ -2295,15 +2295,6 @@ impl RustFunctionType {
             .nth(0)
     }
     #[must_use]
-    pub fn path(&self) -> Option<RustTypePath> {
-        self.syntax
-            .children()
-            .filter_map(|node| {
-                <RustTypePath as rezel_common::TypedNode>::downcast_from(node).ok()
-            })
-            .nth(0)
-    }
-    #[must_use]
     pub fn parameters(&self) -> Option<RustParameterList> {
         self.syntax
             .children()
@@ -2311,10 +2302,6 @@ impl RustFunctionType {
                 <RustParameterList as rezel_common::TypedNode>::downcast_from(node).ok()
             })
             .nth(0)
-    }
-    #[must_use]
-    pub fn types(&self) -> rezel_common::TypedChildren<RustType> {
-        rezel_common::TypedChildren::new(self.syntax.children())
     }
 }
 #[derive(Clone, Debug)]

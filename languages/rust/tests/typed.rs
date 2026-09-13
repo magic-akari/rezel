@@ -375,6 +375,56 @@ fn function_trait_parameters_are_navigable_as_parameters() {
 }
 
 #[test]
+fn function_type_fields_follow_signature_roles() {
+    for (signature, path, output) in [
+        ("dyn Fn()", Some("Fn"), None),
+        ("dyn Fn(u8) -> bool", Some("Fn"), Some("bool")),
+        (
+            "dyn ops::FnMut((u8, u16)) -> ()",
+            Some("ops::FnMut"),
+            Some("()"),
+        ),
+        ("dyn Fn(fn(u8) -> bool)", Some("Fn"), None),
+        ("fn()", None, None),
+        ("fn() -> Result", None, Some("Result")),
+        (
+            "unsafe extern \"C\" fn() -> *const u8",
+            None,
+            Some("*const u8"),
+        ),
+        ("fn() -> fn(u8) -> bool", None, Some("fn(u8) -> bool")),
+    ] {
+        let source = format!("type F = {signature};");
+        let function = parse_function_type(&source, true);
+        assert_eq!(
+            function.trait_path().and_then(|path| path.text(&source)),
+            path,
+            "{signature}"
+        );
+        assert_eq!(
+            function.return_type().and_then(|ty| ty.text(&source)),
+            output,
+            "{signature}"
+        );
+    }
+}
+
+#[test]
+fn function_type_fields_tolerate_missing_return_types() {
+    for (source, path) in [
+        ("type F = fn() -> ;", None),
+        ("type F = dyn Fn() -> ;", Some("Fn")),
+    ] {
+        let function = parse_function_type(source, false);
+        assert_eq!(
+            function.trait_path().and_then(|path| path.text(source)),
+            path
+        );
+        assert!(function.return_type().is_none());
+    }
+}
+
+#[test]
 fn parenthesized_bounds_preserve_trait_and_modifier_roles() {
     let source = "fn f<T: (Copy) + (?Sized)>() {}";
     let function = parse_function(source);

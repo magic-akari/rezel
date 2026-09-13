@@ -20,6 +20,7 @@ mod syntax;
 mod tokens;
 #[rustfmt::skip]
 pub mod typed;
+mod typed_ext;
 
 /// Named grammar terms emitted by `rezel-generator`.
 pub mod terms;
