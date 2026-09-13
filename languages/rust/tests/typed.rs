@@ -2,10 +2,10 @@
 
 use rezel_lang_rust::{
     RustAssignmentOperand, RustBinaryOperator, RustBoundedTypeElement, RustCondition,
-    RustDeclaration, RustDeclarationStatement, RustDelimitedTokenTree, RustExpression,
-    RustFieldList, RustFunctionItem, RustFunctionName, RustFunctionParameter, RustGenericArgument,
-    RustLiteral, RustPath, RustPathComponent, RustPattern, RustPrefixOperator, RustSourceFile,
-    RustStatement, RustTokenTreeElement, RustTraitBound, RustType, RustTypeBound,
+    RustDeclaration, RustDeclarationListItem, RustDeclarationStatement, RustDelimitedTokenTree,
+    RustExpression, RustFieldList, RustFunctionItem, RustFunctionName, RustFunctionParameter,
+    RustGenericArgument, RustLiteral, RustPath, RustPathComponent, RustPattern, RustPrefixOperator,
+    RustSourceFile, RustStatement, RustTokenTreeElement, RustTraitBound, RustType, RustTypeBound,
     RustTypeParameter, RustUseTree, TypedNode,
 };
 
@@ -121,6 +121,45 @@ struct Marker;
         )))
     ));
     assert!(statements.next().is_none());
+}
+
+#[test]
+fn attributed_foreign_items_are_navigable_as_single_items() {
+    let source = "unsafe extern \"C\" { #[link_name = \"symbol\"] fn renamed(x: i32, _: ...); }";
+    let tree = rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .unwrap();
+    let file = RustSourceFile::downcast_from(tree.top_node()).unwrap();
+    let Some(RustStatement::Declaration(RustDeclarationStatement::Item(
+        RustDeclaration::ForeignModule(foreign),
+    ))) = file.statements().next()
+    else {
+        panic!("expected a foreign module");
+    };
+    let body = foreign.body().unwrap();
+    let mut items = body.items();
+    let Some(RustDeclarationListItem::Attributed(attributed)) = items.next() else {
+        panic!("expected one attributed foreign item");
+    };
+    assert_eq!(attributed.attributes().count(), 1);
+    let Some(RustDeclarationStatement::Item(RustDeclaration::Function(function))) =
+        attributed.declaration()
+    else {
+        panic!("expected a foreign function");
+    };
+    let Some(RustFunctionParameter::Parameter(variadic)) =
+        function.parameters().unwrap().parameters().nth(1)
+    else {
+        panic!("expected a named variadic parameter");
+    };
+    assert!(matches!(variadic.pattern(), Some(RustPattern::Wildcard(_))));
+    assert!(variadic.ty().is_none());
+    assert_eq!(
+        syntax_text(&variadic.ellipsis_token().unwrap(), source),
+        "..."
+    );
+    assert!(items.next().is_none());
 }
 
 #[test]

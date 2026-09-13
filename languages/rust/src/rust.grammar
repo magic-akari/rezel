@@ -249,8 +249,10 @@ DeclarationList {
 }
 
 ForeignDeclarationList[@name=DeclarationList] {
-  "{" InnerAttribute* (Attribute* foreignDeclaration)* "}"
+  "{" InnerAttribute* (foreignDeclaration | ForeignAttributeItem)* "}"
 }
+
+ForeignAttributeItem[@name=AttributeItem] { Attribute+ foreignDeclaration }
 
 foreignDeclaration {
   MacroInvocationSemi |
