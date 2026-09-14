@@ -129,6 +129,9 @@ fields and closed unions. Every visible grammar kind has a typed wrapper, and
 compound syntax exposes grammar-checked direct-child accessors wherever the
 CST distinguishes a stable role. The typed API remains a zero-copy CST view;
 it does not normalize ambiguous grammar shapes or construct an owned Rust AST.
+Generic argument iteration groups a leading minus and its numeric literal into
+one view over sibling nodes, exposing their complete source range without
+adding a CST wrapper.
 
 Type paths use a recursive `RustTypePath`: each node exposes its final segment,
 an optional path prefix or qualified scope, and optional type arguments.

@@ -391,12 +391,6 @@ kind = "DerefOp"
 name = "RustTypeArgumentList"
 kind = "TypeArgList"
 
-[[node.field]]
-name = "arguments"
-type = "RustGenericArgument"
-cardinality = "many"
-selector = { union = "RustGenericArgument" }
-
 [[node]]
 name = "RustTypeBinding"
 kind = "TypeBinding"
@@ -610,22 +604,6 @@ name = "names"
 type = "RustIdentifier"
 cardinality = "many"
 selector = { node = "Identifier" }
-
-[[node]]
-name = "RustNegativeConstArgument"
-kind = "NegativeConstArgument"
-
-[[node.field]]
-name = "operator"
-type = "RustArithmeticOperator"
-cardinality = "one"
-selector = { node = "ArithOp" }
-
-[[node.field]]
-name = "literal"
-type = "RustNumericLiteral"
-cardinality = "one"
-selector = { union = "RustNumericLiteral" }
 
 # Types.
 
@@ -2532,13 +2510,12 @@ variants = [
 ]
 
 [[union]]
-name = "RustGenericArgument"
+name = "RustGenericArgumentValue"
 variants = [
 	{ name = "Type", type = "RustType" },
 	{ name = "Binding", type = "RustTypeBinding" },
 	{ name = "Lifetime", type = "RustLifetime" },
 	{ name = "Literal", type = "RustLiteral" },
-	{ name = "NegativeConst", type = "RustNegativeConstArgument" },
 	{ name = "Block", type = "RustBlock" },
 ]
 

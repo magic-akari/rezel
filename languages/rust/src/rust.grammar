@@ -443,11 +443,9 @@ GenericType {
 
 TypeArgList {
   tpOpen
-  commaSep1<type | TypeBinding | Lifetime | literal | NegativeConstArgument | Block>
+  commaSep1<type | TypeBinding | Lifetime | literal | ArithOp { "-" } (Integer | Float) | Block>
   tpClose
 }
-
-NegativeConstArgument { ArithOp { "-" } (Integer | Float) }
 
 TypeBinding {
   (TypeIdentifier | GenericType) ("=" type | TraitBounds)

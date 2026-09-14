@@ -4,9 +4,10 @@ use rezel_lang_rust::{
     RustAssignmentOperand, RustBinaryOperator, RustBoundedTypeElement, RustCondition,
     RustDeclaration, RustDeclarationListItem, RustDeclarationStatement, RustDelimitedTokenTree,
     RustExpression, RustFieldList, RustFunctionItem, RustFunctionName, RustFunctionParameter,
-    RustFunctionType, RustGenericArgument, RustLiteral, RustPath, RustPathComponent, RustPattern,
-    RustPrefixOperator, RustSourceFile, RustStatement, RustTokenTreeElement, RustTraitBound,
-    RustType, RustTypeBound, RustTypeParameter, RustUseTree, TypedNode,
+    RustFunctionType, RustGenericArgument, RustGenericArgumentValue, RustLiteral, RustPath,
+    RustPathComponent, RustPattern, RustPrefixOperator, RustSourceFile, RustStatement,
+    RustTokenTreeElement, RustTraitBound, RustType, RustTypeBound, RustTypeParameter, RustUseTree,
+    TypedNode,
 };
 
 fn syntax_text<'source>(node: &rezel_common::SyntaxNode, source: &'source str) -> &'source str {
@@ -58,6 +59,81 @@ fn parse_function_type(source: &str, strict: bool) -> RustFunctionType {
         }
         _ => panic!("expected a function pointer or trait object"),
     }
+}
+
+#[test]
+fn generic_arguments_group_negative_literals_without_wrapper_nodes() {
+    let source = "type A = Foo<-1, 2, - /* gap */ // gap\n3, Bar<-4>, -1.5>;";
+    let RustType::Generic(ty) = parse_alias_type(source, true) else {
+        panic!("expected a generic type");
+    };
+    let list = ty.arguments().unwrap();
+    let arguments = list.arguments().collect::<Vec<_>>();
+    let texts = arguments
+        .iter()
+        .map(|argument| argument.text(source))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        texts,
+        [
+            Some("-1"),
+            Some("2"),
+            Some("- /* gap */ // gap\n3"),
+            Some("Bar<-4>"),
+            Some("-1.5")
+        ]
+    );
+
+    let RustGenericArgument::NegativeLiteral {
+        operator,
+        literal: Some(literal),
+    } = &arguments[0]
+    else {
+        panic!("expected a negative literal");
+    };
+    assert_eq!(operator.text(source), Some("-"));
+    assert_eq!(literal.text(source), Some("1"));
+    for node in [operator.syntax(), literal.syntax()] {
+        let parent = node.parent().unwrap();
+        assert_eq!(parent.name().as_ref(), "TypeArgList");
+        assert_eq!(parent.range(), list.syntax().range());
+    }
+
+    let RustGenericArgument::Value(RustGenericArgumentValue::Type(RustType::Generic(nested))) =
+        &arguments[3]
+    else {
+        panic!("expected a nested generic type");
+    };
+    assert_eq!(
+        nested
+            .arguments()
+            .unwrap()
+            .arguments()
+            .next()
+            .unwrap()
+            .text(source),
+        Some("-4")
+    );
+}
+
+#[test]
+fn recovering_negative_argument_does_not_consume_the_next_argument() {
+    let source = "type A = Foo<-, 2>;";
+    let RustType::Generic(ty) = parse_alias_type(source, false) else {
+        panic!("expected a generic type");
+    };
+    let arguments = ty.arguments().unwrap().arguments().collect::<Vec<_>>();
+    assert!(matches!(
+        &arguments[0],
+        RustGenericArgument::NegativeLiteral { literal: None, .. }
+    ));
+    assert_eq!(
+        arguments
+            .iter()
+            .map(|argument| argument.text(source))
+            .collect::<Vec<_>>(),
+        [Some("-"), Some("2")]
+    );
 }
 
 #[test]
@@ -590,7 +666,9 @@ fn inspect<T>(
         .unwrap()
         .arguments()
         .collect::<Vec<_>>();
-    let [RustGenericArgument::Type(RustType::Path(item_path))] = arguments.as_slice() else {
+    let [RustGenericArgument::Value(RustGenericArgumentValue::Type(RustType::Path(item_path)))] =
+        arguments.as_slice()
+    else {
         panic!("expected one path type argument");
     };
     assert_eq!(item_path.segment().unwrap().text(source), Some("Item"));

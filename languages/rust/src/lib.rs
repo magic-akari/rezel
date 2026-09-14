@@ -27,6 +27,7 @@ pub mod terms;
 
 pub use rezel_common::TypedNode;
 pub use typed::*;
+pub use typed_ext::RustGenericArgument;
 
 /// Unicode version supplied by `unicode-ident` for identifiers and lifetimes.
 pub const UNICODE_VERSION: (u8, u8, u8) = identifier::UNICODE_VERSION;
