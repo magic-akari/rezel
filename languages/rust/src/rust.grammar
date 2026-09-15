@@ -136,40 +136,10 @@ traitHeader {
   kw<"unsafe">? ckw<"auto">? kw<"trait">
 }
 
-functionFrontMatter {
-  functionQualifiers? kw<"fn">
-}
-
 functionItemRest {
     (BoundIdentifier | Metavariable) TypeParamList? ParamList ("->" type)?
     WhereClause?
     (Block | ";")
-}
-
-functionQualifiers {
-  ckw<"default"> functionQualifiersAfterDefault? |
-  kw<"const"> functionQualifiersAfterConst? |
-  kw<"async"> functionQualifiersAfterAsync? |
-  kw<"unsafe"> externModifier? |
-  externModifier
-}
-
-functionQualifiersAfterDefault {
-  kw<"const"> functionQualifiersAfterConst? |
-  kw<"async"> functionQualifiersAfterAsync? |
-  kw<"unsafe"> externModifier? |
-  externModifier
-}
-
-functionQualifiersAfterConst {
-  kw<"async"> functionQualifiersAfterAsync? |
-  kw<"unsafe"> externModifier? |
-  externModifier
-}
-
-functionQualifiersAfterAsync {
-  kw<"unsafe"> externModifier? |
-  externModifier
 }
 
 delimitedTokenTree { ParenthesizedTokens | BracketedTokens | BracedTokens }
@@ -284,6 +254,10 @@ FieldDeclaration {
 
 OrderedFieldDeclarationList {
   "(" commaSep<Attribute* Vis? type> ")"
+}
+
+functionFrontMatter {
+  ckw<"default">? kw<"const">? kw<"async">? kw<"unsafe">? externModifier? kw<"fn">
 }
 
 WhereClause {
