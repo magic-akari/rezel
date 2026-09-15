@@ -2529,20 +2529,20 @@ variants = [
 [[union]]
 name = "RustTraitBound"
 variants = [
-    { name = "Path", type = "RustTypePath" },
-    { name = "Generic", type = "RustGenericType" },
-    { name = "Function", type = "RustFunctionType" },
-    { name = "HigherRanked", type = "RustHigherRankedTraitBound" },
-    { name = "Removed", type = "RustRemovedTraitBound" },
-    { name = "Const", type = "RustConstTraitBound" },
-    { name = "Parenthesized", type = "RustParenthesizedTraitBound" },
+	{ name = "Path", type = "RustTypePath" },
+	{ name = "Generic", type = "RustGenericType" },
+	{ name = "Function", type = "RustFunctionType" },
+	{ name = "HigherRanked", type = "RustHigherRankedTraitBound" },
+	{ name = "Removed", type = "RustRemovedTraitBound" },
+	{ name = "Const", type = "RustConstTraitBound" },
+	{ name = "Parenthesized", type = "RustParenthesizedTraitBound" },
 ]
 
 [[union]]
 name = "RustTypeBound"
 variants = [
-    { name = "Trait", type = "RustTraitBound" },
-    { name = "Lifetime", type = "RustLifetime" },
+	{ name = "Trait", type = "RustTraitBound" },
+	{ name = "Lifetime", type = "RustLifetime" },
 ]
 
 [[union]]
