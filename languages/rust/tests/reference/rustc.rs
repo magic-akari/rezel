@@ -5,6 +5,7 @@ use serde::Deserialize;
 
 const SNAPSHOT_SCHEMA: &str = "rezel.rustc-rust-reference-snapshot.v1";
 const SNAPSHOT: &str = include_str!("../../../../tools/references/rustc/snapshots/rust.json");
+const EDITION_COMPATIBLE_REJECTIONS: &[&str] = &["MissingUnsafeExtern"];
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -43,9 +44,13 @@ fn accepted_sources_match_rustc_1_95_edition_2024() {
 }
 
 #[test]
-fn rejected_sources_match_rustc_1_95_edition_2024() {
+fn rejected_sources_match_rustc_except_edition_compatible_syntax() {
     let snapshot = reference_data();
-    for case in &snapshot.rejected {
+    for case in snapshot
+        .rejected
+        .iter()
+        .filter(|case| !EDITION_COMPATIBLE_REJECTIONS.contains(&case.id.as_str()))
+    {
         assert!(
             rezel_lang_rust::parser()
                 .with_strict(true)

@@ -71,7 +71,7 @@ declarationStatement {
     Vis? kw<"mod"> BoundIdentifier (";" | DeclarationList)
   } |
   ForeignModItem {
-    kw<"unsafe"> externModifier ForeignDeclarationList
+    kw<"unsafe">? externModifier ForeignDeclarationList
   } |
   StructItem {
     Vis? kw<"struct">

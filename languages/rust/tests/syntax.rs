@@ -27,6 +27,22 @@ fn modern<'a, T>(value: &'a mut T) -> impl Sized + use<'a, T,> {
 }
 
 #[test]
+fn legacy_extern_blocks_remain_accepted() {
+    let source = r#"
+extern "C" {
+    fn read(value: *const u8) -> usize;
+    static VERSION: i32;
+    type Opaque;
+}
+"#;
+
+    rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .expect("extern blocks from editions before 2024 remain accepted");
+}
+
+#[test]
 fn precise_capture_bounds_enforce_context_free_static_rules() {
     for source in [
         "fn rejected<'a, T>(value: &'a T) -> impl Sized + use<T, 'a> { value }",
