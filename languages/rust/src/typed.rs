@@ -193,6 +193,7 @@ pub enum RustKind {
     LifetimeClause,
     TypeBoundClause,
     HigherRankedTraitBound,
+    ConstTraitBound,
     StaticItem,
     Static,
     ForeignTypeItem,
@@ -227,7 +228,6 @@ pub enum RustKind {
     FunctionType,
     ForLifetimes,
     RemovedTraitBound,
-    ConstTraitBound,
     ParenthesizedTraitBound,
     InferredType,
     ReferenceType,
@@ -277,8 +277,8 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             20u16 => RustKind::Crate,
             22u16 => RustKind::ScopedIdentifier,
             73u16 => RustKind::ScopedIdentifier,
-            240u16 => RustKind::ScopedIdentifier,
-            242u16 => RustKind::ScopedIdentifier,
+            241u16 => RustKind::ScopedIdentifier,
+            243u16 => RustKind::ScopedIdentifier,
             23u16 => RustKind::QualifiedScope,
             24u16 => RustKind::AbstractType,
             25u16 => RustKind::Impl,
@@ -304,7 +304,7 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             136u16 => RustKind::ArithOp,
             137u16 => RustKind::ArithOp,
             203u16 => RustKind::ArithOp,
-            250u16 => RustKind::ArithOp,
+            251u16 => RustKind::ArithOp,
             41u16 => RustKind::RightBrace,
             42u16 => RustKind::LeftBrace,
             43u16 => RustKind::Block,
@@ -429,14 +429,14 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             166u16 => RustKind::ClosureExpression,
             167u16 => RustKind::ParamList,
             204u16 => RustKind::ParamList,
-            253u16 => RustKind::ParamList,
-            256u16 => RustKind::ParamList,
+            254u16 => RustKind::ParamList,
+            257u16 => RustKind::ParamList,
             168u16 => RustKind::Parameter,
             169u16 => RustKind::Parameter,
             205u16 => RustKind::Parameter,
-            254u16 => RustKind::Parameter,
             255u16 => RustKind::Parameter,
-            257u16 => RustKind::Parameter,
+            256u16 => RustKind::Parameter,
+            258u16 => RustKind::Parameter,
             170u16 => RustKind::ParenthesizedExpression,
             171u16 => RustKind::StructExpression,
             172u16 => RustKind::FieldInitializerList,
@@ -458,11 +458,11 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             190u16 => RustKind::DeclarationList,
             194u16 => RustKind::DeclarationList,
             191u16 => RustKind::AttributeItem,
-            217u16 => RustKind::AttributeItem,
+            218u16 => RustKind::AttributeItem,
             192u16 => RustKind::ForeignModItem,
             193u16 => RustKind::Extern,
             195u16 => RustKind::FunctionItem,
-            230u16 => RustKind::FunctionItem,
+            231u16 => RustKind::FunctionItem,
             196u16 => RustKind::Safe,
             197u16 => RustKind::Fn,
             198u16 => RustKind::TypeParamList,
@@ -477,43 +477,43 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             210u16 => RustKind::LifetimeClause,
             211u16 => RustKind::TypeBoundClause,
             212u16 => RustKind::HigherRankedTraitBound,
-            213u16 => RustKind::StaticItem,
-            247u16 => RustKind::StaticItem,
-            214u16 => RustKind::Static,
-            215u16 => RustKind::ForeignTypeItem,
-            216u16 => RustKind::Type,
-            218u16 => RustKind::StructItem,
-            219u16 => RustKind::Struct,
-            220u16 => RustKind::FieldDeclarationList,
-            221u16 => RustKind::FieldDeclaration,
-            222u16 => RustKind::OrderedFieldDeclarationList,
-            223u16 => RustKind::UnionItem,
-            224u16 => RustKind::Union,
-            225u16 => RustKind::EnumItem,
-            226u16 => RustKind::Enum,
-            227u16 => RustKind::EnumVariantList,
-            228u16 => RustKind::EnumVariant,
-            229u16 => RustKind::TypeItem,
-            231u16 => RustKind::Default,
-            232u16 => RustKind::ImplItem,
-            233u16 => RustKind::TraitItem,
-            234u16 => RustKind::Auto,
-            235u16 => RustKind::Trait,
-            236u16 => RustKind::AssociatedType,
-            237u16 => RustKind::LetDeclaration,
-            238u16 => RustKind::UseDeclaration,
-            239u16 => RustKind::Use,
-            241u16 => RustKind::UseAsClause,
-            243u16 => RustKind::UseList,
-            244u16 => RustKind::ScopedUseList,
-            245u16 => RustKind::UseWildcard,
-            246u16 => RustKind::ExternCrateDeclaration,
-            248u16 => RustKind::ExpressionStatement,
+            213u16 => RustKind::ConstTraitBound,
+            214u16 => RustKind::StaticItem,
+            248u16 => RustKind::StaticItem,
+            215u16 => RustKind::Static,
+            216u16 => RustKind::ForeignTypeItem,
+            217u16 => RustKind::Type,
+            219u16 => RustKind::StructItem,
+            220u16 => RustKind::Struct,
+            221u16 => RustKind::FieldDeclarationList,
+            222u16 => RustKind::FieldDeclaration,
+            223u16 => RustKind::OrderedFieldDeclarationList,
+            224u16 => RustKind::UnionItem,
+            225u16 => RustKind::Union,
+            226u16 => RustKind::EnumItem,
+            227u16 => RustKind::Enum,
+            228u16 => RustKind::EnumVariantList,
+            229u16 => RustKind::EnumVariant,
+            230u16 => RustKind::TypeItem,
+            232u16 => RustKind::Default,
+            233u16 => RustKind::ImplItem,
+            234u16 => RustKind::TraitItem,
+            235u16 => RustKind::Auto,
+            236u16 => RustKind::Trait,
+            237u16 => RustKind::AssociatedType,
+            238u16 => RustKind::LetDeclaration,
+            239u16 => RustKind::UseDeclaration,
+            240u16 => RustKind::Use,
+            242u16 => RustKind::UseAsClause,
+            244u16 => RustKind::UseList,
+            245u16 => RustKind::ScopedUseList,
+            246u16 => RustKind::UseWildcard,
+            247u16 => RustKind::ExternCrateDeclaration,
             249u16 => RustKind::ExpressionStatement,
-            251u16 => RustKind::FunctionType,
-            252u16 => RustKind::ForLifetimes,
-            258u16 => RustKind::RemovedTraitBound,
-            259u16 => RustKind::ConstTraitBound,
+            250u16 => RustKind::ExpressionStatement,
+            252u16 => RustKind::FunctionType,
+            253u16 => RustKind::ForLifetimes,
+            259u16 => RustKind::RemovedTraitBound,
             260u16 => RustKind::ParenthesizedTraitBound,
             261u16 => RustKind::InferredType,
             262u16 => RustKind::ReferenceType,
@@ -1745,11 +1745,12 @@ impl RustHigherRankedTraitBound {
             .nth(0)
     }
     #[must_use]
-    pub fn ty(&self) -> Option<RustType> {
+    pub fn body(&self) -> Option<RustHigherRankedBody> {
         self.syntax
             .children()
             .filter_map(|node| {
-                <RustType as rezel_common::TypedNode>::downcast_from(node).ok()
+                <RustHigherRankedBody as rezel_common::TypedNode>::downcast_from(node)
+                    .ok()
             })
             .nth(0)
     }
@@ -7294,6 +7295,58 @@ impl rezel_common::TypedNode for RustTraitBound {
     }
 }
 #[derive(Clone, Debug)]
+pub enum RustHigherRankedBody {
+    Type(RustType),
+    Const(RustConstTraitBound),
+}
+impl rezel_common::TypedNode for RustHigherRankedBody {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        match <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node) {
+            Some(RustKind::AbstractType)
+            | Some(RustKind::TypePath)
+            | Some(RustKind::GenericType)
+            | Some(RustKind::MacroInvocation)
+            | Some(RustKind::FunctionType)
+            | Some(RustKind::InferredType)
+            | Some(RustKind::ReferenceType)
+            | Some(RustKind::PointerType)
+            | Some(RustKind::TupleType)
+            | Some(RustKind::UnitType)
+            | Some(RustKind::ArrayType)
+            | Some(RustKind::EmptyType)
+            | Some(RustKind::DynamicType)
+            | Some(RustKind::BoundedType) => {
+                let typed = <RustType as rezel_common::TypedNode>::downcast_from(node)
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Type(typed))
+            }
+            Some(RustKind::ConstTraitBound) => {
+                let typed = <RustConstTraitBound as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Const(typed))
+            }
+            _ => Err(node),
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        match self {
+            Self::Type(node) => rezel_common::TypedNode::syntax(node),
+            Self::Const(node) => rezel_common::TypedNode::syntax(node),
+        }
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        match self {
+            Self::Type(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Const(node) => rezel_common::TypedNode::into_syntax(node),
+        }
+    }
+}
+#[derive(Clone, Debug)]
 pub enum RustTypeBound {
     Trait(RustTraitBound),
     Lifetime(RustLifetime),
@@ -7307,9 +7360,9 @@ impl rezel_common::TypedNode for RustTypeBound {
             Some(RustKind::TypePath)
             | Some(RustKind::GenericType)
             | Some(RustKind::HigherRankedTraitBound)
+            | Some(RustKind::ConstTraitBound)
             | Some(RustKind::FunctionType)
             | Some(RustKind::RemovedTraitBound)
-            | Some(RustKind::ConstTraitBound)
             | Some(RustKind::ParenthesizedTraitBound) => {
                 let typed = <RustTraitBound as rezel_common::TypedNode>::downcast_from(
                         node,

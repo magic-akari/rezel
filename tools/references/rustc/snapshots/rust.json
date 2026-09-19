@@ -1,6 +1,6 @@
 {
 	"schema": "rezel.rustc-rust-reference-snapshot.v1",
-	"rustcVersion": "rustc 1.95.0 (59807616e 2026-04-14)",
+	"rustcVersion": "rustc 1.96.0 (ac68faa20 2026-05-25)",
 	"edition": "2024",
 	"coordinates": "raw-utf8-bytes",
 	"oracle": "rustc --crate-type=lib --emit=metadata",

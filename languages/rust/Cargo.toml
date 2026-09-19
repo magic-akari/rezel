@@ -17,7 +17,7 @@ keywords = ["rust", "parser", "syntax-tree", "cst"]
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Rust 1.95 parser and typed syntax for Rezel"
+description = "Rust 1.96 parser and typed syntax for Rezel"
 
 [features]
 default = []

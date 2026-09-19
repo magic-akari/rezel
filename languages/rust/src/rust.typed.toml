@@ -450,10 +450,10 @@ cardinality = "one"
 selector = { node = "TypeParamList" }
 
 [[node.field]]
-name = "ty"
-type = "RustType"
+name = "body"
+type = "RustHigherRankedBody"
 cardinality = "one"
-selector = { union = "RustType" }
+selector = { union = "RustHigherRankedBody" }
 
 [[node]]
 name = "RustTypeParameterList"
@@ -2536,6 +2536,13 @@ variants = [
 	{ name = "Removed", type = "RustRemovedTraitBound" },
 	{ name = "Const", type = "RustConstTraitBound" },
 	{ name = "Parenthesized", type = "RustParenthesizedTraitBound" },
+]
+
+[[union]]
+name = "RustHigherRankedBody"
+variants = [
+	{ name = "Type", type = "RustType" },
+	{ name = "Const", type = "RustConstTraitBound" },
 ]
 
 [[union]]

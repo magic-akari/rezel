@@ -110,11 +110,11 @@ description = "Regenerate Java compiler-tree snapshots"
 run = "java tools/references/javac/java/JavacReference.java --update"
 
 [tasks."reference:rustc"]
-description = "Verify Rust 1.95 Edition 2024 compiler acceptance snapshots"
+description = "Verify Rust 1.96 Edition 2024 compiler acceptance snapshots"
 run = "cargo run --locked --package rezel-rustc-reference -- --check"
 
 [tasks."reference:rustc:update"]
-description = "Regenerate Rust 1.95 Edition 2024 compiler acceptance snapshots"
+description = "Regenerate Rust 1.96 Edition 2024 compiler acceptance snapshots"
 run = "cargo run --locked --package rezel-rustc-reference -- --update"
 
 [tasks."reference:kotlin"]
@@ -212,7 +212,7 @@ description = "Compare all Python standard-library ASTs with CPython"
 run = "cargo run --locked --package rezel-python-stdlib-reference -- --ast-oracle"
 
 [tasks."reference:stdlib:rust"]
-description = "Verify Rust 1.95 standard-library source acceptance"
+description = "Verify Rust 1.96 standard-library source acceptance"
 run = "cargo run --locked --package rezel-rust-stdlib-reference"
 
 [tasks."benchmark:datasets"]

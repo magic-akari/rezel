@@ -114,7 +114,7 @@ declarationStatement {
     kw<"type"> TypeIdentifier TypeParamList? TraitBounds? WhereClause? ";"
   } |
   LetDeclaration {
-    kw<"let"> (!mut kw<"mut">)? pattern (":" type)?
+    kw<"super">? kw<"let"> (!mut kw<"mut">)? pattern (":" type)?
     ("=" Attribute* expression (kw<"else"> Block)?)? ";"
   } |
   UseDeclaration {
@@ -277,7 +277,7 @@ TraitBounds {
 }
 
 HigherRankedTraitBound {
-  kw<"for"> TypeParamList type
+  kw<"for"> TypeParamList (type | ConstTraitBound)
 }
 
 RemovedTraitBound {
@@ -466,7 +466,7 @@ nonBlockExpression {
   MacroInvocation { macroInvocation } |
   UnitExpression { "(" ")" } |
   ClosureExpression {
-    kw<"async">? kw<"move">? ClosureParamList
+    (kw<"async"> | kw<"const">)? kw<"move">? ClosureParamList
     (("->" type)? !statement Block | expression)
   } |
   ParenthesizedExpression { "(" InnerAttribute* expression ")" } |

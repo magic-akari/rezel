@@ -23,7 +23,7 @@ fn modern<'a, T>(value: &'a mut T) -> impl Sized + use<'a, T,> {
     rezel_lang_rust::parser()
         .with_strict(true)
         .parse(source)
-        .expect("Rust 1.95 Edition 2024 item, borrow, and capture syntax");
+        .expect("Rust 1.96 Edition 2024 item, borrow, and capture syntax");
 }
 
 #[test]
@@ -199,6 +199,26 @@ where
         .with_strict(true)
         .parse(source)
         .expect("const trait modifiers apply to ordinary trait-bound positions");
+}
+
+#[test]
+fn rust_1_96_const_and_temporary_syntax_is_accepted() {
+    let source = r"
+fn higher_ranked(callback: impl for<'a> [const] FnOnce(&'a usize)) {}
+
+const fn mapped(value: usize) -> usize {
+    (const move |input| input)(value)
+}
+
+fn extend_temporary(value: String) {
+    super let _ = value;
+}
+";
+
+    rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .expect("Rust 1.96 const closures, higher-ranked const bounds, and super let statements");
 }
 
 #[test]

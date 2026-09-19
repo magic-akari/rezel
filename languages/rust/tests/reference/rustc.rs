@@ -28,7 +28,7 @@ struct ReferenceCase {
 }
 
 #[test]
-fn accepted_sources_match_rustc_1_95_edition_2024() {
+fn accepted_sources_match_rustc_1_96_edition_2024() {
     let snapshot = reference_data();
     for case in &snapshot.accepted {
         rezel_lang_rust::parser()
@@ -69,7 +69,7 @@ fn reference_data() -> Snapshot {
     assert_eq!(snapshot.schema, SNAPSHOT_SCHEMA);
     assert_eq!(
         snapshot.rustc_version,
-        "rustc 1.95.0 (59807616e 2026-04-14)"
+        "rustc 1.96.0 (ac68faa20 2026-05-25)"
     );
     assert_eq!(snapshot.edition, "2024");
     assert_eq!(snapshot.coordinates, "raw-utf8-bytes");

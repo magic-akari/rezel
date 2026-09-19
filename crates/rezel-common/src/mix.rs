@@ -394,13 +394,10 @@ fn finish_zero_depth_scopes(
     jobs: &mut [Option<InnerParseJob>],
     request: &ParseRequest,
 ) -> Result<(), ParseError> {
-    if overlays.last().is_some_and(|active| active.depth == 0) {
-        let active = overlays.pop().expect("an active overlay is present");
+    if let Some(active) = overlays.pop_if(|active| active.depth == 0) {
         finish_overlay(active, jobs, request)?;
     }
-    if covered.last().is_some_and(|state| state.depth == 0) {
-        covered.pop();
-    }
+    covered.pop_if(|state| state.depth == 0);
     Ok(())
 }
 

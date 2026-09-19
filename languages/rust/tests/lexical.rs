@@ -150,7 +150,7 @@ fn recovering_mode_keeps_a_tree_for_strict_literal_errors() {
 }
 
 #[test]
-fn float_width_suffixes_follow_rust_1_95_lexing() {
+fn float_width_suffixes_follow_rust_lexing() {
     let source = r"
 fn floats() {
     let _: f16 = 1f16;
@@ -164,7 +164,7 @@ fn floats() {
     rezel_lang_rust::parser()
         .with_strict(true)
         .parse(source)
-        .expect("Rust 1.95 lexes f16 and f128 suffixes as floating-point literals");
+        .expect("Rust lexes f16 and f128 suffixes as floating-point literals");
 }
 
 #[test]

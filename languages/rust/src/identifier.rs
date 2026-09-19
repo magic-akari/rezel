@@ -417,7 +417,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn identifier_profile_matches_rust_1_95() {
+    fn identifier_profile_matches_locked_unicode_ident() {
         assert_eq!(UNICODE_VERSION, unicode_ident::UNICODE_VERSION);
         assert!(validate_identifier("東").is_ok());
         assert!(validate_identifier("\u{088f}").is_ok());
