@@ -35,6 +35,7 @@ fn validate_node(node: &SyntaxNode, source: Option<&str>) -> Result<(), RustSynt
     match node.name().as_ref() {
         "BoundedType" => validate_precise_capture_bounds(node)?,
         "LetChain" => validate_let_chain(node)?,
+        "LetCondition" => validate_let_condition(node)?,
         "UseBound" => validate_use_bound(node)?,
         _ => {}
     }
@@ -709,16 +710,18 @@ fn validate_use_bound(bound: &SyntaxNode) -> Result<(), RustSyntaxError> {
 
 fn validate_let_chain(chain: &SyntaxNode) -> Result<(), RustSyntaxError> {
     for child in chain.children() {
-        if child.name().as_ref() == "LetCondition" {
-            let scrutinee = child.last_child().ok_or_else(|| {
-                RustSyntaxError::new(child.to(), "an expression after `=` in a let condition")
-            })?;
-            validate_let_chain_operand(&scrutinee)?;
-        } else if child.node_type().is_name("Expression") {
+        if child.node_type().is_name("Expression") {
             validate_let_chain_operand(&child)?;
         }
     }
     Ok(())
+}
+
+fn validate_let_condition(condition: &SyntaxNode) -> Result<(), RustSyntaxError> {
+    let scrutinee = condition.last_child().ok_or_else(|| {
+        RustSyntaxError::new(condition.to(), "an expression after `=` in a let condition")
+    })?;
+    validate_let_chain_operand(&scrutinee)
 }
 
 fn validate_let_chain_operand(operand: &SyntaxNode) -> Result<(), RustSyntaxError> {

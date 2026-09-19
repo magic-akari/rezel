@@ -598,11 +598,12 @@ IfExpression {
 
 cond {
   LetChain |
+  LetCondition |
   expression
 }
 
 LetChain {
-  LetCondition (!letChain andand letChainOperand)* |
+  LetCondition (!letChain andand letChainOperand)+ |
   expression !letChain andand LetCondition
   (!letChain andand letChainOperand)*
 }

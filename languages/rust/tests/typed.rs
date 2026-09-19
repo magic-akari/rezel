@@ -856,6 +856,38 @@ fn choose(first: &i32, fallback: i32) -> Option<i32> {
 }
 
 #[test]
+fn typed_syntax_distinguishes_let_conditions_from_let_chains() {
+    let source = r"
+fn check(value: Option<u8>) {
+    if let Some(value) = value {}
+    if let Some(value) = value && value > 0 {}
+}
+";
+    let function = parse_function(source);
+    let mut statements = function.body().unwrap().statements();
+
+    let Some(RustStatement::Expression(single)) = statements.next() else {
+        panic!("expected a standalone if-let expression");
+    };
+    let RustExpression::If(single) = single.expression().unwrap() else {
+        panic!("expected a standalone if-let expression");
+    };
+    assert!(matches!(single.condition(), Some(RustCondition::Let(_))));
+
+    let Some(RustStatement::Expression(chain)) = statements.next() else {
+        panic!("expected a chained if-let expression");
+    };
+    let RustExpression::If(chain) = chain.expression().unwrap() else {
+        panic!("expected a chained if-let expression");
+    };
+    let Some(RustCondition::LetChain(chain)) = chain.condition() else {
+        panic!("expected a let-chain condition");
+    };
+    assert_eq!(chain.operands().count(), 2);
+    assert!(statements.next().is_none());
+}
+
+#[test]
 fn typed_accessors_tolerate_recovery_children() {
     let source = "fn () {}\n";
     let tree = rezel_lang_rust::parser().parse(source).unwrap();

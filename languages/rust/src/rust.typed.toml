@@ -2753,6 +2753,7 @@ variants = [
 name = "RustCondition"
 variants = [
 	{ name = "LetChain", type = "RustLetChain" },
+	{ name = "Let", type = "RustLetCondition" },
 	{ name = "Expression", type = "RustExpression" },
 ]
 

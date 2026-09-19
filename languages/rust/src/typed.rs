@@ -8829,6 +8829,7 @@ impl rezel_common::TypedNode for RustRangePatternEndpoint {
 #[derive(Clone, Debug)]
 pub enum RustCondition {
     LetChain(RustLetChain),
+    Let(RustLetCondition),
     Expression(RustExpression),
 }
 impl rezel_common::TypedNode for RustCondition {
@@ -8843,6 +8844,13 @@ impl rezel_common::TypedNode for RustCondition {
                     )
                     .expect("kind was checked before generated downcast");
                 Ok(Self::LetChain(typed))
+            }
+            Some(RustKind::LetCondition) => {
+                let typed = <RustLetCondition as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .expect("kind was checked before generated downcast");
+                Ok(Self::Let(typed))
             }
             Some(RustKind::RawString)
             | Some(RustKind::Float)
@@ -8901,12 +8909,14 @@ impl rezel_common::TypedNode for RustCondition {
     fn syntax(&self) -> &rezel_common::SyntaxNode {
         match self {
             Self::LetChain(node) => rezel_common::TypedNode::syntax(node),
+            Self::Let(node) => rezel_common::TypedNode::syntax(node),
             Self::Expression(node) => rezel_common::TypedNode::syntax(node),
         }
     }
     fn into_syntax(self) -> rezel_common::SyntaxNode {
         match self {
             Self::LetChain(node) => rezel_common::TypedNode::into_syntax(node),
+            Self::Let(node) => rezel_common::TypedNode::into_syntax(node),
             Self::Expression(node) => rezel_common::TypedNode::into_syntax(node),
         }
     }
