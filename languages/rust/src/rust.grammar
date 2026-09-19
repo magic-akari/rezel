@@ -426,7 +426,7 @@ TypeArgList {
 }
 
 TypeBinding {
-  (TypeIdentifier | GenericType) ("=" type | TraitBounds)
+  (Identifier | GenericType) ("=" type | TraitBounds)
 }
 
 expression[@isGroup=Expression] { blockExpression | nonBlockExpression }
@@ -708,7 +708,7 @@ boolean { @specialize[@name=Boolean]<identifier, "true" | "false"> }
 
 Identifier { identifier }
 
-TypeIdentifier[@dynamicPrecedence=1] { identifier }
+TypeIdentifier { identifier }
 
 FieldIdentifier { identifier }
 

@@ -6,8 +6,8 @@ use rezel_lang_rust::{
     RustExpression, RustFieldList, RustFunctionItem, RustFunctionName, RustFunctionParameter,
     RustFunctionType, RustGenericArgument, RustGenericArgumentValue, RustLiteral, RustPath,
     RustPathComponent, RustPattern, RustPrefixOperator, RustSourceFile, RustStatement,
-    RustTokenTreeElement, RustTraitBound, RustType, RustTypeBound, RustTypeParameter, RustUseTree,
-    TypedNode,
+    RustTokenTreeElement, RustTraitBound, RustType, RustTypeBindingName, RustTypeBound,
+    RustTypeParameter, RustUseTree, TypedNode,
 };
 
 fn syntax_text<'source>(node: &rezel_common::SyntaxNode, source: &'source str) -> &'source str {
@@ -134,6 +134,25 @@ fn recovering_negative_argument_does_not_consume_the_next_argument() {
             .collect::<Vec<_>>(),
         [Some("-"), Some("2")]
     );
+}
+
+#[test]
+fn associated_type_binding_names_use_identifiers() {
+    let source = "type Value = Iterator<Item = u8>;";
+    let RustType::Generic(ty) = parse_alias_type(source, true) else {
+        panic!("expected a generic type");
+    };
+    let arguments = ty.arguments().unwrap().arguments().collect::<Vec<_>>();
+    let [RustGenericArgument::Value(RustGenericArgumentValue::Binding(binding))] =
+        arguments.as_slice()
+    else {
+        panic!("expected one associated type binding");
+    };
+    let Some(RustTypeBindingName::Identifier(name)) = binding.name() else {
+        panic!("expected an identifier binding name");
+    };
+    assert_eq!(name.syntax().name().as_ref(), "Identifier");
+    assert_eq!(name.text(source), Some("Item"));
 }
 
 #[test]

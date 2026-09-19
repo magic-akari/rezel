@@ -2522,7 +2522,7 @@ variants = [
 [[union]]
 name = "RustTypeBindingName"
 variants = [
-	{ name = "Identifier", type = "RustTypeIdentifier" },
+	{ name = "Identifier", type = "RustIdentifier" },
 	{ name = "Generic", type = "RustGenericType" },
 ]
 
