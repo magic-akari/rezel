@@ -26,6 +26,7 @@
   return
   typeArgs
   block
+  bind
   plusSep
   bound @left
   scope
@@ -148,8 +149,11 @@ MacroRule { tokenTree "=>" delimitedTokenTree }
 
 tokenTree {
   delimitedTokenTree |
-  TokenBinding[@dynamicPrecedence=1] {
-    Metavariable ~macroBinding ":" tokenIdentifier
+  TokenBinding {
+    Metavariable ":" tokenIdentifier !bind
+  } |
+  macroTokenSequence {
+    Metavariable !bind ":" tokenTree
   } |
   TokenRepetition {
     "$" "(" tokenTree* ")" separatorToken? ("+" | "*" | "?")
@@ -188,7 +192,7 @@ separatorToken[@inline] {
   Float |
   tokenIdentifier |
   Lifetime |
-  Metavariable ~macroBinding |
+  Metavariable |
   ArithOp { "-" | "/" | "%" } |
   BitOp { "<<" | ">>" | "&" | "|" | "^" } |
   LogicOp { "||" | andand } |
