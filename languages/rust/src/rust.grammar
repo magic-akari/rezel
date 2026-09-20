@@ -61,6 +61,7 @@ declarationStatement {
   MacroDefinition {
     macroRulesKeyword "!" Identifier (
       "(" (MacroRule ";")* MacroRule? ")" ";" |
+      "[" (MacroRule ";")* MacroRule? "]" ";" |
       "{" (MacroRule ";")* MacroRule? "}"
     )
   } |
@@ -649,7 +650,7 @@ pattern[@isGroup=Pattern] {
     (literalPattern | path) (".." | "..." | "..=") (literalPattern | path) |
     (".." | "..=") (literalPattern | path)
   } |
-  OrPattern { pattern !or "|" pattern } |
+  OrPattern { "|" pattern | pattern !or "|" pattern } |
   MacroPattern { macroInvocation } |
   kw<"_">
 }

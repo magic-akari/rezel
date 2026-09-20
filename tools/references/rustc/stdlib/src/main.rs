@@ -10,9 +10,9 @@ use std::{
     thread,
 };
 
-const RUST_RELEASE: &str = "1.96.0";
-const RUST_COMMIT: &str = "ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96";
-const RUST_SOURCE_COUNT: usize = 1_972;
+const RUST_RELEASE: &str = "1.97.1";
+const RUST_COMMIT: &str = "8bab26f4f68e0e26f0bb7960be334d5b520ea452";
+const RUST_SOURCE_COUNT: usize = 2_874;
 const WORKER_STACK_SIZE: usize = 64 * 1024 * 1024;
 
 const RUST_KNOWN_REJECTIONS: &[(&str, usize)] = &[];

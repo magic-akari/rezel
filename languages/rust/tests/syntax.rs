@@ -23,7 +23,7 @@ fn modern<'a, T>(value: &'a mut T) -> impl Sized + use<'a, T,> {
     rezel_lang_rust::parser()
         .with_strict(true)
         .parse(source)
-        .expect("Rust 1.96 Edition 2024 item, borrow, and capture syntax");
+        .expect("Rust 1.97 Edition 2024 item, borrow, and capture syntax");
 }
 
 #[test]
@@ -89,6 +89,27 @@ macro_rules! {}
         .with_strict(true)
         .parse(source)
         .expect("macro_rules definitions and same-named macro invocations are distinguished");
+}
+
+#[test]
+fn bracketed_macro_rules_and_leading_or_patterns_are_accepted() {
+    let source = r"
+macro_rules! bracketed [
+    () => {};
+];
+
+fn classify(value: u8) {
+    match value {
+        | 0 | 1 => {}
+        _ => {}
+    }
+}
+";
+
+    rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .expect("brackets may delimit macro_rules definitions and or-patterns may start with |");
 }
 
 #[test]

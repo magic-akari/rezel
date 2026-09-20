@@ -8,7 +8,7 @@ use std::process::{Command, Output};
 
 use serde::Serialize;
 
-const REQUIRED_RUSTC_RELEASE: &str = "1.96.0";
+const REQUIRED_RUSTC_RELEASE: &str = "1.97.1";
 const EDITION: &str = "2024";
 const SNAPSHOT_SCHEMA: &str = "rezel.rustc-rust-reference-snapshot.v1";
 const ORACLE: &str = "rustc --crate-type=lib --emit=metadata";
