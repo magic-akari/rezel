@@ -213,6 +213,7 @@ pub enum RustKind {
     Default,
     ImplItem,
     TraitItem,
+    ImplRestriction,
     Auto,
     Trait,
     AssociatedType,
@@ -277,8 +278,8 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             20u16 => RustKind::Crate,
             22u16 => RustKind::ScopedIdentifier,
             73u16 => RustKind::ScopedIdentifier,
-            241u16 => RustKind::ScopedIdentifier,
-            243u16 => RustKind::ScopedIdentifier,
+            242u16 => RustKind::ScopedIdentifier,
+            244u16 => RustKind::ScopedIdentifier,
             23u16 => RustKind::QualifiedScope,
             24u16 => RustKind::AbstractType,
             25u16 => RustKind::Impl,
@@ -304,7 +305,7 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             136u16 => RustKind::ArithOp,
             137u16 => RustKind::ArithOp,
             203u16 => RustKind::ArithOp,
-            251u16 => RustKind::ArithOp,
+            252u16 => RustKind::ArithOp,
             41u16 => RustKind::RightBrace,
             42u16 => RustKind::LeftBrace,
             43u16 => RustKind::Block,
@@ -424,19 +425,19 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             163u16 => RustKind::TupleExpression,
             164u16 => RustKind::MacroInvocation,
             183u16 => RustKind::MacroInvocation,
-            267u16 => RustKind::MacroInvocation,
+            268u16 => RustKind::MacroInvocation,
             165u16 => RustKind::UnitExpression,
             166u16 => RustKind::ClosureExpression,
             167u16 => RustKind::ParamList,
             204u16 => RustKind::ParamList,
-            254u16 => RustKind::ParamList,
-            257u16 => RustKind::ParamList,
+            255u16 => RustKind::ParamList,
+            258u16 => RustKind::ParamList,
             168u16 => RustKind::Parameter,
             169u16 => RustKind::Parameter,
             205u16 => RustKind::Parameter,
-            255u16 => RustKind::Parameter,
             256u16 => RustKind::Parameter,
-            258u16 => RustKind::Parameter,
+            257u16 => RustKind::Parameter,
+            259u16 => RustKind::Parameter,
             170u16 => RustKind::ParenthesizedExpression,
             171u16 => RustKind::StructExpression,
             172u16 => RustKind::FieldInitializerList,
@@ -479,7 +480,7 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             212u16 => RustKind::HigherRankedTraitBound,
             213u16 => RustKind::ConstTraitBound,
             214u16 => RustKind::StaticItem,
-            248u16 => RustKind::StaticItem,
+            249u16 => RustKind::StaticItem,
             215u16 => RustKind::Static,
             216u16 => RustKind::ForeignTypeItem,
             217u16 => RustKind::Type,
@@ -498,34 +499,35 @@ impl rezel_common::SyntaxLanguage for RustLanguage {
             232u16 => RustKind::Default,
             233u16 => RustKind::ImplItem,
             234u16 => RustKind::TraitItem,
-            235u16 => RustKind::Auto,
-            236u16 => RustKind::Trait,
-            237u16 => RustKind::AssociatedType,
-            238u16 => RustKind::LetDeclaration,
-            239u16 => RustKind::UseDeclaration,
-            240u16 => RustKind::Use,
-            242u16 => RustKind::UseAsClause,
-            244u16 => RustKind::UseList,
-            245u16 => RustKind::ScopedUseList,
-            246u16 => RustKind::UseWildcard,
-            247u16 => RustKind::ExternCrateDeclaration,
-            249u16 => RustKind::ExpressionStatement,
+            235u16 => RustKind::ImplRestriction,
+            236u16 => RustKind::Auto,
+            237u16 => RustKind::Trait,
+            238u16 => RustKind::AssociatedType,
+            239u16 => RustKind::LetDeclaration,
+            240u16 => RustKind::UseDeclaration,
+            241u16 => RustKind::Use,
+            243u16 => RustKind::UseAsClause,
+            245u16 => RustKind::UseList,
+            246u16 => RustKind::ScopedUseList,
+            247u16 => RustKind::UseWildcard,
+            248u16 => RustKind::ExternCrateDeclaration,
             250u16 => RustKind::ExpressionStatement,
-            252u16 => RustKind::FunctionType,
-            253u16 => RustKind::ForLifetimes,
-            259u16 => RustKind::RemovedTraitBound,
-            260u16 => RustKind::ParenthesizedTraitBound,
-            261u16 => RustKind::InferredType,
-            262u16 => RustKind::ReferenceType,
-            263u16 => RustKind::PointerType,
-            264u16 => RustKind::TupleType,
-            265u16 => RustKind::UnitType,
-            266u16 => RustKind::ArrayType,
-            268u16 => RustKind::EmptyType,
-            269u16 => RustKind::DynamicType,
-            270u16 => RustKind::Dyn,
-            271u16 => RustKind::BoundedType,
-            272u16 => RustKind::UseBound,
+            251u16 => RustKind::ExpressionStatement,
+            253u16 => RustKind::FunctionType,
+            254u16 => RustKind::ForLifetimes,
+            260u16 => RustKind::RemovedTraitBound,
+            261u16 => RustKind::ParenthesizedTraitBound,
+            262u16 => RustKind::InferredType,
+            263u16 => RustKind::ReferenceType,
+            264u16 => RustKind::PointerType,
+            265u16 => RustKind::TupleType,
+            266u16 => RustKind::UnitType,
+            267u16 => RustKind::ArrayType,
+            269u16 => RustKind::EmptyType,
+            270u16 => RustKind::DynamicType,
+            271u16 => RustKind::Dyn,
+            272u16 => RustKind::BoundedType,
+            273u16 => RustKind::UseBound,
             _ => return None,
         };
         Some(kind)
@@ -6498,6 +6500,18 @@ impl RustTraitItem {
             .nth(0)
     }
     #[must_use]
+    pub fn implementation_restriction(&self) -> Option<RustImplementationRestriction> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustImplementationRestriction as rezel_common::TypedNode>::downcast_from(
+                        node,
+                    )
+                    .ok()
+            })
+            .nth(0)
+    }
+    #[must_use]
     pub fn name(&self) -> Option<RustTypeIdentifier> {
         self.syntax
             .children()
@@ -6541,6 +6555,40 @@ impl RustTraitItem {
             .filter_map(|node| {
                 <RustDeclarationList as rezel_common::TypedNode>::downcast_from(node)
                     .ok()
+            })
+            .nth(0)
+    }
+}
+#[derive(Clone, Debug)]
+pub struct RustImplementationRestriction {
+    syntax: rezel_common::SyntaxNode,
+}
+impl rezel_common::TypedNode for RustImplementationRestriction {
+    type Language = RustLanguage;
+    fn downcast_from(
+        node: rezel_common::SyntaxNode,
+    ) -> Result<Self, rezel_common::SyntaxNode> {
+        let kind = <RustLanguage as rezel_common::SyntaxLanguage>::kind(&node);
+        if kind == Some(RustKind::ImplRestriction) {
+            Ok(Self { syntax: node })
+        } else {
+            Err(node)
+        }
+    }
+    fn syntax(&self) -> &rezel_common::SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> rezel_common::SyntaxNode {
+        self.syntax
+    }
+}
+impl RustImplementationRestriction {
+    #[must_use]
+    pub fn path(&self) -> Option<RustPath> {
+        self.syntax
+            .children()
+            .filter_map(|node| {
+                <RustPath as rezel_common::TypedNode>::downcast_from(node).ok()
             })
             .nth(0)
     }

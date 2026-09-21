@@ -2320,6 +2320,12 @@ cardinality = "optional"
 selector = { node = "Vis" }
 
 [[node.field]]
+name = "implementation_restriction"
+type = "RustImplementationRestriction"
+cardinality = "optional"
+selector = { node = "ImplRestriction" }
+
+[[node.field]]
 name = "name"
 type = "RustTypeIdentifier"
 cardinality = "one"
@@ -2348,6 +2354,16 @@ name = "body"
 type = "RustDeclarationList"
 cardinality = "optional"
 selector = { node = "DeclarationList" }
+
+[[node]]
+name = "RustImplementationRestriction"
+kind = "ImplRestriction"
+
+[[node.field]]
+name = "path"
+type = "RustPath"
+cardinality = "one"
+selector = { union = "RustPath" }
 
 [[node]]
 name = "RustAssociatedType"

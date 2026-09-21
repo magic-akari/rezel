@@ -720,7 +720,8 @@ impl TreeBuffer {
         assert_eq!(end % 4, 0);
         let mut data = self.0.data[start..end].to_vec();
         let mut length = TextSize::from(0);
-        for record in data.chunks_exact_mut(4) {
+        let records = data.as_chunks_mut::<4>().0;
+        for record in records {
             record[1] = u32::from(
                 TextSize::from(u32::from(record[1]))
                     .checked_sub(from)
@@ -774,7 +775,8 @@ impl TreeBuffer {
 
 fn validate_buffer(data: &[u16], node_set: &NodeSet) {
     let mut enclosing_ends = Vec::new();
-    for (index, record) in data.chunks_exact(4).enumerate() {
+    let records = data.as_chunks::<4>().0;
+    for (index, record) in records.iter().enumerate() {
         let offset = index * 4;
         while enclosing_ends.last().is_some_and(|end| *end <= offset) {
             enclosing_ends.pop();

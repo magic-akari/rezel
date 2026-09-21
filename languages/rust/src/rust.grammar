@@ -30,7 +30,7 @@
   plusSep
   bound @left
   scope
-  crateVis
+  implRestriction
   selfParam
   mut @cut
   statement
@@ -96,15 +96,12 @@ declarationStatement {
     Vis? functionFrontMatter functionItemRest
   } |
   ImplItem {
-    (
-      kw<"const"> kw<"unsafe">? kw<"impl"> TypeParamList? |
-      kw<"unsafe">? kw<"impl"> TypeParamList? kw<"const">?
-    )
+    kw<"const">? kw<"unsafe">? kw<"impl"> TypeParamList?
     ((!implBang "!")? type !implFor kw<"for">)? type
     WhereClause? DeclarationList
   } |
   TraitItem {
-    Vis? traitHeader TypeIdentifier TypeParamList?
+    Vis? ImplRestriction? traitHeader TypeIdentifier TypeParamList?
     (
       TraitBounds? WhereClause? DeclarationList |
       "=" plusSep<traitBound | Lifetime>
@@ -129,7 +126,7 @@ declarationStatement {
     ) ";"
   } |
   StaticItem {
-    Vis? kw<"static"> kw<"ref">? kw<"mut">? BoundIdentifier ":" type ("=" expression)? ";"
+    Vis? kw<"static"> kw<"mut">? BoundIdentifier ":" type ("=" expression)? ";"
   }
 }
 
@@ -262,7 +259,17 @@ OrderedFieldDeclarationList {
 }
 
 functionFrontMatter {
-  ckw<"default">? kw<"const">? kw<"async">? kw<"unsafe">? externModifier? kw<"fn">
+  kw<"final">? ckw<"default">? kw<"const">? kw<"async">? kw<"unsafe">?
+  externModifier? kw<"fn">
+}
+
+ImplRestriction {
+  kw<"impl"> !call "(" (
+    kw<"self"> !implRestriction |
+    kw<"super"> !implRestriction |
+    kw<"crate"> !implRestriction |
+    kw<"in"> path !implRestriction
+  ) ")"
 }
 
 WhereClause {
@@ -366,8 +373,7 @@ externModifier {
 }
 
 Vis {
-  kw<"pub"> (!call "(" (kw<"self"> | kw<"super"> | kw<"crate"> | kw<"in"> path) ")")? |
-  kw<"crate"> !crateVis
+  kw<"pub"> (!call "(" (kw<"self"> | kw<"super"> | kw<"crate"> | kw<"in"> path) ")")?
 }
 
 type[@isGroup=Type] {

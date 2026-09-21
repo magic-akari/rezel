@@ -103,7 +103,7 @@ impl TokenTable {
         let mut low = 0_usize;
         let mut high = edges.len();
         while low < high {
-            let middle = (low + high) >> 1;
+            let middle = usize::midpoint(low, high);
             let edge = edges[middle];
             if next < edge.from {
                 high = middle;

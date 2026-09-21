@@ -23,7 +23,7 @@ fn modern<'a, T>(value: &'a mut T) -> impl Sized + use<'a, T,> {
     rezel_lang_rust::parser()
         .with_strict(true)
         .parse(source)
-        .expect("Rust 1.97 Edition 2024 item, borrow, and capture syntax");
+        .expect("Rust 1.98 Edition 2024 item, borrow, and capture syntax");
 }
 
 #[test]
@@ -188,7 +188,7 @@ fn const_traits_and_impls_accept_their_front_matter_orders() {
     let source = r"
 pub const trait ConstTrait {}
 const impl<T> ConstTrait for Wrapper<T> {}
-unsafe impl<T> const ConstTrait for Wrapper<T> {}
+const unsafe impl<T> ConstTrait for Wrapper<T> {}
 ";
     rezel_lang_rust::parser()
         .with_strict(true)
@@ -210,7 +210,7 @@ fn parenthesized<T: ([const] First) + (~const Second)>() {}
 fn parenthesized_abstract(value: impl ([const] First) + ([const] Second)) {}
 trait Alias = (First) + (Second);
 
-unsafe impl<T> const First for &T
+const unsafe impl<T> First for &T
 where
     T: [const] Second + ?Sized,
 {
@@ -220,6 +220,23 @@ where
         .with_strict(true)
         .parse(source)
         .expect("const trait modifiers apply to ordinary trait-bound positions");
+}
+
+#[test]
+fn trait_implementation_restrictions_and_final_methods_are_accepted() {
+    let source = r"
+pub impl(self) trait Local {
+    final fn share(&self) -> Self {
+        self
+    }
+}
+
+pub impl(in crate::module) const unsafe trait Restricted {}
+";
+    rezel_lang_rust::parser()
+        .with_strict(true)
+        .parse(source)
+        .expect("Rust trait implementation restrictions and final methods");
 }
 
 #[test]

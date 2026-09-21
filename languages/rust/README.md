@@ -1,6 +1,6 @@
 # rezel-lang-rust
 
-Rust 1.97.1 parser and typed concrete syntax for Rezel.
+Rust 1.98.0 parser and typed concrete syntax for Rezel.
 
 The package starts from the pinned `@lezer/rust` 1.0.2 grammar as its source
 provenance and bootstrap semantic baseline. The maintained grammar may refine
@@ -10,6 +10,10 @@ covers let-else statements, let chains, `if let` match guards, async and const
 closures, inline const blocks, higher-ranked const bounds, and `super let`
 statements. Macro definitions accept every Rust delimiter, and or-patterns
 retain their optional leading `|`.
+Trait declarations support implementation restrictions, and trait methods
+support the `final` qualifier introduced in the Rust 1.98 standard library.
+Impl items use the current `const unsafe impl` order; the superseded nightly
+`impl ... const` order is no longer accepted.
 The maintained lexical layer uses permissive identifier candidates for
 recovering trees and validates identifiers and lifetimes against the current
 `unicode-ident` XID profile only in strict mode. It also covers C and raw C strings, literal escape
@@ -21,7 +25,7 @@ The maintained grammar also covers Edition 2024 unsafe extern blocks and
 foreign-item safety qualifiers, raw borrow expressions, and precise capturing
 `use<...>` bounds.
 
-The parser does not yet claim complete Rust 1.97.1 language coverage. The
+The parser does not yet claim complete Rust 1.98.0 language coverage. The
 remaining work is a Reference-driven grammar and negative-conformance audit;
 the standard-library corpus is broad positive evidence, not a substitute for
 that audit.
@@ -54,7 +58,7 @@ mode additionally enforces Rust's literal and reserved-token rules.
 
 The Rust Reference defines language membership. Small maintained cases cover
 the local grammar contract, selected cases are compared with the pinned Rust
-1.97.1 compiler in Edition 2024 mode, and concrete syntax trees are compared
+1.98.0 compiler in Edition 2024 mode, and concrete syntax trees are compared
 separately with the pinned Lezer implementation. The rustc runner emits
 metadata because stable rustc does not expose a supported parse-only AST API;
 its result is implementation evidence rather than the parser's sole
@@ -62,7 +66,7 @@ specification.
 
 Non-obvious implementation behavior is cross-checked against
 `rust-lang/rust` revision
-`8bab26f4f68e0e26f0bb7960be334d5b520ea452` (tag `1.97.1`).
+`88d9e12ae178fab0fb5cc050a94da85685d449ea` (tag `1.98.0`).
 Relevant entry points are `rustc_parse::parser::item::parse_item_kind` and
 `is_macro_rules_item`, `parse_foreign_item`,
 `rustc_parse::parser::expr::parse_borrow_modifiers`,
@@ -78,15 +82,15 @@ as an ordinary same-named macro invocation.
 ## Standard-library corpus
 
 `mise run reference:stdlib:rust` recursively parses every `.rs` file under the
-`rust-src` standard-library `library` tree from Rust 1.97.1 revision
-`8bab26f4f68e0e26f0bb7960be334d5b520ea452`. The pinned inventory contains
-2,874 files, has no exclusions, uses the complete `SourceFile` entry point in
+`rust-src` standard-library `library` tree from Rust 1.98.0 revision
+`88d9e12ae178fab0fb5cc050a94da85685d449ea`. The pinned inventory contains
+2,909 files, has no exclusions, uses the complete `SourceFile` entry point in
 strict mode with the parser's default resource limits, and expects every file
 to be accepted with no recovery or known-rejection allowance.
 
 The runner verifies both the toolchain release and commit before collecting
 source, then verifies the exact file count. This makes corpus drift explicit.
-It establishes practical coverage over the Rust 1.97 standard library,
+It establishes practical coverage over the Rust 1.98 standard library,
 including large macro token trees, but it does not establish rejection
 behavior, semantic validity, Edition-specific name resolution, or syntax that
 the standard library does not exercise.
