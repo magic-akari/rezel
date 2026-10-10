@@ -9,7 +9,7 @@
 	},
 	"devDependencies": {
 		"@lezer/common": "1.5.2",
-		"@lezer/generator": "1.8.0",
+		"@lezer/generator": "1.8.1",
 		"@lezer/json": "1.0.3",
 		"@lezer/lr": "1.4.10",
 		"@types/node": "25.8.0",
