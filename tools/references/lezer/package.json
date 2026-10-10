@@ -8,7 +8,7 @@
 		"update": "npm run typecheck && node src/json.ts --update && node src/java.ts --update && node src/go.ts --update && node src/python.ts --update && node src/rust.ts --update"
 	},
 	"devDependencies": {
-		"@lezer/common": "1.5.2",
+		"@lezer/common": "1.5.3",
 		"@lezer/generator": "1.8.0",
 		"@lezer/json": "1.0.3",
 		"@lezer/lr": "1.4.10",
