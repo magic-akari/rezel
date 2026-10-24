@@ -38,7 +38,7 @@ sha2 = "0.10.9"
 syn = "2.0.117"
 text-size = "1.1.1"
 toml = "1.1.2"
-unicode-ident = "=1.0.24"
+unicode-ident = "=1.0.27"
 unicode-normalization = "=0.1.24"
 unicode_names2 = "=2.0.0"
 zerocopy = { version = "0.8.50", features = ["derive"] }
